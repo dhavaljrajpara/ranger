@@ -16,6 +16,11 @@ module.exports = {
       }
     ]
   },
-
+  resolve: {
+    extensions: [".js", ".jsx"],
+    alias: {
+      Views: commonPaths.viewPath
+    }
+  },
   plugins: [new HtmlWebpackPlugin({ template: commonPaths.templatePath })]
 };

@@ -8,9 +8,19 @@ const devConfig = merge(
   {
     mode: "development",
     devtool: "inline-source-map",
+    module: {
+      rules: [
+        {
+          test: /\.css$/,
+          use: ["style-loader", "css-loader"]
+        }
+      ]
+    },
     devServer: {
       host: commonPaths.host,
-      port: commonPaths.port
+      port: commonPaths.port,
+      publicPath: "/",
+      historyApiFallback: true
     },
     plugins: [new webpack.HotModuleReplacementPlugin()]
   },
