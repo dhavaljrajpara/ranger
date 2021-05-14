@@ -13,13 +13,22 @@ module.exports = {
         use: {
           loader: "babel-loader"
         }
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|ico)$/,
+        type: "asset/resource"
+      },
+      {
+        test: /\.(woff|woff2|ttf|otf|eot)$/,
+        type: "asset/resource"
       }
     ]
   },
   resolve: {
     extensions: [".js", ".jsx"],
     alias: {
-      Views: commonPaths.viewPath
+      Views: commonPaths.viewPath,
+      Images: commonPaths.imagePath
     }
   },
   plugins: [new HtmlWebpackPlugin({ template: commonPaths.templatePath })]
