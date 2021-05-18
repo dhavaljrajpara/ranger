@@ -28,7 +28,8 @@ module.exports = {
     extensions: [".js", ".jsx"],
     alias: {
       Views: commonPaths.viewPath,
-      Images: commonPaths.imagePath
+      Images: commonPaths.imagePath,
+      Utils: commonPaths.utilsPath
     }
   },
   plugins: [new HtmlWebpackPlugin({ template: commonPaths.templatePath })]

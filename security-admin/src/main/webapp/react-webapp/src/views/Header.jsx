@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Navbar, Nav } from "react-bootstrap";
 
 import rangerLogo from "Images/ranger_logo.png";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 
 class Header extends Component {
   constructor(props) {
@@ -10,6 +10,9 @@ class Header extends Component {
     this.state = {};
   }
   render() {
+    if (this.props.location && this.props.location.pathname === "/login") {
+      return null;
+    }
     return (
       <Navbar fixed="top" expand="lg" id="top-navbar" collapseOnSelect>
         <Navbar.Brand href="/" className="logo">
@@ -39,4 +42,4 @@ class Header extends Component {
   }
 }
 
-export default Header;
+export default withRouter(Header);
