@@ -5,6 +5,13 @@ const commonPaths = require("./paths");
 module.exports = {
   entry: commonPaths.entryPath,
 
+  output: {
+    path: commonPaths.outputPath,
+    filename: "[name].[hash].js",
+    chunkFilename: "[name].[chunkhash].js",
+    assetModuleFilename: "images/[hash][ext][query]"
+  },
+
   module: {
     rules: [
       {
@@ -20,7 +27,10 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|ttf|otf|eot)$/,
-        type: "asset/resource"
+        type: "asset/resource",
+        generator: {
+          filename: "fonts/[hash][ext][query]"
+        }
       }
     ]
   },
