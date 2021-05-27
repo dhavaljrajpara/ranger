@@ -15,9 +15,9 @@ class Header extends Component {
     }
     return (
       <Navbar fixed="top" expand="lg" id="top-navbar" collapseOnSelect>
-        <Navbar.Brand href="/" className="logo">
+        <Link to="/" className="navbar-brand logo">
           <img src={rangerLogo} alt="Ranger logo" />
-        </Navbar.Brand>
+        </Link>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">

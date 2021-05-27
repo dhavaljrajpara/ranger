@@ -1,13 +1,11 @@
 import React, { Suspense, lazy, Component } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch,
-  Redirect
-} from "react-router-dom";
+import { Router, Route, Switch, Redirect } from "react-router-dom";
 
 import ErrorBoundary from "Views/ErrorBoundary";
+
 import { Loader } from "../src/components/CommonComponents";
+import history from "Utils/history";
+import { getUserProfile, setUserProfile } from "Utils/appState";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
@@ -27,8 +25,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true,
-      userProfile: null
+      loader: true
     };
   }
 
@@ -37,28 +34,27 @@ export default class App extends Component {
   }
 
   fetchUserProfile = async () => {
-    let userProfile = null;
     try {
       const { fetchApi } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
         url: "users/profile"
       });
-      userProfile = profResp.data;
+      setUserProfile(profResp.data);
     } catch (error) {
       console.error(`Error occurred while fetching profile! ${error}`);
     }
     this.setState({
-      loader: false,
-      userProfile: userProfile
+      loader: false
     });
   };
 
   render() {
-    const currentPath = window.location.pathname;
+    const userProfile = getUserProfile();
+    const defaultProps = { userProfile };
     return (
       <ErrorBoundary>
-        <Router>
-          <Suspense fallback={<div>Loading...</div>}>
+        <Router history={history}>
+          <Suspense fallback={<Loader />}>
             {/* Add Header / Sidebar component here. */}
             {!this.state.loader && <HeaderComp />}
             <section className="container-fluid">
@@ -67,17 +63,18 @@ export default class App extends Component {
                   <Loader />
                 ) : (
                   <Switch>
+                    <Route exact path="/login" component={LoginComp} />
                     <AuthRoute
                       exact
                       path="/"
                       component={HomeComp}
-                      userProfile={this.state.userProfile}
+                      {...defaultProps}
                     />
-                    <Route exact path="/login" component={LoginComp} />
                     <AuthRoute
+                      exact
                       path="/userprofile"
                       component={UserProfileComp}
-                      userProfile={this.state.userProfile}
+                      {...defaultProps}
                     />
                   </Switch>
                 )}

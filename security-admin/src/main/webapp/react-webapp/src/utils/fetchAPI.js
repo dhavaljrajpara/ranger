@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import history from "./history";
+
 // Global axios defaults
 axios.defaults.baseURL = "/service/";
 
@@ -34,7 +36,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
     return resp;
   } catch (error) {
     if (error && error.response && error.response.status === 419) {
-      window.location.href = "/login";
+      history.push("/login");
     }
     throw Error(error);
   }
