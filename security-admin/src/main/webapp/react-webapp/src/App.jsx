@@ -25,7 +25,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true
+      loader: true,
     };
   }
 
@@ -37,14 +37,14 @@ export default class App extends Component {
     try {
       const { fetchApi } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile"
+        url: "users/profile",
       });
       setUserProfile(profResp.data);
     } catch (error) {
       console.error(`Error occurred while fetching profile! ${error}`);
     }
     this.setState({
-      loader: false
+      loader: false,
     });
   };
 
@@ -58,7 +58,7 @@ export default class App extends Component {
             {/* Add Header / Sidebar component here. */}
             {!this.state.loader && <HeaderComp />}
             <section className="container-fluid">
-              <section id="r_content">
+              <section id="ranger-content">
                 {this.state.loader ? (
                   <Loader />
                 ) : (
@@ -80,7 +80,7 @@ export default class App extends Component {
                 )}
               </section>
               <footer>
-                <div id="main-footer">
+                <div className="main-footer">
                   <div className="pull-left copy-right-text">
                     <p className="text-left">
                       <a

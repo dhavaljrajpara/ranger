@@ -14,7 +14,13 @@ class Header extends Component {
       return null;
     }
     return (
-      <Navbar fixed="top" expand="lg" id="top-navbar" collapseOnSelect>
+      <Navbar
+        fixed="top"
+        expand="lg"
+        id="top-navbar"
+        className="ranger-navbar"
+        collapseOnSelect
+      >
         <Link to="/" className="navbar-brand logo">
           <img src={rangerLogo} alt="Ranger logo" />
         </Link>
