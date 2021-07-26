@@ -1,11 +1,31 @@
 import axios from "axios";
 
 import history from "./history";
+import {
+  RANGER_REST_CSRF_ENABLED,
+  RANGER_REST_CSRF_CUSTOM_HEADER,
+  RANGER_REST_CSRF_IGNORE_METHODS
+} from "./appConstants";
 
 // Global axios defaults
 axios.defaults.baseURL = "/service/";
 
+let csrfEnabled = false;
+let restCsrfCustomHeader = null;
+let restCsrfIgnoreMethods = [];
+
 async function fetchApi(axiosConfig = {}, otherConf = {}) {
+  if (
+    csrfEnabled &&
+    restCsrfIgnoreMethods.indexOf((axiosConfig.type || "GET").toLowerCase()) ===
+      -1 &&
+    restCsrfCustomHeader
+  ) {
+    axiosConfig.headers = {
+      ...{ [restCsrfCustomHeader]: "" },
+      ...axiosConfig.headers
+    };
+  }
   const config = { ...axiosConfig };
 
   if (otherConf && otherConf.cancelRequest) {
@@ -42,4 +62,33 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
   }
 }
 
-export { fetchApi };
+const handleCSRFHeaders = (data) => {
+  if (data.hasOwnProperty(RANGER_REST_CSRF_ENABLED)) {
+    csrfEnabled =
+      (data[RANGER_REST_CSRF_ENABLED] || "").toLowerCase().trim() === "true";
+  }
+  if (data.hasOwnProperty(RANGER_REST_CSRF_CUSTOM_HEADER)) {
+    restCsrfCustomHeader = (data[RANGER_REST_CSRF_CUSTOM_HEADER] || "").trim();
+  }
+  if (data.hasOwnProperty(RANGER_REST_CSRF_IGNORE_METHODS)) {
+    restCsrfIgnoreMethods = (data[RANGER_REST_CSRF_IGNORE_METHODS] || "")
+      .split(",")
+      .map((val) => (val || "").toLowerCase().trim());
+  }
+};
+
+const fetchCSRFConf = async () => {
+  const respData = null;
+  try {
+    const csrfResp = fetchApi({
+      url: "plugins/csrfconf"
+    });
+    respData = csrfResp.data || null;
+    respData && handleCSRFHeaders(respData);
+  } catch (error) {
+    throw Error(error);
+  }
+  return respData;
+};
+
+export { fetchApi, fetchCSRFConf };

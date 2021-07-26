@@ -25,7 +25,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true,
+      loader: true
     };
   }
 
@@ -35,16 +35,19 @@ export default class App extends Component {
 
   fetchUserProfile = async () => {
     try {
-      const { fetchApi } = await import("Utils/fetchAPI");
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile",
+        url: "users/profile"
       });
+      await fetchCSRFConf();
       setUserProfile(profResp.data);
     } catch (error) {
-      console.error(`Error occurred while fetching profile! ${error}`);
+      console.error(
+        `Error occurred while fetching profile or CSRF headers! ${error}`
+      );
     }
     this.setState({
-      loader: false,
+      loader: false
     });
   };
 
