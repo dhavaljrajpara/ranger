@@ -4,7 +4,7 @@ import history from "./history";
 import {
   RANGER_REST_CSRF_ENABLED,
   RANGER_REST_CSRF_CUSTOM_HEADER,
-  RANGER_REST_CSRF_IGNORE_METHODS
+  RANGER_REST_CSRF_IGNORE_METHODS,
 } from "./appConstants";
 
 // Global axios defaults
@@ -17,13 +17,14 @@ let restCsrfIgnoreMethods = [];
 async function fetchApi(axiosConfig = {}, otherConf = {}) {
   if (
     csrfEnabled &&
-    restCsrfIgnoreMethods.indexOf((axiosConfig.type || "GET").toLowerCase()) ===
-      -1 &&
+    restCsrfIgnoreMethods.indexOf(
+      (axiosConfig.method || "GET").toLowerCase()
+    ) === -1 &&
     restCsrfCustomHeader
   ) {
     axiosConfig.headers = {
       ...{ [restCsrfCustomHeader]: "" },
-      ...axiosConfig.headers
+      ...axiosConfig.headers,
     };
   }
   const config = { ...axiosConfig };
@@ -64,8 +65,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
 
 const handleCSRFHeaders = (data) => {
   if (data.hasOwnProperty(RANGER_REST_CSRF_ENABLED)) {
-    csrfEnabled =
-      (data[RANGER_REST_CSRF_ENABLED] || "").toLowerCase().trim() === "true";
+    csrfEnabled = data[RANGER_REST_CSRF_ENABLED] === true;
   }
   if (data.hasOwnProperty(RANGER_REST_CSRF_CUSTOM_HEADER)) {
     restCsrfCustomHeader = (data[RANGER_REST_CSRF_CUSTOM_HEADER] || "").trim();
@@ -78,10 +78,10 @@ const handleCSRFHeaders = (data) => {
 };
 
 const fetchCSRFConf = async () => {
-  const respData = null;
+  let respData = null;
   try {
-    const csrfResp = fetchApi({
-      url: "plugins/csrfconf"
+    const csrfResp = await fetchApi({
+      url: "plugins/csrfconf",
     });
     respData = csrfResp.data || null;
     respData && handleCSRFHeaders(respData);
