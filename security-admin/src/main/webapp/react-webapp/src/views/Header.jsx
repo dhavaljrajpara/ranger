@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { Navbar, Nav } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 
 import rangerLogo from "Images/ranger_logo.png";
 import { Link, withRouter } from "react-router-dom";
+import { getUserProfile } from "Utils/appState";
 
 class Header extends Component {
   constructor(props) {
@@ -10,6 +11,23 @@ class Header extends Component {
     this.state = {};
   }
   render() {
+    const userProps = getUserProfile();
+    const loginId = (
+      <span className="login-id">
+        <i className="fa fa-user-circle fa-lg"></i>
+        {userProps.loginId}
+      </span>
+    );
+    const accessManager = (
+      <span>
+        <i className="fa fa-fw fa-shield"></i> Access Manager
+      </span>
+    );
+    const settings = (
+      <span>
+        <i className="fa-fw fa fa-gear"></i> Settings
+      </span>
+    );
     if (this.props.location && this.props.location.pathname === "/login") {
       return null;
     }
@@ -27,6 +45,17 @@ class Header extends Component {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
+            <NavDropdown title={accessManager}>
+              <NavDropdown.Item href="">
+                <i class="fa fa-fw fa-file m-r-xs"></i> Resource Based Policies
+              </NavDropdown.Item>
+              <NavDropdown.Item href="">
+                <i class="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
+              </NavDropdown.Item>
+              <NavDropdown.Item href="">
+                <i class="fa fa-fw fa-file-text m-r-xs"></i> Reports
+              </NavDropdown.Item>
+            </NavDropdown>
             <Link to="/reports/audit/bigData" className="nav-link">
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
@@ -38,9 +67,24 @@ class Header extends Component {
               </span>
               {` Security Zone `}
             </Link>
+            <NavDropdown title={settings}>
+              <NavDropdown.Item href="">
+                <i class="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
+              </NavDropdown.Item>
+              <NavDropdown.Item href="">
+                <i class="fa-fw fa fa-file-o m-r-xs"></i> Permissions
+              </NavDropdown.Item>
+            </NavDropdown>
           </Nav>
           <Nav>
-            <Nav.Link href="/">Admin</Nav.Link>
+            <NavDropdown title={loginId} id="user-dropdown" alignRight>
+              <NavDropdown.Item href="/userprofile">
+                <i className="fa fa-user"></i> Profile
+              </NavDropdown.Item>
+              <NavDropdown.Item>
+                <i className="fa fa-power-off"></i> Logout
+              </NavDropdown.Item>
+            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Navbar>

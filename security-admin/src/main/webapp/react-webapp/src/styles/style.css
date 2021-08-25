@@ -40,6 +40,33 @@ a {
   padding: 9px 15px;
 }
 
+.ranger-navbar .dropdown-toggle {
+  color: #fff !important;
+  display: block;
+  line-height: 22px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-shadow: rgb(0 0 0 / 20%) 0px -1px 0;
+  height: auto;
+  padding: 9px 15px;
+}
+
+.login-id > i {
+  margin-right: 5px;
+}
+
+.ranger-navbar .dropdown-item {
+  font-size: 13px;
+}
+
+.ranger-navbar .dropdown-item:hover,
+.ranger-navbar .dropdown-item:focus {
+  color: #fff;
+  text-decoration: none;
+  background-color: #0b7fad;
+}
+
 .zone-icon {
   font-size: 11px;
   margin-right: 1px;
@@ -214,7 +241,7 @@ div#center div.letter_container_7 {
   font-weight: bold;
 }
 
-.tab-content.user-profile-tab-content {
+.user-profile {
   border: 1px solid #ddd;
   padding: 20px;
   margin-top: 15px;
