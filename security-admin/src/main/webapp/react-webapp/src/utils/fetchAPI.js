@@ -4,7 +4,7 @@ import history from "./history";
 import {
   RANGER_REST_CSRF_ENABLED,
   RANGER_REST_CSRF_CUSTOM_HEADER,
-  RANGER_REST_CSRF_IGNORE_METHODS,
+  RANGER_REST_CSRF_IGNORE_METHODS
 } from "./appConstants";
 
 // Global axios defaults
@@ -24,7 +24,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
   ) {
     axiosConfig.headers = {
       ...{ [restCsrfCustomHeader]: "" },
-      ...axiosConfig.headers,
+      ...axiosConfig.headers
     };
   }
   const config = { ...axiosConfig };
@@ -59,7 +59,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
     if (error && error.response && error.response.status === 419) {
       history.push("/login");
     }
-    throw Error(error);
+    throw error;
   }
 }
 
@@ -81,7 +81,7 @@ const fetchCSRFConf = async () => {
   let respData = null;
   try {
     const csrfResp = await fetchApi({
-      url: "plugins/csrfconf",
+      url: "plugins/csrfconf"
     });
     respData = csrfResp.data || null;
     respData && handleCSRFHeaders(respData);
