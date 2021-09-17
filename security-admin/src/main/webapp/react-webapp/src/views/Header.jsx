@@ -15,7 +15,7 @@ class Header extends Component {
     const loginId = (
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
-        {userProps.loginId}
+        {/* {userProps.loginId} */}
       </span>
     );
     const accessManager = (

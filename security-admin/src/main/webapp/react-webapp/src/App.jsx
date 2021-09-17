@@ -13,9 +13,9 @@ const LoginComp = lazy(() => import("Views/Login"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
-  if (!userProfile) {
-    return <Redirect to="/login" />;
-  }
+  // if (!userProfile) {
+  //   return <Redirect to="/login" />;
+  // }
   return (
     <Route {...rest} exact render={(routeProps) => <Comp {...routeProps} />} />
   );
@@ -37,7 +37,8 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile"
+        url: "users/profile",
+        // auth:{username:"admin", password:"admin123"}
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);

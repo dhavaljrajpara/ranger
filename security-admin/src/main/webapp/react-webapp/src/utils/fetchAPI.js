@@ -27,7 +27,8 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
       ...axiosConfig.headers
     };
   }
-  const config = { ...axiosConfig };
+  const config = { ...axiosConfig,
+    auth: {username:"admin", password:"admin123"} };
 
   if (otherConf && otherConf.cancelRequest) {
     /*
