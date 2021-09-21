@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import folderLogo from "Images/folder-grey.png";
 
 class ServiceDefinition extends Component {
   state = {
@@ -17,6 +18,11 @@ class ServiceDefinition extends Component {
                 <th>
                   <span className="policy-title">
                     <span className="pull-left">
+                      <img
+                        src={folderLogo}
+                        alt="Ranger logo"
+                        className="m-r-5"
+                      />
                       {this.state.serviceDef.name}
                     </span>
                     <span className="pull-right">
@@ -40,7 +46,7 @@ class ServiceDefinition extends Component {
                   <td>
                     <div>
                       <span className="pull-left">
-                        <a>{s.name}</a>
+                        <a className="service-name">{s.name}</a>
                       </span>
                       <span className="pull-right">
                         <button

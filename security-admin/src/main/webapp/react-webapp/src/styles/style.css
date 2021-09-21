@@ -3,11 +3,9 @@ body {
   font-family: "Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
   font-size: 14px;
 }
-
 a {
   color: #0b7fad;
 }
-
 .app-body {
   padding: 45px 15px 0 15px;
 }
@@ -23,11 +21,9 @@ a {
   padding-top: 0px;
   padding-bottom: 0px;
 }
-
 .ranger-navbar .logo img {
   width: 120px;
 }
-
 .ranger-navbar .navbar-nav > a {
   color: #fff !important;
   display: block;
@@ -39,7 +35,6 @@ a {
   height: auto;
   padding: 9px 15px;
 }
-
 .ranger-navbar .dropdown-toggle {
   color: #fff !important;
   display: block;
@@ -51,22 +46,18 @@ a {
   height: auto;
   padding: 9px 15px;
 }
-
 .login-id > i {
   margin-right: 5px;
 }
-
 .ranger-navbar .dropdown-item {
   font-size: 13px;
 }
-
 .ranger-navbar .dropdown-item:hover,
 .ranger-navbar .dropdown-item:focus {
   color: #fff;
   text-decoration: none;
   background-color: #0b7fad;
 }
-
 .zone-icon {
   font-size: 11px;
   margin-right: 1px;
@@ -85,14 +76,12 @@ section#r_content {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
 div#center div {
   position: relative;
   display: inline-block;
   animation: janimation 2.2s infinite;
   -webkit-animation: janimation 2.2s infinite;
 }
-
 div#center span {
   position: relative;
   font-family: Helvetica;
@@ -100,42 +89,34 @@ div#center span {
   font-weight: bolder;
   color: #0b7fad;
 }
-
 div#center div.letter_container_1 {
   animation-delay: 0s;
   -webkit-animation-delay: 0s;
 }
-
 div#center div.letter_container_2 {
   animation-delay: 0.2s;
   -webkit-animation-delay: 0.2s;
 }
-
 div#center div.letter_container_3 {
   animation-delay: 0.4s;
   -webkit-animation-delay: 0.4s;
 }
-
 div#center div.letter_container_4 {
   animation-delay: 0.6s;
   -webkit-animation-delay: 0.6s;
 }
-
 div#center div.letter_container_5 {
   animation-delay: 0.8s;
   -webkit-animation-delay: 0.8s;
 }
-
 div#center div.letter_container_6 {
   animation-delay: 1s;
   -webkit-animation-delay: 1s;
 }
-
 div#center div.letter_container_7 {
   animation-delay: 1.2s;
   -webkit-animation-delay: 1.2s;
 }
-
 @keyframes janimation {
   0% {
     transform: rotate(0deg) scale(1.5);
@@ -151,7 +132,6 @@ div#center div.letter_container_7 {
     text-shadow: #666 0 0 10px;
   }
 }
-
 @-webkit-keyframes janimation {
   0% {
     -webkit-transform: rotate(0deg) scale(1.5);
@@ -177,17 +157,14 @@ div#center div.letter_container_7 {
   font-size: 13px;
   text-align: center;
 }
-
 .main-footer a {
   color: #999;
   text-decoration: underline;
 }
-
 .copy-right-text p {
   margin: 0 0 5px;
   line-height: 15px;
 }
-
 .form-actions {
   padding: 19px 20px 20px;
   margin-top: 20px;
@@ -195,15 +172,12 @@ div#center div.letter_container_7 {
   background-color: #f5f5f5;
   border-top: 1px solid #e5e5e5;
 }
-
 .form-actions button:nth-child(n) {
   margin-left: 10px;
 }
-
 .form-actions button:first-child {
   margin-left: 0;
 }
-
 .wrap {
   display: block;
   background-color: #fff;
@@ -215,18 +189,15 @@ div#center div.letter_container_7 {
   border-radius: 3px;
   *zoom: 1;
 }
-
 .wrap:before,
 .wrap:after {
   display: table;
   content: "";
   line-height: 0;
 }
-
 .wrap:after {
   clear: both;
 }
-
 .wrap-header {
   color: #222222;
   font-size: 16px;
@@ -236,11 +207,9 @@ div#center div.letter_container_7 {
   padding-bottom: 10px;
   text-transform: none;
 }
-
 .bold {
   font-weight: bold;
 }
-
 .user-profile {
   border: 1px solid #ddd;
   padding: 20px;
@@ -266,7 +235,6 @@ div#center div.letter_container_7 {
   width: 100%;
   margin-bottom: 20px;
 }
-
 .icon-sign-in {
   margin-left: 15px;
   visibility: hidden;
@@ -339,7 +307,6 @@ div#center div.letter_container_7 {
   font-size: 14px;
   font-weight: bold;
 }
-
 .login input:focus {
   border-color: #dedede;
   -webkit-box-shadow: none;
@@ -347,28 +314,44 @@ div#center div.letter_container_7 {
   box-shadow: none;
 }
 
-/* Service Manage */
+/* Service Manager */
 .policy-manager table thead tr th:first-child {
   background-color: #d8d8d8;
 }
-
 .position-relative .table th {
   border: 1px solid #dee2e6;
   border-bottom: transparent;
   font-size: 13px;
 }
-
+.position-relative .table th,
+.table td {
+  padding: 8px;
+  font-size: 13px;
+}
 .policy-manager span.policy-title {
   font-size: 18px;
   line-height: 20px;
   text-transform: uppercase;
   color: #707070;
 }
-
-.policy-manager table thead tr th:first-child a {
+.position-relative table thead tr th:first-child a {
   color: #707070;
 }
-
+.position-relative .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
 .m-r-5 {
   margin-right: 5px;
+}
+.service-name {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: sub;
+  display: inline-block;
+}
+.service-name,
+.service-name:hover {
+  text-decoration: none;
 }
