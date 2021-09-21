@@ -346,3 +346,29 @@ div#center div.letter_container_7 {
   -moz-box-shadow: none;
   box-shadow: none;
 }
+
+/* Service Manage */
+.policy-manager table thead tr th:first-child {
+  background-color: #d8d8d8;
+}
+
+.position-relative .table th {
+  border: 1px solid #dee2e6;
+  border-bottom: transparent;
+  font-size: 13px;
+}
+
+.policy-manager span.policy-title {
+  font-size: 18px;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: #707070;
+}
+
+.policy-manager table thead tr th:first-child a {
+  color: #707070;
+}
+
+.m-r-5 {
+  margin-right: 5px;
+}

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ServiceDefinitions from "./ServiceManager/ServiceDefinitions";
 
 class Home extends Component {
   constructor(props) {
@@ -6,7 +7,7 @@ class Home extends Component {
     this.state = {};
   }
   render() {
-    return <h1>Home Page</h1>;
+    return <ServiceDefinitions></ServiceDefinitions>;
   }
 }
 
