@@ -3,12 +3,31 @@ import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 
 import rangerLogo from "Images/ranger_logo.png";
 import { Link, withRouter } from "react-router-dom";
-import { getUserProfile } from "Utils/appState";
+import { getUserProfile, setUserProfile } from "Utils/appState";
 
 class Header extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+  handleLogout = async(e) => {
+    e.preventDefault();
+    try {
+      const { fetchApi } = await import("Utils/fetchAPI");
+      const profResp = await fetchApi({
+        url: "logout",
+        baseURL: '',
+        headers: { 
+          "cache-control" : "no-cache"
+      },
+      });
+      setUserProfile(null);
+      this.props.history.push("/signin")
+    } catch (error) {
+      console.error(
+        `Error occurred while login! ${error}`
+      );
+    }
   }
   render() {
     const userProps = getUserProfile();
@@ -28,7 +47,7 @@ class Header extends Component {
         <i className="fa-fw fa fa-gear"></i> Settings
       </span>
     );
-    if (this.props.location && this.props.location.pathname === "/login") {
+    if (this.props.location && this.props.location.pathname === "/signin") {
       return null;
     }
     return (
@@ -82,7 +101,7 @@ class Header extends Component {
               <NavDropdown.Item href="/userprofile">
                 <i className="fa fa-user"></i> Profile
               </NavDropdown.Item>
-              <NavDropdown.Item>
+              <NavDropdown.Item onClick={this.handleLogout}>
                 <i className="fa fa-power-off"></i> Logout
               </NavDropdown.Item>
             </NavDropdown>

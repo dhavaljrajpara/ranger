@@ -3,8 +3,9 @@ import { Redirect } from "react-router-dom";
 import { Form, Field } from "react-final-form";
 import { Button } from "react-bootstrap";
 
-import { getUserProfile } from "Utils/appState";
+import { getUserProfile, setUserProfile } from "Utils/appState";
 import rangerLogo from "Images/ranger_logo.png";
+import qs from 'qs';
 
 class Login extends Component {
   constructor(props) {
@@ -13,20 +14,27 @@ class Login extends Component {
   }
 
   onSubmit = async (values) => {
-    console.log(values)
-    let bodyFormData = new FormData();
-    bodyFormData.append('username', values.userName);
-    bodyFormData.append('password', values.password);
+    let data ={
+      'username' : values.userName,
+      'password': values.password
+    }
     try {
       const { fetchApi } = await import("Utils/fetchAPI");
-      const profResp = await fetchApi({
+      const loginResp = await fetchApi({
         url: "login",
         baseURL: '',
         method:"post",
-        data: bodyFormData,
-        headers: { "X-Requested-With": "XMLHttpRequest" },
+        data: qs.stringify(data),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          "X-Requested-With": "XMLHttpRequest",
+        },
       });
-      this.props.history.push("/userprofile")
+      const profResp = await fetchApi({
+        url: "users/profile",
+      });
+      setUserProfile(profResp.data);
+      this.props.history.push("/")
     } catch (error) {
       console.error(
         `Error occurred while login! ${error}`

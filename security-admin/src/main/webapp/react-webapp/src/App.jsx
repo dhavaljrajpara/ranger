@@ -13,9 +13,9 @@ const LoginComp = lazy(() => import("Views/Login"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
-  // if (!userProfile) {
-  //   return <Redirect to="/login" />;
-  // }
+  if (!getUserProfile()) {
+    return <Redirect to="/signin" />;
+  }
   return (
     <Route {...rest} exact render={(routeProps) => <Comp {...routeProps} />} />
   );
@@ -38,11 +38,11 @@ export default class App extends Component {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
         url: "users/profile",
-        // auth:{username:"admin", password:"admin123"}
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
     } catch (error) {
+      setUserProfile(null);
       console.error(
         `Error occurred while fetching profile or CSRF headers! ${error}`
       );
@@ -67,11 +67,12 @@ export default class App extends Component {
                   <Loader />
                 ) : (
                   <Switch>
-                    <Route exact path="/login" component={LoginComp} />
+                    <Route exact path="/signin" component={LoginComp} />
                     <AuthRoute
                       exact
                       path="/"
                       component={HomeComp}
+                      userProfile={userProfile}
                       {...defaultProps}
                     />
                     <AuthRoute

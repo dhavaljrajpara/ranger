@@ -20,12 +20,13 @@ const devConfig = merge(commonConfig, {
     port: commonPaths.port,
     publicPath: "/",
     historyApiFallback: true,
-    proxy: {
-      "/service": {
+    proxy: [
+      {
+        context: ["/service", "/login", "/logout"],
         target: `${commonPaths.proxyHost}:${commonPaths.proxyPort}`,
-        secure: false
-      }
-    }
+        secure: false,
+      },
+    ],
   },
   plugins: [new webpack.HotModuleReplacementPlugin()]
 });
