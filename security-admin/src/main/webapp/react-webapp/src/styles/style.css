@@ -225,6 +225,7 @@ div#center div.letter_container_7 {
 .login {
   background: #292929;
   padding: 0;
+  height: 560px;
 }
 .login #signin-container {
   margin: 0 auto;
@@ -234,6 +235,9 @@ div#center div.letter_container_7 {
   text-align: center;
   width: 100%;
   margin-bottom: 20px;
+}
+.rangerlogo {
+  margin-top: 120px;
 }
 .icon-sign-in {
   margin-left: 15px;
@@ -314,44 +318,89 @@ div#center div.letter_container_7 {
   box-shadow: none;
 }
 
-/* Service Manager */
-.policy-manager table thead tr th:first-child {
-  background-color: #d8d8d8;
+/* ServiceManagerLayout */
+
+.btn-import-export {
+  float: right;
+  margin-left: 5px;
+  vertical-align: top;
 }
-.position-relative .table th {
-  border: 1px solid #dee2e6;
-  border-bottom: transparent;
-  font-size: 13px;
+.pull-right {
+  float: right;
 }
-.position-relative .table th,
-.table td {
-  padding: 8px;
-  font-size: 13px;
+
+#importBtn {
+  margin-left: 286px;
+  margin-top: -26px;
 }
-.policy-manager span.policy-title {
-  font-size: 18px;
-  line-height: 20px;
-  text-transform: uppercase;
-  color: #707070;
+
+#exportBtn {
+  margin-right: -70px;
+  margin-top: -26px;
 }
-.position-relative table thead tr th:first-child a {
-  color: #707070;
+
+.zoneEmptyMsg > .select2-container {
+  display: inline-block !important;
 }
-.position-relative .table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f9f9f9;
+
+.zoneEmptyMsg {
+  box-sizing: border-box;
 }
-.m-r-5 {
-  margin-right: 5px;
+.m-b-sm {
+  margin-bottom: 8px !important;
 }
-.service-name {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: sub;
-  display: inline-block;
+
+.btn-sm {
+  font-size: 13px !important;
 }
-.service-name,
-.service-name:hover {
-  text-decoration: none;
+
+#selectZoneName {
+  cursor: not-allowed;
+}
+.btn[disabled] {
+  border-color: #2996ba;
+  cursor: not-allowed !important;
+  outline: 0;
+  box-shadow: none;
+  opacity: 0.65;
+}
+
+.pull-right {
+  float: right;
+  margin-right: 110px;
+}
+
+.btn,
+.btn-default {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  border: 1px solid #d9d9d9;
+  color: #424242;
+  background-image: none;
+  background-color: white;
+}
+
+.btn-mini {
+  padding: 4px 8px;
+  font-size: 11.05px;
+}
+
+.btn:hover,
+.btn-default:focus,
+.btn-default:active,
+.btn-default.active,
+.btn-default.disabled,
+.btn-default:hover {
+  color: #0b7fad !important;
+  border-color: #0b7fad !important;
+  background-color: #fff !important;
+  outline: none !important;
+}
+
+.btn-primary {
+  background-color: #0b7fad;
+  background-image: none;
+  color: #fff;
+  border-color: #0b7fad;
 }

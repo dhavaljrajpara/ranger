@@ -43,7 +43,7 @@ class Login extends Component {
       <div  className="login">
         <section id="signin-container">
           <div className="l-logo">
-              <img src={rangerLogo}/>
+              <img className="rangerlogo" src={rangerLogo}/>
             </div>
             <Form
              onSubmit={this.onSubmit}
