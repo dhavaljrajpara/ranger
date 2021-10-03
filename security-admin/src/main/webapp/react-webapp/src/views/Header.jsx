@@ -10,25 +10,24 @@ class Header extends Component {
     super(props);
     this.state = {};
   }
-  handleLogout = async(e) => {
+  handleLogout = async (e) => {
     e.preventDefault();
     try {
       const { fetchApi } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
         url: "logout",
-        baseURL: '',
-        headers: { 
-          "cache-control" : "no-cache"
-      },
+        baseURL: "",
+        headers: {
+          "cache-control": "no-cache"
+        }
       });
       setUserProfile(null);
-      this.props.history.push("/signin")
+      window.location.replace("login.html");
+      // this.props.history.push("/signin")
     } catch (error) {
-      console.error(
-        `Error occurred while login! ${error}`
-      );
+      console.error(`Error occurred while login! ${error}`);
     }
-  }
+  };
   render() {
     const userProps = getUserProfile();
     const loginId = (
@@ -47,9 +46,9 @@ class Header extends Component {
         <i className="fa-fw fa fa-gear"></i> Settings
       </span>
     );
-    if (this.props.location && this.props.location.pathname === "/signin") {
-      return null;
-    }
+    // if (this.props.location && this.props.location.pathname === "/signin") {
+    //   return null;
+    // }
     return (
       <Navbar
         fixed="top"

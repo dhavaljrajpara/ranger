@@ -3,13 +3,24 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const commonPaths = require("./paths");
 
 module.exports = {
-  entry: commonPaths.entryPath,
+  entry: {
+    [commonPaths.loginChunkName]: commonPaths.loginEntryPath,
+    [commonPaths.mainChunkName]: commonPaths.mainEntryPath
+  },
 
   output: {
     path: commonPaths.outputPath,
-    filename: "[name].[hash].js",
-    chunkFilename: "[name].[chunkhash].js",
-    assetModuleFilename: "images/[hash][ext][query]"
+    filename: (pathData) => {
+      return pathData.chunk.name === commonPaths.loginChunkName
+        ? "prelogin/[name].[contenthash].js"
+        : "dist/[name].[contenthash].js";
+    },
+    chunkFilename: (pathData) => {
+      return pathData.chunk.name === commonPaths.loginChunkName
+        ? "prelogin/[name].[chunkhash].js"
+        : "dist/[name].[chunkhash].js";
+    },
+    assetModuleFilename: "images/[contenthash][ext][query]"
   },
 
   module: {
@@ -29,7 +40,7 @@ module.exports = {
         test: /\.(woff|woff2|ttf|otf|eot)$/,
         type: "asset/resource",
         generator: {
-          filename: "fonts/[hash][ext][query]"
+          filename: "fonts/[contenthash][ext][query]"
         }
       }
     ]
@@ -42,5 +53,16 @@ module.exports = {
       Utils: commonPaths.utilsPath
     }
   },
-  plugins: [new HtmlWebpackPlugin({ template: commonPaths.templatePath })]
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: commonPaths.loginTmplPath,
+      chunks: [commonPaths.loginChunkName],
+      filename: commonPaths.loginTempFile
+    }),
+    new HtmlWebpackPlugin({
+      template: commonPaths.mainTmplPath,
+      chunks: [commonPaths.mainChunkName],
+      filename: commonPaths.mainTmpFile
+    })
+  ]
 };

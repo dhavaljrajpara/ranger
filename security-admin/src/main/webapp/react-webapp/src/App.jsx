@@ -9,12 +9,13 @@ import { getUserProfile, setUserProfile } from "Utils/appState";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
-const LoginComp = lazy(() => import("Views/Login"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
-    return <Redirect to="/signin" />;
+    // return <Redirect to="/signin" />;
+    window.location.replace("login.html");
+    return;
   }
   return (
     <Route {...rest} exact render={(routeProps) => <Comp {...routeProps} />} />
@@ -37,7 +38,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile",
+        url: "users/profile"
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -67,7 +68,6 @@ export default class App extends Component {
                   <Loader />
                 ) : (
                   <Switch>
-                    <Route exact path="/signin" component={LoginComp} />
                     <AuthRoute
                       exact
                       path="/"

@@ -1,8 +1,17 @@
 const path = require("path");
 
+const loginTempFile = "login.html";
+const mainTmpFile = "index.html";
+
 module.exports = {
-  entryPath: path.resolve(__dirname, "../src/index.jsx"),
-  templatePath: path.resolve(__dirname, "../src/index.html"),
+  mainChunkName: "main",
+  loginChunkName: "login",
+  loginTempFile,
+  mainTmpFile,
+  loginEntryPath: path.resolve(__dirname, "../src/login.jsx"),
+  mainEntryPath: path.resolve(__dirname, "../src/index.jsx"),
+  loginTmplPath: path.resolve(__dirname, `../src/${loginTempFile}`),
+  mainTmplPath: path.resolve(__dirname, `../src/${mainTmpFile}`),
   outputPath: path.resolve(__dirname, "../dist"),
   viewPath: path.resolve(__dirname, "../src/views"),
   imagePath: path.resolve(__dirname, "../src/images"),

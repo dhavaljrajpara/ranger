@@ -27,8 +27,9 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
       ...axiosConfig.headers
     };
   }
-  const config = { ...axiosConfig,
-    // auth: {username:"admin", password:"admin123"} 
+  const config = {
+    ...axiosConfig
+    // auth: {username:"admin", password:"admin123"}
   };
 
   if (otherConf && otherConf.cancelRequest) {
@@ -59,7 +60,8 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
     return resp;
   } catch (error) {
     if (error && error.response && error.response.status === 419) {
-      history.push("/signin");
+      // history.push("/signin");
+      window.location.replace("login.html");
     }
     throw error;
   }

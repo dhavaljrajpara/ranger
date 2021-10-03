@@ -16,8 +16,8 @@ const devConfig = merge(commonConfig, {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css",
-      chunkFilename: "[id].[contenthash].css"
+      filename: "styles/[name].[contenthash].css",
+      chunkFilename: "styles/[id].[contenthash].css"
     })
   ]
 });
