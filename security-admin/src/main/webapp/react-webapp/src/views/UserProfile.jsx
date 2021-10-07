@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
+import Button from "react-bootstrap/Button";
 import { Form, Field } from "react-final-form";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 
@@ -20,6 +21,7 @@ const updateUserInfo = async (values) => {
     });
     console.log(profResp.status);
     setUserProfile(profResp.data);
+    this.props.history.push("/");
   } catch (error) {
     console.error(`Error occurred while updating user profile! ${error}`);
   }
@@ -173,21 +175,21 @@ class UserProfile extends Component {
 
                         <div className="row form-actions">
                           <div className="col-md-9 offset-md-3">
-                            <button
-                              className="btn btn-primary"
+                            <Button
+                              variant="primary"
                               type="submit"
                               disabled={submitting}
                             >
                               Save
-                            </button>
-                            <button
-                              className="btn btn-secondary"
+                            </Button>
+                            <Button
+                              variant="secondary"
                               type="button"
                               onClick={form.reset}
                               disabled={submitting || pristine}
                             >
                               Cancel
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </form>
@@ -255,21 +257,21 @@ class UserProfile extends Component {
                         </div>
                         <div className="row form-actions">
                           <div className="col-md-9 offset-md-3">
-                            <button
-                              className="btn btn-primary"
+                            <Button
+                              variant="primary"
                               type="submit"
                               disabled={submitting}
                             >
                               Save
-                            </button>
-                            <button
-                              className="btn btn-secondary"
+                            </Button>
+                            <Button
+                              variant="secondary"
                               type="button"
                               onClick={form.reset}
                               disabled={submitting || pristine}
                             >
                               Cancel
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </form>

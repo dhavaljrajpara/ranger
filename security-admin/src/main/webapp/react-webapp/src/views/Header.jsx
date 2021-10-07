@@ -18,8 +18,8 @@ class Header extends Component {
         url: "logout",
         baseURL: "",
         headers: {
-          "cache-control": "no-cache"
-        }
+          "cache-control": "no-cache",
+        },
       });
       setUserProfile(null);
       window.location.replace("login.html");
@@ -79,7 +79,7 @@ class Header extends Component {
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
             </Link>
-            <Link to="/zones/zone/list" className="nav-link">
+            <Link to="/zones" className="nav-link">
               <span className="zone-icon fa-stack fa-lg">
                 <i className="fa fa-square-o fa-stack-2x"></i>
                 <i className="fa fa-bolt fa-stack-1x"></i>

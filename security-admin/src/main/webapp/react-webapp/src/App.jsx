@@ -10,6 +10,7 @@ import { getUserProfile, setUserProfile } from "Utils/appState";
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
+const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -26,7 +27,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true
+      loader: true,
     };
   }
 
@@ -49,7 +50,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false
+      loader: false,
     });
   };
 
@@ -79,6 +80,12 @@ export default class App extends Component {
                       exact
                       path="/userprofile"
                       component={UserProfileComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/zones"
+                      component={ZoneListingComp}
                       {...defaultProps}
                     />
                   </Switch>

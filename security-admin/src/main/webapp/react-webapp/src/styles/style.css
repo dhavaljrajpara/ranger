@@ -243,7 +243,7 @@ div#center div.letter_container_7 {
   padding: 8px;
   font-size: 13px;
 }
-.policy-manager span.policy-title {
+.policy-manager .policy-title {
   font-size: 18px;
   line-height: 20px;
   text-transform: uppercase;

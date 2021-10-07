@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 import folderLogo from "Images/folder-grey.png";
 
 class ServiceDefinition extends Component {
@@ -12,12 +14,12 @@ class ServiceDefinition extends Component {
     return (
       <div className="col-sm-4">
         <div className="position-relative">
-          <table className="table table-bordered table-striped">
+          <Table striped bordered hover size="sm">
             <thead>
               <tr>
                 <th>
-                  <span className="policy-title">
-                    <span className="pull-left">
+                  <div className="policy-title clearfix">
+                    <span className="float-left">
                       <img
                         src={folderLogo}
                         alt="Ranger logo"
@@ -25,7 +27,7 @@ class ServiceDefinition extends Component {
                       />
                       {this.state.serviceDef.name}
                     </span>
-                    <span className="pull-right">
+                    <span className="float-right">
                       <a className="text-decoration">
                         <i className="fa-fw fa fa-plus"></i>
                       </a>
@@ -36,7 +38,7 @@ class ServiceDefinition extends Component {
                         <i className="fa-fw fa fa-external-link-square"></i>
                       </a>
                     </span>
-                  </span>
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -44,39 +46,37 @@ class ServiceDefinition extends Component {
               {this.state.service.map((s) => (
                 <tr key={s.id}>
                   <td>
-                    <div>
-                      <span className="pull-left">
+                    <div className="clearfix">
+                      <span className="float-left">
                         <a className="service-name">{s.name}</a>
                       </span>
-                      <span className="pull-right">
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-dark m-r-5"
+                      <span className="float-right">
+                        <Button
+                          variant="outline-dark"
+                          size="sm"
+                          className="m-r-5"
                           title="View"
                         >
                           <i className="fa-fw fa fa-eye"></i>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-dark m-r-5"
+                        </Button>
+                        <Button
+                          variant="outline-dark"
+                          size="sm"
+                          className="m-r-5"
                           title="Edit"
                         >
                           <i className="fa-fw fa fa-edit"></i>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-danger"
-                          title="Delete"
-                        >
+                        </Button>
+                        <Button variant="danger" size="sm" title="Delete">
                           <i className="fa-fw fa fa-trash"></i>
-                        </button>
+                        </Button>
                       </span>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       </div>
     );

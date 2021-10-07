@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Button from "react-bootstrap/Button";
 import ServiceDefinition from "./ServiceDefinition";
 
 class ServiceDefinitions extends Component {
@@ -19,7 +20,6 @@ class ServiceDefinitions extends Component {
       serviceDefsResp = await fetchApi({
         url: "plugins/definitions",
       });
-      await fetchCSRFConf();
       console.log(serviceDefsResp.data.serviceDefs);
     } catch (error) {
       console.error(
@@ -38,7 +38,6 @@ class ServiceDefinitions extends Component {
       servicesResp = await fetchApi({
         url: "plugins/services",
       });
-      await fetchCSRFConf();
       console.log(servicesResp.data.services);
     } catch (error) {
       console.error(
@@ -53,11 +52,11 @@ class ServiceDefinitions extends Component {
   render() {
     return (
       <div>
-        <div className="row">
-          <div className="col-sm-7">
+        <div className="clearfix">
+          <div className="float-left">
             <h4 className="wrap-header bold">Service Manager</h4>
           </div>
-          <div className="col-sm-5">
+          <div className="float-right">
             <b> Security Zone: </b>
             <span title="Create zone first" className="m-r-5">
               <input
@@ -67,22 +66,14 @@ class ServiceDefinitions extends Component {
                 disabled="disabled"
               />
             </span>
-            <button
-              type="button"
-              title="Import"
-              className="btn btn-sm btn-outline-secondary m-r-5"
-            >
+            <Button variant="outline-secondary" size="sm" className="m-r-5">
               <i className="fa fa-fw fa-rotate-180 fa-external-link-square"></i>
               Import
-            </button>
-            <button
-              type="button"
-              title="Export"
-              className="btn btn-sm btn-outline-secondary"
-            >
+            </Button>
+            <Button variant="outline-secondary" size="sm">
               <i className="fa fa-fw fa-external-link-square"></i>
               Export
-            </button>
+            </Button>
           </div>
         </div>
 
