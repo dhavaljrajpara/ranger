@@ -30,7 +30,7 @@ const LoginComp = () => {
           "X-Requested-With": "XMLHttpRequest"
         }
       });
-      let url = "index.html";
+      let url = "/";
       if (location.hash.length > 2) {
         url += location.hash;
       }

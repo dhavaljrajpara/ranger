@@ -50,7 +50,8 @@ module.exports = {
     alias: {
       Views: commonPaths.viewPath,
       Images: commonPaths.imagePath,
-      Utils: commonPaths.utilsPath
+      Utils: commonPaths.utilsPath,
+      Components : commonPaths.componentsPath
     }
   },
   plugins: [

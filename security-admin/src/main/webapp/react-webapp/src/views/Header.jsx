@@ -87,7 +87,7 @@ class Header extends Component {
               {` Security Zone `}
             </Link>
             <NavDropdown title={settings}>
-              <NavDropdown.Item href="">
+              <NavDropdown.Item href="/user">
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
               </NavDropdown.Item>
               <NavDropdown.Item href="">
