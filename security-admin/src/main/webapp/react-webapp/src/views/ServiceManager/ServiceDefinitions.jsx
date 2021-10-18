@@ -1,18 +1,22 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
 import ServiceDefinition from "./ServiceDefinition";
+import ModalPopup from "../ModalPopup";
 
 class ServiceDefinitions extends Component {
   state = {
     serviceDefs: [],
     services: [],
+    show: false,
   };
 
   componentDidMount() {
     this.fetchServiceDefs();
     this.fetchServices();
   }
-
+  ShowModal = (status) => {
+        this.setState({ show: status });
+       };
   fetchServiceDefs = async () => {
     let serviceDefsResp;
     try {
@@ -70,11 +74,15 @@ class ServiceDefinitions extends Component {
               <i className="fa fa-fw fa-rotate-180 fa-external-link-square"></i>
               Import
             </Button>
-            <Button variant="outline-secondary" size="sm">
+            <Button variant="outline-secondary" size="sm"  onClick={() => this.ShowModal(true)}>
               <i className="fa fa-fw fa-external-link-square"></i>
               Export
             </Button>
+            <ModalPopup show={this.state.show}
+             hide={this.ShowModal}
+           ></ModalPopup >
           </div>
+          
         </div>
 
         <div className="wrap policy-manager">

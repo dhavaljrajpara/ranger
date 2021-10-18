@@ -34,6 +34,8 @@ class Header extends Component {
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
         {/* {userProps.loginId} */}
+        {userProps?.loginId.charAt(0).toUpperCase() +
+          userProps?.loginId.slice(1)}
       </span>
     );
     const accessManager = (

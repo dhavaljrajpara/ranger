@@ -11,7 +11,9 @@ const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
-const UserListingComp = lazy(() => import("Views/UserGroupRoleListing/UserGroupRoleListing"));
+const UserListingComp = lazy(() =>
+  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+);
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -40,7 +42,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile"
+        url: "users/profile",
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
