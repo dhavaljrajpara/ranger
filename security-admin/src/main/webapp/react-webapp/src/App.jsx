@@ -11,9 +11,8 @@ const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
-const UserListingComp = lazy(() =>
-  import("Views/UserGroupRoleListing/UserGroupRoleListing")
-);
+const UserListingComp = lazy(() => import("Views/UserGroupRoleListing/UserGroupRoleListing"));
+const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -95,6 +94,12 @@ export default class App extends Component {
                       exact
                       path="/user"
                       component={UserListingComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/bigData"
+                      component={AuditLayout}
                       {...defaultProps}
                     />
                   </Switch>

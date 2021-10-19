@@ -77,7 +77,7 @@ class Header extends Component {
                 <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
               </NavDropdown.Item>
             </NavDropdown>
-            <Link to="/reports/audit/bigData" className="nav-link">
+            <Link to="/bigData" className="nav-link">
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
             </Link>
