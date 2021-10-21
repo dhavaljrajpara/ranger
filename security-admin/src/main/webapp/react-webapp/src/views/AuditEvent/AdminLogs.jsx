@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect } from "react";
+import { Badge, Spinner } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import {Loader} from "Components/CommonComponents";
-
+import { Loader } from "Components/CommonComponents";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -17,11 +17,9 @@ function Admin() {
       const logsResp = await fetchApi({
         url: "assets/report",
       });
-      adminlogs = logsResp.data.vXTrxLogs
+      adminlogs = logsResp.data.vXTrxLogs;
     } catch (error) {
-      console.error(
-        `Error occurred while fetching Admin logs! ${error}`
-      );
+      console.error(`Error occurred while fetching Admin logs! ${error}`);
     }
     setAdminLogs(adminlogs);
     setLoader(false);
@@ -48,6 +46,53 @@ function Admin() {
       {
         Header: "Actions",
         accessor: "action", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          var html = "";
+          if (rawValue.value == "create") {
+            html = (
+              <Badge variant="success">
+                {" "}
+                {rawValue.value.charAt(0).toUpperCase() +
+                  rawValue.value.slice(1)}{" "}
+              </Badge>
+            );
+          } else if (rawValue.value == "update") {
+            html = (
+              <Badge variant="warning">
+                {" "}
+                {rawValue.value.charAt(0).toUpperCase() +
+                  rawValue.value.slice(1)}{" "}
+              </Badge>
+            );
+          } else if (rawValue.value == "delete") {
+            html = (
+              <Badge variant="danger">
+                {" "}
+                {rawValue.value.charAt(0).toUpperCase() +
+                  rawValue.value.slice(1)}{" "}
+              </Badge>
+            );
+          } else if (rawValue.value == "IMPORT START") {
+            html = (
+              <Badge variant="info">
+                {" "}
+                {rawValue.value.charAt(0).toUpperCase() +
+                  rawValue.value.slice(1)}{" "}
+              </Badge>
+            );
+          } else if (rawValue.value == "IMPORT END") {
+            html = (
+              <Badge variant="info">
+                {" "}
+                {rawValue.value.charAt(0).toUpperCase() +
+                  rawValue.value.slice(1)}{" "}
+              </Badge>
+            );
+          } else {
+            html = <Badge variant="secondary"> {rawValue.value} </Badge>;
+          }
+          return html;
+        },
       },
       {
         Header: "Session ID",
@@ -56,7 +101,11 @@ function Admin() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={adminListingData} columns={columns} />;
+  return loader ? (
+    <Loader />
+  ) : (
+    <XATableLayout data={adminListingData} columns={columns} />
+  );
 }
 
 export default Admin;
