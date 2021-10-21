@@ -11,11 +11,20 @@ const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
-const UserListingComp = lazy(() => import("Views/UserGroupRoleListing/UserGroupRoleListing"));
+const UserListingComp = lazy(() =>
+  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+);
 const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const UserForm = lazy(() => import("Views/UserGroupRoleListing/users_details/UserForm"));
-const GroupForm = lazy(() => import("Views/UserGroupRoleListing/groups_details/GroupForm"));
-const RoleForm = lazy(() => import("Views/UserGroupRoleListing/role_details/RoleForm"));
+const UserForm = lazy(() =>
+  import("Views/UserGroupRoleListing/users_details/UserForm")
+);
+const GroupForm = lazy(() =>
+  import("Views/UserGroupRoleListing/groups_details/GroupForm")
+);
+const RoleForm = lazy(() =>
+  import("Views/UserGroupRoleListing/role_details/RoleForm")
+);
+const PolicyListing = lazy(() => import("Views/PolicyListing/PolicyListing"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -32,7 +41,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true,
+      loader: true
     };
   }
 
@@ -44,7 +53,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile",
+        url: "users/profile"
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -55,7 +64,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false,
+      loader: false
     });
   };
 
@@ -85,6 +94,12 @@ export default class App extends Component {
                       exact
                       path="/userprofile"
                       component={UserProfileComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/policies/:policyId"
+                      component={PolicyListing}
                       {...defaultProps}
                     />
                     <AuthRoute

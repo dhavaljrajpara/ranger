@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import folderLogo from "Images/folder-grey.png";
@@ -22,7 +23,7 @@ class ServiceDefinition extends Component {
                     <span className="float-left">
                       <img
                         src={folderLogo}
-                        alt="Ranger logo"
+                        alt="Folder logo"
                         className="m-r-5"
                       />
                       {this.state.serviceDef.name}
@@ -48,7 +49,9 @@ class ServiceDefinition extends Component {
                   <td>
                     <div className="clearfix">
                       <span className="float-left">
-                        <a className="service-name">{s.name}</a>
+                        <Link to={`/policies/${s.id}`} className="service-name">
+                          {s.name}
+                        </Link>
                       </span>
                       <span className="float-right">
                         <Button

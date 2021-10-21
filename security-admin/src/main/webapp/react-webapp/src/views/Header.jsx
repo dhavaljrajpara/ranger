@@ -66,7 +66,7 @@ class Header extends Component {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <NavDropdown title={accessManager}>
-              <NavDropdown.Item href="">
+              <NavDropdown.Item href="/">
                 <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
                 Policies
               </NavDropdown.Item>
