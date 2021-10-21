@@ -1,31 +1,40 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
 import {Loader} from "Components/CommonComponents";
 
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchPluginStatusInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchPluginStatusInfo = async () => {
+  const fetchPluginStatusInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "plugins/plugins/info",
-      });
-      logs = logsResp.data.pluginInfoList
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Plugin Status logs! ${error}`
-      );
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "plugins/plugins/info",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        logs = logsResp.data.pluginInfoList;
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching Plugin Status logs! ${error}`
+        );
+      }
+      setPluginStatusLogs(logs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setPluginStatusLogs(logs);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -76,7 +85,7 @@ function Plugin_Status() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={pluginStatusListingData} columns={columns} />;
+  return loader ? <Loader /> : <XATableLayout data={pluginStatusListingData} columns={columns} fetchData={fetchPluginStatusInfo} pageCount={pageCount}/>;
 }
 
 export default Plugin_Status;

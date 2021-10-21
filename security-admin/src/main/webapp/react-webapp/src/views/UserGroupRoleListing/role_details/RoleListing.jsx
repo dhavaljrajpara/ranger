@@ -1,9 +1,8 @@
 import React, { Component, useState, useEffect } from "react";
 import { Badge, Spinner } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import {UserRoles} from 'Utils/XAEnums';
-import {Loader} from "Components/CommonComponents";
-
+import { UserRoles } from "Utils/XAEnums";
+import { Loader } from "Components/CommonComponents";
 
 function Roles() {
   const [roleListingData, setRoleData] = useState([]);
@@ -19,11 +18,9 @@ function Roles() {
       const roleResp = await fetchApi({
         url: "roles/lookup/roles",
       });
-      roleData = roleResp.data.roles
+      roleData = roleResp.data.roles;
     } catch (error) {
-      console.error(
-        `Error occurred while fetching Role list! ${error}`
-      );
+      console.error(`Error occurred while fetching Role list! ${error}`);
     }
     setRoleData(roleData);
     setLoader(false);
@@ -32,28 +29,29 @@ function Roles() {
   const columns = React.useMemo(
     () => [
       {
-        Header: "Column 1",
+        Header: "Select",
         accessor: "select", // accessor is the "key" in the data
       },
       {
         Header: "Role Name",
         accessor: "name",
       },
-      {
-        Header: "Users",
-        accessor: "users",
-      },
-      {
-        Header: "Groups",
-        accessor: "groups",
-      },
-      {
-        Header: "Roles",
-        accessor: "roles",
-      },
+      // {
+      //   Header: "Users",
+      //   accessor: "users",
+      // },
+      // {
+      //   Header: "Groups",
+      //   accessor: "groups",
+      // },
+      // {
+      //   Header: "Roles",
+      //   accessor: "roles",
+      // },
     ],
     []
   );
+  return null;
   return loader ? <Loader /> : <XATableLayout data={roleListingData} columns={columns} />;
 }
 

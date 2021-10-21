@@ -1,30 +1,40 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge, Spinner } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
+import { ClassTypes } from "../../utils/XAEnums";
+import dateFormat from "dateformat";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchAdminLogsInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchAdminLogsInfo = async () => {
+  const fetchAdminLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let adminlogs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "assets/report",
-      });
-      adminlogs = logsResp.data.vXTrxLogs;
-    } catch (error) {
-      console.error(`Error occurred while fetching Admin logs! ${error}`);
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "assets/report",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        adminlogs = logsResp.data.vXTrxLogs;
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(`Error occurred while fetching Admin logs! ${error}`);
+      }
+      setAdminLogs(adminlogs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setAdminLogs(adminlogs);
-    setLoader(false);
-  };
-
+  },[]);
   const columns = React.useMemo(
     () => [
       {
@@ -34,6 +44,21 @@ function Admin() {
       {
         Header: "Audit Type",
         accessor: "objectClassType", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          var label = "";
+          if (rawValue.value == 1057) {
+            return (label = ClassTypes.CLASS_TYPE_RANGER_ROLE.label);
+          } else if (rawValue.value == 1020) {
+            return (label = ClassTypes.CLASS_TYPE_RANGER_POLICY.label);
+          } else if (rawValue.value == 1003) {
+            return (label = ClassTypes.CLASS_TYPE_XA_USER.label);
+          } else if (rawValue.value == 1030) {
+            return (label = ClassTypes.CLASS_TYPE_RANGER_SERVICE.label);
+          } else if (rawValue.value == 7) {
+            return (label = ClassTypes.CLASS_TYPE_PASSWORD_CHANGE.label);
+          }
+          return label;
+        },
       },
       {
         Header: "User",
@@ -42,6 +67,11 @@ function Admin() {
       {
         Header: "Date ( India Standard Time )",
         accessor: "createDate", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          const date = rawValue.value;
+          const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
+          return newdate;
+        },
       },
       {
         Header: "Actions",
@@ -104,7 +134,7 @@ function Admin() {
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={adminListingData} columns={columns} />
+    <XATableLayout data={adminListingData} columns={columns} fetchData={fetchAdminLogsInfo} pageCount={pageCount}/>
   );
 }
 

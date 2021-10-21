@@ -1,33 +1,43 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
 import { AuthStatus } from "../../utils/XAEnums";
 import { AuthType } from "../../utils/XAEnums";
+import dateFormat from "dateformat";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchLoginSessionLogsInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchLoginSessionLogsInfo = async () => {
+  const fetchLoginSessionLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "xusers/authSessions",
-      });
-      logs = logsResp.data.vXAuthSessions;
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Login Session logs! ${error}`
-      );
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "xusers/authSessions",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        logs = logsResp.data.vXAuthSessions;
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching Login Session logs! ${error}`
+        );
+      }
+      setLoginSessionLogs(logs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setLoginSessionLogs(logs);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -80,10 +90,23 @@ function Login_Sessions() {
       {
         Header: "User Agent",
         accessor: "requestUserAgent", // accessor is the "key" in the data
+        Cell: (rawValue, model) => {
+          var label = "";
+          if (rawValue.value) {
+            return (label = rawValue.value);
+          } else {
+            return "--";
+          }
+        },
       },
       {
         Header: "Login Time ( India Standard Time )",
         accessor: "authTime", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          const date = rawValue.value;
+          const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
+          return newdate;
+        },
       },
     ],
     []
@@ -91,7 +114,7 @@ function Login_Sessions() {
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={loginSessionListingData} columns={columns} />
+    <XATableLayout data={loginSessionListingData} columns={columns} fetchData={fetchLoginSessionLogsInfo} pageCount={pageCount}/>
   );
 }
 

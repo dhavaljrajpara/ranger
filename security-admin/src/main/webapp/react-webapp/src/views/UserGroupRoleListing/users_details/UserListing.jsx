@@ -1,33 +1,45 @@
-import React, { Component, useState, useEffect } from "react";
-import { Badge, Button, Spinner } from "react-bootstrap";
+import React, { Component, useState, useCallback, useRef } from "react";
+import { Badge, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { UserRoles } from "Utils/XAEnums";
 import { UserSource } from "Utils/XAEnums";
 import { UserTypes } from "Utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
+import { useHistory } from "react-router-dom";
 
 function Users() {
+  let history = useHistory();
   const [userListingData, setUserData] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchUserInfo();
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0)
+
+  const fetchUserInfo = useCallback(async ({ pageSize, pageIndex }) => {
+    let userData = [];
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const userResp = await fetchApi({
+          url: "xusers/users",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          }
+        });
+        userData = userResp.data.vXUsers;
+        totalCount = userResp.data.totalCount;
+      } catch (error) {
+        console.error(`Error occurred while fetching User list! ${error}`);
+      }
+      setUserData(userData);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
+    }
   }, []);
 
-  const fetchUserInfo = async () => {
-    let userData = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const userResp = await fetchApi({
-        url: "xusers/users",
-      });
-      userData = userResp.data.vXUsers;
-    } catch (error) {
-      console.error(`Error occurred while fetching User list! ${error}`);
-    }
-    setUserData(userData);
-    setLoader(false);
-  };
 
   const columns = React.useMemo(
     () => [
@@ -79,13 +91,23 @@ function Users() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return <Badge variant="success">{rawValue} </Badge>;
+            return <Badge variant="success">{rawValue.value} </Badge>;
           } else return "--";
         },
       },
       {
         Header: "Groups",
         accessor: "groupNameList", // accessor is the "key" in the data
+        /*Cell:(rawValue, model) => {
+          if(rawValue.value && rawValue.value.length > 0){
+            Object.keys(model).map((rawValue, name)=>{
+
+            })
+          }
+          else {
+            return "--";
+          }
+        },*/
       },
       {
         Header: "Visibility",
@@ -130,10 +152,22 @@ function Users() {
     ],
     []
   );
+  const addUser = () => {
+    history.push("/userCreate");
+  }
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={userListingData} columns={columns} />
+    <div>
+      <h1>User List</h1>
+      <Row className='mb-4'>
+        <Col md={9}></Col>
+        <Col md={3}><Button onClick={addUser}>Add User</Button></Col>
+      </Row>
+      <div>
+        <XATableLayout data={userListingData} columns={columns} fetchData={fetchUserInfo} pageCount={pageCount}/>
+      </div>
+    </div>
   );
 }
 

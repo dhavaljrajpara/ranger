@@ -1,32 +1,43 @@
-import React, { Component, useState, useEffect } from "react";
-import { Badge, Spinner } from "react-bootstrap";
+import React, { Component, useState, useCallback, useRef } from "react";
+import { Badge, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
+import { useHistory } from "react-router-dom";
 
 function Groups() {
+  let history = useHistory();
   const [groupListingData, setGroupData] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchGroupInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchGroupInfo = async () => {
+  const fetchGroupInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let groupData = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const groupResp = await fetchApi({
-        url: "xusers/groups",
-      });
-      groupData = groupResp.data.vXGroups;
-    } catch (error) {
-      console.error(`Error occurred while fetching Group list! ${error}`);
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const groupResp = await fetchApi({
+          url: "xusers/groups",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          }
+        });
+        groupData = groupResp.data.vXGroups;
+        totalCount = groupResp.data.totalCount;
+      } catch (error) {
+        console.error(`Error occurred while fetching Group list! ${error}`);
+      }
+      setGroupData(groupData);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setGroupData(groupData);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -63,7 +74,7 @@ function Groups() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return <Badge variant="success">{rawValue} </Badge>;
+            return <Badge variant="success">{rawValue.value} </Badge>;
           } else return "--";
         },
       },
@@ -127,10 +138,22 @@ function Groups() {
     ],
     []
   );
+  const addGroup = () => {
+    history.push("/groupCreate");
+  }
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={groupListingData} columns={columns} />
+    <div>
+      <h1>Group List</h1>
+      <Row className='mb-4'>
+        <Col md={9}></Col>
+        <Col md={3}><Button onClick={addGroup}>Add Group</Button></Col>
+      </Row>
+      <div>
+        <XATableLayout data={groupListingData} columns={columns} fetchData={fetchGroupInfo} pageCount={pageCount}/>
+      </div>
+    </div>
   );
 }
 

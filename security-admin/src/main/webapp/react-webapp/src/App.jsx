@@ -13,6 +13,9 @@ const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
 const UserListingComp = lazy(() => import("Views/UserGroupRoleListing/UserGroupRoleListing"));
 const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const UserForm = lazy(() => import("Views/UserGroupRoleListing/users_details/UserForm"));
+const GroupForm = lazy(() => import("Views/UserGroupRoleListing/groups_details/GroupForm"));
+const RoleForm = lazy(() => import("Views/UserGroupRoleListing/role_details/RoleForm"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -100,6 +103,24 @@ export default class App extends Component {
                       exact
                       path="/bigData"
                       component={AuditLayout}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/userCreate"
+                      component={UserForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/groupCreate"
+                      component={GroupForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/roleCreate"
+                      component={RoleForm}
                       {...defaultProps}
                     />
                   </Switch>

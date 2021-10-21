@@ -1,31 +1,37 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
-import {Loader} from "Components/CommonComponents";
-
+import { Loader } from "Components/CommonComponents";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchAccessLogsInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchAccessLogsInfo = async () => {
+  const fetchAccessLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "assets/accessAudit",
-      });
-      logs = logsResp.data.vXAccessAudits
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Access logs! ${error}`
-      );
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "assets/accessAudit",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        logs = logsResp.data.vXAccessAudits;
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(`Error occurred while fetching Access logs! ${error}`);
+      }
+      setAccessLogs(logs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setAccessLogs(logs);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -100,7 +106,11 @@ function Access() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={accessListingData} columns={columns} />;
+  return loader ? (
+    <Loader />
+  ) : (
+    <XATableLayout data={accessListingData} columns={columns} fetchData={fetchAccessLogsInfo} pageCount={pageCount}/>
+  );
 }
 
 export default Access;

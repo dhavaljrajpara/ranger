@@ -1,31 +1,40 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
 import {Loader} from "Components/CommonComponents";
 
 
 function Plugins() {
   const [pluginsListingData, setPluginsLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchPluginsInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchPluginsInfo = async () => {
+  const fetchPluginsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "assets/exportAudit",
-      });
-      logs = logsResp.data.vXPolicyExportAudits
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Plugins logs! ${error}`
-      );
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "assets/exportAudit",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        logs = logsResp.data.vXPolicyExportAudits
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching Plugins logs! ${error}`
+        );
+      }
+      setPluginsLogs(logs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setPluginsLogs(logs);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -60,7 +69,8 @@ function Plugins() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={pluginsListingData} columns={columns} />;
+  return loader ? <Loader /> :
+  <XATableLayout data={pluginsListingData} columns={columns} fetchData={fetchPluginsInfo} pageCount={pageCount}/>;
 }
 
 export default Plugins;

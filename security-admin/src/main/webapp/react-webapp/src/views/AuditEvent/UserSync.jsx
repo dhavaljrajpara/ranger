@@ -1,31 +1,40 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
 import {Loader} from "Components/CommonComponents";
 
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
-  const [loader, setLoader] = useState(true);
-  useEffect(() => {
-    fetchUserSyncInfo();
-  }, []);
+  const [loader, setLoader] = useState(false);
+  const [pageCount, setPageCount] = React.useState(0);
+  const fetchIdRef = useRef(0);
 
-  const fetchUserSyncInfo = async () => {
+  const fetchUserSyncInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      const logsResp = await fetchApi({
-        url: "assets/ugsyncAudits",
-      });
-      logs = logsResp.data.vxUgsyncAuditInfoList
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching User Sync logs! ${error}`
-      );
+    let totalCount= 0;
+    const fetchId = ++fetchIdRef.current;
+    if (fetchId === fetchIdRef.current) {
+      try {
+        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+        const logsResp = await fetchApi({
+          url: "assets/ugsyncAudits",
+          params:{
+            pageSize: pageSize,
+            startIndex: pageIndex * pageSize,
+          },
+        });
+        logs = logsResp.data.vxUgsyncAuditInfoList;
+        totalCount = logsResp.data.totalCount;
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching User Sync logs! ${error}`
+        );
+      }
+      setUserSyncLogs(logs);
+      setPageCount(Math.ceil(totalCount / pageSize));
+      setLoader(false);
     }
-    setUserSyncLogs(logs);
-    setLoader(false);
-  };
+  },[]);
 
   const columns = React.useMemo(
     () => [
@@ -64,7 +73,7 @@ function User_Sync() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={userSyncListingData} columns={columns} />;
+  return loader ? <Loader /> : <XATableLayout data={userSyncListingData} columns={columns} fetchData={fetchUserSyncInfo} pageCount={pageCount}/>;
 }
 
 export default User_Sync;
