@@ -190,15 +190,18 @@ function PolicyListing() {
   return loader ? (
     <Loader />
   ) : (
-    <div className="wrap policy-manager">
-      <div className="row">
-        <div className="col-sm-12">
-          <XATableLayout
-            data={policyListingData}
-            columns={columns}
-            fetchData={fetchPolicyInfo}
-            pageCount={pageCount}
-          />
+    <div>
+      <h4 class="wrap-header bold">List of Policies </h4>
+      <div className="wrap policy-manager">
+        <div className="row">
+          <div className="col-sm-12">
+            <XATableLayout
+              data={policyListingData}
+              columns={columns}
+              fetchData={fetchPolicyInfo}
+              pageCount={pageCount}
+            />
+          </div>
         </div>
       </div>
     </div>
