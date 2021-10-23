@@ -14,12 +14,12 @@ class Header extends Component {
     e.preventDefault();
     try {
       const { fetchApi } = await import("Utils/fetchAPI");
-      const profResp = await fetchApi({
+      await fetchApi({
         url: "logout",
         baseURL: "",
         headers: {
-          "cache-control": "no-cache",
-        },
+          "cache-control": "no-cache"
+        }
       });
       setUserProfile(null);
       window.location.replace("login.html");
@@ -66,16 +66,16 @@ class Header extends Component {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <NavDropdown title={accessManager}>
-              <NavDropdown.Item href="/">
+              <Link to="/" className="dropdown-item">
                 <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
                 Policies
-              </NavDropdown.Item>
-              <NavDropdown.Item href="">
+              </Link>
+              <Link to="/tag_policies" className="dropdown-item">
                 <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
-              </NavDropdown.Item>
-              <NavDropdown.Item href="">
+              </Link>
+              <Link to="/reports" className="dropdown-item">
                 <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
-              </NavDropdown.Item>
+              </Link>
             </NavDropdown>
             <Link to="/bigData" className="nav-link">
               <i className="fa fa-fw fa-file-o"></i>
@@ -89,22 +89,26 @@ class Header extends Component {
               {` Security Zone `}
             </Link>
             <NavDropdown title={settings}>
-              <NavDropdown.Item href="/user">
+              <Link to="/user" className="dropdown-item">
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
-              </NavDropdown.Item>
-              <NavDropdown.Item href="">
+              </Link>
+              <Link to="/permission" className="dropdown-item">
                 <i className="fa-fw fa fa-file-o m-r-xs"></i> Permissions
-              </NavDropdown.Item>
+              </Link>
             </NavDropdown>
           </Nav>
           <Nav>
             <NavDropdown title={loginId} id="user-dropdown" alignRight>
-              <NavDropdown.Item href="/userprofile">
+              <Link to="/userprofile" className="dropdown-item">
                 <i className="fa fa-user"></i> Profile
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={this.handleLogout}>
+              </Link>
+              <Link
+                to="/logout"
+                onClick={this.handleLogout}
+                className="dropdown-item"
+              >
                 <i className="fa fa-power-off"></i> Logout
-              </NavDropdown.Item>
+              </Link>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

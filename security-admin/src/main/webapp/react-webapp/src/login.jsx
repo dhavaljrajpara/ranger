@@ -12,7 +12,7 @@ const LoginComp = () => {
   const onSubmit = async (values) => {
     let data = {
       username: values.userName,
-      password: values.password,
+      password: values.password
     };
     const formData = Object.keys(data)
       .map((key) => `${key}=${encodeURIComponent(data[key])}`)
@@ -26,13 +26,14 @@ const LoginComp = () => {
         data: formData,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-          "X-Requested-With": "XMLHttpRequest",
-        },
+          "X-Requested-With": "XMLHttpRequest"
+        }
       });
-      let url = "/";
+      let url = "index.html";
       if (location.hash.length > 2) {
-        url = location.hash;
+        url += location.hash;
       }
+      window.location.replace(url);
       /* setTimeout(() => {
       
           toast.info("Login Succesfully", {
@@ -64,7 +65,7 @@ const LoginComp = () => {
             form,
             submitting,
             pristine,
-            values,
+            values
           }) => (
             <form onSubmit={handleSubmit}>
               <div className="fields">
