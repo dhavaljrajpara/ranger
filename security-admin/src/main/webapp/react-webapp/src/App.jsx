@@ -24,6 +24,7 @@ const GroupForm = lazy(() =>
 const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
+const PermissionsComp = lazy(() => import("Views/Permissions"));
 const PolicyListing = lazy(() => import("Views/PolicyListing/PolicyListing"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
@@ -41,7 +42,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true
+      loader: true,
     };
   }
 
@@ -53,7 +54,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile"
+        url: "users/profile",
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -64,7 +65,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false
+      loader: false,
     });
   };
 
@@ -136,6 +137,12 @@ export default class App extends Component {
                       exact
                       path="/roleCreate"
                       component={RoleForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/permissions"
+                      component={PermissionsComp}
                       {...defaultProps}
                     />
                   </Switch>

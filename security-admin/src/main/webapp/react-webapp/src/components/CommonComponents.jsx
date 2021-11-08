@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Component } from "react";
+import { Badge, ThemeProvider } from "react-bootstrap";
 
 const Loader = () => {
   return (
@@ -32,4 +33,43 @@ const Loader = () => {
     </div>
   );
 };
+export class MoreLess extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: props.data.length > 4 ? props.data.slice(0, 4) : props.data,
+      show: true,
+    };
+  }
+
+  handleShowMoreClick = () => {
+    let show = !this.state.show;
+    let data = show ? this.props.data.slice(0, 4) : this.props.data;
+    this.setState({ show, data });
+  };
+
+  render() {
+    return (
+      <div>
+        {this.state.data.map((name) => {
+          return (
+            <Badge variant="info" className="usersbadge">
+              {name}
+            </Badge>
+          );
+        })}
+        <a onClick={this.handleShowMoreClick}>
+          {this.props.data.length > 4 ? (
+            this.state.show ? (
+              <a className="More"> + More..</a>
+            ) : (
+              <a className="Less"> - Less..</a>
+            )
+          ) : null}
+        </a>
+      </div>
+    );
+  }
+}
+
 export { Loader };

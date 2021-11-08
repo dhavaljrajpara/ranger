@@ -317,3 +317,51 @@ div#center div.letter_container_7 {
   background-color: #9bb922;
   color: white;
 }
+
+/* Permissions */
+.permissions {
+  font-size: 13px !important;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+.permissionbtn {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #d9d9d9;
+  color: #424242;
+  background-image: none;
+  background-color: white;
+  margin-left: 4rem;
+}
+
+.permissionbtn:hover {
+  color: #0b7fad !important;
+  border-color: #0b7fad !important;
+  background-color: #fff !important;
+  outline: none !important;
+}
+a:focus,
+a:hover,
+a.active,
+a:active {
+  color: #2996ba;
+}
+a {
+  color: #212529;
+}
+.usersbadge {
+  margin: 2px;
+}
+.headerperm {
+  text-align-last: center;
+  font-size: 13px;
+}
+
+.More {
+  color: #0b7fad;
+}
+.Less {
+  color: #0b7fad;
+}
