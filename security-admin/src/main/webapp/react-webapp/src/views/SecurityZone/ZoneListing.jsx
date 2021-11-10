@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import noZoneImage from "Images/defult_zone.png";
+import { Link } from "react-router-dom";
 
 class ZoneListing extends React.Component {
   state = {
@@ -40,9 +41,9 @@ class ZoneListing extends React.Component {
                 <h4>Security Zones</h4>
               </div>
               <div className="float-right">
-                <a href="/zones/create" className="btn btn-secondary btn-sm">
+                <Link to="/zones/create" className="btn btn-secondary btn-sm">
                   <i className="fa-fw fa fa-plus"></i>
-                </a>
+                </Link>
               </div>
             </div>
             <div className="row">
@@ -153,7 +154,6 @@ class ZoneListing extends React.Component {
                           </button>
                         </h2>
                       </div>
-
                       <div
                         id="zone-tag-services-body"
                         className="collapse show"
@@ -162,6 +162,7 @@ class ZoneListing extends React.Component {
                       >
                         <div className="card-body"></div>
                       </div>
+                      Licensed
                     </div>
                   </div>
                   <div className="accordion mt-3" id="zone-services-accordion">

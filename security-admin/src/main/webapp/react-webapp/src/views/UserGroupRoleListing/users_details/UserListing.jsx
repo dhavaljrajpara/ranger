@@ -13,21 +13,21 @@ function Users() {
   const [userListingData, setUserData] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
-  const fetchIdRef = useRef(0)
+  const fetchIdRef = useRef(0);
 
   const fetchUserInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let userData = [];
-    let totalCount= 0;
-    const fetchId = ++fetchIdRef.current
+    let totalCount = 0;
+    const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const userResp = await fetchApi({
           url: "xusers/users",
-          params:{
+          params: {
             pageSize: pageSize,
             startIndex: pageIndex * pageSize,
-          }
+          },
         });
         userData = userResp.data.vXUsers;
         totalCount = userResp.data.totalCount;
@@ -39,7 +39,6 @@ function Users() {
       setLoader(false);
     }
   }, []);
-
 
   const columns = React.useMemo(
     () => [
@@ -97,17 +96,12 @@ function Users() {
       },
       {
         Header: "Groups",
-        accessor: "groupNameList", // accessor is the "key" in the data
-        /*Cell:(rawValue, model) => {
-          if(rawValue.value && rawValue.value.length > 0){
-            Object.keys(model).map((rawValue, name)=>{
-
-            })
-          }
-          else {
-            return "--";
-          }
-        },*/
+        accessor: "groupNameList",
+        Cell: (rawValue) => {
+          if (rawValue.value.length != 0) {
+            return <Badge variant="info">{rawValue.value} </Badge>;
+          } else return "--";
+        },
       },
       {
         Header: "Visibility",
@@ -154,18 +148,25 @@ function Users() {
   );
   const addUser = () => {
     history.push("/userCreate");
-  }
+  };
   return loader ? (
     <Loader />
   ) : (
     <div>
       <h1>User List</h1>
-      <Row className='mb-4'>
+      <Row className="mb-4">
         <Col md={9}></Col>
-        <Col md={3}><Button onClick={addUser}>Add User</Button></Col>
+        <Col md={3}>
+          <Button onClick={addUser}>Add User</Button>
+        </Col>
       </Row>
       <div>
-        <XATableLayout data={userListingData} columns={columns} fetchData={fetchUserInfo} pageCount={pageCount}/>
+        <XATableLayout
+          data={userListingData}
+          columns={columns}
+          fetchData={fetchUserInfo}
+          pageCount={pageCount}
+        />
       </div>
     </div>
   );

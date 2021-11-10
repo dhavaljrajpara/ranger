@@ -365,3 +365,166 @@ a {
 .Less {
   color: #0b7fad;
 }
+
+/*Security Zone*/
+input,
+textarea {
+  flex: 1;
+  padding: 3px 5px;
+  font-size: 1em;
+  margin-left: 29px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.zonename {
+  vertical-align: top;
+  color: #333;
+  width: 110px;
+  min-width: 60px;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: -12px;
+}
+.lblusergroups {
+  vertical-align: top;
+  color: #333;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: -26px;
+}
+.lblaudusergroups {
+  vertical-align: top;
+  color: #333;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: -26px;
+}
+.lbltag {
+  vertical-align: top;
+  color: #333;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: -26px;
+}
+.lblresource {
+  vertical-align: top;
+  color: #333;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: -69px;
+}
+.txtaudusersgroups {
+  width: 381px;
+  margin-left: 127px;
+  margin-top: -40px;
+}
+.txtusersgroups {
+  width: 381px;
+  margin-left: 127px;
+  margin-top: -40px;
+}
+.zonenameinput {
+  width: 23.5rem;
+  height: calc(1.5em + 0.75rem + 2px);
+}
+
+.zonedescription {
+  vertical-align: top;
+  color: #333;
+  margin-left: -8px;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+}
+.zonedescinput {
+  width: 23.5rem;
+  height: min-content;
+}
+
+form {
+  max-width: 1300px;
+  margin: 10px auto;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  position: relative;
+  background-color: white;
+}
+.zonedetails {
+  margin-left: 187px;
+}
+hr.zoneheader {
+  border-top: 1px solid #0b7fad;
+  margin-top: 4px;
+}
+header {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 26px;
+  color: #333;
+}
+.savebtn {
+  margin-left: 298px;
+}
+.cancelbtn {
+  margin-left: 11px;
+}
+.zoneusers {
+  vertical-align: top;
+  color: #333;
+  width: 110px;
+  min-width: 60px;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+}
+
+.zoneadmin {
+  width: 381px;
+  margin-left: 127px;
+  margin-top: -40px;
+}
+
+.zoneservices {
+  width: 598px;
+  margin-left: 127px;
+  margin-top: -40px;
+}
+
+.error {
+  font-size: 13px;
+  display: flex;
+  color: black;
+  flex-flow: row nowrap;
+  margin-left: 126px;
+}
+
+.adminusergroups {
+  vertical-align: top;
+  color: #333;
+  width: 110px;
+  min-width: 60px;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+}
+.css-xb97g8:hover {
+  background-color: black;
+}
+#btnplus {
+  background-color: white;
+  border: 1px solid #d9d9d9;
+  padding: 4px 8px;
+  font-size: 11.05px;
+}
+
+#btnplus:hover {
+  border: 1px solid #0b7fad;
+  color: #0b7fad;
+}

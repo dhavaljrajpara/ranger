@@ -11,6 +11,7 @@ const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
+const CreateZoneComp = lazy(() => import("Views/SecurityZone/CreateZone"));
 const UserListingComp = lazy(() =>
   import("Views/UserGroupRoleListing/UserGroupRoleListing")
 );
@@ -107,6 +108,12 @@ export default class App extends Component {
                       exact
                       path="/zones"
                       component={ZoneListingComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/zones/create"
+                      component={CreateZoneComp}
                       {...defaultProps}
                     />
                     <AuthRoute
