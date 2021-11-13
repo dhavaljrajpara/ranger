@@ -4,6 +4,7 @@ import {
   RANGER_REST_CSRF_ENABLED,
   RANGER_REST_CSRF_CUSTOM_HEADER,
   RANGER_REST_CSRF_IGNORE_METHODS,
+  CSRFToken,
 } from "./appConstants";
 
 // Global axios defaults
@@ -12,6 +13,7 @@ axios.defaults.baseURL = "/service/";
 let csrfEnabled = false;
 let restCsrfCustomHeader = null;
 let restCsrfIgnoreMethods = [];
+let csrfToken =  " ";
 
 async function fetchApi(axiosConfig = {}, otherConf = {}) {
   if (
@@ -22,7 +24,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
     restCsrfCustomHeader
   ) {
     axiosConfig.headers = {
-      ...{ [restCsrfCustomHeader]: "" },
+      ...{ [restCsrfCustomHeader]: csrfToken },
       ...axiosConfig.headers,
     };
   }
@@ -76,6 +78,9 @@ const handleCSRFHeaders = (data) => {
     restCsrfIgnoreMethods = (data[RANGER_REST_CSRF_IGNORE_METHODS] || "")
       .split(",")
       .map((val) => (val || "").toLowerCase().trim());
+  }
+  if (data.hasOwnProperty(CSRFToken)) {
+    csrfToken = data[CSRFToken];
   }
 };
 
