@@ -1,5 +1,5 @@
 import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge, Button, Row, Col } from "react-bootstrap";
+import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { UserRoles } from "Utils/XAEnums";
 import { UserSource } from "Utils/XAEnums";
@@ -8,12 +8,17 @@ import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
 import { useHistory } from "react-router-dom";
 
+import { fetchApi } from "Utils/fetchAPI";
+import { toast } from "react-toastify";
+
 function Users() {
   let history = useHistory();
   const [userListingData, setUserData] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const selectedRows = useRef([]);
+  const [showModal, setConfirmModal] = useState(false);
 
   const fetchUserInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let userData = [];
@@ -21,13 +26,12 @@ function Users() {
     const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const userResp = await fetchApi({
           url: "xusers/users",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         userData = userResp.data.vXUsers;
         totalCount = userResp.data.totalCount;
@@ -40,19 +44,54 @@ function Users() {
     }
   }, []);
 
+  const handleDeleteBtnClick = () => {
+    if (selectedRows.current.length > 0) {
+      toggleConfirmModal();
+    } else {
+      toast.info("Please select atleast one user!!");
+    }
+  };
+
+  const handleDeleteClick = async () => {
+    const selectedData = selectedRows.current;
+    let errorMsg = "";
+    if (selectedData.length > 0) {
+      for (const { original } of selectedData) {
+        try {
+          await fetchApi({
+            url: `xusers/secure/users/id/${original.id}`,
+            method: "DELETE",
+            params: {
+              forceDelete: true
+            }
+          });
+        } catch (error) {
+          if (error.response.data.msgDesc) {
+            errorMsg += error.response.data.msgDesc + "\n";
+          } else {
+            errorMsg +=
+              `Error occurred during deleting Users: ${original.name}` + "\n";
+          }
+        }
+      }
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.success("User deleted successfully!");
+      }
+      toggleConfirmModal();
+    }
+  };
+
   const columns = React.useMemo(
     () => [
       {
-        Header: "Select",
-        accessor: "select", // accessor is the "key" in the data
-      },
-      {
         Header: "User Name",
-        accessor: "name",
+        accessor: "name"
       },
       {
         Header: "Email Address",
-        accessor: "emailAddress", // accessor is the "key" in the data
+        accessor: "emailAddress" // accessor is the "key" in the data
       },
       {
         Header: "Role",
@@ -63,7 +102,7 @@ function Users() {
             return <Badge variant="info">{UserRoles[role].label} </Badge>;
           }
           return "--";
-        },
+        }
       },
       {
         Header: "User Source",
@@ -83,7 +122,7 @@ function Users() {
                 </Badge>
               );
           } else return "--";
-        },
+        }
       },
       {
         Header: "Sync Source",
@@ -92,7 +131,7 @@ function Users() {
           if (rawValue.value) {
             return <Badge variant="success">{rawValue.value} </Badge>;
           } else return "--";
-        },
+        }
       },
       {
         Header: "Groups",
@@ -101,7 +140,7 @@ function Users() {
           if (rawValue.value.length != 0) {
             return <Badge variant="info">{rawValue.value} </Badge>;
           } else return "--";
-        },
+        }
       },
       {
         Header: "Visibility",
@@ -121,7 +160,7 @@ function Users() {
                 </Badge>
               );
           } else return "--";
-        },
+        }
       },
       {
         Header: "Sync Details",
@@ -141,13 +180,19 @@ function Users() {
           } else {
             return " -- ";
           }
-        },
-      },
+        }
+      }
     ],
     []
   );
   const addUser = () => {
     history.push("/userCreate");
+  };
+  const toggleConfirmModal = () => {
+    setConfirmModal((state) => !state);
+  };
+  const handleConfirmClick = () => {
+    handleDeleteClick();
   };
   return loader ? (
     <Loader />
@@ -158,6 +203,7 @@ function Users() {
         <Col md={9}></Col>
         <Col md={3}>
           <Button onClick={addUser}>Add User</Button>
+          <Button onClick={handleDeleteBtnClick}>Delete User</Button>
         </Col>
       </Row>
       <div>
@@ -166,8 +212,20 @@ function Users() {
           columns={columns}
           fetchData={fetchUserInfo}
           pageCount={pageCount}
+          rowSelectOp={{ position: "first", selectedRows }}
         />
       </div>
+      <Modal show={showModal} onHide={toggleConfirmModal}>
+        <Modal.Body>{`Are you sure you want to delete ${selectedRows.current.length} users`}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleConfirmModal}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleConfirmClick}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

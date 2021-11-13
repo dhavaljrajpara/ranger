@@ -18,8 +18,8 @@ class Header extends Component {
         url: "logout",
         baseURL: "",
         headers: {
-          "cache-control": "no-cache",
-        },
+          "cache-control": "no-cache"
+        }
       });
       setUserProfile(null);
       window.location.replace("login.html");
@@ -89,7 +89,7 @@ class Header extends Component {
               {` Security Zone `}
             </Link>
             <NavDropdown title={settings}>
-              <Link to="/user" className="dropdown-item">
+              <Link to="/users/usertab" className="dropdown-item">
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
               </Link>
               <Link to="/permissions" className="dropdown-item">

@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, Component } from "react";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 import ErrorBoundary from "Views/ErrorBoundary";
 
@@ -43,7 +44,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true,
+      loader: true
     };
   }
 
@@ -55,7 +56,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile",
+        url: "users/profile"
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -66,7 +67,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false,
+      loader: false
     });
   };
 
@@ -118,7 +119,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/user"
+                      path="/users/usertab"
                       component={UserListingComp}
                       {...defaultProps}
                     />
@@ -173,6 +174,7 @@ export default class App extends Component {
             </section>
           </Suspense>
         </Router>
+        <ToastContainer />
       </ErrorBoundary>
     );
   }

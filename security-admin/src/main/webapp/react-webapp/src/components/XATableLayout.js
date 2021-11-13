@@ -1,12 +1,37 @@
-import React, { useEffect } from "react";
-import { useTable, usePagination } from "react-table";
+import React, { forwardRef, useEffect, useRef } from "react";
+import { useTable, usePagination, useRowSelect } from "react-table";
 import { Table } from "react-bootstrap";
+
+const IndeterminateCheckbox = forwardRef(
+  ({ indeterminate, chkType, ...rest }, ref) => {
+    const defaultRef = useRef();
+    const resolvedRef = ref || defaultRef;
+
+    useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate;
+    }, [resolvedRef, indeterminate]);
+
+    return (
+      <>
+        <input
+          type="checkbox"
+          ref={resolvedRef}
+          {...rest}
+          className={`${
+            chkType === "header" ? "table-th-checkbox" : "table-td-checkbox"
+          }`}
+        />
+      </>
+    );
+  }
+);
 
 function XATableLayout({
   columns,
   data,
   fetchData,
   pageCount: controlledPageCount,
+  rowSelectOp
 }) {
   const {
     getTableProps,
@@ -22,21 +47,66 @@ function XATableLayout({
     canPreviousPage,
     canNextPage,
     pageOptions,
-    state: { pageIndex, pageSize },
+    state: { pageIndex, pageSize, selectedRowIds },
+    selectedFlatRows
   } = useTable(
     {
       columns,
       data,
       initialState: { pageIndex: 0, pageSize: 25 }, // Pass our hoisted table state
       manualPagination: true,
-      pageCount: controlledPageCount,
+      pageCount: controlledPageCount
     },
-    usePagination
+    usePagination,
+    useRowSelect,
+    (hooks) => {
+      hooks.visibleColumns.push((columns) => {
+        let cols = [];
+
+        if (rowSelectOp) {
+          // Let's make a column for selection
+          const selectionCol = {
+            id: "selection",
+            // The header can use the table's getToggleAllRowsSelectedProps method
+            // to render a checkbox
+            Header: ({ getToggleAllPageRowsSelectedProps }) => (
+              <div>
+                <IndeterminateCheckbox
+                  {...getToggleAllPageRowsSelectedProps()}
+                  chkType="header"
+                />
+              </div>
+            ),
+            // The cell can use the individual row's getToggleRowSelectedProps method
+            // to the render a checkbox
+            Cell: ({ row }) => (
+              <div>
+                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+              </div>
+            )
+          };
+          if (rowSelectOp && rowSelectOp.position === "first") {
+            cols.push(selectionCol, ...columns);
+          } else {
+            cols.push(...columns, selectionCol);
+          }
+        } else {
+          cols = [...columns];
+        }
+        return cols;
+      });
+    }
   );
 
   useEffect(() => {
     fetchData({ pageIndex, pageSize });
   }, [fetchData, pageIndex, pageSize]);
+
+  useEffect(() => {
+    if (rowSelectOp) {
+      rowSelectOp.selectedRows.current = selectedFlatRows;
+    }
+  }, [selectedFlatRows]);
 
   return (
     // apply the table props
