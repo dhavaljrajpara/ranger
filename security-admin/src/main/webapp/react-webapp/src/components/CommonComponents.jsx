@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Badge, ThemeProvider } from "react-bootstrap";
+import { Field } from "react-final-form";
 
 const Loader = () => {
   return (
@@ -33,6 +34,14 @@ const Loader = () => {
     </div>
   );
 };
+export const FieldError = ({ name }) => (
+  <Field name={name}>
+    {({ meta: { error, touched } }) => {
+      return error && touched ? <div className="col-sm-2">{error}</div> : null;
+    }}
+  </Field>
+);
+
 export class MoreLess extends Component {
   constructor(props) {
     super(props);

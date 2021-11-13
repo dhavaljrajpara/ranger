@@ -4,6 +4,7 @@ import Nav from "react-bootstrap/Nav";
 import Button from "react-bootstrap/Button";
 import { Form, Field } from "react-final-form";
 import { getUserProfile, setUserProfile } from "Utils/appState";
+import { FieldError } from "Components/CommonComponents";
 
 const updateUserInfo = async (values) => {
   const userProps = getUserProfile();
