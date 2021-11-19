@@ -19,6 +19,6 @@ module.exports = {
   componentsPath: path.resolve(__dirname, "../src/components"),
   host: process.env.UI_HOST || "0.0.0.0",
   port: process.env.UI_PORT || "8888",
-  proxyHost: "http://192.168.0.108",
+  proxyHost: "http://localhost",
   proxyPort: "6080"
 };
