@@ -131,7 +131,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/userCreate"
+                      path="/user/create"
                       component={UserForm}
                       {...defaultProps}
                     />
@@ -151,6 +151,12 @@ export default class App extends Component {
                       exact
                       path="/permissions"
                       component={PermissionsComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/bigData"
+                      component={AuditLayout}
                       {...defaultProps}
                     />
                   </Switch>

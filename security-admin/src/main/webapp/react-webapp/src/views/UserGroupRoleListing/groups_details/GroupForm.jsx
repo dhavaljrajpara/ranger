@@ -4,24 +4,23 @@ import { Form, Field } from "react-final-form";
 import { FieldError } from "Components/CommonComponents";
 
 class GroupForm extends Component {
-  handleSubmit = async(formData) => {
+  handleSubmit = async (formData) => {
     console.log(formData);
-    const data = {};
-    data['name'] = formData.name;
-    data['description'] = formData.description;
+    // const data = {};
+    // data['name'] = formData.name;
+    // data['description'] = formData.description;
 
-    
     try {
-        const { fetchApi } = await import("Utils/fetchAPI");
-        const passwdResp = await fetchApi({
-          url: "xusers/secure/groups",
-          method: "post",
-          data: data,
-        });
-        this.props.history.push("/user");
-      } catch (error) {
-        console.error(`Error occurred while updating user password! ${error}`);
-      }
+      const { fetchApi } = await import("Utils/fetchAPI");
+      const passwdResp = await fetchApi({
+        url: "xusers/secure/groups",
+        method: "post",
+        data: formData
+      });
+      this.props.history.push("/user");
+    } catch (error) {
+      console.error(`Error occurred while updating user password! ${error}`);
+    }
   };
   render() {
     return (
@@ -45,9 +44,7 @@ class GroupForm extends Component {
                   <FieldError name="name" />
                 </div>
                 <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                  Description
-                  </label>
+                  <label className="col-sm-2 col-form-label">Description</label>
                   <div className="col-sm-6">
                     <Field
                       name="description"

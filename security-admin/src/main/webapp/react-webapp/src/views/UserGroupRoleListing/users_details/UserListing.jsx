@@ -6,7 +6,7 @@ import { UserSource } from "Utils/XAEnums";
 import { UserTypes } from "Utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
@@ -87,7 +87,17 @@ function Users() {
     () => [
       {
         Header: "User Name",
-        accessor: "name"
+        accessor: "name",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <Link to={"/user/" + rawValue.row.original.id}>
+                {rawValue.value}
+              </Link>
+            );
+          }
+          return "--";
+        }
       },
       {
         Header: "Email Address",
