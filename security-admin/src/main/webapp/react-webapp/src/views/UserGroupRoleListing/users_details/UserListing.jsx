@@ -1,5 +1,7 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
+import moment from "moment-timezone";
+
 import XATableLayout from "Components/XATableLayout";
 import { UserRoles } from "Utils/XAEnums";
 import { UserSource } from "Utils/XAEnums";
@@ -19,30 +21,34 @@ function Users() {
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
+  const [updateTable, setUpdateTable] = useState(moment.now());
 
-  const fetchUserInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let userData = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const userResp = await fetchApi({
-          url: "xusers/users",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        userData = userResp.data.vXUsers;
-        totalCount = userResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching User list! ${error}`);
+  const fetchUserInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let userData = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const userResp = await fetchApi({
+            url: "xusers/users",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          userData = userResp.data.vXUsers;
+          totalCount = userResp.data.totalCount;
+        } catch (error) {
+          console.error(`Error occurred while fetching User list! ${error}`);
+        }
+        setUserData(userData);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setUserData(userData);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
+    },
+    [updateTable]
+  );
 
   const handleDeleteBtnClick = () => {
     if (selectedRows.current.length > 0) {
@@ -79,6 +85,7 @@ function Users() {
       } else {
         toast.success("User deleted successfully!");
       }
+      setUpdateTable(moment.now());
       toggleConfirmModal();
     }
   };
