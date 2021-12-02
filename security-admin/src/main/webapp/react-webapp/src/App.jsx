@@ -27,6 +27,7 @@ const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
 const PermissionsComp = lazy(() => import("Views/Permissions"));
+const EditPermissionComp = lazy(() => import("Views/EditPermission"));
 const PolicyListing = lazy(() => import("Views/PolicyListing/PolicyListing"));
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
@@ -157,6 +158,12 @@ export default class App extends Component {
                       exact
                       path="/bigData"
                       component={AuditLayout}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/permissions/:permissionId/edit"
+                      component={EditPermissionComp}
                       {...defaultProps}
                     />
                   </Switch>

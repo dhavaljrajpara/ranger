@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
+import { Link } from "react-router-dom";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
 import { MoreLess } from "Components/CommonComponents";
@@ -22,7 +23,7 @@ function Permissions() {
   const fetchPermissions = useCallback(async ({ pageSize, pageIndex }) => {
     let permissionsdata = [];
     let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
+    const fetchId = fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
@@ -81,13 +82,17 @@ function Permissions() {
       {
         Header: "Action",
         accessor: "action",
-        Cell: () => {
+        Cell: (rawValue) => {
           return (
+            <Link
+            className="permissions"
+            title="Edit"
+            to={`permissions/${rawValue.row.original.id}/edit`}
+          >
             <button className="permissionbtn">
-              <a className="permissions" title="Edit">
-                <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
-              </a>
-            </button>
+              <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
+            </button>{" "}
+          </Link>
           );
         },
       },

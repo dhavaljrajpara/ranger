@@ -433,14 +433,22 @@ textarea {
   margin-top: -40px;
 }
 .zonenameinput {
-  width: 23.5rem;
+  width: 30%;
   height: calc(1.5em + 0.75rem + 2px);
+  font-weight: 400;
+  line-height: 1.5;
+  background-color: #e9ecef;
+  opacity: 1;
+  border: 1px solid #ccc;
+  color: #495057;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .zonedescription {
   vertical-align: top;
   color: #333;
-  margin-left: -8px;
+  margin-left: -6px;
   font-size: 14px;
   line-height: 32px;
   text-align: right;
@@ -531,4 +539,141 @@ header {
 #btnplus:hover {
   border: 1px solid #0b7fad;
   color: #0b7fad;
+}
+
+/* EditPermission */
+.modulename {
+  vertical-align: top;
+  color: #333;
+  font-weight: bold;
+  width: 110px;
+  min-width: 60px;
+  font-size: 14px;
+  line-height: 32px;
+  text-align: right;
+  margin-left: 154px;
+}
+.permissionSelect {
+  width: 381px;
+  margin-left: 127px;
+  margin-top: -40px;
+}
+
+.permlbl {
+  margin: -7px -100px 21px 99px;
+}
+/*Pagination Button */
+
+.pagebtn {
+  width: auto !important;
+  min-width: 30px;
+  max-width: 44px;
+  border: 1px solid #ddd;
+  color: #777777;
+  border-radius: 3px !important;
+  height: 30px;
+}
+
+.pagebtns {
+  margin-left: 25px;
+}
+
+.inputpagebtn {
+  width: 43px;
+  margin: 3px 3px;
+}
+
+.pageno {
+  margin-top: 7px;
+  margin-left: 412px;
+}
+
+.selectpage {
+  height: 28px;
+  margin-top: 3px;
+  margin-left: 413px;
+}
+
+#Pagination {
+  display: inline;
+}
+.pagelbl {
+  margin-left: 328px;
+}
+
+/*EditPermissionaddusergroup*/
+.editpermselect {
+  width: 200px;
+  width: 200px;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+  margin-left: 121px;
+}
+
+.editpermaddbtn {
+  font-weight: 400;
+  padding: -6px 12px;
+  font-size: 13px;
+  border: 1px solid #d9d9d9;
+  color: #424242;
+  margin: 0;
+  margin: 5px;
+  width: -11px;
+  background-color: white;
+  padding: -5.75rem 0.5rem;
+  border-radius: -13.8rem;
+  height: 34px;
+}
+
+.editpermaddbtn:hover {
+  color: #0b7fad !important;
+  border-color: #0b7fad !important;
+  background-color: #fff !important;
+  outline: none !important;
+}
+
+#zonedetailsform {
+  margin-left: 166px;
+}
+
+.moduledetails {
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.edittblth {
+  text-align: center;
+}
+.editpermtbl {
+  margin-top: -29px;
+  margin-left: 105px;
+  width: 268%;
+}
+.lbleditperms {
+  margin-left: 78px;
+}
+
+.options-select {
+  overflow: ellipsis;
+}
+
+.selected-widget {
+  padding: 3px 5px 3px 4px;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+  background-color: #e4e4e4;
+  margin: 3px 3px;
+  float: left;
+}
+
+.emptySelectedusers {
+  color: #dd1144;
+}
+
+.emptySelectedgroups {
+  color: #dd1144;
 }

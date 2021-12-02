@@ -69,7 +69,7 @@ function Admin() {
         accessor: "createDate", // accessor is the "key" in the data
         Cell: (rawValue) => {
           const date = rawValue.value;
-          const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
+          const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
           return newdate;
         },
       },

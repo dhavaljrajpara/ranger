@@ -2,6 +2,7 @@ import React, { forwardRef, useEffect, useRef } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import { Table } from "react-bootstrap";
 
+
 const IndeterminateCheckbox = forwardRef(
   ({ indeterminate, chkType, ...rest }, ref) => {
     const defaultRef = useRef();
@@ -18,7 +19,7 @@ const IndeterminateCheckbox = forwardRef(
           ref={resolvedRef}
           {...rest}
           className={`${
-            chkType === "header" ? "table-th-checkbox" : "table-td-checkbox"
+            chkType === "header" ? "tablethcheckbox" : "tabletdcheckbox"
           }`}
         />
       </>
@@ -165,27 +166,29 @@ function XATableLayout({
         </tbody>
       </Table>
       <div className="pagination">
-        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-          {"<<"}
+      
+      <div className="pagination" id="Pagination" >
+        <span className="pullleft">
+        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="pagebtn">
+           {"<<"}
+         </button>{" "}
+     
+        <button onClick={() => previousPage()} disabled={!canPreviousPage} className="pagebtn">
+           {"<"}
         </button>{" "}
-        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-          {"<"}
-        </button>{" "}
-        <button onClick={() => nextPage()} disabled={!canNextPage}>
-          {">"}
-        </button>{" "}
-        <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-          {">>"}
-        </button>{" "}
-        <span>
+        
+       </span>  
+        {/* <span>
           Page{" "}
           <strong>
-            {pageIndex + 1} of {pageOptions.length}
+            {pageIndex} of {pageOptions.length}
           </strong>{" "}
         </span>
         <span>
           | Go to page:{" "}
-          <input
+        <strong><span className="pagelbl"> Page:{" "}</span></strong>
+        <input
+        className="inputpagebtn"
             type="number"
             defaultValue={pageIndex + 1}
             onChange={(e) => {
@@ -194,8 +197,11 @@ function XATableLayout({
             }}
             style={{ width: "100px" }}
           />
-        </span>{" "}
+          
+         </span>{" "}
+        <span>Show</span>
         <select
+         className="selectpage"
           value={pageSize}
           onChange={(e) => {
             setPageSize(Number(e.target.value));
@@ -207,8 +213,64 @@ function XATableLayout({
             </option>
           ))}
         </select>
-      </div>
-    </div>
+         
+        <span>Entries</span>
+        <span className="pageno">
+          Page{" "} 
+          <strong>
+            {pageIndex } of {pageOptions.length} 
+          </strong>{" "}
+        </span>
+        <span className="pullright">
+        <button onClick={() => nextPage()} disabled={!canNextPage} className="pagebtn">
+          {">"}
+        </button>{" "}
+        <button onClick={() => gotoPage(pageCount)} disabled={!canNextPage} className="pagebtn">
+          {">>"}
+        </button>{" "}</span>*/}
+         <span className="pagelbl">
+          Page{" "}
+          <strong>
+            {pageIndex + 1} of {pageOptions.length}
+          </strong>{" "}
+        </span>
+        <span >
+          | Go to page:{" "}
+          <input
+          className="inputpagebtn"
+            type="number"
+            defaultValue={pageIndex + 1}
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              gotoPage(page);
+            }}
+           
+          />
+        </span>{" "}
+        <select
+          className="selectpage"
+          value={pageSize}
+          onChange={(e) => {
+            setPageSize(Number(e.target.value));
+          }}
+        >
+          {[25, 50, 75, 100].map((pageSize) => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+        <span className="pullright">
+        <button onClick={() => nextPage()} className="pagebtn" disabled={!canNextPage}>
+          {">"}
+        </button>{" "}
+        <button onClick={() => gotoPage(pageCount)} className="pagebtn" disabled={!canNextPage}>
+          {">>"}
+        </button>{" "}
+        </span>
+       </div>
+     </div>
+     </div>
   );
 }
 export default XATableLayout;
