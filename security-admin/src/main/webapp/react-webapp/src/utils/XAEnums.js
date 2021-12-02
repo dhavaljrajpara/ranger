@@ -454,3 +454,28 @@ export const ActivationStatus = {
     tt: "lbl.ActivationStatus_ACT_STATUS_ACTIVE"
   }
 };
+
+/*Permission Edit Page */
+export const AccessResult = {
+  ACCESS_RESULT_DENIED: {
+    value: 0,
+    label: "Denied",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_DENIED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_DENIED",
+    auditFilterLabel: "DENIED"
+  },
+  ACCESS_RESULT_ALLOWED: {
+    value: 1,
+    label: "Allowed",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_ALLOWED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_ALLOWED",
+    auditFilterLabel: "ALLOWED"
+  },
+  ACCESS_RESULT_NOT_DETERMINED: {
+    value: 2,
+    label: "Not Determined",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_NOT_DETERMINED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_NOT_DETERMINED",
+    auditFilterLabel: "NOT_DETERMINED"
+  }
+};

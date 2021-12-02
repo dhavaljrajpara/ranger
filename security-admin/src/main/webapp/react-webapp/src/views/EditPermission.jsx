@@ -1,14 +1,14 @@
 import { Form, Field } from "react-final-form";
 import { Button, Col, Form as FormB, Row } from "react-bootstrap";
-import React, { useState, useEffect, useCallback, useReducer } from "react";
-import { useParams } from "react-router-dom";
-import { useHistory } from "react-router-dom";
+import React, { useEffect, useReducer } from "react";
+import { useParams, useHistory, Link } from "react-router-dom";
 import { Table } from "react-bootstrap";
-import { Loader } from "../components/CommonComponents";
+import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import { cloneDeep, find, findIndex } from "lodash";
+import { AccessResult } from "Utils/XAEnums";
 
 const initialState = {
   loader: true,
@@ -65,7 +65,7 @@ const EditPermission = () => {
     for (const grpObj of formData.groupPermList) {
       let index = findIndex(selectedUsr, { value: grpObj.groupId });
       if (index === -1) {
-        grpObj.isAllowed = 0;
+        grpObj.isAllowed = AccessResult.ACCESS_RESULT_DENIED.value;
       }
     }
     for (const grpObj of selectedGrp) {
@@ -73,7 +73,7 @@ const EditPermission = () => {
       if (!obj) {
         formData.groupPermList.push({
           groupId: grpObj.value,
-          isAllowed: 1,
+          isAllowed: AccessResult.ACCESS_RESULT_ALLOWED.value,
           moduleId: formData.id
         });
       }
@@ -81,7 +81,7 @@ const EditPermission = () => {
     for (const userObj of formData.userPermList) {
       let index = findIndex(selectedUsr, { value: userObj.userId });
       if (index === -1) {
-        userObj.isAllowed = 0;
+        userObj.isAllowed = AccessResult.ACCESS_RESULT_DENIED.value;
       }
     }
     for (const grpObj of selectedUsr) {
@@ -89,7 +89,7 @@ const EditPermission = () => {
       if (!obj) {
         formData.userPermList.push({
           userId: grpObj.value,
-          isAllowed: 1,
+          isAllowed: AccessResult.ACCESS_RESULT_ALLOWED.value,
           moduleId: formData.id
         });
       }
@@ -264,15 +264,19 @@ const EditPermission = () => {
                     className="mb-3"
                     controlId="formPlaintextEmail"
                   >
-                    <FormB.Label className="permlbl" column sm="2">
+                    <FormB.Label className="text-right" column sm="2">
                       Permissions
                     </FormB.Label>
                     <Col sm="10">
-                      <Table className="" striped bordered>
+                      <Table striped bordered>
                         <thead>
                           <tr>
-                            <th className="">Select and Add Group</th>
-                            <th className="">Select and Add User </th>
+                            <th className="text-center text-muted">
+                              Select and Add Group
+                            </th>
+                            <th className="text-center text-muted">
+                              Select and Add User{" "}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -300,7 +304,9 @@ const EditPermission = () => {
                                     />
 
                                     <Button
-                                      className="editpermaddbtn"
+                                      size="sm"
+                                      className="ml-2"
+                                      variant="outline-primary"
                                       onClick={() => {
                                         if (
                                           !values.selectgroup ||
@@ -312,7 +318,7 @@ const EditPermission = () => {
                                         addInSelectedGrp(values, input);
                                       }}
                                     >
-                                      <i className="fa fa-plus btn btn-default btn-sm"></i>
+                                      <i className="fa fa-plus"></i>
                                     </Button>
                                   </div>
                                 )}
@@ -340,7 +346,9 @@ const EditPermission = () => {
                                       placeholder="Select Users"
                                     />
                                     <Button
-                                      className="editpermaddbtn"
+                                      size="sm"
+                                      className="ml-2"
+                                      variant="outline-primary"
                                       onClick={() => {
                                         if (
                                           !values.selectuser ||
@@ -352,7 +360,7 @@ const EditPermission = () => {
                                         addInSelectedUsr(values, input);
                                       }}
                                     >
-                                      <i className="fa fa-plus btn btn-default btn-sm"></i>
+                                      <i className="fa fa-plus"></i>
                                     </Button>
                                   </div>
                                 )}
@@ -405,7 +413,7 @@ const EditPermission = () => {
                 Save
               </Button>
               <Button variant="secondary" className="cancelbtn">
-                Cancel
+                <Link to={`/permissions`}> Cancel </Link>
               </Button>
             </div>
           </form>

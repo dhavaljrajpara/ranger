@@ -541,27 +541,6 @@ header {
   color: #0b7fad;
 }
 
-/* EditPermission */
-.modulename {
-  vertical-align: top;
-  color: #333;
-  font-weight: bold;
-  width: 110px;
-  min-width: 60px;
-  font-size: 14px;
-  line-height: 32px;
-  text-align: right;
-  margin-left: 154px;
-}
-.permissionSelect {
-  width: 381px;
-  margin-left: 127px;
-  margin-top: -40px;
-}
-
-.permlbl {
-  margin: -7px -100px 21px 99px;
-}
 /*Pagination Button */
 
 .pagebtn {
@@ -604,61 +583,18 @@ header {
 /*EditPermissionaddusergroup*/
 .editpermselect {
   width: 200px;
-  width: 200px;
   margin: 0;
   padding: 0;
   display: inline-block;
   margin-left: 121px;
 }
 
-.editpermaddbtn {
-  font-weight: 400;
-  padding: -6px 12px;
-  font-size: 13px;
-  border: 1px solid #d9d9d9;
-  color: #424242;
-  margin: 0;
-  margin: 5px;
-  width: -11px;
-  background-color: white;
-  padding: -5.75rem 0.5rem;
-  border-radius: -13.8rem;
-  height: 34px;
-}
-
-.editpermaddbtn:hover {
-  color: #0b7fad !important;
-  border-color: #0b7fad !important;
-  background-color: #fff !important;
-  outline: none !important;
-}
-
 #zonedetailsform {
   margin-left: 166px;
 }
 
-.moduledetails {
-  display: flex;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
-  margin-right: -15px;
-  margin-left: -15px;
-}
-
-.edittblth {
-  text-align: center;
-}
-.editpermtbl {
-  margin-top: -29px;
-  margin-left: 105px;
-  width: 268%;
-}
 .lbleditperms {
   margin-left: 78px;
-}
-
-.options-select {
-  overflow: ellipsis;
 }
 
 .selected-widget {
