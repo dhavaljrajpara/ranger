@@ -1,74 +1,122 @@
 import React, { Component } from "react";
 import noZoneImage from "Images/defult_zone.png";
 import { Link } from "react-router-dom";
+import { fetchApi } from "Utils/fetchAPI";
+import { ZoneDisplay } from "./ZoneDisplay";
+import { Loader } from "Components/CommonComponents";
 
-class ZoneListing extends React.Component {
-  state = {
-    zones: [],
-  };
+class ZoneListing extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      zones: [],
+      selectedZone: null,
+      expand: true,
+      loader: false
+    };
+  }
 
   componentDidMount() {
     this.fetchZones();
   }
 
   fetchZones = async () => {
-    let zonesResp;
+    let zoneList = [],
+      selectedZone = null,
+      zoneId = this.props.match.params.id;
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      zonesResp = await fetchApi({
-        url: "zones/zones",
+      const zonesResp = await fetchApi({
+        url: "zones/zones"
       });
-      await fetchCSRFConf();
-      console.log(zonesResp.data.securityZones);
+      zoneList = zonesResp.data.securityZones || [];
     } catch (error) {
-      console.error(
-        `Error occurred while fetching Zones or CSRF headers! ${error}`
-      );
+      console.error(`Error occurred while fetching Zones! ${error}`);
+    }
+    if (zoneId) {
+      selectedZone = zoneList.find((obj) => obj.id === +zoneId) || null;
+    } else {
+      if (zoneList.length > 0) {
+        selectedZone = zoneList[0];
+        this.props.history.replace({
+          pathname: `/zones/zone/${zoneList[0].id}`
+        });
+      }
     }
     this.setState({
-      zones: zonesResp.data.securityZones,
+      selectedZone: selectedZone,
+      zones: zoneList,
+      loader: false
     });
   };
 
+  clickBtn = (zoneid) => {
+    let selectedZone = this.state.zones.find((obj) => zoneid === obj.id);
+    if (selectedZone) {
+      this.setState({ selectedZone });
+      this.props.history.replace({
+        pathname: `/zones/zone/${zoneid}`
+      });
+    }
+  };
+
   render() {
-    let isZoneEmpty = this.state.zones.length == 0;
-    return (
+    return this.state.loader ? (
+      <Loader />
+    ) : (
       <div className="wrap policy-manager">
         <div className="row">
-          <div className="col-sm-3 border-right">
-            <div className="clearfix">
-              <div className="float-left">
-                <h4>Security Zones</h4>
+          {this.state.expand && (
+            <div className="col-sm-3 border-right">
+              <div className="clearfix">
+                <div className="float-left">
+                  <h4>Security Zones</h4>
+                </div>
+                <div className="float-right">
+                  <Link to="/zones/create" className="btn btn-secondary btn-sm">
+                    <i className="fa-fw fa fa-plus"></i>
+                  </Link>
+                </div>
               </div>
-              <div className="float-right">
-                <Link to="/zones/create" className="btn btn-secondary btn-sm">
-                  <i className="fa-fw fa fa-plus"></i>
-                </Link>
+              <div className="row">
+                <div className="col-sm-12">
+                  <input
+                    className="form-control"
+                    type="text"
+                    placeholder="Search"
+                  ></input>
+                </div>
+              </div>
+              <div className="row m-t-5">
+                <div className="col-sm-12">
+                  <ul className="list-group mt-3">
+                    {this.state.zones.map((zone) => (
+                      <li
+                        className="list-group-item border border-dotted"
+                        key={zone.id}
+                      >
+                        {
+                          <a
+                            className="text-primary"
+                            onClick={() => {
+                              this.clickBtn(zone.id);
+                            }}
+                            //to={{
+                            //  pathname: `/zones/zone/${zone.id}`,
+                            //   state: { selectzone: this.state.selectzone }
+                            // }}
+                          >
+                            {zone.name}
+                          </a>
+                        }
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
-            <div className="row">
-              <div className="col-sm-12">
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="Search"
-                ></input>
-              </div>
-            </div>
-            <div className="row m-t-5">
-              <div className="col-sm-12">
-                <ul className="list-group mt-3">
-                  {this.state.zones.map((zone) => (
-                    <li className="list-group-item" key={zone.id}>
-                      <a href={"/zones/zone/" + zone.id}>{zone.name}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="col-sm-9">
-            {isZoneEmpty ? (
+          )}
+          <div className="col-sm-9 ">
+            {this.state.selectedZone === null ? (
               <div className="row justify-content-md-center">
                 <div className="col-md-auto text-center">
                   <img
@@ -76,125 +124,17 @@ class ZoneListing extends React.Component {
                     className="w-50 p-3 d-block mx-auto"
                     src={noZoneImage}
                   />
-                  <a
-                    href="/zones/create"
-                    className="btn-add-security btn-lg"
-                    title="Click here to Create new Zone"
-                  >
+
+                  <Link to="/zones/create">
                     <i className="fa-fw fa fa-plus"></i>Click here to Create new
                     Zone
-                  </a>
+                  </Link>
                 </div>
               </div>
             ) : (
-              <div className="row">
-                <div className="col-sm-12">
-                  <div className="clearfix">
-                    <div className="float-left"></div>
-                    <div className="float-right">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary m-r-5"
-                      >
-                        <i className="fa-fw fa fa-edit"></i>
-                        Edit
-                      </button>
-                      <button type="button" className="btn btn-sm btn-danger">
-                        <i className="fa-fw fa fa-trash"></i>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    className="accordion mt-3"
-                    id="zone-administration-accordion"
-                  >
-                    <div className="card">
-                      <div className="card-header" id="zone-administration">
-                        <h2 className="mb-0">
-                          <button
-                            className="btn btn-link btn-block text-left"
-                            type="button"
-                            data-toggle="collapse"
-                            data-target="#zone-administration-body"
-                            aria-expanded="true"
-                            aria-controls="zone-administration-body"
-                          >
-                            Zone Administrations
-                          </button>
-                        </h2>
-                      </div>
-
-                      <div
-                        id="zone-administration-body"
-                        className="collapse show"
-                        aria-labelledby="zone-administration"
-                        data-parent="#zone-administration"
-                      >
-                        <div className="card-body"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className="accordion mt-3"
-                    id="zone-tag-services-accordion"
-                  >
-                    <div className="card">
-                      <div className="card-header" id="zone-tag-services">
-                        <h2 className="mb-0">
-                          <button
-                            className="btn btn-link btn-block text-left"
-                            type="button"
-                            data-toggle="collapse"
-                            data-target="#zone-tag-services-body"
-                            aria-expanded="true"
-                            aria-controls="zone-tag-services-body"
-                          >
-                            Zone Tag Services
-                          </button>
-                        </h2>
-                      </div>
-                      <div
-                        id="zone-tag-services-body"
-                        className="collapse show"
-                        aria-labelledby="zone-tag-services"
-                        data-parent="#zone-tag-services"
-                      >
-                        <div className="card-body"></div>
-                      </div>
-                      Licensed
-                    </div>
-                  </div>
-                  <div className="accordion mt-3" id="zone-services-accordion">
-                    <div className="card">
-                      <div className="card-header" id="zone-services">
-                        <h2 className="mb-0">
-                          <button
-                            className="btn btn-link btn-block text-left"
-                            type="button"
-                            data-toggle="collapse"
-                            data-target="#zone-services-body"
-                            aria-expanded="true"
-                            aria-controls="zone-services-body"
-                          >
-                            Zone Tag Services
-                          </button>
-                        </h2>
-                      </div>
-
-                      <div
-                        id="zone-services-body"
-                        className="collapse show"
-                        aria-labelledby="zone-services"
-                        data-parent="#zone-services"
-                      >
-                        <div className="card-body"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ZoneDisplay zoneslisting={this.state.selectedZone} />
             )}
+            <div></div>
           </div>
         </div>
       </div>

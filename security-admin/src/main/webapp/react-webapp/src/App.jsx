@@ -108,10 +108,16 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/zones"
+                      path="/zones/zone/list"
                       component={ZoneListingComp}
                       {...defaultProps}
                     />
+                    <AuthRoute
+                      exact
+                      path="/zones/zone/:id"
+                      component={ZoneListingComp}
+                    />
+
                     <AuthRoute
                       exact
                       path="/zones/create"

@@ -376,7 +376,7 @@ textarea {
   flex: 1;
   padding: 3px 5px;
   font-size: 1em;
-  margin-left: 29px;
+
   border: 1px solid #ccc;
   border-radius: 3px;
 }
@@ -591,10 +591,6 @@ header {
 
 #zonedetailsform {
   margin-left: 166px;
-}
-
-.lbleditperms {
-  margin-left: 78px;
 }
 
 .selected-widget {
