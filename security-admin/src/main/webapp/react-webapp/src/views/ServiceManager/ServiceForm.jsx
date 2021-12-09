@@ -5,7 +5,8 @@ import { Form, Field } from "react-final-form";
 class ServiceForm extends Component {
   state = {
     serviceDef: [],
-    show: false
+    show: false,
+    initialValues: []
   };
 
   componentDidMount() {
@@ -92,6 +93,7 @@ class ServiceForm extends Component {
               <Field
                 name={"configs." + this.configJson[configParam.name]}
                 key={configParam.itemId}
+                validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
                   <div className="form-group row">
@@ -115,44 +117,54 @@ class ServiceForm extends Component {
               (e) => e.name == configParam.subType
             );
             formField.push(
-              <div className="form-group row" key={configParam.itemId}>
-                <label className="col-sm-3 col-form-label">
-                  {configParam.label !== undefined
-                    ? configParam.label
-                    : configParam.name}
-                  {configParam.mandatory ? " * " : ""}
-                </label>
-                <div className="col-sm-6">
-                  <Field
-                    name={"configs." + this.configJson[configParam.name]}
-                    component="select"
-                    className="form-control"
-                  >
-                    {this.enumOptions(paramEnum)}
-                  </Field>
-                </div>
-              </div>
+              <Field
+                name={"configs." + this.configJson[configParam.name]}
+                key={configParam.itemId}
+                validate={this.validateRequired(configParam.mandatory)}
+              >
+                {({ input, meta }) => (
+                  <div className="form-group row">
+                    <label className="col-sm-3 col-form-label">
+                      {configParam.label !== undefined
+                        ? configParam.label
+                        : configParam.name}
+                      {configParam.mandatory ? " * " : ""}
+                    </label>
+                    <div className="col-sm-6">
+                      <select {...input} type="text" className="form-control">
+                        {this.enumOptions(paramEnum)}
+                      </select>
+                    </div>
+                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                  </div>
+                )}
+              </Field>
             );
             break;
           case "bool":
             formField.push(
-              <div className="form-group row" key={configParam.itemId}>
-                <label className="col-sm-3 col-form-label">
-                  {configParam.label !== undefined
-                    ? configParam.label
-                    : configParam.name}
-                  {configParam.mandatory ? " * " : ""}
-                </label>
-                <div className="col-sm-6">
-                  <Field
-                    name={"configs." + this.configJson[configParam.name]}
-                    component="select"
-                    className="form-control"
-                  >
-                    {this.booleanOptions(configParam.subType)}
-                  </Field>
-                </div>
-              </div>
+              <Field
+                name={"configs." + this.configJson[configParam.name]}
+                key={configParam.itemId}
+                validate={this.validateRequired(configParam.mandatory)}
+              >
+                {({ input, meta }) => (
+                  <div className="form-group row">
+                    <label className="col-sm-3 col-form-label">
+                      {configParam.label !== undefined
+                        ? configParam.label
+                        : configParam.name}
+                      {configParam.mandatory ? " * " : ""}
+                    </label>
+                    <div className="col-sm-6">
+                      <select {...input} type="text" className="form-control">
+                        {this.booleanOptions(configParam.subType)}
+                      </select>
+                    </div>
+                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                  </div>
+                )}
+              </Field>
             );
             break;
           case "password":
@@ -160,7 +172,7 @@ class ServiceForm extends Component {
               <Field
                 name={"configs." + this.configJson[configParam.name]}
                 key={configParam.itemId}
-                validate={this.validateRequired}
+                validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
                   <div className="form-group row">
@@ -217,7 +229,8 @@ class ServiceForm extends Component {
     return optionField;
   }
 
-  validateRequired = (value) => (value ? undefined : "Required");
+  validateRequired = (isRequired) =>
+    isRequired ? (value) => (value ? undefined : "Required") : () => {};
 
   render() {
     return (
@@ -241,7 +254,10 @@ class ServiceForm extends Component {
                     <div className="row">
                       <div className="col-sm-12">
                         <p className="form-header">Service Details :</p>
-                        <Field name="name" validate={this.validateRequired}>
+                        <Field
+                          name="name"
+                          validate={this.validateRequired(true)}
+                        >
                           {({ input, meta }) => (
                             <div className="form-group row">
                               <label className="col-sm-3 col-form-label">
