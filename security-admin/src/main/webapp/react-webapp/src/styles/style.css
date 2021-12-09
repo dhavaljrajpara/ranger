@@ -274,9 +274,14 @@ div#center div.letter_container_7 {
 .service-name:hover {
   text-decoration: none;
 }
-
-.css-b62m3t-container {
-  width: 700px;
+.form-header {
+  padding: 2px 4px;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 26px;
+  color: #333;
+  white-space: nowrap;
+  border-bottom: 1px solid #0b7fad;
 }
 
 /* cancel and Export Button */
@@ -376,7 +381,6 @@ textarea {
   flex: 1;
   padding: 3px 5px;
   font-size: 1em;
-
   border: 1px solid #ccc;
   border-radius: 3px;
 }
@@ -456,17 +460,6 @@ textarea {
 .zonedescinput {
   width: 23.5rem;
   height: min-content;
-}
-
-form {
-  max-width: 1300px;
-  margin: 10px auto;
-  border: 1px solid #ccc;
-  padding: 20px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-  border-radius: 3px;
-  position: relative;
-  background-color: white;
 }
 .zonedetails {
   margin-left: 187px;

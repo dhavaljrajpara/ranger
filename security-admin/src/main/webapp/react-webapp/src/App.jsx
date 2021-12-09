@@ -1,15 +1,14 @@
 import React, { Suspense, lazy, Component } from "react";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-
 import ErrorBoundary from "Views/ErrorBoundary";
-
 import { Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
+const ServiceFormComp = lazy(() => import("Views/ServiceManager/ServiceForm"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
 const CreateZoneComp = lazy(() => import("Views/SecurityZone/CreateZone"));
@@ -98,6 +97,12 @@ export default class App extends Component {
                       exact
                       path="/userprofile"
                       component={UserProfileComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/service/:serviceDefId/create"
+                      component={ServiceFormComp}
                       {...defaultProps}
                     />
                     <AuthRoute

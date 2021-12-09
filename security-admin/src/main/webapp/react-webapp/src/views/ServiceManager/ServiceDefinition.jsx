@@ -7,7 +7,7 @@ import folderLogo from "Images/folder-grey.png";
 class ServiceDefinition extends Component {
   state = {
     serviceDef: this.props.serviceDefData,
-    service: this.props.serviceData,
+    service: this.props.serviceData
   };
 
   render() {
@@ -29,9 +29,9 @@ class ServiceDefinition extends Component {
                       {this.state.serviceDef.name}
                     </span>
                     <span className="float-right">
-                      <a className="text-decoration">
+                      <Link to={`/service/${this.state.serviceDef.id}/create`}>
                         <i className="fa-fw fa fa-plus"></i>
-                      </a>
+                      </Link>
                       <a className="text-decoration">
                         <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
                       </a>
