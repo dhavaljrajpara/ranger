@@ -8,9 +8,11 @@ export class ZoneDisplay extends React.Component {
     this.state = {
       zoneslist: this.props.zoneslisting,
       expand: true,
-      services: []
+      services: [],
+      show: true
     };
     this.expandbtn = this.expandbtn.bind(this);
+    this.showMoreLess = this.showMoreLess.bind(this);
   }
 
   componentDidMount() {
@@ -31,6 +33,9 @@ export class ZoneDisplay extends React.Component {
   };
   expandbtn = () => {
     this.setState({ expand: !this.state.expand });
+  };
+  showMoreLess = () => {
+    this.setState({ show: !this.state.show });
   };
 
   render() {
@@ -68,223 +73,236 @@ export class ZoneDisplay extends React.Component {
           <br />
           <div>
             <Accordion defaultActiveKey="0">
-              <div>
-                {" "}
-                <Card>
-                  <Card.Header>
+              <Card>
+                <div className="pull-right border-bottom">
+                  <Accordion.Toggle
+                    as={Card.Header}
+                    eventKey="0"
+                    style={{
+                      background: "#f7f7f7",
+                      border: "none"
+                    }}
+                    onClick={this.showMoreLess}
+                  >
                     Zone Administrations
-                    <div className="pull-right">
-                      <Accordion.Toggle
-                        eventKey="0"
-                        style={{
-                          background: "#f7f7f7",
-                          border: "none"
-                        }}
-                      >
-                        <i className="fa fa-angle-down"></i>
-                      </Accordion.Toggle>
-                    </div>
-                  </Card.Header>
-                  <Accordion.Collapse eventKey="0">
-                    <Card.Body className="p-0">
-                      <Form className="border border-white shadow-none p-0">
-                        <Form.Group as={Row} className="mb-3 ">
-                          <Form.Label className="text-right" column sm="3">
-                            Admin Users
-                          </Form.Label>
-                          <Col sm="15">
-                            {this.props.zoneslisting.adminUsers.map((obj) => {
+                    {this.state.show ? (
+                      <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
+                    ) : (
+                      <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
+                    )}
+                  </Accordion.Toggle>
+                </div>
+                <Accordion.Collapse eventKey="0">
+                  <Card.Body className="p-0">
+                    <Form className="border border-white shadow-none p-0">
+                      <Form.Group as={Row} className="mb-3 ">
+                        <Form.Label className="text-right" column sm="3">
+                          Admin Users
+                        </Form.Label>
+                        <Col sm="15">
+                          {this.props.zoneslisting.adminUsers.map((obj) => {
+                            return (
+                              <Badge
+                                key={obj.id}
+                                variant="info"
+                                className="usersbadge"
+                              >
+                                {obj}
+                              </Badge>
+                            );
+                          })}
+                        </Col>
+                      </Form.Group>
+                      <Form.Group as={Row} className="mb-3">
+                        <Form.Label className="text-right" column sm="3">
+                          Admin Usergroups
+                        </Form.Label>
+                        <Col sm="15">
+                          {this.props.zoneslisting.adminUserGroups.map(
+                            (obj) => {
                               return (
                                 <Badge
                                   key={obj.id}
-                                  variant="info"
+                                  variant="secondary"
                                   className="usersbadge"
                                 >
                                   {obj}
                                 </Badge>
-                              );
-                            })}
-                          </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} className="mb-3">
-                          <Form.Label className="text-right" column sm="3">
-                            Admin Usergroups
-                          </Form.Label>
-                          <Col sm="15">
-                            {this.props.zoneslisting.adminUserGroups.map(
-                              (obj) => {
-                                return (
-                                  <Badge
-                                    key={obj.id}
-                                    variant="secondary"
-                                    className="usersbadge"
-                                  >
-                                    {obj}
-                                  </Badge>
-                                );
-                              }
-                            )}
-                          </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} className="mb-3">
-                          <Form.Label className="text-right" column sm="3">
-                            Auditor Users
-                          </Form.Label>
-                          <Col sm="15">
-                            {this.props.zoneslisting.auditUsers.map((obj) => {
-                              return (
-                                <Badge
-                                  key={obj.id}
-                                  variant="info"
-                                  className="usersbadge"
-                                >
-                                  {obj}
-                                </Badge>
-                              );
-                            })}
-                          </Col>
-                        </Form.Group>
-                        <Form.Group as={Row} className="mb-3">
-                          <Form.Label className="text-right" column sm="3">
-                            Auditor Usergroups
-                          </Form.Label>
-                          <Col sm="15">
-                            {this.props.zoneslisting.auditUserGroups.map(
-                              (obj) => {
-                                return (
-                                  <Badge
-                                    key={obj.id}
-                                    variant="secondary"
-                                    className="usersbadge"
-                                  >
-                                    {obj}
-                                  </Badge>
-                                );
-                              }
-                            )}
-                          </Col>
-                        </Form.Group>
-                      </Form>
-                    </Card.Body>
-                  </Accordion.Collapse>
-                </Card>
-              </div>
-              <br />
-              <div>
-                <Card>
-                  <Card.Header>
-                    Zone Tag Services
-                    <div className="pull-right">
-                      <Accordion.Toggle
-                        eventKey="1"
-                        style={{
-                          background: "#f7f7f7",
-                          border: "none"
-                        }}
-                      >
-                        <i className="fa fa-angle-down"></i>
-                      </Accordion.Toggle>
-                    </div>
-                  </Card.Header>
-                  <Accordion.Collapse eventKey="1">
-                    <Card.Body>
-                      {this.props.zoneslisting.tagServices.length !== 0 ? (
-                        this.props.zoneslisting.tagServices
-                      ) : (
-                        <h6 className="text-muted h6 large">
-                          No tag based services are associated with this zone
-                        </h6>
-                      )}
-                    </Card.Body>
-                  </Accordion.Collapse>
-                </Card>
-              </div>
-              <br />
-              <div>
-                <Card>
-                  <Card.Header>
-                    Services
-                    <div className="pull-right">
-                      <Accordion.Toggle
-                        eventKey="2"
-                        style={{
-                          background: "#f7f7f7",
-                          border: "none"
-                        }}
-                      >
-                        <i className="fa fa-angle-down"></i>
-                      </Accordion.Toggle>
-                    </div>
-                  </Card.Header>
-                  <Accordion.Collapse eventKey="2">
-                    <Card.Body>
-                      {" "}
-                      <Table striped bordered>
-                        <thead>
-                          <tr>
-                            <th className="p-3 mb-2 bg-white text-dark serviceth">
-                              Service Name
-                            </th>
-                            <th className="p-3 mb-2 bg-white text-dark">
-                              Service Type
-                            </th>
-                            <th className="p-3 mb-2 bg-white text-dark">
-                              Resource
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.keys(this.props.zoneslisting.services).map(
-                            (key) => {
-                              let servicetype = Object.values(
-                                this.state.services
-                              ).find((obj) => {
-                                return obj.name === key;
-                              });
-
-                              return (
-                                <tr className="bg-white">
-                                  <td className="align-middle" width="20%">
-                                    {key}
-                                  </td>
-                                  <td className="align-middle" width="20%">
-                                    {servicetype &&
-                                      servicetype.type.toString().toUpperCase()}
-                                  </td>
-                                  <td
-                                    className="text-center"
-                                    width="32%"
-                                    height="55px"
-                                  >
-                                    {this.props.zoneslisting.services[
-                                      key
-                                    ].resources.map((resource) => (
-                                      <div className="resourceGrp">
-                                        {Object.keys(resource).map(
-                                          (resourceKey) => (
-                                            <p>
-                                              <strong>{`${resourceKey} : `}</strong>
-                                              {resource[resourceKey].join(", ")}
-                                            </p>
-                                          )
-                                        )}
-                                      </div>
-                                    ))}
-                                  </td>
-                                </tr>
                               );
                             }
                           )}
-                        </tbody>
-                      </Table>
-                    </Card.Body>
-                  </Accordion.Collapse>
-                </Card>
-              </div>
+                        </Col>
+                      </Form.Group>
+                      <Form.Group as={Row} className="mb-3">
+                        <Form.Label className="text-right" column sm="3">
+                          Auditor Users
+                        </Form.Label>
+                        <Col sm="15">
+                          {this.props.zoneslisting.auditUsers.map((obj) => {
+                            return (
+                              <Badge
+                                key={obj.id}
+                                variant="info"
+                                className="usersbadge"
+                              >
+                                {obj}
+                              </Badge>
+                            );
+                          })}
+                        </Col>
+                      </Form.Group>
+                      <Form.Group as={Row} className="mb-3">
+                        <Form.Label className="text-right" column sm="3">
+                          Auditor Usergroups
+                        </Form.Label>
+                        <Col sm="15">
+                          {this.props.zoneslisting.auditUserGroups.map(
+                            (obj) => {
+                              return (
+                                <Badge
+                                  key={obj.id}
+                                  variant="secondary"
+                                  className="usersbadge"
+                                >
+                                  {obj}
+                                </Badge>
+                              );
+                            }
+                          )}
+                        </Col>
+                      </Form.Group>
+                    </Form>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
             </Accordion>
           </div>
           <br />
+          <div>
+            <Accordion defaultActiveKey="1">
+              <Card>
+                <div className="pull-right border-bottom">
+                  <Accordion.Toggle
+                    as={Card.Header}
+                    eventKey="1"
+                    style={{
+                      background: "#f7f7f7",
+                      border: "none"
+                    }}
+                    onClick={this.showMoreLess}
+                  >
+                    Zone Administrations
+                    {this.state.show ? (
+                      <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
+                    ) : (
+                      <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
+                    )}
+                  </Accordion.Toggle>
+                </div>
+                <Accordion.Collapse eventKey="1">
+                  <Card.Body>
+                    {this.props.zoneslisting.tagServices.length !== 0 ? (
+                      this.props.zoneslisting.tagServices
+                    ) : (
+                      <h6 className="text-muted h6 large">
+                        No tag based services are associated with this zone
+                      </h6>
+                    )}
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+            </Accordion>
+          </div>
+          <br />
+          <div>
+            <Accordion defaultActiveKey="2">
+              <Card>
+                <div className="pull-right border-bottom">
+                  <Accordion.Toggle
+                    as={Card.Header}
+                    eventKey="2"
+                    style={{
+                      background: "#f7f7f7",
+                      border: "none"
+                    }}
+                    onClick={this.showMoreLess}
+                  >
+                    Zone Administrations
+                    {this.state.show ? (
+                      <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
+                    ) : (
+                      <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
+                    )}
+                  </Accordion.Toggle>
+                </div>
+                <Accordion.Collapse eventKey="2">
+                  <Card.Body>
+                    {" "}
+                    <Table striped bordered>
+                      <thead>
+                        <tr>
+                          <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
+                            Service Name
+                          </th>
+                          <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
+                            Service Type
+                          </th>
+                          <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
+                            Resource
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.keys(this.props.zoneslisting.services).map(
+                          (key) => {
+                            let servicetype = Object.values(
+                              this.state.services
+                            ).find((obj) => {
+                              return obj.name === key;
+                            });
+
+                            return (
+                              <tr className="bg-white">
+                                <td className="align-middle" width="20%">
+                                  {key}
+                                </td>
+                                <td className="align-middle" width="20%">
+                                  {servicetype &&
+                                    servicetype.type.toString().toUpperCase()}
+                                </td>
+                                <td
+                                  className="text-center"
+                                  width="32%"
+                                  height="55px"
+                                >
+                                  {this.props.zoneslisting.services[
+                                    key
+                                  ].resources.map((resource) => (
+                                    <div className="resourceGrp">
+                                      {Object.keys(resource).map(
+                                        (resourceKey) => (
+                                          <p>
+                                            <strong>{`${resourceKey} : `}</strong>
+                                            {resource[resourceKey].join(", ")}
+                                          </p>
+                                        )
+                                      )}
+                                    </div>
+                                  ))}
+                                </td>
+                              </tr>
+                            );
+                          }
+                        )}
+                      </tbody>
+                    </Table>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+            </Accordion>
+          </div>
         </div>
+        <br />
       </div>
     );
   }
