@@ -4,6 +4,8 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import folderLogo from "Images/folder-grey.png";
 
+import { RangerPolicyType } from "Utils/XAEnums";
+
 class ServiceDefinition extends Component {
   state = {
     serviceDef: this.props.serviceDefData,
@@ -49,7 +51,10 @@ class ServiceDefinition extends Component {
                   <td>
                     <div className="clearfix">
                       <span className="float-left">
-                        <Link to={`/policies/${s.id}`} className="service-name">
+                        <Link
+                          to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
+                          className="service-name"
+                        >
                           {s.name}
                         </Link>
                       </span>

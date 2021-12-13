@@ -28,6 +28,9 @@ const RoleForm = lazy(() =>
 const PermissionsComp = lazy(() => import("Views/Permissions"));
 const EditPermissionComp = lazy(() => import("Views/EditPermission"));
 const PolicyListing = lazy(() => import("Views/PolicyListing/PolicyListing"));
+const AddUpdatePolicyForm = lazy(() =>
+  import("Views/PolicyListing/AddUpdatePolicyForm")
+);
 
 function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
   if (!getUserProfile()) {
@@ -107,8 +110,14 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/policies/:policyId"
+                      path="/service/:serviceId/policies/:policyType"
                       component={PolicyListing}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/service/:serviceId/policies/create/:policyType"
+                      component={AddUpdatePolicyForm}
                       {...defaultProps}
                     />
                     <AuthRoute

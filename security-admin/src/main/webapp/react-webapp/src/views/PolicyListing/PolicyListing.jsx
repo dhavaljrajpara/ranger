@@ -1,6 +1,6 @@
 import React, { Component, useState, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { Badge, Button } from "react-bootstrap";
+import { Link, useParams } from "react-router-dom";
+import { Badge, Button, Col, Row } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
 
@@ -9,7 +9,7 @@ function PolicyListing() {
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
-  let { policyId } = useParams();
+  let { serviceId, policyType } = useParams();
 
   const fetchPolicyInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let policyData = [];
@@ -19,7 +19,7 @@ function PolicyListing() {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const policyResp = await fetchApi({
-          url: `plugins/policies/service/${policyId}`,
+          url: `plugins/policies/service/${serviceId}`,
           params: {
             pageSize: pageSize,
             startIndex: pageIndex * pageSize
@@ -193,7 +193,17 @@ function PolicyListing() {
     <div>
       <h4 class="wrap-header bold">List of Policies </h4>
       <div className="wrap policy-manager">
-        <div className="row">
+        <Row>
+          <Col md={12}>
+            <div className="pull-right">
+              <Link
+                to={`/service/${serviceId}/policies/create/${policyType}`}
+                className="btn btn-sm btn-primary mb-2"
+              >
+                Add New Policy
+              </Link>
+            </div>
+          </Col>
           <div className="col-sm-12">
             <XATableLayout
               data={policyListingData}
@@ -202,7 +212,7 @@ function PolicyListing() {
               pageCount={pageCount}
             />
           </div>
-        </div>
+        </Row>
       </div>
     </div>
   );

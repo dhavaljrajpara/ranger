@@ -479,3 +479,35 @@ export const AccessResult = {
     auditFilterLabel: "NOT_DETERMINED"
   }
 };
+
+export const RangerPolicyType = {
+  RANGER_ACCESS_POLICY_TYPE: {
+    value: 0,
+    label: "Access",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_ALLOWED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_ALLOWED"
+  },
+  RANGER_MASKING_POLICY_TYPE: {
+    value: 1,
+    label: "Masking",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_DENIED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_DENIED"
+  },
+  RANGER_ROW_FILTER_POLICY_TYPE: {
+    value: 2,
+    label: "Row Level Filter",
+    rbkey: "xa.enum.AccessResult.ACCESS_RESULT_DENIED",
+    tt: "lbl.AccessResult_ACCESS_RESULT_DENIED"
+  }
+};
+
+export const getEnumElementByValue = (enumObj, value) => {
+  let obj;
+  for (const key in enumObj) {
+    if (enumObj[key].value === value) {
+      obj = enumObj[key];
+      break;
+    }
+  }
+  return obj;
+};

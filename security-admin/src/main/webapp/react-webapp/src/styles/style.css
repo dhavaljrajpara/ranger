@@ -602,3 +602,13 @@ header {
 .emptySelectedgroups {
   color: #dd1144;
 }
+
+.formHeader {
+  padding: 2px 4px;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 26px;
+  color: #333;
+  white-space: nowrap;
+  border-bottom: 1px solid #0b7fad;
+}
