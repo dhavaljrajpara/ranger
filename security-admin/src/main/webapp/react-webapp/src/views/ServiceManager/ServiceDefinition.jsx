@@ -13,7 +13,6 @@ class ServiceDefinition extends Component {
   };
 
   render() {
-    console.log("props", this.props);
     return (
       <div className="col-sm-4">
         <div className="position-relative">

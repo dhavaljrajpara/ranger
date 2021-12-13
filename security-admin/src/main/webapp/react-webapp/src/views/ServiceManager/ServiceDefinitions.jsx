@@ -7,7 +7,7 @@ class ServiceDefinitions extends Component {
   state = {
     serviceDefs: [],
     services: [],
-    show: false,
+    show: false
   };
 
   componentDidMount() {
@@ -22,16 +22,15 @@ class ServiceDefinitions extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       serviceDefsResp = await fetchApi({
-        url: "plugins/definitions",
+        url: "plugins/definitions"
       });
-      console.log(serviceDefsResp.data.serviceDefs);
     } catch (error) {
       console.error(
         `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
       );
     }
     this.setState({
-      serviceDefs: serviceDefsResp.data.serviceDefs,
+      serviceDefs: serviceDefsResp.data.serviceDefs
     });
   };
 
@@ -40,16 +39,15 @@ class ServiceDefinitions extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       servicesResp = await fetchApi({
-        url: "plugins/services",
+        url: "plugins/services"
       });
-      console.log(servicesResp.data.services);
     } catch (error) {
       console.error(
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
     this.setState({
-      services: servicesResp.data.services,
+      services: servicesResp.data.services
     });
   };
 

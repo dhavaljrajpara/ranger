@@ -8,7 +8,7 @@ const onSubmit = async (values) => {};
 
 const msgStyles = {
   background: "white",
-  color: "black",
+  color: "black"
 };
 const NoOptionsMessage = (props) => {
   return (
@@ -23,7 +23,7 @@ class CreateZone extends React.Component {
     zones: [],
     users: [],
     groups: [],
-    services: [],
+    services: []
   };
 
   componentDidMount() {
@@ -38,8 +38,8 @@ class CreateZone extends React.Component {
       colors: {
         ...theme.colors,
         primary25: "#0b7fad;",
-        primary: "#0b7fad;",
-      },
+        primary: "#0b7fad;"
+      }
     };
   };
   fetchZones = async () => {
@@ -47,7 +47,7 @@ class CreateZone extends React.Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       zonesResp = await fetchApi({
-        url: "zones/zones",
+        url: "zones/zones"
       });
       await fetchCSRFConf();
     } catch (error) {
@@ -56,7 +56,7 @@ class CreateZone extends React.Component {
       );
     }
     this.setState({
-      zones: zonesResp.data.securityZones,
+      zones: zonesResp.data.securityZones
     });
   };
   fetchUsers = async () => {
@@ -64,7 +64,7 @@ class CreateZone extends React.Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       usersResp = await fetchApi({
-        url: "xusers/lookup/users",
+        url: "xusers/lookup/users"
       });
     } catch (error) {
       console.error(
@@ -72,7 +72,7 @@ class CreateZone extends React.Component {
       );
     }
     this.setState({
-      users: usersResp.data.vXStrings,
+      users: usersResp.data.vXStrings
     });
   };
   fetchGroups = async () => {
@@ -80,7 +80,7 @@ class CreateZone extends React.Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       groupsResp = await fetchApi({
-        url: "xusers/lookup/groups",
+        url: "xusers/lookup/groups"
       });
     } catch (error) {
       console.error(
@@ -88,7 +88,7 @@ class CreateZone extends React.Component {
       );
     }
     this.setState({
-      groups: groupsResp.data.vXStrings,
+      groups: groupsResp.data.vXStrings
     });
   };
   fetchServices = async () => {
@@ -96,7 +96,7 @@ class CreateZone extends React.Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       servicesResp = await fetchApi({
-        url: "plugins/services",
+        url: "plugins/services"
       });
     } catch (error) {
       console.error(
@@ -104,7 +104,7 @@ class CreateZone extends React.Component {
       );
     }
     this.setState({
-      services: servicesResp.data.services,
+      services: servicesResp.data.services
     });
   };
 
@@ -216,7 +216,7 @@ class CreateZone extends React.Component {
                             isMulti
                             components={{
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}
@@ -248,7 +248,7 @@ class CreateZone extends React.Component {
                             isMulti
                             components={{
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}
@@ -277,7 +277,7 @@ class CreateZone extends React.Component {
                             isMulti
                             components={{
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}
@@ -309,13 +309,13 @@ class CreateZone extends React.Component {
                             styles={{
                               noOptionsMessage: (base) => ({
                                 ...base,
-                                ...msgStyles,
-                              }),
+                                ...msgStyles
+                              })
                             }}
                             components={{
                               NoOptionsMessage,
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}
@@ -348,7 +348,7 @@ class CreateZone extends React.Component {
                             isMulti
                             components={{
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}
@@ -376,7 +376,7 @@ class CreateZone extends React.Component {
                             isMulti
                             components={{
                               DropdownIndicator: () => null,
-                              IndicatorSeparator: () => null,
+                              IndicatorSeparator: () => null
                             }}
                             isClearable={false}
                             theme={this.Theme}

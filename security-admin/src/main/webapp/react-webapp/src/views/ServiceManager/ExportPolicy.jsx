@@ -10,7 +10,7 @@ class ExportPolicy extends Component {
       services: [],
       showModal: false,
       serviceDef: this.props.serviceDefData,
-      service: this.props.serviceData,
+      service: this.props.serviceData
     };
   }
 
@@ -40,8 +40,8 @@ class ExportPolicy extends Component {
       colors: {
         ...theme.colors,
         primary25: "#0b7fad;",
-        primary: "#0b7fad;",
-      },
+        primary: "#0b7fad;"
+      }
     };
   };
 
@@ -50,7 +50,7 @@ class ExportPolicy extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       serviceDefsResp = await fetchApi({
-        url: "plugins/definitions",
+        url: "plugins/definitions"
       });
 
       await fetchCSRFConf();
@@ -60,7 +60,7 @@ class ExportPolicy extends Component {
       );
     }
     this.setState({
-      serviceDefs: serviceDefsResp.data.serviceDefs,
+      serviceDefs: serviceDefsResp.data.serviceDefs
     });
   };
   fetchServices = async () => {
@@ -68,17 +68,16 @@ class ExportPolicy extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       servicesResp = await fetchApi({
-        url: "plugins/services",
+        url: "plugins/services"
       });
       await fetchCSRFConf();
-      console.log(servicesResp.data.services);
     } catch (error) {
       console.error(
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
     this.setState({
-      services: servicesResp.data.services,
+      services: servicesResp.data.services
     });
   };
 
@@ -92,8 +91,8 @@ class ExportPolicy extends Component {
       const exportResp = await axios.get("/plugins/policies/exportJson", {
         params: {
           serviceName: "TestService",
-          checkPoliciesExists: "true",
-        },
+          checkPoliciesExists: "true"
+        }
       });
 
       await fetchCSRFConf();
@@ -138,7 +137,7 @@ class ExportPolicy extends Component {
               isMulti
               components={{
                 DropdownIndicator: () => null,
-                IndicatorSeparator: () => null,
+                IndicatorSeparator: () => null
               }}
               isClearable={false}
               theme={this.Theme}
@@ -157,7 +156,7 @@ class ExportPolicy extends Component {
               isClearable={false}
               components={{
                 DropdownIndicator: () => null,
-                IndicatorSeparator: () => null,
+                IndicatorSeparator: () => null
               }}
               theme={this.Theme}
               name="colors"

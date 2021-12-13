@@ -216,209 +216,212 @@ const EditPermission = () => {
   ) : (
     <div>
       <h4>Edit Permission</h4>
+      <div className="wrap non-collapsible">
+        <Form
+          id="myform2"
+          name="myform2"
+          onSubmit={onSubmit}
+          initialValues={permissionData}
+          render={({ handleSubmit, submitting, values }) => (
+            <form onSubmit={handleSubmit}>
+              <div className="form-horizontal">
+                <header>Module Details:</header>
+                <hr className="zoneheader" />
 
-      <Form
-        id="myform2"
-        name="myform2"
-        onSubmit={onSubmit}
-        initialValues={permissionData}
-        render={({ handleSubmit, submitting, values }) => (
-          <form onSubmit={handleSubmit}>
-            <div className="form-horizontal">
-              <header>Module Details:</header>
-              <hr className="zoneheader" />
+                <div>
+                  <Field
+                    className="form-control"
+                    name="module"
+                    render={({ input }) => (
+                      <FormB.Group
+                        as={Row}
+                        className="mb-3"
+                        controlId="moduleName"
+                      >
+                        <FormB.Label column sm="3" className="text-right">
+                          <strong>Module Name *</strong>
+                        </FormB.Label>
+                        <Col sm="4">
+                          <FormB.Control {...input} disabled />
+                        </Col>
+                      </FormB.Group>
+                    )}
+                  />
+                </div>
+              </div>
+              <br />
+              <br />
+              <div className="form-horizontal">
+                <header>User and Group Permissions:</header>
+                <hr className="zoneheader" />
 
-              <div>
                 <Field
                   className="form-control"
-                  name="module"
-                  render={({ input }) => (
+                  name="zoneservices"
+                  render={() => (
                     <FormB.Group
                       as={Row}
                       className="mb-3"
-                      controlId="moduleName"
+                      controlId="formPlaintextEmail"
                     >
-                      <FormB.Label column sm="3" className="text-right">
-                        <strong>Module Name *</strong>
+                      <FormB.Label className="text-right" column sm="2">
+                        Permissions
                       </FormB.Label>
-                      <Col sm="4">
-                        <FormB.Control {...input} disabled />
+                      <Col sm="10">
+                        <Table striped bordered>
+                          <thead>
+                            <tr>
+                              <th className="text-center text-muted">
+                                Select and Add Group
+                              </th>
+                              <th className="text-center text-muted">
+                                Select and Add User{" "}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <Field
+                                  className="form-control"
+                                  name="selectgroup"
+                                  render={({ input, meta }) => (
+                                    <div>
+                                      <AsyncSelect
+                                        {...input}
+                                        className="editpermselect"
+                                        defaultOptions
+                                        filterOption={filterGrpOp}
+                                        loadOptions={fetchGroups}
+                                        components={{
+                                          DropdownIndicator: () => null,
+                                          IndicatorSeparator: () => null
+                                        }}
+                                        isClearable={false}
+                                        placeholder="Select Groups"
+                                        width="500px"
+                                        isMulti
+                                      />
+
+                                      <Button
+                                        size="sm"
+                                        className="ml-2"
+                                        variant="outline-primary"
+                                        onClick={() => {
+                                          if (
+                                            !values.selectgroup ||
+                                            values.selectgroup.length === 0
+                                          ) {
+                                            toast.error(
+                                              "Please select group!!"
+                                            );
+                                            return false;
+                                          }
+                                          addInSelectedGrp(values, input);
+                                        }}
+                                      >
+                                        <i className="fa fa-plus"></i>
+                                      </Button>
+                                    </div>
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Field
+                                  className="form-control"
+                                  name="selectuser"
+                                  render={({ input }) => (
+                                    <div>
+                                      <AsyncSelect
+                                        {...input}
+                                        className="editpermselect"
+                                        defaultOptions
+                                        filterOption={filterUsrOp}
+                                        loadOptions={fetchUsers}
+                                        isMulti
+                                        width="500px"
+                                        components={{
+                                          DropdownIndicator: () => null,
+                                          IndicatorSeparator: () => null
+                                        }}
+                                        isClearable={false}
+                                        placeholder="Select Users"
+                                      />
+                                      <Button
+                                        size="sm"
+                                        className="ml-2"
+                                        variant="outline-primary"
+                                        onClick={() => {
+                                          if (
+                                            !values.selectuser ||
+                                            values.selectuser.length === 0
+                                          ) {
+                                            toast.error("Please select user!!");
+                                            return false;
+                                          }
+                                          addInSelectedUsr(values, input);
+                                        }}
+                                      >
+                                        <i className="fa fa-plus"></i>
+                                      </Button>
+                                    </div>
+                                  )}
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                {selectedGrp.map((obj, index) => (
+                                  <span className="selected-widget" key={index}>
+                                    <i
+                                      className="icon remove fa-fw fa fa-remove"
+                                      onClick={(e) => handleRemoveGrp(obj)}
+                                    />
+                                    {obj.label}
+                                  </span>
+                                ))}
+                              </td>
+                              <td>
+                                {" "}
+                                {selectedUsr.map((obj, index) => (
+                                  <span className="selected-widget" key={index}>
+                                    <i
+                                      className="icon remove fa-fw fa fa-remove"
+                                      onClick={(e) => handleRemoveUsr(obj)}
+                                    />
+                                    {obj.label}
+                                  </span>
+                                ))}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </Table>
                       </Col>
                     </FormB.Group>
                   )}
                 />
               </div>
-            </div>
-            <br />
-            <br />
-            <div className="form-horizontal">
-              <header>User and Group Permissions:</header>
-              <hr className="zoneheader" />
 
-              <Field
-                className="form-control"
-                name="zoneservices"
-                render={() => (
-                  <FormB.Group
-                    as={Row}
-                    className="mb-3"
-                    controlId="formPlaintextEmail"
-                  >
-                    <FormB.Label className="text-right" column sm="2">
-                      Permissions
-                    </FormB.Label>
-                    <Col sm="10">
-                      <Table striped bordered>
-                        <thead>
-                          <tr>
-                            <th className="text-center text-muted">
-                              Select and Add Group
-                            </th>
-                            <th className="text-center text-muted">
-                              Select and Add User{" "}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              <Field
-                                className="form-control"
-                                name="selectgroup"
-                                render={({ input, meta }) => (
-                                  <div>
-                                    <AsyncSelect
-                                      {...input}
-                                      className="editpermselect"
-                                      defaultOptions
-                                      filterOption={filterGrpOp}
-                                      loadOptions={fetchGroups}
-                                      components={{
-                                        DropdownIndicator: () => null,
-                                        IndicatorSeparator: () => null
-                                      }}
-                                      isClearable={false}
-                                      placeholder="Select Groups"
-                                      width="500px"
-                                      isMulti
-                                    />
-
-                                    <Button
-                                      size="sm"
-                                      className="ml-2"
-                                      variant="outline-primary"
-                                      onClick={() => {
-                                        if (
-                                          !values.selectgroup ||
-                                          values.selectgroup.length === 0
-                                        ) {
-                                          toast.error("Please select group!!");
-                                          return false;
-                                        }
-                                        addInSelectedGrp(values, input);
-                                      }}
-                                    >
-                                      <i className="fa fa-plus"></i>
-                                    </Button>
-                                  </div>
-                                )}
-                              />
-                            </td>
-                            <td>
-                              <Field
-                                className="form-control"
-                                name="selectuser"
-                                render={({ input }) => (
-                                  <div>
-                                    <AsyncSelect
-                                      {...input}
-                                      className="editpermselect"
-                                      defaultOptions
-                                      filterOption={filterUsrOp}
-                                      loadOptions={fetchUsers}
-                                      isMulti
-                                      width="500px"
-                                      components={{
-                                        DropdownIndicator: () => null,
-                                        IndicatorSeparator: () => null
-                                      }}
-                                      isClearable={false}
-                                      placeholder="Select Users"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      className="ml-2"
-                                      variant="outline-primary"
-                                      onClick={() => {
-                                        if (
-                                          !values.selectuser ||
-                                          values.selectuser.length === 0
-                                        ) {
-                                          toast.error("Please select user!!");
-                                          return false;
-                                        }
-                                        addInSelectedUsr(values, input);
-                                      }}
-                                    >
-                                      <i className="fa fa-plus"></i>
-                                    </Button>
-                                  </div>
-                                )}
-                              />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              {selectedGrp.map((obj, index) => (
-                                <span className="selected-widget" key={index}>
-                                  <i
-                                    className="icon remove fa-fw fa fa-remove"
-                                    onClick={(e) => handleRemoveGrp(obj)}
-                                  />
-                                  {obj.label}
-                                </span>
-                              ))}
-                            </td>
-                            <td>
-                              {" "}
-                              {selectedUsr.map((obj, index) => (
-                                <span className="selected-widget" key={index}>
-                                  <i
-                                    className="icon remove fa-fw fa fa-remove"
-                                    onClick={(e) => handleRemoveUsr(obj)}
-                                  />
-                                  {obj.label}
-                                </span>
-                              ))}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </Table>
-                    </Col>
-                  </FormB.Group>
-                )}
-              />
-            </div>
-
-            <br />
-            <hr />
-            <div className="buttons">
-              <Button
-                type="submit"
-                variant="primary"
-                className="savebtn"
-                type="submit"
-                disabled={submitting}
-              >
-                Save
-              </Button>
-              <Button variant="secondary" className="cancelbtn">
-                <Link to={`/permissions`}> Cancel </Link>
-              </Button>
-            </div>
-          </form>
-        )}
-      />
+              <br />
+              <hr />
+              <div className="buttons">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="savebtn"
+                  type="submit"
+                  disabled={submitting}
+                >
+                  Save
+                </Button>
+                <Button variant="secondary" className="cancelbtn">
+                  <Link to={`/permissions`}> Cancel </Link>
+                </Button>
+              </div>
+            </form>
+          )}
+        />
+      </div>
     </div>
   );
 };

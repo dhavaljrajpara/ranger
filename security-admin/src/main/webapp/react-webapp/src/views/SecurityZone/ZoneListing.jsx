@@ -12,8 +12,11 @@ class ZoneListing extends Component {
       zones: [],
       selectedZone: null,
       expand: true,
-      loader: false
+      loader: false,
+      searchText: "",
+      filterZone: []
     };
+    this.onChangeSearch = this.onChangeSearch.bind(this);
   }
 
   componentDidMount() {
@@ -45,7 +48,8 @@ class ZoneListing extends Component {
     this.setState({
       selectedZone: selectedZone,
       zones: zoneList,
-      loader: false
+      loader: false,
+      filterZone: zoneList
     });
   };
 
@@ -58,6 +62,12 @@ class ZoneListing extends Component {
       });
     }
   };
+  onChangeSearch = (e) => {
+    let filterZone = this.state.zones.filter((obj) =>
+      obj.name.includes(e.target.value)
+    );
+    this.setState({ searchText: e.target.value, filterZone: filterZone });
+  };
 
   render() {
     return this.state.loader ? (
@@ -65,56 +75,58 @@ class ZoneListing extends Component {
     ) : (
       <div className="wrap policy-manager">
         <div className="row">
-          {this.state.expand && (
-            <div className="col-sm-3 border-right">
-              <div className="clearfix">
-                <div className="float-left">
-                  <h4>Security Zones</h4>
-                </div>
-                <div className="float-right">
-                  <Link to="/zones/create" className="btn btn-secondary btn-sm">
-                    <i className="fa-fw fa fa-plus"></i>
-                  </Link>
-                </div>
+          <div className="col-sm-3 border-right">
+            <div className="clearfix">
+              <div className="float-left">
+                <h5 className="text-muted wrap-header bold pull-left">
+                  Security Zones
+                </h5>
               </div>
-              <div className="row">
-                <div className="col-sm-12">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="Search"
-                  ></input>
-                </div>
+              <div className="float-right">
+                <Link to="/zones/create" className="btn btn-secondary btn-sm">
+                  <i className="fa-fw fa fa-plus"></i>
+                </Link>
               </div>
-              <div className="row m-t-5">
-                <div className="col-sm-12">
+            </div>
+            <div className="row">
+              <div className="col-sm-12">
+                <input
+                  className="form-control"
+                  type="text"
+                  value={this.state.searchText}
+                  onChange={this.onChangeSearch}
+                  placeholder="Search"
+                ></input>
+              </div>
+            </div>
+            <div className="row m-t-5">
+              <div className="col-sm-12">
+                {this.state.filterZone.length !== 0 ? (
                   <ul className="list-group mt-3">
-                    {this.state.zones.map((zone) => (
-                      <li
-                        className="list-group-item border border-dotted"
-                        key={zone.id}
-                      >
-                        {
-                          <a
-                            className="text-primary"
-                            onClick={() => {
-                              this.clickBtn(zone.id);
-                            }}
-                            //to={{
-                            //  pathname: `/zones/zone/${zone.id}`,
-                            //   state: { selectzone: this.state.selectzone }
-                            // }}
-                          >
-                            {zone.name}
-                          </a>
-                        }
+                    {this.state.filterZone.map((zone) => (
+                      <li className="list-group-item border" key={zone.id}>
+                        <a
+                          className="text-primary"
+                          onClick={() => {
+                            this.clickBtn(zone.id);
+                          }}
+                        >
+                          {zone.name}
+                        </a>
                       </li>
                     ))}
                   </ul>
-                </div>
+                ) : (
+                  <ul className="p-4">
+                    <li className="list-unstyled text-auto">
+                      <h4 className="text-muted  large">No Zone Found!</h4>
+                    </li>
+                  </ul>
+                )}
               </div>
             </div>
-          )}
+          </div>
+
           <div className="col-sm-9 ">
             {this.state.selectedZone === null ? (
               <div className="row justify-content-md-center">

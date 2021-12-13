@@ -3,7 +3,7 @@ import React, {
   useState,
   useRef,
   useCallback,
-  useEffect,
+  useEffect
 } from "react";
 import { Link } from "react-router-dom";
 import XATableLayout from "Components/XATableLayout";
@@ -23,7 +23,7 @@ function Permissions() {
   const fetchPermissions = useCallback(async ({ pageSize, pageIndex }) => {
     let permissionsdata = [];
     let totalCount = 0;
-    const fetchId = fetchIdRef.current;
+    const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
@@ -31,8 +31,8 @@ function Permissions() {
           url: "xusers/permission",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         permissionsdata = permissionResp.data.vXModuleDef;
         totalCount = permissionResp.data.totalCount;
@@ -49,7 +49,7 @@ function Permissions() {
     () => [
       {
         Header: "Modules",
-        accessor: "module", // accessor is the "key" in the data
+        accessor: "module" // accessor is the "key" in the data
       },
       {
         Header: "Groups",
@@ -63,7 +63,7 @@ function Permissions() {
               <MoreLess data={Groups} />
             </>
           );
-        },
+        }
       },
       {
         Header: "Users",
@@ -77,7 +77,7 @@ function Permissions() {
               <MoreLess data={Users} />
             </>
           );
-        },
+        }
       },
       {
         Header: "Action",
@@ -85,17 +85,17 @@ function Permissions() {
         Cell: (rawValue) => {
           return (
             <Link
-            className="permissions"
-            title="Edit"
-            to={`permissions/${rawValue.row.original.id}/edit`}
-          >
-            <button className="permissionbtn">
-              <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
-            </button>{" "}
-          </Link>
+              className="permissions"
+              title="Edit"
+              to={`permissions/${rawValue.row.original.id}/edit`}
+            >
+              <button className="permissionbtn">
+                <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
+              </button>{" "}
+            </Link>
           );
-        },
-      },
+        }
+      }
     ],
     []
   );

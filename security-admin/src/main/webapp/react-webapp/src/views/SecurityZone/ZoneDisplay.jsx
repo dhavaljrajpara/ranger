@@ -22,7 +22,6 @@ export class ZoneDisplay extends React.Component {
       servicesResp = await fetchApi({
         url: "plugins/services"
       });
-      console.log(servicesResp.data.services);
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
     }
@@ -189,7 +188,13 @@ export class ZoneDisplay extends React.Component {
                   </Card.Header>
                   <Accordion.Collapse eventKey="1">
                     <Card.Body>
-                      No tag based services are associated with this zone
+                      {this.props.zoneslisting.tagServices.length !== 0 ? (
+                        this.props.zoneslisting.tagServices
+                      ) : (
+                        <h6 className="text-muted h6 large">
+                          No tag based services are associated with this zone
+                        </h6>
+                      )}
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -217,7 +222,7 @@ export class ZoneDisplay extends React.Component {
                       <Table striped bordered>
                         <thead>
                           <tr>
-                            <th className="p-3 mb-2 bg-white text-dark">
+                            <th className="p-3 mb-2 bg-white text-dark serviceth">
                               Service Name
                             </th>
                             <th className="p-3 mb-2 bg-white text-dark">
@@ -229,38 +234,47 @@ export class ZoneDisplay extends React.Component {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>
-                              <div>
-                                {this.state.services.map((obj) => {
-                                  return obj.name;
-                                })}
-                              </div>
-                            </td>
-                            <td>
-                              {" "}
-                              {this.state.services.map((obj) => {
-                                return obj.type;
-                              })}
-                            </td>
-                            <td
-                              className="text-center"
-                              width="30%"
-                              height="55px"
-                            >
-                              {this.props.zoneslisting.services.TestService.resources.map(
-                                (obj) => {
-                                  return (
-                                    <input
-                                      type="text"
-                                      disabled
-                                      value={`path : ${obj.path}`}
-                                    />
-                                  );
-                                }
-                              )}
-                            </td>
-                          </tr>
+                          {Object.keys(this.props.zoneslisting.services).map(
+                            (key) => {
+                              let servicetype = Object.values(
+                                this.state.services
+                              ).find((obj) => {
+                                return obj.name === key;
+                              });
+
+                              return (
+                                <tr className="bg-white">
+                                  <td className="align-middle" width="20%">
+                                    {key}
+                                  </td>
+                                  <td className="align-middle" width="20%">
+                                    {servicetype &&
+                                      servicetype.type.toString().toUpperCase()}
+                                  </td>
+                                  <td
+                                    className="text-center"
+                                    width="32%"
+                                    height="55px"
+                                  >
+                                    {this.props.zoneslisting.services[
+                                      key
+                                    ].resources.map((resource) => (
+                                      <div className="resourceGrp">
+                                        {Object.keys(resource).map(
+                                          (resourceKey) => (
+                                            <p>
+                                              <strong>{`${resourceKey} : `}</strong>
+                                              {resource[resourceKey].join(", ")}
+                                            </p>
+                                          )
+                                        )}
+                                      </div>
+                                    ))}
+                                  </td>
+                                </tr>
+                              );
+                            }
+                          )}
                         </tbody>
                       </Table>
                     </Card.Body>
