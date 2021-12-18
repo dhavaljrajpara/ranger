@@ -3,9 +3,11 @@ import { useParams } from "react-router";
 import { Form as FormB, Row, Col, Button, Badge } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
+import ResourceComp from "../Resources/ResourceComp";
 
 const initialState = {
   loader: true,
@@ -186,24 +188,64 @@ export default function AddUpdatePolicyForm() {
                       </Col>
                     </FormB.Group>
                   )}
-                  <Field
-                    className="form-control"
-                    name="policyName"
-                    render={({ input }) => (
-                      <FormB.Group
-                        as={Row}
-                        className="mb-3"
-                        controlId="policyName"
-                      >
-                        <FormB.Label column sm={2}>
-                          Policy Name*
-                        </FormB.Label>
+                  <FormB.Group as={Row} className="mb-3" controlId="policyName">
+                    <Field
+                      className="form-control"
+                      name="policyName"
+                      render={({ input }) => (
+                        <>
+                          <FormB.Label column sm={2}>
+                            Policy Name*
+                          </FormB.Label>
+                          <Col sm={4}>
+                            <FormB.Control
+                              {...input}
+                              placeholder="Policy Name"
+                            />
+                          </Col>
+                        </>
+                      )}
+                    />
+                    <Col sm={4}>
+                      <Row>
                         <Col sm={4}>
-                          <FormB.Control {...input} placeholder="Policy Name" />
+                          <Field
+                            className="form-control"
+                            name="isEnabled"
+                            render={({ input }) => (
+                              <BootstrapSwitchButton
+                                onlabel="Enabled"
+                                onstyle="primary"
+                                offlabel="Disabled"
+                                offstyle="outline-secondary"
+                                style="w-100"
+                                size="xs"
+                                {...input}
+                              />
+                            )}
+                          />
                         </Col>
-                      </FormB.Group>
-                    )}
-                  />
+                        <Col sm={4}>
+                          <Field
+                            className="form-control"
+                            name="policyPriority"
+                            render={({ input }) => (
+                              <BootstrapSwitchButton
+                                checked={false}
+                                onlabel="Override"
+                                onstyle="primary"
+                                offlabel="Normal"
+                                offstyle="outline-secondary"
+                                style="w-100"
+                                size="xs"
+                                {...input}
+                              />
+                            )}
+                          />
+                        </Col>
+                      </Row>
+                    </Col>
+                  </FormB.Group>
                   <Field
                     className="form-control"
                     name="policyLabel"
@@ -227,6 +269,11 @@ export default function AddUpdatePolicyForm() {
                       </FormB.Group>
                     )}
                   />
+                  <ResourceComp
+                    serviceDetails={serviceDetails}
+                    serviceCompDetails={serviceCompDetails}
+                    formValues={values}
+                  />
                   <Field
                     className="form-control"
                     name="description"
@@ -241,6 +288,32 @@ export default function AddUpdatePolicyForm() {
                         </FormB.Label>
                         <Col sm={4}>
                           <FormB.Control {...input} as="textarea" rows={3} />
+                        </Col>
+                      </FormB.Group>
+                    )}
+                  />
+                  <Field
+                    className="form-control"
+                    name="isAuditEnabled"
+                    render={({ input }) => (
+                      <FormB.Group
+                        as={Row}
+                        className="mb-3"
+                        controlId="description"
+                      >
+                        <FormB.Label column sm={2}>
+                          Audit Logging*
+                        </FormB.Label>
+                        <Col sm={4}>
+                          <BootstrapSwitchButton
+                            checked={false}
+                            onlabel="Yes"
+                            onstyle="primary"
+                            offlabel="No"
+                            offstyle="outline-secondary"
+                            size="xs"
+                            {...input}
+                          />
                         </Col>
                       </FormB.Group>
                     )}
