@@ -42,7 +42,7 @@ class ServiceDefinition extends Component {
             </thead>
             <tbody>
               {this.state.service.map((s) => (
-                <tr>
+                <tr key={s.id}>
                   <td>
                     <div>
                       <span className="pull-left">

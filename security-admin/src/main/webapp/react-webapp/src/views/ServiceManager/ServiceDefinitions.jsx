@@ -53,7 +53,39 @@ class ServiceDefinitions extends Component {
   render() {
     return (
       <div>
-        <h4 className="wrap-header bold">Service Manager</h4>
+        <div className="row">
+          <div className="col-sm-7">
+            <h4 className="wrap-header bold">Service Manager</h4>
+          </div>
+          <div className="col-sm-5">
+            <b> Security Zone: </b>
+            <span title="Create zone first" className="m-r-5">
+              <input
+                type="text"
+                className="select-zone-name"
+                placeholder="Select Zone Name"
+                disabled="disabled"
+              />
+            </span>
+            <button
+              type="button"
+              title="Import"
+              className="btn btn-sm btn-outline-secondary m-r-5"
+            >
+              <i className="fa fa-fw fa-rotate-180 fa-external-link-square"></i>
+              Import
+            </button>
+            <button
+              type="button"
+              title="Export"
+              className="btn btn-sm btn-outline-secondary"
+            >
+              <i className="fa fa-fw fa-external-link-square"></i>
+              Export
+            </button>
+          </div>
+        </div>
+
         <div className="wrap policy-manager">
           <div className="row">
             {this.state.serviceDefs.map((serviceDef) => (

@@ -47,13 +47,14 @@ class Header extends Component {
           <Nav className="mr-auto">
             <NavDropdown title={accessManager}>
               <NavDropdown.Item href="">
-                <i class="fa fa-fw fa-file m-r-xs"></i> Resource Based Policies
+                <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
+                Policies
               </NavDropdown.Item>
               <NavDropdown.Item href="">
-                <i class="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
+                <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
               </NavDropdown.Item>
               <NavDropdown.Item href="">
-                <i class="fa fa-fw fa-file-text m-r-xs"></i> Reports
+                <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
               </NavDropdown.Item>
             </NavDropdown>
             <Link to="/reports/audit/bigData" className="nav-link">
@@ -69,10 +70,10 @@ class Header extends Component {
             </Link>
             <NavDropdown title={settings}>
               <NavDropdown.Item href="">
-                <i class="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
+                <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
               </NavDropdown.Item>
               <NavDropdown.Item href="">
-                <i class="fa-fw fa fa-file-o m-r-xs"></i> Permissions
+                <i className="fa-fw fa fa-file-o m-r-xs"></i> Permissions
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
