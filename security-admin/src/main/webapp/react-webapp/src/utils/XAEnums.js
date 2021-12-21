@@ -431,14 +431,14 @@ export const AuthType = {
   }
 };
 
-export const enumValueToLabel = (myEnum, value) => {
-  var element =
-    (myEnum,
-    function (element) {
-      return element.value == value;
-    });
-  return typeof element === "undefined" ? "--" : element.label;
-};
+// export const enumValueToLabel = (myEnum, value) => {
+//   var element =
+//     (myEnum,
+//     function (element) {
+//       return element.value == value;
+//     });
+//   return typeof element === "undefined" ? "--" : element.label;
+// };
 
 export const ActivationStatus = {
   ACT_STATUS_DISABLED: {
@@ -510,4 +510,14 @@ export const getEnumElementByValue = (enumObj, value) => {
     }
   }
   return obj;
+};
+
+export const enumValueToLabel = (myEnum, value) => {
+  var element;
+  for (const key in myEnum) {
+    if (myEnum[key].value === value) {
+      element = myEnum[key];
+    }
+  }
+  return element;
 };

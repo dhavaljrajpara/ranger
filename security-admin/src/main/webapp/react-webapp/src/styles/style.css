@@ -627,3 +627,15 @@ header {
   overflow-wrap: break-word;
   white-space: initial;
 }
+
+/*Audit page Admin tab  */
+.link-tag {
+  display: inline-block;
+  background-color: transparent;
+  text-decoration: none;
+  padding: 0.1em 0.8em;
+  border: 1px solid #c0d4db;
+  border-radius: 15px;
+  margin-top: 4px;
+  color: #0b7fad;
+}

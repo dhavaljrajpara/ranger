@@ -4,50 +4,84 @@ import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
 import { AuthStatus } from "../../utils/XAEnums";
 import { AuthType } from "../../utils/XAEnums";
+import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [sessionId, setSessionId] = useState([]);
+  const [showmodal, setShowModal] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
-
-  const fetchLoginSessionLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let logs = [];
-    let totalCount= 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const logsResp = await fetchApi({
-          url: "xusers/authSessions",
-          params:{
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
-        });
-        logs = logsResp.data.vXAuthSessions;
-        totalCount = logsResp.data.totalCount;
-      } catch (error) {
-        console.error(
-          `Error occurred while fetching Login Session logs! ${error}`
-        );
+  const handleClose = () => setShowModal(false);
+  const fetchLoginSessionLogsInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let logs = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          const logsResp = await fetchApi({
+            url: "xusers/authSessions",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          logs = logsResp.data.vXAuthSessions;
+          totalCount = logsResp.data.totalCount;
+        } catch (error) {
+          console.error(
+            `Error occurred while fetching Login Session logs! ${error}`
+          );
+        }
+        setLoginSessionLogs(logs);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setLoginSessionLogs(logs);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  },[]);
+    },
+    []
+  );
 
+  const openModal = (id) => {
+    setShowModal(true);
+    setSessionId(id);
+  };
   const columns = React.useMemo(
     () => [
       {
         Header: "Session ID",
         accessor: "id", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          var id = rawValue.value;
+          if (id != undefined) {
+            return (
+              <a
+                className="text-primary"
+                onClick={() => {
+                  openModal(id);
+                }}
+              >
+                {id}
+              </a>
+            );
+          } else {
+            return "";
+          }
+        }
       },
       {
         Header: "Login ID",
         accessor: "loginId", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return rawValue.value;
+          } else {
+            return "--";
+          }
+        }
       },
       {
         Header: "Result",
@@ -68,7 +102,7 @@ function Login_Sessions() {
             }
           });
           return html;
-        },
+        }
       },
       {
         Header: "Login Type",
@@ -81,23 +115,22 @@ function Login_Sessions() {
             }
           });
           return label;
-        },
+        }
       },
       {
         Header: "IP",
-        accessor: "requestIP", // accessor is the "key" in the data
+        accessor: "requestIP" // accessor is the "key" in the data
       },
       {
         Header: "User Agent",
         accessor: "requestUserAgent", // accessor is the "key" in the data
-        Cell: (rawValue, model) => {
-          var label = "";
+        Cell: (rawValue) => {
           if (rawValue.value) {
-            return (label = rawValue.value);
+            return rawValue.value;
           } else {
             return "--";
           }
-        },
+        }
       },
       {
         Header: "Login Time ( India Standard Time )",
@@ -106,15 +139,28 @@ function Login_Sessions() {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
           return newdate;
-        },
-      },
+        }
+      }
     ],
     []
   );
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={loginSessionListingData} columns={columns} fetchData={fetchLoginSessionLogsInfo} pageCount={pageCount}/>
+    <div>
+      <XATableLayout
+        data={loginSessionListingData}
+        columns={columns}
+        fetchData={fetchLoginSessionLogsInfo}
+        pageCount={pageCount}
+      />
+      <AdminModal
+        show={showmodal}
+        data={sessionId}
+        onHide={handleClose}
+      ></AdminModal>
+      )
+    </div>
   );
 }
 
