@@ -1,39 +1,18 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Modal, Button } from "react-bootstrap";
-import Select, { components } from "react-select";
+import Select from "react-select";
+import { fetchApi } from "Utils/fetchAPI";
 
 class ExportPolicy extends Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {
-      serviceDefs: [],
+      service: [],
+      selectedServices: [],
       services: [],
-      showModal: false,
-      serviceDef: this.props.serviceDefData,
-      service: this.props.serviceData
+      servicename: []
     };
   }
-
-  change = (event) => {
-    console.log(event);
-  };
-
-  changes = (event) => {
-    console.log(event);
-  };
-
-  componentDidMount() {
-    this.fetchServiceDefs();
-    this.fetchServices();
-  }
-
-  ShowModal = (status) => {
-    this.Close();
-    this.setState({ showModal: status });
-  };
-  Close = () => {
-    this.props.hide(false);
-  };
   Theme = (theme) => {
     return {
       ...theme,
@@ -44,58 +23,50 @@ class ExportPolicy extends Component {
       }
     };
   };
+  downloadFile = ({ data, fileName, fileType }) => {
+    const blob = new Blob([data], { type: fileType });
 
-  fetchServiceDefs = async () => {
-    let serviceDefsResp;
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      serviceDefsResp = await fetchApi({
-        url: "plugins/definitions"
-      });
-
-      await fetchCSRFConf();
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
-      );
-    }
-    this.setState({
-      serviceDefs: serviceDefsResp.data.serviceDefs
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = window.URL.createObjectURL(blob);
+    const clickEvt = new MouseEvent("click", {
+      view: window,
+      bubbles: true,
+      cancelable: true
     });
-  };
-  fetchServices = async () => {
-    let servicesResp;
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      servicesResp = await fetchApi({
-        url: "plugins/services"
-      });
-      await fetchCSRFConf();
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Services or CSRF headers! ${error}`
-      );
-    }
-    this.setState({
-      services: servicesResp.data.services
-    });
+    a.dispatchEvent(clickEvt);
+    a.remove();
   };
 
-  export = async () => {
+  handletypeChange = (e) => {
+    e.map((serviceDef) => {
+      this.state.selectedServices = [];
+      this.state.services = [];
+      let service = this.props.service.filter(
+        (s) => s.type === serviceDef.label
+      );
+
+      service.forEach((s) => {
+        this.state.selectedServices.push(s.name);
+        this.state.services.push({ name: s.name });
+      });
+      this.setState({ servicename: service });
+    });
+  };
+  export = async (e) => {
+    e.preventDefault();
     let exportResp;
 
     try {
-      const axios = require("axios");
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-
-      const exportResp = await axios.get("/plugins/policies/exportJson", {
-        params: {
-          serviceName: "TestService",
-          checkPoliciesExists: "true"
-        }
+      exportResp = await fetchApi({
+        url: "/plugins/policies/exportJson"
       });
 
-      await fetchCSRFConf();
+      this.downloadFile({
+        data: JSON.stringify(exportResp.data),
+        fileName: "Ranger_Policy.json",
+        fileType: "text/json"
+      });
     } catch (error) {
       console.error(
         `Error occurred while fetching Services or CSRF headers! ${error}`
@@ -104,69 +75,64 @@ class ExportPolicy extends Component {
   };
 
   render() {
-    const { serviceDefs } = this.state;
-    let option = [];
-    serviceDefs.map((serviceDef) => {
-      let options = {};
-      options.value = serviceDef.id;
-      options.label = serviceDef.name;
-      option.push(options);
+    let option = this.props.serviceDef.map((servicedef) => {
+      return {
+        label: servicedef.name
+      };
     });
-
-    const { services } = this.state;
-    let option1 = [];
-    services.map((service) => {
-      let options1 = {};
-      options1.value = service.type;
-      options1.label = service.name;
-      option1.push(options1);
-    });
-
     return (
       <>
-        <Modal show={this.props.show} onHide={this.Close} size="lg">
+        <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>Export Policy </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <b>
-              <h6 className="servicename">Service Type*</h6>
-            </b>
-            <Select
-              onChange={this.change}
-              isMulti
-              components={{
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null
-              }}
-              isClearable={false}
-              theme={this.Theme}
-              name="colors"
-              options={option}
-              defaultValue={option.slice(0, 19)}
-              placeholder="Select Component"
-            />{" "}
+            {!this.props.isCardButton && (
+              <div>
+                <b>
+                  <h6 className="servicename">Service Type*</h6>
+                </b>
+                <Select
+                  onChange={this.handletypeChange}
+                  isMulti
+                  components={{
+                    DropdownIndicator: () => null,
+                    IndicatorSeparator: () => null
+                  }}
+                  isClearable={false}
+                  theme={this.Theme}
+                  name="colors"
+                  options={option}
+                  defaultValue={option.slice(0, 19)}
+                  placeholder="Select Component"
+                />
+              </div>
+            )}
             <br />
-            <b>
-              <h6 className="servicename">Select Service Name*</h6>
-            </b>
-            <Select
-              onChange={this.changes}
-              isMulti
-              isClearable={false}
-              components={{
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null
-              }}
-              theme={this.Theme}
-              name="colors"
-              options={option1}
-              defaultValue={option1.slice(0)}
-              placeholder="Select Component"
-            />
+
+            <div>
+              <b>
+                <h6 className="servicename">Select Service Name*</h6>
+              </b>
+              <Select
+                isMulti
+                isClearable={false}
+                components={{
+                  DropdownIndicator: () => null,
+                  IndicatorSeparator: () => null
+                }}
+                theme={this.Theme}
+                name="colors"
+                options={this.state.selectedServices.map((obj) => {
+                  return { label: obj };
+                })}
+                // defaultValue={options.slice(0)}
+                placeholder="Select Component"
+              />
+            </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.Close}>
+            <Button variant="secondary" onClick={this.props.onHide}>
               Cancel
             </Button>
             <Button variant="primary" onClick={this.export}>

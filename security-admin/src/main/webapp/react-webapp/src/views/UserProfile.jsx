@@ -18,7 +18,7 @@ const updateUserInfo = async (values) => {
     const profResp = await fetchApi({
       url: "users",
       method: "put",
-      data: userProps,
+      data: userProps
     });
     console.log(profResp.status);
     setUserProfile(profResp.data);
@@ -42,7 +42,7 @@ const updatePassword = async (values) => {
     const passwdResp = await fetchApi({
       url: "users/" + userProps.id + "/passwordchange",
       method: "post",
-      data: jsonData,
+      data: jsonData
     });
   } catch (error) {
     console.error(`Error occurred while updating user password! ${error}`);
@@ -102,14 +102,14 @@ class UserProfile extends Component {
                       firstName: userProps.firstName,
                       lastName: userProps.lastName,
                       emailAddress: userProps.emailAddress,
-                      userRoleList: userProps.userRoleList[0],
+                      userRoleList: userProps.userRoleList[0]
                     }}
                     render={({
                       handleSubmit,
                       form,
                       submitting,
                       pristine,
-                      values,
+                      values
                     }) => (
                       <form onSubmit={handleSubmit}>
                         <div className="form-group row">
@@ -208,7 +208,7 @@ class UserProfile extends Component {
                       form,
                       submitting,
                       values,
-                      pristine,
+                      pristine
                     }) => (
                       <form onSubmit={handleSubmit}>
                         <div className="form-group row">

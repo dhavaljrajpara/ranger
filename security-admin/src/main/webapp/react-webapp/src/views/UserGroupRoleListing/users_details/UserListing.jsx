@@ -154,8 +154,14 @@ function Users() {
         Header: "Groups",
         accessor: "groupNameList",
         Cell: (rawValue) => {
-          if (rawValue.value.length != 0) {
-            return <Badge variant="info">{rawValue.value} </Badge>;
+          if (rawValue.value) {
+            return rawValue.value.map((name) => {
+              return (
+                <Badge variant="info" className="usersbadge">
+                  {name}
+                </Badge>
+              );
+            });
           } else return "--";
         }
       },

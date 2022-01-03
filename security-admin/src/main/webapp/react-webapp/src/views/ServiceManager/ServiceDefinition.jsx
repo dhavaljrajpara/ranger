@@ -1,17 +1,47 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import Table from "react-bootstrap/Table";
-import Button from "react-bootstrap/Button";
 import folderLogo from "Images/folder-grey.png";
-
 import { RangerPolicyType } from "Utils/XAEnums";
+import ExportPolicy from "./ExportPolicy";
+import ImportPolicy from "./ImportPolicy";
+import { Button } from "react-bootstrap";
 
 class ServiceDefinition extends Component {
-  state = {
-    serviceDef: this.props.serviceDefData,
-    service: this.props.serviceData
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      serviceDef: this.props.serviceDefData,
+      service: this.props.serviceData,
+      show: false,
+      shows: false,
+      isCardButton: true,
+      filterselzone: this.props.selectedzoneservice
+    };
+  }
 
+  showModal = () => {
+    this.setState({ show: true });
+  };
+  hideModal = () => {
+    this.setState({ show: false });
+  };
+  showModals = () => {
+    this.setState({ shows: true });
+  };
+  hideModals = () => {
+    this.setState({ shows: false });
+  };
+  Theme = (theme) => {
+    return {
+      ...theme,
+      colors: {
+        ...theme.colors,
+        primary25: "#0b7fad;",
+        primary: "#0b7fad;"
+      }
+    };
+  };
   render() {
     return (
       <div className="col-sm-4">
@@ -33,12 +63,27 @@ class ServiceDefinition extends Component {
                       <Link to={`/service/${this.state.serviceDef.id}/create`}>
                         <i className="fa-fw fa fa-plus"></i>
                       </Link>
-                      <a className="text-decoration">
+                      <a className="text-decoration" onClick={this.showModals}>
                         <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
                       </a>
-                      <a className="text-decoration">
+                      <a className="text-decoration" onClick={this.showModal}>
                         <i className="fa-fw fa fa-external-link-square"></i>
                       </a>
+                      <ImportPolicy
+                        shows={this.state.shows}
+                        onHides={this.hideModals}
+                        zones={this.props.zones}
+                        service={this.props.serviceData}
+                        serviceDef={this.props.servicedefs}
+                      />
+
+                      <ExportPolicy
+                        serviceDef={this.props.servicedefs}
+                        service={this.props.serviceData}
+                        isCardButton={this.state.isCardButton}
+                        show={this.state.show}
+                        onHide={this.hideModal}
+                      />
                     </span>
                   </div>
                 </th>
@@ -52,7 +97,7 @@ class ServiceDefinition extends Component {
                       <span className="float-left">
                         <Link
                           to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
-                          className="service-name"
+                          className="service-name text-info"
                         >
                           {s.name}
                         </Link>

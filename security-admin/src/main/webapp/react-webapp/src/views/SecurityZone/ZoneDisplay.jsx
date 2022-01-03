@@ -202,7 +202,9 @@ export class ZoneDisplay extends React.Component {
                 <Accordion.Collapse eventKey="1">
                   <Card.Body>
                     {this.props.zoneslisting.tagServices.length !== 0 ? (
-                      this.props.zoneslisting.tagServices
+                      <Badge variant="info" className="usersbadge">
+                        {this.props.zoneslisting.tagServices}
+                      </Badge>
                     ) : (
                       <h6 className="text-muted h6 large">
                         No tag based services are associated with this zone

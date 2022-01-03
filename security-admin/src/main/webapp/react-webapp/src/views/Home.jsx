@@ -7,13 +7,17 @@ class Home extends Component {
     super(props);
     this.state = {};
   }
+
   render() {
+    this.props;
     return (
       <div>
         <Breadcrumb>
           <Breadcrumb.Item href="#"></Breadcrumb.Item>
         </Breadcrumb>
-        <ServiceDefinitions></ServiceDefinitions>
+        <ServiceDefinitions
+          isTagView={this.props.isTagView}
+        ></ServiceDefinitions>
       </div>
     );
   }

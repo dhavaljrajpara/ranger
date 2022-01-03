@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 
 import rangerLogo from "Images/ranger_logo.png";
-import { Link, withRouter } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 
 class Header extends Component {
@@ -59,29 +59,33 @@ class Header extends Component {
         className="ranger-navbar"
         collapseOnSelect
       >
-        <Link to="/" className="navbar-brand logo">
+        <Link to="/policymanager/resource" className="navbar-brand logo">
           <img src={rangerLogo} alt="Ranger logo" />
         </Link>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <NavDropdown title={accessManager}>
-              <Link to="/" className="dropdown-item">
+              <Link
+                to="/policymanager/resource"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
                 Policies
               </Link>
-              <Link to="/tag_policies" className="dropdown-item">
+              <Link to="/policymanager/tag" className="dropdown-item" replace>
                 <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
               </Link>
-              <Link to="/reports" className="dropdown-item">
+              <Link to="/reports" className="dropdown-item" replace>
                 <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
               </Link>
             </NavDropdown>
-            <Link to="/bigData" className="nav-link">
+            <Link to="/bigData" className="nav-link" replace>
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
             </Link>
-            <Link to="/zones/zone/list" className="nav-link">
+            <Link to="/zones/zone/list" className="nav-link" replace>
               <span className="zone-icon fa-stack fa-lg">
                 <i className="fa fa-square-o fa-stack-2x"></i>
                 <i className="fa fa-bolt fa-stack-1x"></i>
@@ -89,23 +93,24 @@ class Header extends Component {
               {` Security Zone `}
             </Link>
             <NavDropdown title={settings}>
-              <Link to="/users/usertab" className="dropdown-item">
+              <Link to="/users/usertab" className="dropdown-item" replace>
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
               </Link>
-              <Link to="/permissions" className="dropdown-item">
+              <Link to="/permissions" className="dropdown-item" replace>
                 <i className="fa-fw fa fa-file-o m-r-xs"></i> Permissions
               </Link>
             </NavDropdown>
           </Nav>
           <Nav>
             <NavDropdown title={loginId} id="user-dropdown" alignRight>
-              <Link to="/userprofile" className="dropdown-item">
+              <Link to="/userprofile" className="dropdown-item" replace>
                 <i className="fa fa-user"></i> Profile
               </Link>
               <Link
                 to="/logout"
                 onClick={this.handleLogout}
                 className="dropdown-item"
+                replace
               >
                 <i className="fa fa-power-off"></i> Logout
               </Link>
@@ -117,4 +122,4 @@ class Header extends Component {
   }
 }
 
-export default withRouter(Header);
+export default Header;

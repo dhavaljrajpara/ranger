@@ -32,14 +32,18 @@ const AddUpdatePolicyForm = lazy(() =>
   import("Views/PolicyListing/AddUpdatePolicyForm")
 );
 
-function AuthRoute({ path, component: Comp, userProfile, ...rest }) {
+function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
     // return <Redirect to="/signin" />;
     window.location.replace("login.html");
     return;
   }
   return (
-    <Route {...rest} exact render={(routeProps) => <Comp {...routeProps} />} />
+    <Route
+      {...rest}
+      exact
+      render={(routeProps) => <Comp {...routeProps} {...compProps} />}
+    />
   );
 }
 
@@ -91,9 +95,10 @@ export default class App extends Component {
                   <Switch>
                     <AuthRoute
                       exact
-                      path="/"
+                      path="/policymanager/resource"
                       component={HomeComp}
                       userProfile={userProfile}
+                      istag={true}
                       {...defaultProps}
                     />
                     <AuthRoute
@@ -115,6 +120,13 @@ export default class App extends Component {
                       {...defaultProps}
                     />
                     <AuthRoute
+                      path="/policymanager/tag"
+                      component={HomeComp}
+                      userProfile={userProfile}
+                      {...defaultProps}
+                      compProps={{ isTagView: true }}
+                    ></AuthRoute>
+                    <AuthRoute
                       exact
                       path="/service/:serviceId/policies/create/:policyType"
                       component={AddUpdatePolicyForm}
@@ -131,7 +143,6 @@ export default class App extends Component {
                       path="/zones/zone/:id"
                       component={ZoneListingComp}
                     />
-
                     <AuthRoute
                       exact
                       path="/zones/create"
