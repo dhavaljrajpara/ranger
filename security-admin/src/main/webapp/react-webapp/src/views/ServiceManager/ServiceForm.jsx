@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
 import { Form, Field } from "react-final-form";
+import { toast } from "react-toastify";
 
 class ServiceForm extends Component {
   state = {
@@ -46,6 +47,7 @@ class ServiceForm extends Component {
         data: serviceJson
       });
       console.log(serviceResp.status);
+      toast.success("Successfully created service");
       this.props.history.push("/");
     } catch (error) {
       console.error(`Error occurred while creating a service! ${error}`);

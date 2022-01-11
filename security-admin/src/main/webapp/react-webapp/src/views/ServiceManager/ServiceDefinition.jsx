@@ -119,7 +119,12 @@ class ServiceDefinition extends Component {
                         >
                           <i className="fa-fw fa fa-edit"></i>
                         </Button>
-                        <Button variant="danger" size="sm" title="Delete">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          title="Delete"
+                          onClick={(sid) => this.props.handleDelete(s.id)}
+                        >
                           <i className="fa-fw fa fa-trash"></i>
                         </Button>
                       </span>
