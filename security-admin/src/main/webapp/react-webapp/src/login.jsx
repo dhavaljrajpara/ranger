@@ -32,6 +32,8 @@ const LoginComp = () => {
       let url = "index.html";
       if (location.hash.length > 2) {
         url += location.hash;
+      } else {
+        url = "#/policymanager/resource";
       }
       window.location.replace(url);
       /* setTimeout(() => {
@@ -43,7 +45,7 @@ const LoginComp = () => {
             ,
           });
          }, 2000);*/
-      window.location.replace(url);
+      // window.location.replace(url);
     } catch (error) {
       console.error(`Error occurred while login! ${error}`);
       let errMsg = error?.response?.data?.msgDesc || "Login failed!!!";

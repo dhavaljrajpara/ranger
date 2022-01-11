@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
@@ -6,17 +6,28 @@ import { fetchApi } from "Utils/fetchAPI";
 import { ClassTypes, enumValueToLabel } from "../../utils/XAEnums";
 import dateFormat from "dateformat";
 import AdminModal from "./AdminModal";
+import OperationAdminModal from "./OperationAdminModal";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
+
   const [sessionId, setSessionId] = useState([]);
   // const [authSession, setAuthSession] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [showmodal, setShowModal] = useState(false);
+  const [showrowmodal, setShowRowModal] = useState(false);
+  const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
 
   const handleClose = () => setShowModal(false);
+  const handleClosed = () => setShowRowModal(false);
+
+  const rowModal = async (row) => {
+    const { original = {} } = row;
+    setShowRowModal(true);
+    setRowData(original);
+  };
 
   const fetchAdminLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let adminlogs = [];
@@ -228,6 +239,9 @@ function Admin() {
           columns={columns}
           fetchData={fetchAdminLogsInfo}
           pageCount={pageCount}
+          getRowProps={(row) => ({
+            onClick: () => rowModal(row)
+          })}
         />
       </div>
       <AdminModal
@@ -235,6 +249,13 @@ function Admin() {
         data={sessionId}
         onHide={handleClose}
       ></AdminModal>
+      {
+        <OperationAdminModal
+          show={showrowmodal}
+          data={rowdata}
+          onHide={handleClosed}
+        ></OperationAdminModal>
+      }
       )
     </div>
   );

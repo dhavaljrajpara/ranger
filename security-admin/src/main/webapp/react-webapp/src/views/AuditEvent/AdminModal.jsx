@@ -28,7 +28,6 @@ export const AdminModal = (props) => {
       authlogs = authResp.data.vXAuthSessions;
       setAuthSession(authlogs);
       authlogs ? setLoader(false) : setLoader(true);
-      console.log("mil gaya", authlogs);
     } catch (error) {
       console.error(`Error occurred while fetching Admin logs! ${error}`);
     }
