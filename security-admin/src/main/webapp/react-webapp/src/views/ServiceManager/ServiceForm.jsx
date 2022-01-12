@@ -47,8 +47,8 @@ class ServiceForm extends Component {
         data: serviceJson
       });
       console.log(serviceResp.status);
-      toast.success("Successfully created service");
-      this.props.history.push("/");
+      toast.success("Successfully created the service");
+      this.props.history.push("/policymanager/resource");
     } catch (error) {
       console.error(`Error occurred while creating a service! ${error}`);
     }

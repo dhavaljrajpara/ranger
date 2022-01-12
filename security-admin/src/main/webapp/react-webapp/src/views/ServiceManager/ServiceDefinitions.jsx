@@ -6,7 +6,6 @@ import ImportPolicy from "./ImportPolicy";
 import Select from "react-select";
 import { fetchApi } from "Utils/fetchAPI";
 import { withRouter } from "react-router-dom";
-import { toast } from "react-toastify";
 
 class ServiceDefinitions extends Component {
   constructor(props) {
@@ -113,25 +112,6 @@ class ServiceDefinitions extends Component {
       services: servicesResp.data.services,
       filterserv: servicesResp.data.services
     });
-  };
-
-  deleteService = async (sid) => {
-    console.log("Service Id to delete - ", sid);
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      await fetchApi({
-        url: `plugins/services/${sid}`,
-        method: "delete"
-      });
-      this.setState({
-        services: this.state.services.filter((s) => s.id != sid)
-      });
-      toast.success("Successfully deleted the service");
-    } catch (error) {
-      console.error(
-        `Error occurred while deleting Service id - ${sid}!  ${error}`
-      );
-    }
   };
 
   selectedZone = async (e) => {
@@ -296,7 +276,6 @@ console.log(services.map((ser)=>{return ser}))})} */}
                 serviceData={this.state.services.filter(
                   (s) => s.type === serviceDef.name
                 )}
-                handleDelete={this.deleteService}
               ></ServiceDefinition>
             ))}
           </div>

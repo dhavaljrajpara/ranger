@@ -6,6 +6,8 @@ import { RangerPolicyType } from "Utils/XAEnums";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
 import { Button } from "react-bootstrap";
+import { toast } from "react-toastify";
+import Modal from "react-bootstrap/Modal";
 
 class ServiceDefinition extends Component {
   constructor(props) {
@@ -15,6 +17,7 @@ class ServiceDefinition extends Component {
       service: this.props.serviceData,
       show: false,
       shows: false,
+      showDelete: false,
       isCardButton: true,
       filterselzone: this.props.selectedzoneservice
     };
@@ -32,6 +35,13 @@ class ServiceDefinition extends Component {
   hideModals = () => {
     this.setState({ shows: false });
   };
+  showDeleteModal = () => {
+    this.setState({ showDelete: true });
+  };
+  hideDeleteModal = () => {
+    this.setState({ showDelete: false });
+  };
+
   Theme = (theme) => {
     return {
       ...theme,
@@ -42,6 +52,26 @@ class ServiceDefinition extends Component {
       }
     };
   };
+
+  deleteService = async (sid) => {
+    console.log("Service Id to delete - ", sid);
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      await fetchApi({
+        url: `plugins/services/${sid}`,
+        method: "delete"
+      });
+      this.setState({
+        service: this.state.service.filter((s) => s.id != sid)
+      });
+      toast.success("Successfully deleted the service");
+    } catch (error) {
+      console.error(
+        `Error occurred while deleting Service id - ${sid}!  ${error}`
+      );
+    }
+  };
+
   render() {
     return (
       <div className="col-sm-4">
@@ -123,10 +153,37 @@ class ServiceDefinition extends Component {
                           variant="danger"
                           size="sm"
                           title="Delete"
-                          onClick={(sid) => this.props.handleDelete(s.id)}
+                          onClick={this.showDeleteModal}
                         >
                           <i className="fa-fw fa fa-trash"></i>
                         </Button>
+                        <Modal
+                          show={this.state.showDelete}
+                          onHide={this.hideDeleteModal}
+                        >
+                          <Modal.Header closeButton>
+                            <Modal.Title>Delete Service</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>Are you sure want to delete ?</Modal.Body>
+                          <Modal.Footer>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              title="Cancel"
+                              onClick={this.hideDeleteModal}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              title="Yes"
+                              onClick={(sid) => this.deleteService(s.id)}
+                            >
+                              Yes
+                            </Button>
+                          </Modal.Footer>
+                        </Modal>
                       </span>
                     </div>
                   </td>
