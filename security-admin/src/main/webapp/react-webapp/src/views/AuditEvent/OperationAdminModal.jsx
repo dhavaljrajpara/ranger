@@ -49,14 +49,16 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "create" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_SERVICE.value && (
               <div>
-                <div class="font-weight-bolder">Name: {objectName || ""}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
+                  Name: {objectName || ""}
+                </div>
+                <div className="font-weight-bolder">
                   Date:
                   {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Service Details:</h5>
+                <div className="font-weight-bolder">Created By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -79,7 +81,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">
+                <h5 className="bold wrap-header m-t-sm">
                   Connection Configurations :
                 </h5>
                 <Table striped bordered hover>
@@ -107,18 +109,20 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "create" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
               <div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
                   Policy ID : <Badge variant="info">{objectId}</Badge>
                 </div>
-                <div class="font-weight-bolder">Policy Name: {objectName}</div>
-                <div class="font-weight-bolder">Service Name: {owner}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
+                  Policy Name: {objectName}
+                </div>
+                <div className="font-weight-bolder">Service Name: {owner}</div>
+                <div className="font-weight-bolder">
                   Created Date:{" "}
                   {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
                   Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Policy Details:</h5>
+                <div className="font-weight-bolder">Created By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -150,7 +154,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
+                <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
                 <Table className="table table-striped border w-auto">
                   <tbody>
                     <tr>
@@ -222,13 +226,13 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "create" &&
             objectClassType == ClassTypes.CLASS_TYPE_XA_GROUP.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Group Detail:</h5>
+                <div className="font-weight-bolder">Created By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Group Detail:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -254,13 +258,13 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
             objectClassType ==
               ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Zone Details:</h5>
+                <div className="font-weight-bolder">Created By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -284,7 +288,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Zone Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -299,14 +303,14 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "create" &&
             objectClassType == ClassTypes.CLASS_TYPE_XA_USER.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner} </div>
+                <div className="font-weight-bolder">Created By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">User Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -331,14 +335,14 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "create" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_ROLE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner} </div>
+                <div className="font-weight-bolder">Created By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Role Detail:</h5>
+                <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -367,7 +371,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Users:</h5>
+                <h5 className="bold wrap-header m-t-sm">Users:</h5>
                 <Table className="table  border w-auto">
                   <tbody>
                     {reportdata
@@ -409,7 +413,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                 </Table>
                 <br />
 
-                <h5 class="bold wrap-header m-t-sm">Groups:</h5>
+                <h5 className="bold wrap-header m-t-sm">Groups:</h5>
                 <Table className="table  border w-auto">
                   <tbody>
                     {reportdata
@@ -451,7 +455,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Roles:</h5>
+                <h5 className="bold wrap-header m-t-sm">Roles:</h5>
                 <Table className="table  border w-auto">
                   <tbody>
                     {reportdata
@@ -500,14 +504,14 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "update" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_SERVICE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Updated By: {owner} </div>
+                <div className="font-weight-bolder">Updated By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Group Detail:</h5>
+                <h5 className="bold wrap-header m-t-sm">Group Detail:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -532,14 +536,14 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "update" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_ROLE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Updated By: {owner} </div>
+                <div className="font-weight-bolder">Updated By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Old Groups Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Old Groups Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -555,14 +559,14 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
             objectClassType ==
               ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Updated By: {owner} </div>
+                <div className="font-weight-bolder">Updated By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Zone Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -588,15 +592,15 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "delete" &&
             objectClassType == ClassTypes.CLASS_TYPE_XA_GROUP.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner} </div>
-                <div class="font-weight-bolder">Deleted By: {owner} </div>
+                <div className="font-weight-bolder">Created By: {owner} </div>
+                <div className="font-weight-bolder">Deleted By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Group Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Group Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -619,18 +623,20 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "delete" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
               <div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
                   Policy ID: <Badge variant="info">{objectId}</Badge>
                 </div>
-                <div class="font-weight-bolder">Policy Name: {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
+                  Policy Name: {objectName}
+                </div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Created By: {owner} </div>
-                <div class="font-weight-bolder">Deleted By: {owner} </div>
+                <div className="font-weight-bolder">Created By: {owner} </div>
+                <div className="font-weight-bolder">Deleted By: {owner} </div>
 
-                <h5 class="bold wrap-header m-t-sm">Group Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Group Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -663,7 +669,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Group Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Group Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -725,14 +731,16 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "delete" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_SERVICE.value && (
               <div>
-                <div class="font-weight-bolder">Name: {objectName || ""}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
+                  Name: {objectName || ""}
+                </div>
+                <div className="font-weight-bolder">
                   Date:
                   {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Deleted By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Service Details:</h5>
+                <div className="font-weight-bolder">Deleted By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
 
                 <Table striped bordered hover>
                   <tbody>
@@ -756,7 +764,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">
+                <h5 className="bold wrap-header m-t-sm">
                   Connection Configurations:
                 </h5>
               </div>
@@ -765,13 +773,13 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
             objectClassType ==
               ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Deleted By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Zone Details:</h5>
+                <div className="font-weight-bolder">Deleted By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -794,7 +802,9 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm">Zone Service Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">
+                  Zone Service Details:
+                </h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -836,7 +846,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "IMPORT END" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
               <div>
-                <h5 class="bold wrap-header m-t-sm">Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     {reportdata.map((c) => {
@@ -887,7 +897,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
           {action == "EXPORT JSON" &&
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
               <div>
-                <h5 class="bold wrap-header m-t-sm">Details:</h5>
+                <h5 className="bold wrap-header m-t-sm">Details:</h5>
                 <Table className="table  border w-auto">
                   <tbody>
                     {reportdata.map((c) => {
@@ -927,17 +937,19 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
             objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
               <div>
                 {" "}
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
                   Policy ID : <Badge variant="info">{objectId}</Badge>
                 </div>
-                <div class="font-weight-bolder">Policy Name: {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">
+                  Policy Name: {objectName}
+                </div>
+                <div className="font-weight-bolder">
                   Deleted Date:
                   {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
                   Standard Time
                 </div>
-                <div class="font-weight-bolder">Deleted By: {owner} </div>
-                <h5 class="bold wrap-header m-t-sm">Policy Details:</h5>
+                <div className="font-weight-bolder">Deleted By: {owner} </div>
+                <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>
@@ -969,19 +981,19 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
                   </tbody>
                 </Table>
                 <br />
-                <h5 class="bold wrap-header m-t-sm"> Allow PolicyItems:</h5>
+                <h5 className="bold wrap-header m-t-sm"> Allow PolicyItems:</h5>
               </div>
             )}
           {action == "password change" &&
             objectClassType == ClassTypes.CLASS_TYPE_PASSWORD_CHANGE.value && (
               <div>
-                <div class="font-weight-bolder">Name : {objectName}</div>
-                <div class="font-weight-bolder">
+                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
                 </div>
-                <div class="font-weight-bolder">Updated By: {owner}</div>
-                <h5 class="bold wrap-header m-t-sm">Details:</h5>
+                <div className="font-weight-bolder">Updated By: {owner}</div>
+                <h5 className="bold wrap-header m-t-sm">Details:</h5>
                 <Table striped bordered hover>
                   <tbody>
                     <tr>

@@ -191,7 +191,7 @@ function PolicyListing() {
     <Loader />
   ) : (
     <div>
-      <h4 class="wrap-header bold">List of Policies </h4>
+      <h4 className="wrap-header bold">List of Policies </h4>
       <div className="wrap policy-manager">
         <Row>
           <Col md={12}>

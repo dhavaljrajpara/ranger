@@ -19,8 +19,8 @@ export function Services() {
           url: "plugins/services",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         service = serviceResp.data.services;
         totalCount = serviceResp.data.totalCount;
@@ -37,11 +37,11 @@ export function Services() {
     () => [
       {
         Header: "Service Name",
-        accessor: "name", // accessor is the "key" in the data
+        accessor: "name" // accessor is the "key" in the data
       },
       {
         Header: "Service Type",
-        accessor: "type", // accessor is the "key" in the data
+        accessor: "type" // accessor is the "key" in the data
       },
       {
         Header: "Resource",
@@ -50,15 +50,15 @@ export function Services() {
           return (
             <a
               href="javascript:;"
-              class="btn btn-mini pull-left"
+              className="btn btn-mini pull-left"
               id="btnplus"
               title="add"
             >
-              <i class="fa-fw fa fa-plus" id="plusicon"></i>
+              <i className="fa-fw fa fa-plus" id="plusicon"></i>
             </a>
           );
-        },
-      },
+        }
+      }
     ],
     []
   );
