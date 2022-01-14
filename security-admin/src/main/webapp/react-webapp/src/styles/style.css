@@ -639,3 +639,17 @@ header {
   margin-top: 4px;
   color: #0b7fad;
 }
+
+.resource-grp {
+  display: block;
+  padding: 5px;
+  background-color: #f4f4f4;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: left;
+  max-width: 100%;
+  margin: 5px 2px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: initial;
+}

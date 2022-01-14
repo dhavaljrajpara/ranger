@@ -62,7 +62,7 @@ class ServiceDefinition extends Component {
   };
 
   deleteService = async (sid) => {
-    console.log("Service Id to delete - ", sid);
+    console.log("Service Id to delete is ", sid);
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
@@ -81,38 +81,80 @@ class ServiceDefinition extends Component {
   };
 
   getServiceConfigs = (serviceDef, serviceConfigs) => {
-    console.log("Print ServiceDef : ==== ", serviceDef.configs);
-    console.log("Print serviceConfigs : ==== ", serviceConfigs);
     let tableRow = [];
+    let configs = {};
+    let customConfigs = {};
+    let serviceDefConfigs = serviceDef.configs.filter(
+      (c) => c.name !== "ranger.plugin.audit.filters"
+    );
     serviceConfigs = _.omit(serviceConfigs, "ranger.plugin.audit.filters");
 
-    let skey = Object.keys(serviceConfigs);
-    let sdefkey = serviceDef.configs.map((s) => s.name);
-    let customConfigs = _.difference(skey, sdefkey);
+    let configKey = Object.keys(serviceConfigs);
+    let defKey = serviceDefConfigs.map((c) => c.name);
+    let customConfigKey = _.difference(configKey, defKey);
 
-    console.log("Print customConfigs : ==== ", customConfigs);
-    console.log("Print skey : ==== ", skey);
-    console.log("Print sdefkey : ==== ", sdefkey);
+    serviceDefConfigs.map((c) => (configs[c.name] = serviceConfigs[c.name]));
 
-    Object.entries(serviceConfigs).map(([key, val]) =>
+    Object.entries(configs).map(([key, value]) =>
       tableRow.push(
         <tr key={key}>
           <td>{key}</td>
-          <td>{val}</td>
+          <td>{value ? value : "--"}</td>
         </tr>
       )
     );
+
+    customConfigKey.map((c) => (customConfigs[c] = serviceConfigs[c]));
+
+    tableRow.push(
+      <tr key="custom-configs-title">
+        <td colSpan="2">
+          <b>Add New Configurations :</b>
+        </td>
+      </tr>
+    );
+
+    Object.entries(customConfigs).map(([key, value]) =>
+      tableRow.push(
+        <tr key={key}>
+          <td>{key}</td>
+          <td>{value ? value : "--"}</td>
+        </tr>
+      )
+    );
+
     return tableRow;
+  };
+
+  getFilterResources = (resources) => {
+    let keyname = Object.keys(resources);
+    return keyname.map((key, index) => {
+      let val = resources[key].values;
+      let spanVal = resources[key].isExcludes;
+      return (
+        <div key={index} className="clearfix">
+          <span className="float-left">
+            <b>{key}: </b>
+            {val.join()}
+          </span>
+          {resources[key].isExcludes !== undefined ? (
+            <span className="badge badge-secondary float-right">Exclude</span>
+          ) : (
+            ""
+          )}
+          {resources[key].isRecursive !== undefined ? (
+            <span className="badge badge-secondary float-right">Recursive</span>
+          ) : (
+            ""
+          )}
+        </div>
+      );
+    });
   };
 
   getAuditFilters = (serviceConfigs) => {
     let tableRow = [];
     let auditFilters = _.pick(serviceConfigs, "ranger.plugin.audit.filters");
-    console.log("Print auditFilters : ==== ", auditFilters);
-    console.log(
-      "Print auditFilters JSON: ==== ",
-      JSON.parse(auditFilters["ranger.plugin.audit.filters"].replace(/'/g, '"'))
-    );
 
     auditFilters = JSON.parse(
       auditFilters["ranger.plugin.audit.filters"].replace(/'/g, '"')
@@ -133,7 +175,7 @@ class ServiceDefinition extends Component {
             )}
           </td>
           <td>
-            {a.accessResult != undefined ? (
+            {a.accessResult !== undefined ? (
               <h6>
                 <Badge variant="primary">{a.accessResult}</Badge>
               </h6>
@@ -141,9 +183,17 @@ class ServiceDefinition extends Component {
               "--"
             )}
           </td>
-          <td>{a.resources != undefined ? "--" : "--"}</td>
           <td>
-            {a.actions != undefined
+            {a.resources !== undefined ? (
+              <div className="resource-grp">
+                {this.getFilterResources(a.resources)}
+              </div>
+            ) : (
+              "--"
+            )}
+          </td>
+          <td>
+            {a.actions !== undefined
               ? a.actions.map((action) => (
                   <h6 key={action}>
                     <Badge variant="primary">{action}</Badge>
@@ -152,7 +202,7 @@ class ServiceDefinition extends Component {
               : "--"}
           </td>
           <td>
-            {a.accessTypes != undefined
+            {a.accessTypes !== undefined
               ? a.accessTypes.map((accessType) => (
                   <h6 key={accessType}>
                     <Badge variant="primary">{accessType}</Badge>
@@ -161,7 +211,7 @@ class ServiceDefinition extends Component {
               : "--"}
           </td>
           <td>
-            {a.users != undefined
+            {a.users !== undefined
               ? a.users.map((user) => (
                   <h6 key={user}>
                     <Badge variant="primary">{user}</Badge>
@@ -170,7 +220,7 @@ class ServiceDefinition extends Component {
               : "--"}
           </td>
           <td>
-            {a.groups != undefined
+            {a.groups !== undefined
               ? a.groups.map((group) => (
                   <h6 key={group}>
                     <Badge variant="primary">{group}</Badge>
@@ -179,7 +229,7 @@ class ServiceDefinition extends Component {
               : "--"}
           </td>
           <td>
-            {a.roles != undefined
+            {a.roles !== undefined
               ? a.roles.map((role) => (
                   <h6 key={role}>
                     <Badge variant="primary">{role}</Badge>
@@ -195,7 +245,6 @@ class ServiceDefinition extends Component {
   };
 
   render() {
-    console.log("Print services", this.state.service);
     return (
       <div className="col-sm-4">
         <div className="position-relative">
@@ -268,7 +317,7 @@ class ServiceDefinition extends Component {
                         <Modal
                           show={this.state.showView}
                           onHide={this.hideViewModal}
-                          size="lg"
+                          size="xl"
                         >
                           <Modal.Header closeButton>
                             <Modal.Title>Service Details</Modal.Title>
