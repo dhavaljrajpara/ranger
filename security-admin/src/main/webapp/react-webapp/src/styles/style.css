@@ -224,6 +224,21 @@ div#center div.letter_container_7 {
   background-color: #fff;
 }
 
+/* Editable 
+   Do not modify below property
+*/
+
+.editable {
+  display: inline-block;
+  min-width: 30px;
+  border-color: #0b7fad;
+  border-bottom-style: dashed;
+  cursor: pointer;
+}
+.editable-popover {
+  min-width: 150px;
+}
+
 /* Service Manager */
 .select-zone-name {
   cursor: not-allowed;
