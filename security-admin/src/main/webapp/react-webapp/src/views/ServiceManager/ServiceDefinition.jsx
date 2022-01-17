@@ -9,6 +9,7 @@ import { Button } from "react-bootstrap";
 import { toast } from "react-toastify";
 import Modal from "react-bootstrap/Modal";
 import Badge from "react-bootstrap/Badge";
+import { unstable_renderSubtreeIntoContainer } from "react-dom";
 
 class ServiceDefinition extends Component {
   constructor(props) {
@@ -18,8 +19,8 @@ class ServiceDefinition extends Component {
       service: this.props.serviceData,
       show: false,
       shows: false,
-      showDelete: false,
-      showView: false,
+      showDelete: null,
+      showView: null,
       isCardButton: true,
       filterselzone: this.props.selectedzoneservice
     };
@@ -37,17 +38,17 @@ class ServiceDefinition extends Component {
   hideModals = () => {
     this.setState({ shows: false });
   };
-  showDeleteModal = () => {
-    this.setState({ showDelete: true });
+  showDeleteModal = (id) => {
+    this.setState({ showDelete: id });
   };
   hideDeleteModal = () => {
-    this.setState({ showDelete: false });
+    this.setState({ showDelete: null });
   };
-  showViewModal = () => {
-    this.setState({ showView: true });
+  showViewModal = (id) => {
+    this.setState({ showView: id });
   };
   hideViewModal = () => {
-    this.setState({ showView: false });
+    this.setState({ showView: null });
   };
 
   Theme = (theme) => {
@@ -155,6 +156,10 @@ class ServiceDefinition extends Component {
   getAuditFilters = (serviceConfigs) => {
     let tableRow = [];
     let auditFilters = _.pick(serviceConfigs, "ranger.plugin.audit.filters");
+
+    if (_.isEmpty(auditFilters)) {
+      return tableRow;
+    }
 
     auditFilters = JSON.parse(
       auditFilters["ranger.plugin.audit.filters"].replace(/'/g, '"')
@@ -310,12 +315,14 @@ class ServiceDefinition extends Component {
                           size="sm"
                           className="m-r-5"
                           title="View"
-                          onClick={this.showViewModal}
+                          onClick={() => {
+                            this.showViewModal(s.id);
+                          }}
                         >
                           <i className="fa-fw fa fa-eye"></i>
                         </Button>
                         <Modal
-                          show={this.state.showView}
+                          show={this.state.showView === s.id}
                           onHide={this.hideViewModal}
                           size="xl"
                         >
@@ -393,6 +400,7 @@ class ServiceDefinition extends Component {
                             </Button>
                           </Modal.Footer>
                         </Modal>
+
                         <Button
                           variant="outline-dark"
                           size="sm"
@@ -405,12 +413,14 @@ class ServiceDefinition extends Component {
                           variant="danger"
                           size="sm"
                           title="Delete"
-                          onClick={this.showDeleteModal}
+                          onClick={() => {
+                            this.showDeleteModal(s.id);
+                          }}
                         >
                           <i className="fa-fw fa fa-trash"></i>
                         </Button>
                         <Modal
-                          show={this.state.showDelete}
+                          show={this.state.showDelete === s.id}
                           onHide={this.hideDeleteModal}
                         >
                           <Modal.Header closeButton>

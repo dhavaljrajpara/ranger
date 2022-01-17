@@ -7,7 +7,20 @@ class ServiceForm extends Component {
   state = {
     serviceDef: [],
     show: false,
-    initialValues: []
+    createInitialValues: {
+      isEnabled: "true",
+      configs: {
+        hadoop_security_authorization: "true",
+        hadoop_security_authentication: "simple",
+        hadoop_rpc_protection: "authentication",
+        hbase_security_authentication: "simple",
+        nifi_authentication: "NONE",
+        nifi_ssl_use_default_context: "true",
+        nifi_registry_authentication: "NONE",
+        nifi_registry_ssl_use_default_context: "true",
+        schema_registry_authentication: "KERBEROS"
+      }
+    }
   };
 
   componentDidMount() {
@@ -38,6 +51,7 @@ class ServiceForm extends Component {
         }
       }
     }
+    serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
     console.log("onSubmit Final serviceJson ", serviceJson);
     const { fetchApi } = await import("Utils/fetchAPI");
     try {
@@ -84,10 +98,9 @@ class ServiceForm extends Component {
       this.configJson = {};
       let formField = [];
       finalConfigs.map((configParam) => {
-        this.configJson[configParam.name] = configParam.name.replaceAll(
-          ".",
-          "_"
-        );
+        this.configJson[configParam.name] = configParam.name
+          .replaceAll(".", "_")
+          .replaceAll("-", "_");
         switch (configParam.type) {
           case "string":
           case "int":
@@ -245,6 +258,7 @@ class ServiceForm extends Component {
             <div className="col-sm-12">
               <Form
                 onSubmit={this.createService}
+                initialValues={this.state.createInitialValues}
                 render={({
                   handleSubmit,
                   form,
