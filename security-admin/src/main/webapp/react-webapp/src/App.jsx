@@ -5,6 +5,7 @@ import ErrorBoundary from "Views/ErrorBoundary";
 import { Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
@@ -88,6 +89,17 @@ export default class App extends Component {
             {/* Add Header / Sidebar component here. */}
             {!this.state.loader && <HeaderComp />}
             <section className="container-fluid">
+              <div className="row mt-2">
+                <div className="col-auto mr-auto">
+                  <Breadcrumb>
+                    <Breadcrumb.Item href="#"></Breadcrumb.Item>
+                  </Breadcrumb>
+                </div>
+                <div className="col-auto">
+                  <b>Last Response Time: </b>
+                  {new Date().toLocaleString("en-US", { hour12: true })}
+                </div>
+              </div>
               <section id="ranger-content">
                 {this.state.loader ? (
                   <Loader />
