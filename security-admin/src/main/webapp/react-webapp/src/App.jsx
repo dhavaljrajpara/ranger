@@ -127,6 +127,12 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
+                      path="/service/:serviceDefId/edit/:serviceId"
+                      component={ServiceFormComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
                       path="/service/:serviceId/policies/:policyType"
                       component={PolicyListing}
                       {...defaultProps}

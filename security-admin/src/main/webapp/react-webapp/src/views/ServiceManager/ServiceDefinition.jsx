@@ -9,7 +9,7 @@ import { Button } from "react-bootstrap";
 import { toast } from "react-toastify";
 import Modal from "react-bootstrap/Modal";
 import Badge from "react-bootstrap/Badge";
-import { unstable_renderSubtreeIntoContainer } from "react-dom";
+import { difference, isEmpty, omit, pick } from "lodash";
 
 class ServiceDefinition extends Component {
   constructor(props) {
@@ -283,7 +283,6 @@ class ServiceDefinition extends Component {
                         service={this.props.serviceData}
                         serviceDef={this.props.servicedefs}
                       />
-
                       <ExportPolicy
                         serviceDef={this.props.servicedefs}
                         service={this.props.serviceData}
@@ -350,12 +349,24 @@ class ServiceDefinition extends Component {
                                     <tr>
                                       <td>Active Status</td>
                                       <td>
-                                        {s.isEnabled ? `Enabled` : `Disabled`}
+                                        <h6>
+                                          <Badge variant="primary">
+                                            {s.isEnabled
+                                              ? `Enabled`
+                                              : `Disabled`}
+                                          </Badge>
+                                        </h6>
                                       </td>
                                     </tr>
                                     <tr>
                                       <td>Tag Service</td>
-                                      <td>{s.tagService}</td>
+                                      <td>
+                                        <h6>
+                                          <Badge variant="primary">
+                                            {s.tagService}
+                                          </Badge>
+                                        </h6>
+                                      </td>
                                     </tr>
                                   </tbody>
                                 </Table>
@@ -400,15 +411,13 @@ class ServiceDefinition extends Component {
                             </Button>
                           </Modal.Footer>
                         </Modal>
-
-                        <Button
-                          variant="outline-dark"
-                          size="sm"
-                          className="m-r-5"
+                        <Link
+                          className="btn btn-outline-dark btn-sm m-r-5"
                           title="Edit"
+                          to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
                         >
                           <i className="fa-fw fa fa-edit"></i>
-                        </Button>
+                        </Link>
                         <Button
                           variant="danger"
                           size="sm"

@@ -2,36 +2,69 @@ import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
+import Modal from "react-bootstrap/Modal";
+import { mapKeys } from "lodash";
 
 class ServiceForm extends Component {
-  state = {
-    serviceDef: [],
-    show: false,
-    createInitialValues: {
-      isEnabled: "true",
-      configs: {
-        hadoop_security_authorization: "true",
-        hadoop_security_authentication: "simple",
-        hadoop_rpc_protection: "authentication",
-        hbase_security_authentication: "simple",
-        nifi_authentication: "NONE",
-        nifi_ssl_use_default_context: "true",
-        nifi_registry_authentication: "NONE",
-        nifi_registry_ssl_use_default_context: "true",
-        schema_registry_authentication: "KERBEROS"
-      }
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDelete: false,
+      serviceDef: {},
+      createInitialValues: {
+        isEnabled: "true",
+        configs: {
+          hadoop_security_authorization: "true",
+          hadoop_security_authentication: "simple",
+          hadoop_rpc_protection: "authentication",
+          hbase_security_authentication: "simple",
+          nifi_authentication: "NONE",
+          nifi_ssl_use_default_context: "true",
+          nifi_registry_authentication: "NONE",
+          nifi_registry_ssl_use_default_context: "true",
+          schema_registry_authentication: "KERBEROS"
+        }
+      },
+      editInitialValues: {}
+    };
+  }
+
+  showDeleteModal = () => {
+    this.setState({ showDelete: true });
+  };
+
+  hideDeleteModal = () => {
+    this.setState({ showDelete: false });
   };
 
   componentDidMount() {
     this.fetchServiceDef();
+    if (this.props.match.params.serviceId !== undefined) {
+      this.fetchService();
+    }
   }
 
-  createService = async (values) => {
-    console.log("onSubmit configJson", this.configJson);
-    console.log("onSubmit createService", values);
-
+  onSubmit = async (values) => {
+    let serviceId;
+    let apiMethod;
+    let apiUrl;
+    let apiSuccess;
+    let apiError;
     const serviceJson = {};
+
+    if (this.props.match.params.serviceId !== undefined) {
+      serviceId = this.props.match.params.serviceId;
+      apiMethod = "put";
+      apiUrl = `plugins/services/${serviceId}`;
+      apiSuccess = "updated";
+      serviceJson["id"] = serviceId;
+      apiError = "Error occurred while updating a service";
+    } else {
+      apiMethod = "post";
+      apiUrl = `plugins/services`;
+      apiSuccess = "created";
+      apiError = "Error occurred while creating a service!";
+    }
 
     serviceJson["name"] = values.name;
     serviceJson["displayName"] = values.displayName;
@@ -55,16 +88,15 @@ class ServiceForm extends Component {
     console.log("onSubmit Final serviceJson ", serviceJson);
     const { fetchApi } = await import("Utils/fetchAPI");
     try {
-      const serviceResp = await fetchApi({
-        url: "plugins/services",
-        method: "post",
+      await fetchApi({
+        url: apiUrl,
+        method: apiMethod,
         data: serviceJson
       });
-      console.log(serviceResp.status);
-      toast.success("Successfully created the service");
+      toast.success(`Successfully ${apiSuccess} the service`);
       this.props.history.push("/policymanager/resource");
     } catch (error) {
-      console.error(`Error occurred while creating a service! ${error}`);
+      console.error(`${apiError} ${error}`);
     }
   };
 
@@ -86,6 +118,50 @@ class ServiceForm extends Component {
     this.setState({
       serviceDef: serviceDefResp.data
     });
+  };
+
+  fetchService = async () => {
+    let serviceResp;
+    let serviceDefId = this.props.match.params.serviceDefId;
+    let serviceId = this.props.match.params.serviceId;
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      serviceResp = await fetchApi({
+        url: `plugins/services/${serviceId}`
+      });
+      console.log("serviceResp", serviceResp.data);
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service or CSRF headers! ${error}`
+      );
+    }
+
+    let formConfigs = _.mapKeys(serviceResp.data.configs, (value, key) =>
+      key.replaceAll(".", "_").replaceAll("-", "_")
+    );
+
+    serviceResp.data.configs = formConfigs;
+    serviceResp.data.isEnabled = JSON.stringify(serviceResp.data.isEnabled);
+    this.setState({
+      editInitialValues: serviceResp.data
+    });
+  };
+
+  deleteService = async (serviceId) => {
+    console.log("Service Id to delete is ", serviceId);
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      await fetchApi({
+        url: `plugins/services/${serviceId}`,
+        method: "delete"
+      });
+      toast.success("Successfully deleted the service");
+      this.props.history.push("/policymanager/resource");
+    } catch (error) {
+      console.error(
+        `Error occurred while deleting Service id - ${serviceId}!  ${error}`
+      );
+    }
   };
 
   serviceConfigs(serviceDef) {
@@ -146,7 +222,7 @@ class ServiceForm extends Component {
                       {configParam.mandatory ? " * " : ""}
                     </label>
                     <div className="col-sm-6">
-                      <select {...input} type="text" className="form-control">
+                      <select {...input} className="form-control">
                         {this.enumOptions(paramEnum)}
                       </select>
                     </div>
@@ -172,7 +248,7 @@ class ServiceForm extends Component {
                       {configParam.mandatory ? " * " : ""}
                     </label>
                     <div className="col-sm-6">
-                      <select {...input} type="text" className="form-control">
+                      <select {...input} className="form-control">
                         {this.booleanOptions(configParam.subType)}
                       </select>
                     </div>
@@ -257,8 +333,12 @@ class ServiceForm extends Component {
           <div className="row">
             <div className="col-sm-12">
               <Form
-                onSubmit={this.createService}
-                initialValues={this.state.createInitialValues}
+                onSubmit={this.onSubmit}
+                initialValues={
+                  this.props.match.params.serviceId !== undefined
+                    ? this.state.editInitialValues
+                    : this.state.createInitialValues
+                }
                 render={({
                   handleSubmit,
                   form,
@@ -312,17 +392,13 @@ class ServiceForm extends Component {
                           )}
                         </Field>
                         <Field name="description">
-                          {({ textarea, meta }) => (
+                          {({ input, meta }) => (
                             <div className="form-group row">
                               <label className="col-sm-3 col-form-label">
                                 Description
                               </label>
                               <div className="col-sm-6">
-                                <textarea
-                                  {...textarea}
-                                  type="textarea"
-                                  className="form-control"
-                                />
+                                <textarea {...input} className="form-control" />
                               </div>
                               {meta.error && meta.touched && (
                                 <span>{meta.error}</span>
@@ -392,19 +468,68 @@ class ServiceForm extends Component {
                         <Button
                           variant="primary"
                           type="submit"
+                          size="sm"
                           disabled={submitting}
                         >
-                          Add
+                          {this.props.match.params.serviceId !== undefined
+                            ? `Save`
+                            : `Add`}
                         </Button>
                         <Button
                           variant="secondary"
                           type="button"
+                          size="sm"
                           onClick={form.reset}
                           disabled={submitting || pristine}
                         >
                           Cancel
                         </Button>
+                        {this.props.match.params.serviceId !== undefined && (
+                          <Button
+                            variant="danger"
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              this.showDeleteModal();
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        )}
                       </div>
+                      {this.props.match.params.serviceId !== undefined && (
+                        <Modal
+                          show={this.state.showDelete}
+                          onHide={this.hideDeleteModal}
+                        >
+                          <Modal.Header closeButton>
+                            <Modal.Title>Delete Service</Modal.Title>
+                          </Modal.Header>
+                          <Modal.Body>Are you sure want to delete ?</Modal.Body>
+                          <Modal.Footer>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              title="Cancel"
+                              onClick={this.hideDeleteModal}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              title="Yes"
+                              onClick={(serviceId) =>
+                                this.deleteService(
+                                  this.props.match.params.serviceId
+                                )
+                              }
+                            >
+                              Yes
+                            </Button>
+                          </Modal.Footer>
+                        </Modal>
+                      )}
                     </div>
                   </form>
                 )}
