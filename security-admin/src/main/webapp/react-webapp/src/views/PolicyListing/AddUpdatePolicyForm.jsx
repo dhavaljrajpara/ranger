@@ -4,10 +4,13 @@ import { Form as FormB, Row, Col, Button, Badge } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import arrayMutators from "final-form-arrays";
+import { FieldArray } from "react-final-form-arrays";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
+import PolicyPermissionItem from "../PolicyListing/PolicyPermissionItem";
 
 const initialState = {
   loader: true,
@@ -138,8 +141,18 @@ export default function AddUpdatePolicyForm() {
           <div className="wrap">
             <Form
               onSubmit={handleSubmit}
+              mutators={{
+                ...arrayMutators
+              }}
               initialValues={formData}
-              render={({ handleSubmit, submitting, values }) => (
+              render={({
+                handleSubmit,
+                submitting,
+                values,
+                form: {
+                  mutators: { push: addPolicyItem, pop: removePolicyItem }
+                }
+              }) => (
                 <form onSubmit={handleSubmit}>
                   <fieldset>
                     <p className="formHeader">Policy Details</p>
@@ -318,6 +331,18 @@ export default function AddUpdatePolicyForm() {
                       </FormB.Group>
                     )}
                   />
+                  <fieldset>
+                    <p className="formHeader">Allow Conditions:</p>
+                  </fieldset>
+                  <div class="wrap">
+                    <PolicyPermissionItem
+                      serviceDetails={serviceDetails}
+                      serviceCompDetails={serviceCompDetails}
+                      formValues={values}
+                      addPolicyItem={addPolicyItem}
+                      attrName="policyItem"
+                    />
+                  </div>
                   <div>
                     <Button type="submit">Save</Button>
                   </div>
