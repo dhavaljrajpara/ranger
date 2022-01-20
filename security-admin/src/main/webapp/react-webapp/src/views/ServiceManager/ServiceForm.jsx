@@ -1,9 +1,12 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
+import Table from "react-bootstrap/Table";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import Modal from "react-bootstrap/Modal";
-import { mapKeys } from "lodash";
+import arrayMutators from "final-form-arrays";
+import { FieldArray } from "react-final-form-arrays";
+import { difference, keys, map } from "lodash";
 
 class ServiceForm extends Component {
   constructor(props) {
@@ -24,7 +27,8 @@ class ServiceForm extends Component {
           nifi_registry_authentication: "NONE",
           nifi_registry_ssl_use_default_context: "true",
           schema_registry_authentication: "KERBEROS"
-        }
+        },
+        customConfigs: [undefined]
       },
       editInitialValues: {}
     };
@@ -40,9 +44,6 @@ class ServiceForm extends Component {
 
   componentDidMount() {
     this.fetchServiceDef();
-    if (this.props.match.params.serviceId !== undefined) {
-      this.fetchService();
-    }
   }
 
   onSubmit = async (values) => {
@@ -83,6 +84,10 @@ class ServiceForm extends Component {
       }
     }
 
+    values.customConfigs.map((c) => {
+      c !== undefined && (serviceJson["configs"][c.name] = c.value);
+    });
+
     // TODO to update ranger.plugin.audit.filters
     serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
 
@@ -116,11 +121,13 @@ class ServiceForm extends Component {
     this.setState({
       serviceDef: serviceDefResp.data
     });
+    if (this.props.match.params.serviceId !== undefined) {
+      this.fetchService();
+    }
   };
 
   fetchService = async () => {
     let serviceResp;
-    let serviceDefId = this.props.match.params.serviceDefId;
     let serviceId = this.props.match.params.serviceId;
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
@@ -137,14 +144,31 @@ class ServiceForm extends Component {
       service: serviceResp.data
     });
 
-    let formConfigs = _.mapKeys(serviceResp.data.configs, (value, key) =>
-      key.replaceAll(".", "_").replaceAll("-", "_")
-    );
+    const serviceJson = {};
+    serviceJson["name"] = serviceResp.data.name;
+    serviceJson["displayName"] = serviceResp.data.displayName;
+    serviceJson["description"] = serviceResp.data.description;
+    serviceJson["tagService"] = serviceResp.data.tagService;
+    serviceJson["isEnabled"] = JSON.stringify(serviceResp.data.isEnabled);
+    serviceJson["configs"] = {};
 
-    serviceResp.data.configs = formConfigs;
-    serviceResp.data.isEnabled = JSON.stringify(serviceResp.data.isEnabled);
+    let configs = _.map(this.state.serviceDef.configs, "name");
+    let customConfigs = _.difference(_.keys(serviceResp.data.configs), configs);
+
+    configs.map((c) => {
+      serviceJson["configs"][c.replaceAll(".", "_").replaceAll("-", "_")] =
+        serviceResp.data.configs[c];
+    });
+
+    let editCustomConfigs = customConfigs.map((c) => {
+      return { name: c, value: serviceResp.data.configs[c] };
+    });
+
+    serviceJson["customConfigs"] =
+      editCustomConfigs.length == 0 ? [undefined] : editCustomConfigs;
+
     this.setState({
-      editInitialValues: serviceResp.data
+      editInitialValues: serviceJson
     });
   };
 
@@ -330,6 +354,9 @@ class ServiceForm extends Component {
             <div className="col-sm-12">
               <Form
                 onSubmit={this.onSubmit}
+                mutators={{
+                  ...arrayMutators
+                }}
                 initialValues={
                   this.props.match.params.serviceId !== undefined
                     ? this.state.editInitialValues
@@ -340,7 +367,10 @@ class ServiceForm extends Component {
                   form,
                   submitting,
                   pristine,
-                  values
+                  values,
+                  form: {
+                    mutators: { push: addCustomConfig, pop: removeCustomConfig }
+                  }
                 }) => (
                   <form onSubmit={handleSubmit}>
                     <div className="row">
@@ -450,6 +480,69 @@ class ServiceForm extends Component {
                       <div className="col-sm-12">
                         <p className="form-header">Config Properties :</p>
                         {this.serviceConfigs(this.state.serviceDef)}
+                        <div className="form-group row">
+                          <label className="col-sm-3 col-form-label">
+                            Add New Configurations
+                          </label>
+                          <div className="col-sm-6">
+                            <Table bordered size="sm" className="no-bg-color">
+                              <thead>
+                                <tr>
+                                  <th className="text-center">Name</th>
+                                  <th className="text-center" colSpan="2">
+                                    Value
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <FieldArray name="customConfigs">
+                                  {({ fields }) =>
+                                    fields.map((name, index) => (
+                                      <tr key={name}>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.name`}
+                                            component="input"
+                                            className="form-control"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.value`}
+                                            component="input"
+                                            className="form-control"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Button
+                                            variant="danger"
+                                            size="sm"
+                                            title="Yes"
+                                            onClick={() => fields.remove(index)}
+                                          >
+                                            <i className="fa-fw fa fa-remove"></i>
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  }
+                                </FieldArray>
+                              </tbody>
+                            </Table>
+                          </div>
+                        </div>
+                        <div className="form-group row">
+                          <div className="col-sm-4 offset-sm-3">
+                            <Button
+                              variant="outline-secondary"
+                              onClick={() =>
+                                addCustomConfig("customConfigs", undefined)
+                              }
+                            >
+                              <i className="fa-fw fa fa-plus"></i>
+                            </Button>
+                          </div>
+                        </div>
                         <div className="form-group row">
                           <div className="col-sm-3 col-form-label">
                             <Button variant="secondary" type="button" size="sm">

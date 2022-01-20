@@ -9,7 +9,7 @@ import { Button } from "react-bootstrap";
 import { toast } from "react-toastify";
 import Modal from "react-bootstrap/Modal";
 import Badge from "react-bootstrap/Badge";
-import { difference, isEmpty, omit, pick } from "lodash";
+import { difference, isEmpty, keys, omit, pick } from "lodash";
 
 class ServiceDefinition extends Component {
   constructor(props) {
@@ -90,7 +90,7 @@ class ServiceDefinition extends Component {
     );
     serviceConfigs = _.omit(serviceConfigs, "ranger.plugin.audit.filters");
 
-    let configKey = Object.keys(serviceConfigs);
+    let configKey = _.keys(serviceConfigs);
     let defKey = serviceDefConfigs.map((c) => c.name);
     let customConfigKey = _.difference(configKey, defKey);
 
@@ -305,7 +305,7 @@ class ServiceDefinition extends Component {
                           to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
                           className="service-name text-info"
                         >
-                          {s.name}
+                          {s.displayName !== undefined ? s.displayName : s.name}
                         </Link>
                       </span>
                       <span className="float-right">

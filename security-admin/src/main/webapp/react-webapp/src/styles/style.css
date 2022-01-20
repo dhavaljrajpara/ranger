@@ -252,6 +252,9 @@ div#center div.letter_container_7 {
 .policy-manager table thead tr th:first-child {
   background-color: #d8d8d8;
 }
+table.no-bg-color thead tr th:first-child {
+  background-color: transparent;
+}
 .position-relative .table th {
   border: 1px solid #dee2e6;
   border-bottom: transparent;
