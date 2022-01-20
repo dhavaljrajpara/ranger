@@ -11,6 +11,7 @@ class ServiceForm extends Component {
     this.state = {
       showDelete: false,
       serviceDef: {},
+      service: {},
       createInitialValues: {
         isEnabled: "true",
         configs: {
@@ -71,10 +72,7 @@ class ServiceForm extends Component {
     serviceJson["description"] = values.description;
     serviceJson["type"] = this.state.serviceDef.name;
     serviceJson["tagService"] = values.tagService;
-    serviceJson["isEnabled"] = Boolean(values.isEnabled);
-
-    console.log("onSubmit serviceJson", serviceJson);
-    console.log("onSubmit configs values", values.configs);
+    serviceJson["isEnabled"] = values.isEnabled === "true";
 
     serviceJson["configs"] = {};
     for (const x in values.configs) {
@@ -84,14 +82,16 @@ class ServiceForm extends Component {
         }
       }
     }
+
+    // TODO to update ranger.plugin.audit.filters
     serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
-    console.log("onSubmit Final serviceJson ", serviceJson);
+
     const { fetchApi } = await import("Utils/fetchAPI");
     try {
       await fetchApi({
         url: apiUrl,
         method: apiMethod,
-        data: serviceJson
+        data: { ...this.state.service, ...serviceJson }
       });
       toast.success(`Successfully ${apiSuccess} the service`);
       this.props.history.push("/policymanager/resource");
@@ -103,13 +103,11 @@ class ServiceForm extends Component {
   fetchServiceDef = async () => {
     let serviceDefResp;
     let serviceDefId = this.props.match.params.serviceDefId;
-    console.log("serviceDefId : ", serviceDefId);
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       serviceDefResp = await fetchApi({
         url: `plugins/definitions/${serviceDefId}`
       });
-      console.log("serviceDefResp", serviceDefResp.data);
     } catch (error) {
       console.error(
         `Error occurred while fetching Service Definition or CSRF headers! ${error}`
@@ -129,12 +127,15 @@ class ServiceForm extends Component {
       serviceResp = await fetchApi({
         url: `plugins/services/${serviceId}`
       });
-      console.log("serviceResp", serviceResp.data);
     } catch (error) {
       console.error(
         `Error occurred while fetching Service or CSRF headers! ${error}`
       );
     }
+
+    this.setState({
+      service: serviceResp.data
+    });
 
     let formConfigs = _.mapKeys(serviceResp.data.configs, (value, key) =>
       key.replaceAll(".", "_").replaceAll("-", "_")
@@ -148,7 +149,6 @@ class ServiceForm extends Component {
   };
 
   deleteService = async (serviceId) => {
-    console.log("Service Id to delete is ", serviceId);
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
@@ -165,12 +165,10 @@ class ServiceForm extends Component {
   };
 
   serviceConfigs(serviceDef) {
-    console.log("serviceDef", serviceDef);
     if (serviceDef.configs !== undefined) {
       const finalConfigs = serviceDef.configs.filter(
         (e) => e.name !== "ranger.plugin.audit.filters"
       );
-      console.log("serviceDef configs", finalConfigs);
       this.configJson = {};
       let formField = [];
       finalConfigs.map((configParam) => {
@@ -288,8 +286,6 @@ class ServiceForm extends Component {
             break;
         }
       });
-      console.log("print configJson", this.configJson);
-      console.log("print formField", formField);
       return formField;
     }
   }
