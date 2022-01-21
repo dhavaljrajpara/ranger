@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import Modal from "react-bootstrap/Modal";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
+import Select from "react-select";
 import { difference, keys, map } from "lodash";
 
 class ServiceForm extends Component {
@@ -15,6 +16,7 @@ class ServiceForm extends Component {
       showDelete: false,
       serviceDef: {},
       service: {},
+      tagService: [],
       createInitialValues: {
         isEnabled: "true",
         configs: {
@@ -44,6 +46,7 @@ class ServiceForm extends Component {
 
   componentDidMount() {
     this.fetchServiceDef();
+    this.fetchTagService();
   }
 
   onSubmit = async (values) => {
@@ -72,7 +75,8 @@ class ServiceForm extends Component {
     serviceJson["displayName"] = values.displayName;
     serviceJson["description"] = values.description;
     serviceJson["type"] = this.state.serviceDef.name;
-    serviceJson["tagService"] = values.tagService;
+    serviceJson["tagService"] =
+      values.tagService !== undefined ? values.tagService.value : "";
     serviceJson["isEnabled"] = values.isEnabled === "true";
 
     serviceJson["configs"] = {};
@@ -148,8 +152,16 @@ class ServiceForm extends Component {
     serviceJson["name"] = serviceResp.data.name;
     serviceJson["displayName"] = serviceResp.data.displayName;
     serviceJson["description"] = serviceResp.data.description;
-    serviceJson["tagService"] = serviceResp.data.tagService;
     serviceJson["isEnabled"] = JSON.stringify(serviceResp.data.isEnabled);
+
+    serviceJson["tagService"] =
+      serviceResp.data.tagService !== undefined
+        ? {
+            value: serviceResp.data.tagService,
+            label: serviceResp.data.tagService
+          }
+        : null;
+
     serviceJson["configs"] = {};
 
     let configs = _.map(this.state.serviceDef.configs, "name");
@@ -169,6 +181,24 @@ class ServiceForm extends Component {
 
     this.setState({
       editInitialValues: serviceJson
+    });
+  };
+
+  fetchTagService = async () => {
+    let tagServiceResp;
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      tagServiceResp = await fetchApi({
+        url: `plugins/services?serviceNamePartial=&serviceType=tag`
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service of type tag or CSRF headers! ${error}`
+      );
+    }
+
+    this.setState({
+      tagService: tagServiceResp.data.services
     });
   };
 
@@ -343,11 +373,20 @@ class ServiceForm extends Component {
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
 
+  SelectTagService = ({ input, ...rest }) => (
+    <Select {...input} {...rest} searchable />
+  );
+
   render() {
     return (
       <div>
         <div className="clearfix">
-          <h4 className="wrap-header bold">Create Service</h4>
+          <h4 className="wrap-header bold">
+            {this.props.match.params.serviceId !== undefined
+              ? `Edit`
+              : `Create`}{" "}
+            Service
+          </h4>
         </div>
         <div className="wrap policy-manager">
           <div className="row">
@@ -455,25 +494,25 @@ class ServiceForm extends Component {
                             <label className="form-check-label">Disabled</label>
                           </div>
                         </div>
-                        <Field name="tagService">
-                          {({ input, meta }) => (
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Select Tag Service
-                              </label>
-                              <div className="col-sm-6">
-                                <input
-                                  {...input}
-                                  type="text"
-                                  className="form-control"
-                                />
-                              </div>
-                              {meta.error && meta.touched && (
-                                <span>{meta.error}</span>
-                              )}
-                            </div>
-                          )}
-                        </Field>
+                        <div className="form-group row">
+                          <label className="col-sm-3 col-form-label">
+                            Select Tag Service
+                          </label>
+                          <div className="col-sm-6">
+                            <Field
+                              name="tagService"
+                              component={this.SelectTagService}
+                              options={this.state.tagService.map((s) => {
+                                return {
+                                  value: s.name,
+                                  label: s.name
+                                };
+                              })}
+                              defaultValue={this.state.tagServiceValue}
+                              placeholder="Select Tag Service"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div className="row">
@@ -535,12 +574,26 @@ class ServiceForm extends Component {
                           <div className="col-sm-4 offset-sm-3">
                             <Button
                               variant="outline-secondary"
+                              size="sm"
                               onClick={() =>
                                 addCustomConfig("customConfigs", undefined)
                               }
                             >
                               <i className="fa-fw fa fa-plus"></i>
                             </Button>
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-sm-12">
+                            <div className="form-header">
+                              Audit Filter :
+                              <div className="form-check form-check-inline align-middle ml-1">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div className="form-group row">
