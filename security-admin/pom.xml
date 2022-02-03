@@ -689,15 +689,6 @@
                             <additionalClasspathElement>${project.basedir}/src/main/webapp/META-INF</additionalClasspathElement>
                         </additionalClasspathElements>
                     </configuration>
-                    <!--
-                        <dependencies>
-                                <dependency>
-                                        <groupId>org.apache.maven.surefire</groupId>
-                                        <artifactId>surefire-junit47</artifactId>
-                                        <version>2.18</version>
-                                </dependency>
-                        </dependencies>
--->
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -706,65 +697,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>prepare</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>exploded</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-war</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                        <configuration>
-                            <packagingExcludes>
-                                WEB-INF/lib/spring-*.SEC03.jar,
-                                WEB-INF/lib/spring-*.RC3.jar,
-                                WEB-INF/lib/spring-2.*.jar,
-                                WEB-INF/lib/jetty-*.jar
-                            </packagingExcludes>
-                            <warSourceDirectory>${project.build.directory}/${project.build.finalName}</warSourceDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <basedir>${project.build.directory}/${project.build.finalName}</basedir>
-                            <includes>
-                                <include>index.html</include>
-                                <include>scripts/Init.js</include>
-                            </includes>
-                            <replacements>
-                                <replacement>
-                                    <token>build.version</token>
-                                    <value>${project.version}</value>
-                                </replacement>
-                                <replacement>
-                                    <token>(?m)\&lt;\!-- *dev *--\>(.*)$</token>
-                                    <value>\&lt;\!-- dev $1 --\></value>
-                                </replacement>
-                                <replacement>
-                                    <token>\&lt;\!-- *prod *(.*) *--\></token>
-                                    <value>\&lt;\!-- prod --\>$1</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <warSourceExcludes>
+                        node/**,
+                        node_modules/**,
+                        src/**,
+                        dist/**,
+                        webpack*,
+                        package*,
+                        babel*
+                    </warSourceExcludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.webcohesion.enunciate</groupId>
@@ -793,38 +736,16 @@
                 <executions>
                     <execution>
                         <id>copy-resources</id>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
-                        <phase>validate</phase>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/jsmain</outputDirectory>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/src/main/webapp</directory>
-                                    <includes>
-                                        <include>package.json</include>
-                                        <include>package-lock.json</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-js-test-resources</id>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/jstest</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/src/test/javascript</directory>
-                                    <includes>
-                                        <include>package.json</include>
-                                        <include>package-lock.json</include>
-                                    </includes>
+                                    <directory>${project.basedir}/src/main/webapp/dist/</directory>
+                                    <filtering>false</filtering>
                                 </resource>
                             </resources>
                         </configuration>
@@ -834,82 +755,40 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.6</version>
+                <version>1.12.0</version>
                 <configuration>
-                    <workingDirectory>${project.build.directory}</workingDirectory>
-                    <installDirectory>${project.build.directory}</installDirectory>
+                    <workingDirectory>${project.basedir}/src/main/webapp</workingDirectory>
+                    <installDirectory>${project.build.directory}/react-build</installDirectory>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>process-resources</phase>
                         <id>install node and npm</id>
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v8.12.0</nodeVersion>
-                            <npmVersion>6.4.1</npmVersion>
+                            <nodeVersion>v16.0.0</nodeVersion>
+                            <npmVersion>7.10.0</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
-                        <phase>prepare-package</phase>
+                        <phase>generate-resources</phase>
                         <id>npm install for packaging</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>${project.build.directory}/jsmain</workingDirectory>
-                            <arguments>install</arguments>
+                            <arguments>ci</arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <phase>prepare-package</phase>
-                        <id>npm run r.js</id>
+                        <phase>generate-resources</phase>
+                        <id>webpack build</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>${project.build.directory}/jsmain</workingDirectory>
-                            <arguments>run r.js -- -o ../${project.build.finalName}/minify.build.js</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <phase>test</phase>
-                        <id>npm install for tests</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipJSTests}</skip>
-                            <workingDirectory>${project.build.directory}/jstest</workingDirectory>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <phase>test</phase>
-                        <id>karma dev</id>
-                        <goals>
-                            <goal>karma</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipJSTests}</skip>
-                            <workingDirectory>${project.build.directory}/jstest</workingDirectory>
-                            <karmaConfPath>../../src/test/javascript/karma-dev.conf.js</karmaConfPath>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <id>karma prd</id>
-                        <goals>
-                            <goal>karma</goal>
-                        </goals>
-                        <configuration>
-                            <environmentVariables>
-                                <buildDir>${project.build.finalName}</buildDir>
-                            </environmentVariables>
-                            <skip>${skipJSTests}</skip>
-                            <workingDirectory>${project.build.directory}/jstest</workingDirectory>
-                            <karmaConfPath>../../src/test/javascript/karma-prd.conf.js</karmaConfPath>
+                            <arguments>run build</arguments>
                         </configuration>
                     </execution>
                 </executions>

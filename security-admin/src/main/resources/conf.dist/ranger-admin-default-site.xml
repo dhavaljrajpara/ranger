@@ -70,7 +70,7 @@
 	</property>
 	<property>
 		<name>ranger.logout.success.page</name>
-		<value>/login.jsp?action=logged_out</value>
+		<value>/login.html?action=logged_out</value>
 	</property>
 	<property>
 		<name>ranger.ajax.auth.failure.page</name>

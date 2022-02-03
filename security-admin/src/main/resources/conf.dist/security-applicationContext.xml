@@ -30,7 +30,7 @@ http://www.springframework.org/schema/util/spring-util-4.3.xsd
 http://www.springframework.org/schema/security/oauth2
 http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd">
 
-	<security:http pattern="/login.jsp" security="none" />
+	<security:http pattern="/login.html" security="none" />
 	<security:http pattern="/styles/**" security="none" />
 	<security:http pattern="/fonts/**" security="none" />
 	<security:http pattern="/scripts/prelogin/XAPrelogin.js" security="none" />
@@ -64,7 +64,7 @@ http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd">
 		<security:custom-filter position="FORM_LOGIN_FILTER" ref="customUsernamePasswordAuthenticationFilter"/>
 		<security:custom-filter position="LAST" ref="userContextFormationFilter"/>
 
-		<security:access-denied-handler error-page="/login.jsp"/>
+		<security:access-denied-handler error-page="/login.html"/>
 		<security:logout delete-cookies="${ranger.admin.cookie.name}" logout-url="/logout" success-handler-ref="customLogoutSuccessHandler" />
 		<http-basic entry-point-ref="authenticationProcessingFilterEntryPoint"/>
 	</security:http>
@@ -85,7 +85,7 @@ http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd">
 	</beans:bean>
 
 	<beans:bean id="authenticationProcessingFilterEntryPoint" class="org.apache.ranger.security.web.authentication.RangerAuthenticationEntryPoint">
-		<beans:constructor-arg value="/login.jsp"/>
+		<beans:constructor-arg value="/login.html"/>
 	</beans:bean>
 
 	<beans:bean id="ajaxAuthSuccessHandler" class="org.apache.ranger.security.web.authentication.RangerAuthSuccessHandler">
@@ -93,7 +93,7 @@ http://www.springframework.org/schema/security/spring-security-oauth2-2.0.xsd">
 	</beans:bean>
 
 	<beans:bean id="ajaxAuthFailureHandler" class="org.apache.ranger.security.web.authentication.RangerAuthFailureHandler">
-		<beans:property name="defaultFailureUrl" value="/login.jsp"/>
+		<beans:property name="defaultFailureUrl" value="/login.html"/>
 	</beans:bean>
 
 	<beans:bean id="customLogoutSuccessHandler" class="org.apache.ranger.security.web.authentication.CustomLogoutSuccessHandler">
