@@ -4,7 +4,7 @@ import { UserRoles } from "Utils/XAEnums";
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
   const currentUserRoles = userProfile.userRoleList;
-  const currentUserRoles = userProfile.userRoleList;
+  currentUserRoles = userProfile.userRoleList;
   if (!currentUserRoles && currentUserRoles == "") {
     return false;
   }
@@ -28,6 +28,20 @@ export const isAuditor = () => {
 };
 export const isKMSAuditor = () => {
   return this.LoginUser("ROLE_KEY_ADMIN_AUDITOR") ? true : false;
+};
+export const isRenderMasking = (dataMaskDef) => {
+  return dataMaskDef &&
+    dataMaskDef.maskTypes &&
+    dataMaskDef.maskTypes.length > 0
+    ? true
+    : false;
+};
+export const isRenderRowFilter = (rowFilterDef) => {
+  return rowFilterDef &&
+    rowFilterDef.resources &&
+    rowFilterDef.resources.length > 0
+    ? true
+    : false;
 };
 
 export const getUserAccessRoleList = () => {

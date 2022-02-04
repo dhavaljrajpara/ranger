@@ -1,6 +1,6 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Badge, Button, Col, Row } from "react-bootstrap";
+import { Badge, Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
 
@@ -22,7 +22,8 @@ function PolicyListing() {
           url: `plugins/policies/service/${serviceId}`,
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize
+            startIndex: pageIndex * pageSize,
+            policyType: policyType
           }
         });
         policyData = policyResp.data.policies;

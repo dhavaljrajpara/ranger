@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef, useState } from "react";
+import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { OverlayTrigger, Popover, Button, Form } from "react-bootstrap";
 import { findIndex } from "lodash";
 
@@ -6,7 +6,7 @@ const TYPE_SELECT = "select";
 const TYPE_CHECKBOX = "checkbox";
 
 const CheckboxComp = (props) => {
-  const { options, value = [], valRef } = props;
+  const { options, value = [], valRef, showSelectAll, selectAllLabel } = props;
   const [selectedVal, setVal] = useState(value);
 
   const handleChange = (e, obj) => {
@@ -21,20 +21,47 @@ const CheckboxComp = (props) => {
     setVal(val);
   };
 
+  const handleAllChekced = (e) => {
+    let val = [];
+    if (e.target.checked) {
+      val = [...options];
+    }
+    valRef.current = val;
+    setVal(val);
+  };
+
   const isChecked = (obj) => {
     return findIndex(selectedVal, obj) !== -1;
   };
 
-  return options.map((obj) => (
-    <Form.Group className="mb-3" controlId={obj.label} key={obj.label}>
-      <Form.Check
-        checked={isChecked(obj)}
-        type="checkbox"
-        label={obj.label}
-        onChange={(e) => handleChange(e, obj)}
-      />
-    </Form.Group>
-  ));
+  const isAllChecked = () => {
+    return selectedVal.length === options.length;
+  };
+
+  return (
+    <>
+      {options.map((obj) => (
+        <Form.Group className="mb-3" controlId={obj.label} key={obj.label}>
+          <Form.Check
+            checked={isChecked(obj)}
+            type="checkbox"
+            label={obj.label}
+            onChange={(e) => handleChange(e, obj)}
+          />
+        </Form.Group>
+      ))}
+      {showSelectAll && (
+        <Form.Group className="mb-3">
+          <Form.Check
+            checked={isAllChecked()}
+            type="checkbox"
+            label={selectAllLabel}
+            onChange={(e) => handleAllChekced(e)}
+          />
+        </Form.Group>
+      )}
+    </>
+  );
 };
 
 const innitialState = (props) => {
@@ -132,6 +159,7 @@ const Editable = (props) => {
       show: !show,
       target: null
     });
+    onChange(selectValRef.current);
   };
 
   const handleClose = () => {
@@ -154,6 +182,8 @@ const Editable = (props) => {
               value={value}
               options={options}
               valRef={selectValRef}
+              showSelectAll={props.showSelectAll}
+              selectAllLabel={props.selectAllLabel}
             />
           ) : null}
           <hr />

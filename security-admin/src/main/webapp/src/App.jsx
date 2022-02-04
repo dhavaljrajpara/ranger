@@ -31,7 +31,9 @@ const RoleForm = lazy(() =>
 );
 const PermissionsComp = lazy(() => import("Views/Permissions"));
 const EditPermissionComp = lazy(() => import("Views/EditPermission"));
-const PolicyListing = lazy(() => import("Views/PolicyListing/PolicyListing"));
+const PolicyListingTabView = lazy(() =>
+  import("Views/PolicyListing/PolicyListingTabView")
+);
 const AddUpdatePolicyForm = lazy(() =>
   import("Views/PolicyListing/AddUpdatePolicyForm")
 );
@@ -137,7 +139,7 @@ export default class App extends Component {
                     <AuthRoute
                       exact
                       path="/service/:serviceId/policies/:policyType"
-                      component={PolicyListing}
+                      component={PolicyListingTabView}
                       {...defaultProps}
                     />
                     <AuthRoute

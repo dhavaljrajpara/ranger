@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 import { useParams } from "react-router";
 import { Form as FormB, Row, Col, Button, Badge } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
@@ -17,7 +17,7 @@ const initialState = {
   serviceDetails: null,
   serviceCompDetails: null,
   policyData: null,
-  formData: null
+  formData: {}
 };
 
 function reducer(state, action) {
@@ -36,19 +36,95 @@ function reducer(state, action) {
   }
 }
 
+const Condition = ({ when, is, children }) => (
+  <Field name={when} subscription={{ value: true }}>
+    {({ input: { value } }) => (value === is ? children : null)}
+  </Field>
+);
+
 export default function AddUpdatePolicyForm() {
   let { serviceId, policyType, policyId } = useParams();
   const [policyState, dispatch] = useReducer(reducer, initialState);
   const { loader, serviceDetails, serviceCompDetails, policyData, formData } =
     policyState;
+  const usersDataRef = useRef(null);
+  const grpDataRef = useRef(null);
+  const rolesDataRef = useRef(null);
 
   useEffect(() => {
     fetchInitalData();
   }, []);
 
+  const fetchUsersData = async (inputValue) => {
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (usersDataRef.current === null || inputValue) {
+      const userResp = await fetchApi({
+        url: "xusers/lookup/users",
+        params: params
+      });
+      op = userResp.data.vXStrings;
+      if (!inputValue) {
+        usersDataRef.current = op;
+      }
+    } else {
+      op = usersDataRef.current;
+    }
+
+    return op.map((obj) => ({
+      label: obj.value,
+      value: obj.value
+    }));
+  };
+  const fetchGroupsData = async (inputValue) => {
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (grpDataRef.current === null || inputValue) {
+      const userResp = await fetchApi({
+        url: "xusers/lookup/groups",
+        params: params
+      });
+      op = userResp.data.vXStrings;
+      if (!inputValue) {
+        grpDataRef.current = op;
+      }
+    } else {
+      op = grpDataRef.current;
+    }
+
+    return op.map((obj) => ({
+      label: obj.value,
+      value: obj.value
+    }));
+  };
+  const fetchRolesData = async (inputValue) => {
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (rolesDataRef.current === null || inputValue) {
+      const roleResp = await fetchApi({
+        url: "roles/roles",
+        params: params
+      });
+      op = roleResp.data.roles;
+      if (!inputValue) {
+        rolesDataRef.current = op;
+      }
+    } else {
+      op = rolesDataRef.current;
+    }
+
+    return op.map((obj) => ({
+      label: obj.name,
+      value: obj.name
+    }));
+  };
+
   const fetchInitalData = async () => {
     let serviceData = await fetchServiceDetails();
     let serviceCompData = await fetchRangerServiceDefComp(serviceData);
+    await fetchUsersData();
+    await fetchGroupsData();
+    await fetchRolesData();
     let policyData;
     if (policyId) {
       policyData = await fetchPolicyData();
@@ -124,6 +200,13 @@ export default function AddUpdatePolicyForm() {
   const generateFormData = () => {
     let data = {};
     data.policyType = policyId ? policyData.policyType : policyType;
+    if (!policyData) {
+      data.policyItem = [{}];
+      data.allowExceptions = [{}];
+      data.denyPolicyItems = [{}];
+      data.denyExceptions = [{}];
+    }
+    data.isDenyAllElse = policyData?.isDenyAllElse || false;
     return data;
   };
 
@@ -331,18 +414,103 @@ export default function AddUpdatePolicyForm() {
                       </FormB.Group>
                     )}
                   />
-                  <fieldset>
-                    <p className="formHeader">Allow Conditions:</p>
-                  </fieldset>
-                  <div class="wrap">
-                    <PolicyPermissionItem
-                      serviceDetails={serviceDetails}
-                      serviceCompDetails={serviceCompDetails}
-                      formValues={values}
-                      addPolicyItem={addPolicyItem}
-                      attrName="policyItem"
-                    />
+                  <div>
+                    <fieldset>
+                      <p className="formHeader">Allow Conditions:</p>
+                    </fieldset>
+                    <div className="wrap">
+                      <PolicyPermissionItem
+                        serviceDetails={serviceDetails}
+                        serviceCompDetails={serviceCompDetails}
+                        formValues={values}
+                        addPolicyItem={addPolicyItem}
+                        attrName="policyItem"
+                        fetchUsersData={fetchUsersData}
+                        fetchGroupsData={fetchGroupsData}
+                        fetchRolesData={fetchRolesData}
+                      />
+                    </div>
+                    <fieldset>
+                      <p className="formHeader">
+                        Exclude from Allow Conditions:
+                      </p>
+                    </fieldset>
+                    <div className="wrap">
+                      <PolicyPermissionItem
+                        serviceDetails={serviceDetails}
+                        serviceCompDetails={serviceCompDetails}
+                        formValues={values}
+                        addPolicyItem={addPolicyItem}
+                        attrName="allowExceptions"
+                        fetchUsersData={fetchUsersData}
+                        fetchGroupsData={fetchGroupsData}
+                        fetchRolesData={fetchRolesData}
+                      />
+                    </div>
                   </div>
+                  <Field
+                    className="form-control"
+                    name="isDenyAllElse"
+                    render={({ input }) => (
+                      <FormB.Group
+                        as={Row}
+                        className="mb-3"
+                        controlId="description"
+                      >
+                        <FormB.Label column sm={2}>
+                          Deny All Other Accesses: *
+                        </FormB.Label>
+                        <Col sm={1}>
+                          <BootstrapSwitchButton
+                            checked={false}
+                            onlabel="True"
+                            onstyle="primary"
+                            offlabel="False"
+                            offstyle="outline-secondary"
+                            size="xs"
+                            style="w-100"
+                            {...input}
+                          />
+                        </Col>
+                      </FormB.Group>
+                    )}
+                  />
+                  <Condition when="isDenyAllElse" is={false}>
+                    <div>
+                      <fieldset>
+                        <p className="formHeader">Deny Conditions:</p>
+                      </fieldset>
+                      <div className="wrap">
+                        <PolicyPermissionItem
+                          serviceDetails={serviceDetails}
+                          serviceCompDetails={serviceCompDetails}
+                          formValues={values}
+                          addPolicyItem={addPolicyItem}
+                          attrName="denyPolicyItems"
+                          fetchUsersData={fetchUsersData}
+                          fetchGroupsData={fetchGroupsData}
+                          fetchRolesData={fetchRolesData}
+                        />
+                      </div>
+                      <fieldset>
+                        <p className="formHeader">
+                          Exclude from Allow Conditions:
+                        </p>
+                      </fieldset>
+                      <div className="wrap">
+                        <PolicyPermissionItem
+                          serviceDetails={serviceDetails}
+                          serviceCompDetails={serviceCompDetails}
+                          formValues={values}
+                          addPolicyItem={addPolicyItem}
+                          attrName="denyExceptions"
+                          fetchUsersData={fetchUsersData}
+                          fetchGroupsData={fetchGroupsData}
+                          fetchRolesData={fetchRolesData}
+                        />
+                      </div>
+                    </div>
+                  </Condition>
                   <div>
                     <Button type="submit">Save</Button>
                   </div>

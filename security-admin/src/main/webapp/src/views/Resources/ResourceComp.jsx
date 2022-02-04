@@ -1,10 +1,10 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Form as FormB, Row, Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import Select from "react-select";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import AsyncCreatableSelect from "react-select/async-creatable";
-import { groupBy } from "lodash";
+import { filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
 
@@ -14,9 +14,23 @@ export default function ResourceComp(props) {
     formValues,
     serviceDetails
   } = props;
+  const [rsrcState, setLoader]= useState({loader: false, resourceKey: -1});
+
+  useEffect(() => {
+    if (rsrcState.loader) {
+      setLoader({
+        loader: false,
+        resourceKey: -1
+      })
+    }
+  }, [rsrcState.loader])
 
   const grpResources = groupBy(resources, "level");
-  const grpResourcesKeys = Object.keys(grpResources);
+  let grpResourcesKeys = [];
+  for (const resourceKey in grpResources) {
+    grpResourcesKeys.push(+resourceKey);
+  }
+  grpResourcesKeys = grpResourcesKeys.sort();
 
   const fetchResourceLookup = async (
     inputValue,
@@ -45,8 +59,79 @@ export default function ResourceComp(props) {
     }));
   };
 
-  return grpResourcesKeys.map((levelKey) => (
-    <FormB.Group
+  const getResourceLabelOp = (levelKey, index) => {
+    let op = grpResources[levelKey];
+    if (index !== 0) {
+      let previousKey = grpResourcesKeys[index - 1];
+      const parentResourceKey = `resourceName-${previousKey}`;
+      const resourceKey = `resourceName-${levelKey}`;
+      if (formValues && formValues[parentResourceKey]) {
+        op = filter(grpResources[levelKey], {parent: formValues[parentResourceKey].name});
+        if (formValues[parentResourceKey].isValidLeaf) {
+          op.push({label: "None", value: "none"});
+        }
+      }
+    }
+    return op;
+  }
+
+  const RenderValidateField = ({name}) => (
+    (formValues && formValues[name]?.mandatory && <span>*</span>) || null
+  )
+
+  const renderResourceSelect = (levelKey, index) => {
+    let renderLabel = false;
+    const resourceKey = `resourceName-${levelKey}`;
+    if (grpResources[levelKey].length === 1 && !formValues[resourceKey].hasOwnProperty("parent")) {
+      renderLabel = true;
+    } else {
+      if (index !== 0) {
+        let previousKey = grpResourcesKeys[index - 1];
+        const parentResourceKey = `resourceName-${previousKey}`;
+        let op = filter(grpResources[levelKey], {parent: formValues[parentResourceKey].name});
+        if (op.length === 1 && !formValues[parentResourceKey].isValidLeaf) {
+          renderLabel = true;
+        }
+      }
+    }
+    return renderLabel;
+  }
+
+  const validateResourceForm = (levelKey, index) => {
+    let previousKey = grpResourcesKeys[index - 1];
+    const resourceKey = `resourceName-${previousKey}`;
+    let hasValid = false;
+    if (formValues && formValues[resourceKey]) {
+      hasValid = some(grpResources[levelKey], {parent: formValues[resourceKey].name});
+    }
+    return hasValid;
+  }
+
+  const handleResourceChange = (selectedVal, input, index) => {
+    for (let i = index + 1; i < grpResourcesKeys.length - 1; i++ ) {
+      let levelKey = grpResourcesKeys[i];
+      // let op = getResourceLabelOp(levelKey, i);
+      delete formValues[`resourceName-${levelKey}`];
+    }
+    setLoader({
+      loader: true,
+      resourceKey: grpResourcesKeys[index]
+    })
+    input.onChange(selectedVal);
+  }
+
+  return grpResourcesKeys.map((levelKey, index) => {
+    const resourceKey = `resourceName-${levelKey}`;
+    if (index !== 0) {
+      let hasValid = validateResourceForm(levelKey, index);
+      if (!hasValid) {
+        return null;
+      }
+    }
+    if (rsrcState.loader && rsrcState.resourceKey < levelKey ) {
+      return null;
+    }
+    return <FormB.Group
       as={Row}
       className="mb-3"
       controlId="policyName"
@@ -54,20 +139,28 @@ export default function ResourceComp(props) {
     >
       <Col sm={2}>
         <Field
-          defaultValue={grpResources[levelKey][0]}
+          defaultValue={getResourceLabelOp(levelKey, index)[0]}
           className="form-control"
           name={`resourceName-${levelKey}`}
           render={({ input }) =>
-            grpResources[levelKey].length === 1 ? (
-              <FormB.Label>{grpResources[levelKey][0]["label"]}</FormB.Label>
+          formValues[resourceKey] ? renderResourceSelect(levelKey, index) ? (
+              <>
+              <FormB.Label>{getResourceLabelOp(levelKey, index)[0]["label"]}</FormB.Label>
+              <RenderValidateField name={`resourceName-${levelKey}`}/>
+              </>
             ) : (
+              <>
               <Select
-                options={grpResources[levelKey]}
+                {...input}
+                options={getResourceLabelOp(levelKey, index)}
                 getOptionLabel={(obj) => obj.label}
                 getOptionValue={(obj) => obj.name}
-                {...input}
+                onChange={(value) => handleResourceChange(value, input, index)}
               />
+              <RenderValidateField name={`resourceName-${levelKey}`}/>
+              </>
             )
+            : null
           }
         />
       </Col>
@@ -138,5 +231,5 @@ export default function ResourceComp(props) {
         </Col>
       )}
     </FormB.Group>
-  ));
+  });
 }
