@@ -6,7 +6,7 @@ import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
 import { ActivationStatus } from "Utils/XAEnums";
 
-class UserForm extends Component {
+class UserFormComp extends Component {
   handleSubmit = async (formData) => {
     console.log(formData);
     const userFormData = { ...formData };
@@ -60,15 +60,44 @@ class UserForm extends Component {
       />
     );
   };
+  fetchUserData = async (userID) => {
+    let userRespData;
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      userRespData = await fetchApi({
+        url: "xusers/secure/users/" + userID
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Zones or CSRF headers! ${error}`
+      );
+    }
+    this.setState({
+      userInfo: userRespData.data
+    });
+  };
+
+  componentDidMount = () => {
+    if (this.props.isEditView) {
+      this.fetchUserData(this.props.userID);
+    }
+  };
+
+  userData = () => {
+    if (this.state && this.state.userInfo) {
+      return this.state.userInfo;
+    } else {
+      return "";
+    }
+  };
+
   render() {
     return (
       <div>
         <h4 className="wrap-header bold">User Form</h4>
         <Form
           onSubmit={this.handleSubmit}
-          initialValues={{
-            userRoleList: ["ROLE_SYS_ADMIN"]
-          }}
+          initialValues={this.userData()}
           render={({ handleSubmit, form, submitting, values, pristine }) => (
             <div className="wrap">
               <form onSubmit={handleSubmit}>
@@ -84,36 +113,40 @@ class UserForm extends Component {
                   </div>
                   <FieldError name="name" />
                 </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    New Password *
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="password"
-                      type="password"
-                      component="input"
-                      placeholder="Enter New Password"
-                      className="form-control"
-                    />
+                {!this.props.isEditView && (
+                  <div className="form-group row">
+                    <label className="col-sm-2 col-form-label">
+                      New Password *
+                    </label>
+                    <div className="col-sm-6">
+                      <Field
+                        name="password"
+                        type="password"
+                        component="input"
+                        placeholder="Enter New Password"
+                        className="form-control"
+                      />
+                    </div>
+                    <FieldError name="password" />
                   </div>
-                  <FieldError name="password" />
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    Password Confirm *
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="passwordConfirm"
-                      type="password"
-                      component="input"
-                      placeholder="Confirm New Password"
-                      className="form-control"
-                    />
+                )}
+                {!this.props.isEditView && (
+                  <div className="form-group row">
+                    <label className="col-sm-2 col-form-label">
+                      Password Confirm *
+                    </label>
+                    <div className="col-sm-6">
+                      <Field
+                        name="passwordConfirm"
+                        type="password"
+                        component="input"
+                        placeholder="Confirm New Password"
+                        className="form-control"
+                      />
+                    </div>
+                    <FieldError name="passwordConfirm" />
                   </div>
-                  <FieldError name="passwordConfirm" />
-                </div>
+                )}
                 <div className="form-group row">
                   <label className="col-sm-2 col-form-label">
                     First Name *
@@ -209,4 +242,4 @@ class UserForm extends Component {
   }
 }
 
-export default UserForm;
+export default UserFormComp;

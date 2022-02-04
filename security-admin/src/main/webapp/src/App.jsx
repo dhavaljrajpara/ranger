@@ -18,7 +18,10 @@ const UserListingComp = lazy(() =>
 );
 const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
 const UserForm = lazy(() =>
-  import("Views/UserGroupRoleListing/users_details/UserForm")
+  import("Views/UserGroupRoleListing/users_details/AddUserView")
+);
+const EditUserView = lazy(() =>
+  import("Views/UserGroupRoleListing/users_details/EditUserView")
 );
 const GroupForm = lazy(() =>
   import("Views/UserGroupRoleListing/groups_details/GroupForm")
@@ -183,6 +186,12 @@ export default class App extends Component {
                       exact
                       path="/user/create"
                       component={UserForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/user/:userID"
+                      component={EditUserView}
                       {...defaultProps}
                     />
                     <AuthRoute

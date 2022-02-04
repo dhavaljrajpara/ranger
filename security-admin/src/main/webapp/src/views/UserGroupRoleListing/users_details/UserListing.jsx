@@ -209,7 +209,7 @@ function Users() {
     []
   );
   const addUser = () => {
-    history.push("/userCreate");
+    history.push("/user/create");
   };
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);

@@ -17,7 +17,7 @@ class GroupForm extends Component {
         method: "post",
         data: formData
       });
-      this.props.history.push("/user");
+      this.props.history.push("/users/usertab");
     } catch (error) {
       console.error(`Error occurred while updating user password! ${error}`);
     }
