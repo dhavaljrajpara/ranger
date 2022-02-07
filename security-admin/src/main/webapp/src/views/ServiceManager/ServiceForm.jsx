@@ -7,7 +7,9 @@ import Modal from "react-bootstrap/Modal";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
-import { difference, keys, map } from "lodash";
+import AsyncSelect from "react-select/async";
+import { fetchApi, fetchCSRFConf } from "Utils/fetchAPI";
+import { difference, keys, map, find } from "lodash";
 
 class ServiceForm extends Component {
   constructor(props) {
@@ -95,7 +97,6 @@ class ServiceForm extends Component {
     // TODO to update ranger.plugin.audit.filters
     serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
 
-    const { fetchApi } = await import("Utils/fetchAPI");
     try {
       await fetchApi({
         url: apiUrl,
@@ -113,7 +114,6 @@ class ServiceForm extends Component {
     let serviceDefResp;
     let serviceDefId = this.props.match.params.serviceDefId;
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       serviceDefResp = await fetchApi({
         url: `plugins/definitions/${serviceDefId}`
       });
@@ -125,6 +125,17 @@ class ServiceForm extends Component {
     this.setState({
       serviceDef: serviceDefResp.data
     });
+    console.log(
+      "PRINT initial values from state",
+      this.state.createInitialValues
+    );
+    let getAuditFilters = _.find(this.state.serviceDef.configs, {
+      name: "ranger.plugin.audit.filters"
+    });
+    getAuditFilters = JSON.parse(
+      getAuditFilters.defaultValue.replace(/'/g, '"')
+    );
+    console.log(getAuditFilters);
     if (this.props.match.params.serviceId !== undefined) {
       this.fetchService();
     }
@@ -134,7 +145,6 @@ class ServiceForm extends Component {
     let serviceResp;
     let serviceId = this.props.match.params.serviceId;
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       serviceResp = await fetchApi({
         url: `plugins/services/${serviceId}`
       });
@@ -187,7 +197,6 @@ class ServiceForm extends Component {
   fetchTagService = async () => {
     let tagServiceResp;
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       tagServiceResp = await fetchApi({
         url: `plugins/services?serviceNamePartial=&serviceType=tag`
       });
@@ -204,7 +213,6 @@ class ServiceForm extends Component {
 
   deleteService = async (serviceId) => {
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
         url: `plugins/services/${serviceId}`,
         method: "delete"
@@ -249,7 +257,9 @@ class ServiceForm extends Component {
                     <div className="col-sm-6">
                       <input {...input} type="text" className="form-control" />
                     </div>
-                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                    {meta.error && meta.touched && (
+                      <span className="invalid-field">{meta.error}</span>
+                    )}
                   </div>
                 )}
               </Field>
@@ -278,7 +288,9 @@ class ServiceForm extends Component {
                         {this.enumOptions(paramEnum)}
                       </select>
                     </div>
-                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                    {meta.error && meta.touched && (
+                      <span className="invalid-field">{meta.error}</span>
+                    )}
                   </div>
                 )}
               </Field>
@@ -304,7 +316,9 @@ class ServiceForm extends Component {
                         {this.booleanOptions(configParam.subType)}
                       </select>
                     </div>
-                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                    {meta.error && meta.touched && (
+                      <span className="invalid-field">{meta.error}</span>
+                    )}
                   </div>
                 )}
               </Field>
@@ -332,7 +346,9 @@ class ServiceForm extends Component {
                         className="form-control"
                       />
                     </div>
-                    {meta.error && meta.touched && <span>{meta.error}</span>}
+                    {meta.error && meta.touched && (
+                      <span className="invalid-field">{meta.error}</span>
+                    )}
                   </div>
                 )}
               </Field>
@@ -373,9 +389,76 @@ class ServiceForm extends Component {
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
 
-  SelectTagService = ({ input, ...rest }) => (
+  SelectField = ({ input, ...rest }) => (
     <Select {...input} {...rest} searchable />
   );
+
+  AsyncSelectField = ({ input, ...rest }) => (
+    <AsyncSelect {...input} {...rest} cacheOptions isMulti />
+  );
+
+  loadUsers = async (inputValue, callback) => {
+    let params = {},
+      op = [];
+    if (inputValue) {
+      params["name"] = inputValue || "";
+    }
+    const opResp = await fetchApi({
+      url: "xusers/lookup/users?&isVisible=1",
+      params: params
+    });
+    if (opResp.data && opResp.data.vXStrings) {
+      op = opResp.data.vXStrings.map((obj) => {
+        return {
+          label: obj.value,
+          value: obj.value
+        };
+      });
+    }
+    return op;
+  };
+
+  loadGroups = async (inputValue, callback) => {
+    let params = {},
+      op = [];
+    if (inputValue) {
+      params["name"] = inputValue || "";
+    }
+    const opResp = await fetchApi({
+      url: "xusers/lookup/groups?isVisible=1",
+      params: params
+    });
+    if (opResp.data && opResp.data.vXStrings) {
+      op = opResp.data.vXStrings.map((obj) => {
+        return {
+          label: obj.value,
+          value: obj.value
+        };
+      });
+    }
+    return op;
+  };
+
+  loadRoles = async (inputValue, callback) => {
+    let params = {},
+      op = [];
+    if (inputValue) {
+      params["roleNamePartial"] = inputValue || "";
+    }
+    const opResp = await fetchApi({
+      url: "roles/roles",
+      params: params
+    });
+    if (opResp.data && opResp.data.roles) {
+      op = opResp.data.roles.map((obj) => {
+        return {
+          label: obj.value,
+          value: obj.value
+        };
+      });
+    }
+    return op;
+  };
 
   render() {
     return (
@@ -408,7 +491,7 @@ class ServiceForm extends Component {
                   pristine,
                   values,
                   form: {
-                    mutators: { push: addCustomConfig, pop: removeCustomConfig }
+                    mutators: { push, pop }
                   }
                 }) => (
                   <form onSubmit={handleSubmit}>
@@ -432,7 +515,9 @@ class ServiceForm extends Component {
                                 />
                               </div>
                               {meta.error && meta.touched && (
-                                <span>{meta.error}</span>
+                                <span className="invalid-field">
+                                  {meta.error}
+                                </span>
                               )}
                             </div>
                           )}
@@ -451,7 +536,9 @@ class ServiceForm extends Component {
                                 />
                               </div>
                               {meta.error && meta.touched && (
-                                <span>{meta.error}</span>
+                                <span className="invalid-field">
+                                  {meta.error}
+                                </span>
                               )}
                             </div>
                           )}
@@ -466,7 +553,9 @@ class ServiceForm extends Component {
                                 <textarea {...input} className="form-control" />
                               </div>
                               {meta.error && meta.touched && (
-                                <span>{meta.error}</span>
+                                <span className="invalid-field">
+                                  {meta.error}
+                                </span>
                               )}
                             </div>
                           )}
@@ -501,7 +590,7 @@ class ServiceForm extends Component {
                           <div className="col-sm-6">
                             <Field
                               name="tagService"
-                              component={this.SelectTagService}
+                              component={this.SelectField}
                               options={this.state.tagService.map((s) => {
                                 return {
                                   value: s.name,
@@ -575,9 +664,7 @@ class ServiceForm extends Component {
                             <Button
                               variant="outline-secondary"
                               size="sm"
-                              onClick={() =>
-                                addCustomConfig("customConfigs", undefined)
-                              }
+                              onClick={() => push("customConfigs", undefined)}
                             >
                               <i className="fa-fw fa fa-plus"></i>
                             </Button>
@@ -592,6 +679,138 @@ class ServiceForm extends Component {
                                   className="form-check-input"
                                   type="checkbox"
                                 />
+                              </div>
+                            </div>
+                            <Table
+                              bordered
+                              size="sm"
+                              className="no-bg-color mt-3"
+                            >
+                              <thead>
+                                <tr>
+                                  <th className="text-center">Is Audited</th>
+                                  <th className="text-center">Access Result</th>
+                                  <th className="text-center">Resources</th>
+                                  <th className="text-center">Operations</th>
+                                  <th className="text-center">Permissions</th>
+                                  <th className="text-center">Users</th>
+                                  <th className="text-center">Groups</th>
+                                  <th className="text-center">Roles</th>
+                                  <th className="text-center"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <FieldArray name="auditFilters">
+                                  {({ fields }) =>
+                                    fields.map((name, index) => (
+                                      <tr key={name}>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.isAudited`}
+                                            component="select"
+                                            className="form-control w-auto"
+                                          >
+                                            <option value="true">Yes</option>
+                                            <option value="false">No</option>
+                                          </Field>
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.accessResult`}
+                                            component={this.SelectField}
+                                            options={[
+                                              {
+                                                value: "DENIED",
+                                                label: "DENIED"
+                                              },
+                                              {
+                                                value: "ALLOWED",
+                                                label: "ALLOWED"
+                                              },
+                                              {
+                                                value: "NOT_DETERMINED",
+                                                label: "NOT_DETERMINED"
+                                              }
+                                            ]}
+                                            placeholder="Select Value"
+                                            className="w-auto"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.resources`}
+                                            component="input"
+                                            className="form-control"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.actions`}
+                                            component="input"
+                                            className="form-control"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.accessTypes`}
+                                            component="input"
+                                            className="form-control"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.users`}
+                                            component={this.AsyncSelectField}
+                                            loadOptions={this.loadUsers}
+                                            defaultOptions
+                                            placeholder="Select User"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.groups`}
+                                            component={this.AsyncSelectField}
+                                            loadOptions={this.loadGroups}
+                                            defaultOptions
+                                            placeholder="Select Group"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Field
+                                            name={`${name}.roles`}
+                                            component={this.AsyncSelectField}
+                                            loadOptions={this.loadRoles}
+                                            defaultOptions
+                                            placeholder="Select Role"
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <Button
+                                            variant="danger"
+                                            size="sm"
+                                            title="Yes"
+                                            onClick={() => fields.remove(index)}
+                                          >
+                                            <i className="fa-fw fa fa-remove"></i>
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  }
+                                </FieldArray>
+                              </tbody>
+                            </Table>
+                            <div className="form-group row">
+                              <div className="col-sm-3">
+                                <Button
+                                  variant="outline-secondary"
+                                  size="sm"
+                                  onClick={() =>
+                                    push("auditFilters", undefined)
+                                  }
+                                >
+                                  <i className="fa-fw fa fa-plus"></i>
+                                </Button>
                               </div>
                             </div>
                           </div>

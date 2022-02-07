@@ -631,6 +631,10 @@ header {
   border-bottom: 1px solid #0b7fad;
 }
 
+.invalid-field {
+  color: #dc3545;
+}
+
 /* Security Zone Service Table Resorces */
 .resourceGrp {
   display: block;
