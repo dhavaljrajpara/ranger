@@ -7,23 +7,33 @@ import AsyncCreatableSelect from "react-select/async-creatable";
 import { filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
+import { RangerPolicyType } from "Utils/XAEnums";
+
+const noneOptions = {
+  label: "None",
+  value: "none"
+};
 
 export default function ResourceComp(props) {
-  const {
-    serviceCompDetails: { resources = [] },
-    formValues,
-    serviceDetails
-  } = props;
-  const [rsrcState, setLoader]= useState({loader: false, resourceKey: -1});
+  const { serviceCompDetails, formValues, serviceDetails, policyType } = props;
+  const [rsrcState, setLoader] = useState({ loader: false, resourceKey: -1 });
+  let resources = serviceCompDetails.resources;
+  if (RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value === policyType) {
+    resources = serviceCompDetails.dataMaskDef.resources;
+  } else if (
+    RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value === policyType
+  ) {
+    resources = rowFilterDef.rowFilterDef.resources;
+  }
 
   useEffect(() => {
     if (rsrcState.loader) {
       setLoader({
         loader: false,
         resourceKey: -1
-      })
+      });
     }
-  }, [rsrcState.loader])
+  }, [rsrcState.loader]);
 
   const grpResources = groupBy(resources, "level");
   let grpResourcesKeys = [];
@@ -66,59 +76,88 @@ export default function ResourceComp(props) {
       const parentResourceKey = `resourceName-${previousKey}`;
       const resourceKey = `resourceName-${levelKey}`;
       if (formValues && formValues[parentResourceKey]) {
-        op = filter(grpResources[levelKey], {parent: formValues[parentResourceKey].name});
+        op = filter(grpResources[levelKey], {
+          parent: formValues[parentResourceKey].name
+        });
         if (formValues[parentResourceKey].isValidLeaf) {
-          op.push({label: "None", value: "none"});
+          op.push(noneOptions);
         }
       }
     }
     return op;
-  }
+  };
 
-  const RenderValidateField = ({name}) => (
-    (formValues && formValues[name]?.mandatory && <span>*</span>) || null
-  )
+  const RenderValidateField = ({ name }) =>
+    (formValues && formValues[name]?.mandatory && <span>*</span>) || null;
 
   const renderResourceSelect = (levelKey, index) => {
     let renderLabel = false;
     const resourceKey = `resourceName-${levelKey}`;
-    if (grpResources[levelKey].length === 1 && !formValues[resourceKey].hasOwnProperty("parent")) {
+    let levelOp = grpResources[levelKey];
+    if (index !== 0) {
+      levelOp = getResourceLabelOp(levelKey, index);
+    }
+    if (
+      levelOp.length === 1 &&
+      !formValues[resourceKey].hasOwnProperty("parent")
+    ) {
       renderLabel = true;
     } else {
       if (index !== 0) {
         let previousKey = grpResourcesKeys[index - 1];
         const parentResourceKey = `resourceName-${previousKey}`;
-        let op = filter(grpResources[levelKey], {parent: formValues[parentResourceKey].name});
+        let op = filter(levelOp, {
+          parent: formValues[parentResourceKey].name
+        });
         if (op.length === 1 && !formValues[parentResourceKey].isValidLeaf) {
           renderLabel = true;
         }
       }
     }
     return renderLabel;
-  }
+  };
 
   const validateResourceForm = (levelKey, index) => {
     let previousKey = grpResourcesKeys[index - 1];
     const resourceKey = `resourceName-${previousKey}`;
     let hasValid = false;
     if (formValues && formValues[resourceKey]) {
-      hasValid = some(grpResources[levelKey], {parent: formValues[resourceKey].name});
+      hasValid = some(grpResources[levelKey], {
+        parent: formValues[resourceKey].name
+      });
     }
     return hasValid;
-  }
+  };
 
   const handleResourceChange = (selectedVal, input, index) => {
-    for (let i = index + 1; i < grpResourcesKeys.length - 1; i++ ) {
+    for (let i = index + 1; i < grpResourcesKeys.length; i++) {
       let levelKey = grpResourcesKeys[i];
       // let op = getResourceLabelOp(levelKey, i);
       delete formValues[`resourceName-${levelKey}`];
+      delete formValues[`value-${levelKey}`];
+      delete formValues[`isExcludesSupport-${levelKey}`];
+      delete formValues[`isRecursiveSupport-${levelKey}`];
     }
+    removedSeletedAccess();
     setLoader({
       loader: true,
       resourceKey: grpResourcesKeys[index]
-    })
+    });
     input.onChange(selectedVal);
-  }
+  };
+
+  const removedSeletedAccess = () => {
+    for (const name of [
+      "policyItem",
+      "allowExceptions",
+      "denyPolicyItems",
+      "denyExceptions"
+    ]) {
+      for (const policyObj of formValues[name]) {
+        policyObj.accesses = [];
+      }
+    }
+  };
 
   return grpResourcesKeys.map((levelKey, index) => {
     const resourceKey = `resourceName-${levelKey}`;
@@ -128,108 +167,119 @@ export default function ResourceComp(props) {
         return null;
       }
     }
-    if (rsrcState.loader && rsrcState.resourceKey < levelKey ) {
+    if (rsrcState.loader && rsrcState.resourceKey < levelKey) {
       return null;
     }
-    return <FormB.Group
-      as={Row}
-      className="mb-3"
-      controlId="policyName"
-      key={`Resource-${levelKey}`}
-    >
-      <Col sm={2}>
-        <Field
-          defaultValue={getResourceLabelOp(levelKey, index)[0]}
-          className="form-control"
-          name={`resourceName-${levelKey}`}
-          render={({ input }) =>
-          formValues[resourceKey] ? renderResourceSelect(levelKey, index) ? (
-              <>
-              <FormB.Label>{getResourceLabelOp(levelKey, index)[0]["label"]}</FormB.Label>
-              <RenderValidateField name={`resourceName-${levelKey}`}/>
-              </>
-            ) : (
-              <>
-              <Select
-                {...input}
-                options={getResourceLabelOp(levelKey, index)}
-                getOptionLabel={(obj) => obj.label}
-                getOptionValue={(obj) => obj.name}
-                onChange={(value) => handleResourceChange(value, input, index)}
-              />
-              <RenderValidateField name={`resourceName-${levelKey}`}/>
-              </>
-            )
-            : null
-          }
-        />
-      </Col>
-      {formValues[`resourceName-${levelKey}`] && (
-        <Col sm={4}>
+    return (
+      <FormB.Group
+        as={Row}
+        className="mb-3"
+        controlId="policyName"
+        key={`Resource-${levelKey}`}
+      >
+        <Col sm={2}>
           <Field
+            defaultValue={getResourceLabelOp(levelKey, index)[0]}
             className="form-control"
-            name={`value-${levelKey}`}
-            render={({ input }) => (
-              <AsyncCreatableSelect
-                {...input}
-                defaultOptions
-                isMulti
-                loadOptions={(inputValue) =>
-                  fetchResourceLookup(
-                    inputValue,
-                    formValues[`resourceName-${levelKey}`],
-                    input.value
-                  )
-                }
-              />
-            )}
+            name={`resourceName-${levelKey}`}
+            render={({ input }) =>
+              formValues[resourceKey] ? (
+                renderResourceSelect(levelKey, index) ? (
+                  <>
+                    <FormB.Label>
+                      {getResourceLabelOp(levelKey, index)[0]["label"]}
+                    </FormB.Label>
+                    <RenderValidateField name={`resourceName-${levelKey}`} />
+                  </>
+                ) : (
+                  <>
+                    <Select
+                      {...input}
+                      options={getResourceLabelOp(levelKey, index)}
+                      getOptionLabel={(obj) => obj.label}
+                      getOptionValue={(obj) => obj.name}
+                      onChange={(value) =>
+                        handleResourceChange(value, input, index)
+                      }
+                    />
+                    <RenderValidateField name={`resourceName-${levelKey}`} />
+                  </>
+                )
+              ) : null
+            }
           />
         </Col>
-      )}
-      {formValues[`resourceName-${levelKey}`] && (
-        <Col sm={4}>
-          <Row>
-            {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (
-              <Col sm={4}>
-                <Field
-                  className="form-control"
-                  name={`isExcludesSupport-${levelKey}`}
-                  render={({ input }) => (
-                    <BootstrapSwitchButton
-                      onlabel="Include"
-                      onstyle="primary"
-                      offlabel="Exclude"
-                      offstyle="outline-secondary"
-                      style="w-100"
-                      size="xs"
-                      {...input}
-                    />
-                  )}
+        {formValues[`resourceName-${levelKey}`] && (
+          <Col sm={4}>
+            <Field
+              className="form-control"
+              name={`value-${levelKey}`}
+              render={({ input }) => (
+                <AsyncCreatableSelect
+                  {...input}
+                  defaultOptions
+                  isMulti
+                  isDisabled={
+                    formValues[`resourceName-${levelKey}`].value ===
+                    noneOptions.value
+                  }
+                  loadOptions={(inputValue) =>
+                    fetchResourceLookup(
+                      inputValue,
+                      formValues[`resourceName-${levelKey}`],
+                      input.value
+                    )
+                  }
                 />
-              </Col>
-            )}
-            {formValues[`resourceName-${levelKey}`]["recursiveSupported"] && (
-              <Col sm={5}>
-                <Field
-                  className="form-control"
-                  name={`isRecursiveSupport-${levelKey}`}
-                  render={({ input }) => (
-                    <BootstrapSwitchButton
-                      onlabel="Recursive"
-                      onstyle="primary"
-                      offlabel="Non-recursive"
-                      offstyle="outline-secondary"
-                      style="w-100"
-                      size="xs"
-                      {...input}
-                    />
-                  )}
-                />
-              </Col>
-            )}
-          </Row>
-        </Col>
-      )}
-    </FormB.Group>
+              )}
+            />
+          </Col>
+        )}
+        {formValues[`resourceName-${levelKey}`] && (
+          <Col sm={4}>
+            <Row>
+              {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (
+                <Col sm={4}>
+                  <Field
+                    className="form-control"
+                    name={`isExcludesSupport-${levelKey}`}
+                    render={({ input }) => (
+                      <BootstrapSwitchButton
+                        onlabel="Include"
+                        onstyle="primary"
+                        offlabel="Exclude"
+                        offstyle="outline-secondary"
+                        style="w-100"
+                        size="xs"
+                        {...input}
+                      />
+                    )}
+                  />
+                </Col>
+              )}
+              {formValues[`resourceName-${levelKey}`]["recursiveSupported"] && (
+                <Col sm={5}>
+                  <Field
+                    className="form-control"
+                    name={`isRecursiveSupport-${levelKey}`}
+                    render={({ input }) => (
+                      <BootstrapSwitchButton
+                        onlabel="Recursive"
+                        onstyle="primary"
+                        offlabel="Non-recursive"
+                        offstyle="outline-secondary"
+                        style="w-100"
+                        size="xs"
+                        {...input}
+                      />
+                    )}
+                  />
+                </Col>
+              )}
+            </Row>
+          </Col>
+        )}
+      </FormB.Group>
+    );
   });
 }

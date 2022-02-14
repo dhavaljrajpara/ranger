@@ -1,16 +1,19 @@
-import React, { useEffect, useReducer } from "react";
+import React, { useMemo } from "react";
 import { Table, Button } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
-import { Form as FormB, Row, Col } from "react-bootstrap";
+import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
 // import { fetchApi } from "Utils/fetchAPI";
-import BootstrapSwitchButton from "bootstrap-switch-button-react";
-import AsyncCreatableSelect from "react-select/async-creatable";
-import { groupBy } from "lodash";
+import { find, groupBy } from "lodash";
 
 import Editable from "Components/Editable";
 import { fetchApi } from "Utils/fetchAPI";
+
+const noneOptions = {
+  label: "None",
+  value: "none"
+};
 
 export default function PolicyPermissionItem(props) {
   const {
@@ -19,7 +22,8 @@ export default function PolicyPermissionItem(props) {
     serviceCompDetails,
     fetchUsersData,
     fetchGroupsData,
-    fetchRolesData
+    fetchRolesData,
+    formValues
   } = props;
   const permList = [
     "Select Roles",
@@ -34,75 +38,45 @@ export default function PolicyPermissionItem(props) {
     });
   };
 
+  const grpResourcesKeys = useMemo(() => {
+    const { resources = [] } = serviceCompDetails;
+    const grpResources = groupBy(resources, "level");
+    let grpResourcesKeys = [];
+    for (const resourceKey in grpResources) {
+      grpResourcesKeys.push(+resourceKey);
+    }
+    grpResourcesKeys = grpResourcesKeys.sort();
+    return grpResourcesKeys;
+  }, []);
+
   const getAccessTypeOptions = () => {
-    return serviceCompDetails.accessTypes.map(({ label, name: value }) => ({
+    let srcOp = [];
+    for (let i = grpResourcesKeys.length - 1; i >= 0; i--) {
+      let selectedResource = `resourceName-${grpResourcesKeys[i]}`;
+      if (
+        formValues[selectedResource] &&
+        formValues[selectedResource].value !== noneOptions.value
+      ) {
+        srcOp = serviceCompDetails.accessTypes;
+        if (formValues[selectedResource].accessTypeRestrictions?.length > 0) {
+          let op = [];
+          for (const name of formValues[selectedResource]
+            .accessTypeRestrictions) {
+            let typeOp = find(srcOp, { name });
+            if (typeOp) {
+              op.push(typeOp);
+            }
+          }
+          srcOp = op;
+        }
+        break;
+      }
+    }
+    return srcOp.map(({ label, name: value }) => ({
       label,
       value
     }));
   };
-  // const fetchUsersData = async (inputValue) => {
-  //   let params = { name: inputValue || "", isVisible: 1 };
-  //   let op = [];
-  //   if (usersDataRef.current === null || inputValue) {
-  //     const userResp = await fetchApi({
-  //       url: "xusers/lookup/users",
-  //       params: params
-  //     });
-  //     op = userResp.data.vXStrings;
-  //     if (!inputValue) {
-  //       usersDataRef.current = op;
-  //     }
-  //   } else {
-  //     op = usersDataRef.current;
-  //   }
-
-  //   return op.map((obj) => ({
-  //     label: obj.value,
-  //     value: obj.value
-  //   }));
-  // };
-  // const fetchGroupsData = async (inputValue) => {
-  //   let params = { name: inputValue || "", isVisible: 1 };
-  //   let op = [];
-  //   if (grpDataRef.current === null || inputValue) {
-  //     const userResp = await fetchApi({
-  //       url: "xusers/lookup/groups",
-  //       params: params
-  //     });
-  //     op = userResp.data.vXStrings;
-  //     if (!inputValue) {
-  //       grpDataRef.current = op;
-  //     }
-  //   } else {
-  //     op = grpDataRef.current;
-  //   }
-
-  //   return op.map((obj) => ({
-  //     label: obj.value,
-  //     value: obj.value
-  //   }));
-  // };
-  // const fetchRolesData = async (inputValue) => {
-  //   let params = { name: inputValue || "", isVisible: 1 };
-  //   let op = [];
-  //   if (rolesDataRef.current === null || inputValue) {
-  //     const roleResp = await fetchApi({
-  //       url: "roles/roles",
-  //       params: params
-  //     });
-  //     op = roleResp.data.roles;
-  //     if (!inputValue) {
-  //       rolesDataRef.current = op;
-  //     }
-  //   } else {
-  //     op = rolesDataRef.current;
-  //   }
-
-  //   return op.map((obj) => ({
-  //     label: obj.name,
-  //     value: obj.name
-  //   }));
-  // };
   return (
     <div>
       <Col sm="12">
@@ -127,7 +101,6 @@ export default function PolicyPermissionItem(props) {
                                   <AsyncSelect
                                     {...input}
                                     loadOptions={fetchRolesData}
-                                    // onFocus={() => fetchRolesData()}
                                     defaultOptions
                                     cacheOptions
                                     isMulti
@@ -227,11 +200,6 @@ export default function PolicyPermissionItem(props) {
                       }
                       return <td key={colName}>{colName}</td>;
                     })}
-                    {/* <Field
-                      name={`${name}.firstName`}
-                      component="input"
-                      placeholder="First Name"
-                    /> */}
                     <td>
                       <span
                         onClick={() => fields.remove(index)}

@@ -1,16 +1,22 @@
 import React, { useEffect, useReducer, useRef } from "react";
-import { useParams } from "react-router";
 import { Form as FormB, Row, Col, Button, Badge } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { FieldArray } from "react-final-form-arrays";
+import { groupBy } from "lodash";
+import { toast } from "react-toastify";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
 import PolicyPermissionItem from "../PolicyListing/PolicyPermissionItem";
+import { useParams, useHistory } from "react-router-dom";
+
+const noneOptions = {
+  label: "None",
+  value: "none"
+};
 
 const initialState = {
   loader: true,
@@ -44,6 +50,7 @@ const Condition = ({ when, is, children }) => (
 
 export default function AddUpdatePolicyForm() {
   let { serviceId, policyType, policyId } = useParams();
+  const history = useHistory();
   const [policyState, dispatch] = useReducer(reducer, initialState);
   const { loader, serviceDetails, serviceCompDetails, policyData, formData } =
     policyState;
@@ -210,8 +217,75 @@ export default function AddUpdatePolicyForm() {
     return data;
   };
 
-  const handleSubmit = (values) => {
-    console.log(values);
+  const getPolicyItemsVal = (formData, name) => {
+    return formData[name].map((val) => {
+      let obj = {
+        delegateAdmin: val.delegateAdmin
+      };
+      if (val.accesses) {
+        obj.accesses = val.accesses.map(({ value }) => ({
+          type: value,
+          isAllowed: true
+        }));
+      }
+      if (val.groups.length > 0) {
+        obj.groups = val.groups.map(({ value }) => value);
+      }
+      if (val.roles.length > 0) {
+        obj.roles = val.roles.map(({ value }) => value);
+      }
+      if (val.users.length > 0) {
+        obj.users = val.users.map(({ value }) => value);
+      }
+      return obj;
+    });
+  };
+
+  const handleSubmit = async (values) => {
+    let data = {};
+    data.allowExceptions = getPolicyItemsVal(values, "allowExceptions");
+    data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
+    data.policyItem = getPolicyItemsVal(values, "policyItem");
+    data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
+    data.description = values.description;
+    data.isAuditEnabled = values.isAuditEnabled;
+    data.isDenyAllElse = values.isDenyAllElse;
+    data.isEnabled = values.isEnabled;
+    data.name = values.policyName;
+    data.policyLabel = (values.policyLabel || []).map(({ value }) => value);
+    data.policyPriority = values.policyPriority ? "1" : "0";
+    data.policyType = values.policyType;
+    data.service = serviceDetails.name;
+    const grpResources = groupBy(serviceCompDetails.resources || [], "level");
+    let grpResourcesKeys = [];
+    for (const resourceKey in grpResources) {
+      grpResourcesKeys.push(+resourceKey);
+    }
+    grpResourcesKeys = grpResourcesKeys.sort();
+    data.resources = {};
+    for (const level of grpResourcesKeys) {
+      if (
+        values[`resourceName-${level}`] &&
+        values[`resourceName-${level}`].value !== noneOptions.value
+      ) {
+        data.resources[values[`resourceName-${level}`].name] = {
+          isExcludes: values[`isExcludesSupport-${level}`] || false,
+          isRecursive: values[`isRecursiveSupport-${level}`] || false,
+          values: values[`value-${level}`].map(({ value }) => value)
+        };
+      }
+    }
+    try {
+      const resp = await fetchApi({
+        url: "plugins/policies",
+        method: "POST",
+        data
+      });
+      history.push(`/service/${serviceId}/policies/${policyType}`);
+    } catch (error) {
+      toast.error("Failed to save policy form!!");
+      console.error(`Error while saving policy form!!! ${error}`);
+    }
   };
 
   return (
@@ -369,6 +443,7 @@ export default function AddUpdatePolicyForm() {
                     serviceDetails={serviceDetails}
                     serviceCompDetails={serviceCompDetails}
                     formValues={values}
+                    policyType={policyType}
                   />
                   <Field
                     className="form-control"

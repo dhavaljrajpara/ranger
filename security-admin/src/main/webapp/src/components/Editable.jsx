@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import { OverlayTrigger, Popover, Button, Form } from "react-bootstrap";
 import { findIndex } from "lodash";
 
@@ -146,7 +146,13 @@ const Editable = (props) => {
 
   useEffect(() => {
     if (!initialLoad.current) {
-      onChange(value);
+      onChange(editableValue);
+      dispatch({
+        type: "SET_VALUE",
+        value: editableValue,
+        show: false,
+        target: null
+      });
     } else {
       initialLoad.current = false;
     }

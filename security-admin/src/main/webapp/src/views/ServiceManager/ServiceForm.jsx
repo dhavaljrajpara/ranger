@@ -9,6 +9,9 @@ import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { fetchApi, fetchCSRFConf } from "Utils/fetchAPI";
+import Editable from "Components/Editable";
+import ModalResourceComp from "../Resources/ModalResourceComp";
+import ServiceAuditFilter from "./ServiceAuditFilter";
 import { difference, keys, map, find } from "lodash";
 
 class ServiceForm extends Component {
@@ -16,6 +19,7 @@ class ServiceForm extends Component {
     super(props);
     this.state = {
       showDelete: false,
+      showModalResource: false,
       serviceDef: {},
       service: {},
       tagService: [],
@@ -34,7 +38,10 @@ class ServiceForm extends Component {
         },
         customConfigs: [undefined]
       },
-      editInitialValues: {}
+      editInitialValues: {},
+      usersDataRef: null,
+      grpDataRef: null,
+      rolesDataRef: null
     };
   }
 
@@ -49,6 +56,9 @@ class ServiceForm extends Component {
   componentDidMount() {
     this.fetchServiceDef();
     this.fetchTagService();
+    this.loadUsers();
+    this.loadGroups();
+    this.loadRoles();
   }
 
   onSubmit = async (values) => {
@@ -398,71 +408,98 @@ class ServiceForm extends Component {
   );
 
   loadUsers = async (inputValue, callback) => {
-    let params = {},
-      op = [];
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-    const opResp = await fetchApi({
-      url: "xusers/lookup/users?&isVisible=1",
-      params: params
-    });
-    if (opResp.data && opResp.data.vXStrings) {
-      op = opResp.data.vXStrings.map((obj) => {
-        return {
-          label: obj.value,
-          value: obj.value
-        };
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (this.state.usersDataRef === null || inputValue) {
+      const userResp = await fetchApi({
+        url: "xusers/lookup/users",
+        params: params
       });
+      op = userResp.data.vXStrings;
+      if (!inputValue) {
+        this.state.usersDataRef = op;
+      }
+    } else {
+      op = this.state.usersDataRef;
     }
-    return op;
+
+    return op.map((obj) => ({
+      label: obj.value,
+      value: obj.value
+    }));
   };
 
   loadGroups = async (inputValue, callback) => {
-    let params = {},
-      op = [];
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-    const opResp = await fetchApi({
-      url: "xusers/lookup/groups?isVisible=1",
-      params: params
-    });
-    if (opResp.data && opResp.data.vXStrings) {
-      op = opResp.data.vXStrings.map((obj) => {
-        return {
-          label: obj.value,
-          value: obj.value
-        };
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (this.state.grpDataRef === null || inputValue) {
+      const userResp = await fetchApi({
+        url: "xusers/lookup/groups",
+        params: params
       });
+      op = userResp.data.vXStrings;
+      if (!inputValue) {
+        this.state.grpDataRef = op;
+      }
+    } else {
+      op = this.state.grpDataRef;
     }
-    return op;
+
+    return op.map((obj) => ({
+      label: obj.value,
+      value: obj.value
+    }));
   };
 
   loadRoles = async (inputValue, callback) => {
-    let params = {},
-      op = [];
-    if (inputValue) {
-      params["roleNamePartial"] = inputValue || "";
-    }
-    const opResp = await fetchApi({
-      url: "roles/roles",
-      params: params
-    });
-    if (opResp.data && opResp.data.roles) {
-      op = opResp.data.roles.map((obj) => {
-        return {
-          label: obj.value,
-          value: obj.value
-        };
+    let params = { name: inputValue || "", isVisible: 1 };
+    let op = [];
+    if (this.state.rolesDataRef === null || inputValue) {
+      const roleResp = await fetchApi({
+        url: "roles/roles",
+        params: params
       });
+      op = roleResp.data.roles;
+      if (!inputValue) {
+        this.state.rolesDataRef = op;
+      }
+    } else {
+      op = this.state.rolesDataRef;
     }
-    return op;
+
+    return op.map((obj) => ({
+      label: obj.name,
+      value: obj.name
+    }));
+  };
+
+  // getAccessTypeOptions = () => {
+  //   let srcOp = [];
+  //   console.log(this);
+  //   srcOp = this.state.serviceDef.accessTypes;
+  //   return srcOp.map(({ label, name: value }) => ({
+  //     label,
+  //     value
+  //   }));
+  // };
+
+  renderResourcesModal = (val) => {
+    this.setState({
+      showModalResource: val
+    });
   };
 
   render() {
     return (
       <div>
+        {/* <ModalResourceComp
+          showModalResource={this.state.showModalResource}
+          serviceDetails={this.state.service}
+          serviceCompDetails={this.state.serviceDef}
+          renderResourcesModal={this.renderResourcesModal}
+          cancelButtonText="Cancel"
+          actionButtonText="Submit"
+        /> */}
         <div className="clearfix">
           <h4 className="wrap-header bold">
             {this.props.match.params.serviceId !== undefined
@@ -491,7 +528,7 @@ class ServiceForm extends Component {
                   pristine,
                   values,
                   form: {
-                    mutators: { push, pop }
+                    mutators: { push: addAuditFilter, pop: removeAuditFilter }
                   }
                 }) => (
                   <form onSubmit={handleSubmit}>
@@ -681,7 +718,15 @@ class ServiceForm extends Component {
                                 />
                               </div>
                             </div>
-                            <Table
+                            <ServiceAuditFilter
+                              serviceDetails={this.state.service}
+                              serviceCompDetails={this.state.serviceDef}
+                              fetchUsersData={this.loadUsers}
+                              fetchGroupsData={this.loadGroups}
+                              fetchRolesData={this.loadRoles}
+                              addAuditFilter={addAuditFilter}
+                            />
+                            {/* <Table
                               bordered
                               size="sm"
                               className="no-bg-color mt-3"
@@ -739,8 +784,34 @@ class ServiceForm extends Component {
                                         <td className="text-center">
                                           <Field
                                             name={`${name}.resources`}
-                                            component="input"
-                                            className="form-control"
+                                            render={() => (
+                                              <div>
+                                                <div className="resource-list min-width-150">
+                                                  <div className="js-formInput">
+                                                    <div className="resourceGrp text-center">
+                                                      --
+                                                    </div>
+                                                  </div>
+                                                  <Button
+                                                    variant="outline-secondary"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                      this.renderResourcesModal(
+                                                        true
+                                                      )
+                                                    }
+                                                  >
+                                                    <i className="fa-fw fa fa-plus"></i>
+                                                  </Button>
+                                                  <a
+                                                    className="btn btn-danger btn-mini"
+                                                    data-action="deleteResources"
+                                                  >
+                                                    <i className="fa-fw fa fa-remove"></i>
+                                                  </a>
+                                                </div>
+                                              </div>
+                                            )}
                                           />
                                         </td>
                                         <td className="text-center">
@@ -753,8 +824,18 @@ class ServiceForm extends Component {
                                         <td className="text-center">
                                           <Field
                                             name={`${name}.accessTypes`}
-                                            component="input"
-                                            className="form-control"
+                                            render={({ input, meta }) => (
+                                              <div>
+                                                <Editable
+                                                  {...input}
+                                                  placement="right"
+                                                  type="checkbox"
+                                                  options={this.getAccessTypeOptions()}
+                                                  showSelectAll={true}
+                                                  selectAllLabel="Select All"
+                                                />
+                                              </div>
+                                            )}
                                           />
                                         </td>
                                         <td className="text-center">
@@ -799,8 +880,8 @@ class ServiceForm extends Component {
                                   }
                                 </FieldArray>
                               </tbody>
-                            </Table>
-                            <div className="form-group row">
+                            </Table> */}
+                            {/* <div className="form-group row">
                               <div className="col-sm-3">
                                 <Button
                                   variant="outline-secondary"
@@ -812,7 +893,7 @@ class ServiceForm extends Component {
                                   <i className="fa-fw fa fa-plus"></i>
                                 </Button>
                               </div>
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                         <div className="form-group row">
