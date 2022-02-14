@@ -9,7 +9,7 @@ export class ZoneDisplay extends React.Component {
       zoneslist: this.props.zoneslisting,
       expand: true,
       services: [],
-      show: true
+      show: true,
     };
     this.expandbtn = this.expandbtn.bind(this);
     this.showMoreLess = this.showMoreLess.bind(this);
@@ -22,13 +22,13 @@ export class ZoneDisplay extends React.Component {
     var servicesResp;
     try {
       servicesResp = await fetchApi({
-        url: "plugins/services"
+        url: "plugins/services",
       });
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
     }
     this.setState({
-      services: servicesResp.data.services
+      services: servicesResp.data.services,
     });
   };
   expandbtn = () => {
@@ -80,7 +80,7 @@ export class ZoneDisplay extends React.Component {
                     eventKey="0"
                     style={{
                       background: "#f7f7f7",
-                      border: "none"
+                      border: "none",
                     }}
                     onClick={this.showMoreLess}
                   >
@@ -187,7 +187,7 @@ export class ZoneDisplay extends React.Component {
                     eventKey="1"
                     style={{
                       background: "#f7f7f7",
-                      border: "none"
+                      border: "none",
                     }}
                     onClick={this.showMoreLess}
                   >
@@ -202,9 +202,11 @@ export class ZoneDisplay extends React.Component {
                 <Accordion.Collapse eventKey="1">
                   <Card.Body>
                     {this.props.zoneslisting.tagServices.length !== 0 ? (
-                      <Badge variant="info" className="usersbadge">
-                        {this.props.zoneslisting.tagServices}
-                      </Badge>
+                      this.props.zoneslisting.tagServices.map((obj) => (
+                        <Badge variant="info" className="usersbadge">
+                          {obj}
+                        </Badge>
+                      ))
                     ) : (
                       <h6 className="text-muted h6 large">
                         No tag based services are associated with this zone
@@ -225,7 +227,7 @@ export class ZoneDisplay extends React.Component {
                     eventKey="2"
                     style={{
                       background: "#f7f7f7",
-                      border: "none"
+                      border: "none",
                     }}
                     onClick={this.showMoreLess}
                   >

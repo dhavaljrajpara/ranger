@@ -17,6 +17,7 @@ function Admin() {
   const [pageCount, setPageCount] = useState(0);
   const [showmodal, setShowModal] = useState(false);
   const [showrowmodal, setShowRowModal] = useState(false);
+  const [showview, setShowView] = useState(null);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
 
@@ -25,6 +26,7 @@ function Admin() {
 
   const rowModal = async (row) => {
     const { original = {} } = row;
+    setShowView(original.objectId);
     setShowRowModal(true);
     setRowData(original);
   };
@@ -39,8 +41,8 @@ function Admin() {
           url: "assets/report",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
+            startIndex: pageIndex * pageSize,
+          },
         });
         adminlogs = logsResp.data.vXTrxLogs;
         totalCount = logsResp.data.totalCount;
@@ -91,7 +93,7 @@ function Admin() {
             "EXPORT EXCEL",
             "EXPORT CSV",
             "IMPORT START",
-            "IMPORT END"
+            "IMPORT END",
           ];
           if (hasAction.includes(action)) {
             if (
@@ -129,7 +131,7 @@ function Admin() {
               operation = "Role " + action + "d " + objectname;
             return operation;
           }
-        }
+        },
       },
       {
         Header: "Audit Type",
@@ -138,11 +140,11 @@ function Admin() {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
           return Object.values(audittype.label);
-        }
+        },
       },
       {
         Header: "User",
-        accessor: "owner" // accessor is the "key" in the data
+        accessor: "owner", // accessor is the "key" in the data
       },
       {
         Header: "Date ( India Standard Time )",
@@ -151,7 +153,7 @@ function Admin() {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
           return newdate;
-        }
+        },
       },
       {
         Header: "Actions",
@@ -202,7 +204,7 @@ function Admin() {
             operation = <Badge variant="secondary"> {rawValue.value} </Badge>;
           }
           return operation;
-        }
+        },
       },
       {
         Header: "Session ID",
@@ -213,7 +215,8 @@ function Admin() {
             return (
               <a
                 className="text-primary"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   openModal(sessionId);
                 }}
               >
@@ -223,8 +226,8 @@ function Admin() {
           } else {
             return "";
           }
-        }
-      }
+        },
+      },
     ],
     []
   );
@@ -240,7 +243,7 @@ function Admin() {
           fetchData={fetchAdminLogsInfo}
           pageCount={pageCount}
           getRowProps={(row) => ({
-            onClick: () => rowModal(row)
+            onClick: () => rowModal(row),
           })}
         />
       </div>

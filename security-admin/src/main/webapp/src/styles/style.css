@@ -675,3 +675,37 @@ header {
   overflow-wrap: break-word;
   white-space: initial;
 }
+
+.zone-resource {
+  border: 1px #e4b75c solid;
+  padding: 4px 12px;
+  border-radius: 5px;
+  color: #966b0c;
+  margin-bottom: 10px;
+}
+
+/*Admin table logs modal User Update delete text*/
+
+.delete-text {
+  border: 1px solid #f7cccc;
+  background-color: #f7e4e4;
+  color: #b85355;
+}
+
+.add-text {
+  background-color: #e1f2d3;
+  border: 1px solid #cbe7c5;
+  color: #5c8847;
+}
+
+.legend {
+  height: 10px;
+  width: 10px;
+  display: inline-block;
+  margin-right: 3px;
+}
+
+.oldvalbg {
+  background-color: #ffefe4;
+  vertical-align: middle;
+}

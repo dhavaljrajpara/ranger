@@ -22,7 +22,7 @@ class ServiceDefinition extends Component {
       showDelete: null,
       showView: null,
       isCardButton: true,
-      filterselzone: this.props.selectedzoneservice
+      filterselzone: this.props.selectedzoneservice,
     };
   }
 
@@ -57,8 +57,8 @@ class ServiceDefinition extends Component {
       colors: {
         ...theme.colors,
         primary25: "#0b7fad;",
-        primary: "#0b7fad;"
-      }
+        primary: "#0b7fad;",
+      },
     };
   };
 
@@ -68,10 +68,10 @@ class ServiceDefinition extends Component {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
         url: `plugins/services/${sid}`,
-        method: "delete"
+        method: "delete",
       });
       this.setState({
-        service: this.state.service.filter((s) => s.id != sid)
+        service: this.state.service.filter((s) => s.id != sid),
       });
       toast.success("Successfully deleted the service");
     } catch (error) {

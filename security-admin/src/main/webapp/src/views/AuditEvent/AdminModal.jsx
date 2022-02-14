@@ -22,8 +22,8 @@ export const AdminModal = (props) => {
       const authResp = await fetchApi({
         url: "xusers/authSessions",
         params: {
-          id: props.data
-        }
+          id: props.data,
+        },
       });
       authlogs = authResp.data.vXAuthSessions;
       setAuthSession(authlogs);
