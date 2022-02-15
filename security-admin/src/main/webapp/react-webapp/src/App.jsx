@@ -41,7 +41,7 @@ const AddUpdatePolicyForm = lazy(() =>
 function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
     // return <Redirect to="/signin" />;
-    window.location.replace("login.html");
+    window.location.replace("login.jsp");
     return;
   }
   return (

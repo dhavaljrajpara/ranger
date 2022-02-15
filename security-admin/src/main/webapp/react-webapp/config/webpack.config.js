@@ -4,21 +4,16 @@ const commonPaths = require("./paths");
 
 module.exports = {
   entry: {
-    [commonPaths.loginChunkName]: commonPaths.loginEntryPath,
     [commonPaths.mainChunkName]: commonPaths.mainEntryPath
   },
 
   output: {
     path: commonPaths.outputPath,
     filename: (pathData) => {
-      return pathData.chunk.name === commonPaths.loginChunkName
-        ? "prelogin/[name].[contenthash].js"
-        : "dist/[name].[contenthash].js";
+      return "dist/[name].[contenthash].js";
     },
     chunkFilename: (pathData) => {
-      return pathData.chunk.name === commonPaths.loginChunkName
-        ? "prelogin/[name].[chunkhash].js"
-        : "dist/[name].[chunkhash].js";
+      return "dist/[name].[chunkhash].js";
     },
     assetModuleFilename: "images/[contenthash][ext][query]"
   },
@@ -51,15 +46,10 @@ module.exports = {
       Views: commonPaths.viewPath,
       Images: commonPaths.imagePath,
       Utils: commonPaths.utilsPath,
-      Components : commonPaths.componentsPath
+      Components: commonPaths.componentsPath
     }
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: commonPaths.loginTmplPath,
-      chunks: [commonPaths.loginChunkName],
-      filename: commonPaths.loginTempFile
-    }),
     new HtmlWebpackPlugin({
       template: commonPaths.mainTmplPath,
       chunks: [commonPaths.mainChunkName],

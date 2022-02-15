@@ -22,7 +22,7 @@ class Header extends Component {
         }
       });
       setUserProfile(null);
-      window.location.replace("login.html");
+      window.location.replace("login.jsp");
       // this.props.history.push("/signin")
     } catch (error) {
       console.error(`Error occurred while login! ${error}`);

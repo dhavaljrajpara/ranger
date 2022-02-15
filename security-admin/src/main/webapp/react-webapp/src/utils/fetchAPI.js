@@ -4,7 +4,7 @@ import {
   RANGER_REST_CSRF_ENABLED,
   RANGER_REST_CSRF_CUSTOM_HEADER,
   RANGER_REST_CSRF_IGNORE_METHODS,
-  CSRFToken,
+  CSRFToken
 } from "./appConstants";
 
 // Global axios defaults
@@ -13,7 +13,7 @@ axios.defaults.baseURL = "/service/";
 let csrfEnabled = false;
 let restCsrfCustomHeader = null;
 let restCsrfIgnoreMethods = [];
-let csrfToken =  " ";
+let csrfToken = " ";
 
 async function fetchApi(axiosConfig = {}, otherConf = {}) {
   if (
@@ -25,12 +25,12 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
   ) {
     axiosConfig.headers = {
       ...{ [restCsrfCustomHeader]: csrfToken },
-      ...axiosConfig.headers,
+      ...axiosConfig.headers
     };
   }
 
   const config = {
-    ...axiosConfig,
+    ...axiosConfig
   };
   if (otherConf && otherConf.cancelRequest) {
     /*
@@ -61,7 +61,7 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
   } catch (error) {
     if (error && error.response && error.response.status === 419) {
       // history.push("/signin");
-      window.location.replace("login.html");
+      window.location.replace("login.jsp");
     }
     throw error;
   }
@@ -88,7 +88,7 @@ const fetchCSRFConf = async () => {
   let respData = null;
   try {
     const csrfResp = await fetchApi({
-      url: "plugins/csrfconf",
+      url: "plugins/csrfconf"
     });
     respData = csrfResp.data || null;
     respData && handleCSRFHeaders(respData);
