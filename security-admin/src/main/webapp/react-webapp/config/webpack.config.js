@@ -33,10 +33,16 @@ module.exports = {
       },
       {
         test: /\.(woff|woff2|ttf|otf|eot)$/,
-        type: "asset/resource",
-        generator: {
-          filename: "fonts/[contenthash][ext][query]"
-        }
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              name: "[contenthash][ext][query]",
+              outputPath: "fonts/",
+              publicPath: "../fonts/"
+            }
+          }
+        ]
       }
     ]
   },
@@ -53,7 +59,8 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: commonPaths.mainTmplPath,
       chunks: [commonPaths.mainChunkName],
-      filename: commonPaths.mainTmpFile
+      filename: commonPaths.mainTmpFile,
+      favicon: `${commonPaths.imagePath}/favicon.ico`
     })
   ]
 };
