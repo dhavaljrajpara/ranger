@@ -8,6 +8,7 @@ import { Col } from "react-bootstrap";
 import ResourceComp from "../Resources/ResourceComp";
 import Editable from "Components/Editable";
 import AsyncSelect from "react-select/async";
+import ModalResourceComp from "../Resources/ModalResourceComp";
 
 export default function ServiceAuditFilter(props) {
   const {
@@ -16,14 +17,18 @@ export default function ServiceAuditFilter(props) {
     fetchUsersData,
     fetchGroupsData,
     fetchRolesData,
-    addAuditFilter
+    addAuditFilter,
+    formValue
   } = props;
-  const handleClose = () => ({
-    showModalResource: false
+  const [modelState, setModalstate] = useState({
+    showModalResource: false,
+    data: {}
   });
-  const handleSubmit = async (formData) => {
-    console.log(formData);
-  };
+  const handleClose = () =>
+    setModalstate({
+      showModalResource: false,
+      data: {}
+    });
   const getAccessTypeOptions = () => {
     let srcOp = [];
     console.log(this);
@@ -51,15 +56,11 @@ export default function ServiceAuditFilter(props) {
       return <th key={data}>{data}</th>;
     });
   };
-  const renderResourcesModal = (val) => {
-    <ModalResourceComp
-      showModalResource={this.state.showModalResource}
-      serviceDetails={this.state.service}
-      serviceCompDetails={this.state.serviceDef}
-      renderResourcesModal={this.renderResourcesModal}
-      cancelButtonText="Cancel"
-      actionButtonText="Submit"
-    />;
+  const renderResourcesModal = () => {
+    setModalstate({
+      showModalResource: true,
+      data: { policyType: 0 }
+    });
   };
   return (
     <div>
@@ -122,9 +123,7 @@ export default function ServiceAuditFilter(props) {
                                     <Button
                                       variant="outline-secondary"
                                       size="sm"
-                                      onClick={() =>
-                                        this.renderResourcesModal(true)
-                                      }
+                                      onClick={() => renderResourcesModal()}
                                     >
                                       <i className="fa-fw fa fa-plus"></i>
                                     </Button>
@@ -261,6 +260,15 @@ export default function ServiceAuditFilter(props) {
       >
         +
       </Button>
+      <ModalResourceComp
+        serviceDetails={serviceDetails}
+        serviceCompDetails={serviceCompDetails}
+        cancelButtonText="Cancel"
+        actionButtonText="Submit"
+        formValues={formValue}
+        modelState={modelState}
+        handleClose={handleClose}
+      />
     </div>
   );
 }

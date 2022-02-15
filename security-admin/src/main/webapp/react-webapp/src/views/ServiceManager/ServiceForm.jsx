@@ -473,16 +473,6 @@ class ServiceForm extends Component {
     }));
   };
 
-  // getAccessTypeOptions = () => {
-  //   let srcOp = [];
-  //   console.log(this);
-  //   srcOp = this.state.serviceDef.accessTypes;
-  //   return srcOp.map(({ label, name: value }) => ({
-  //     label,
-  //     value
-  //   }));
-  // };
-
   renderResourcesModal = (val) => {
     this.setState({
       showModalResource: val
@@ -492,14 +482,6 @@ class ServiceForm extends Component {
   render() {
     return (
       <div>
-        {/* <ModalResourceComp
-          showModalResource={this.state.showModalResource}
-          serviceDetails={this.state.service}
-          serviceCompDetails={this.state.serviceDef}
-          renderResourcesModal={this.renderResourcesModal}
-          cancelButtonText="Cancel"
-          actionButtonText="Submit"
-        /> */}
         <div className="clearfix">
           <h4 className="wrap-header bold">
             {this.props.match.params.serviceId !== undefined
@@ -725,175 +707,8 @@ class ServiceForm extends Component {
                               fetchGroupsData={this.loadGroups}
                               fetchRolesData={this.loadRoles}
                               addAuditFilter={addAuditFilter}
+                              formValue={values}
                             />
-                            {/* <Table
-                              bordered
-                              size="sm"
-                              className="no-bg-color mt-3"
-                            >
-                              <thead>
-                                <tr>
-                                  <th className="text-center">Is Audited</th>
-                                  <th className="text-center">Access Result</th>
-                                  <th className="text-center">Resources</th>
-                                  <th className="text-center">Operations</th>
-                                  <th className="text-center">Permissions</th>
-                                  <th className="text-center">Users</th>
-                                  <th className="text-center">Groups</th>
-                                  <th className="text-center">Roles</th>
-                                  <th className="text-center"></th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <FieldArray name="auditFilters">
-                                  {({ fields }) =>
-                                    fields.map((name, index) => (
-                                      <tr key={name}>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.isAudited`}
-                                            component="select"
-                                            className="form-control w-auto"
-                                          >
-                                            <option value="true">Yes</option>
-                                            <option value="false">No</option>
-                                          </Field>
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.accessResult`}
-                                            component={this.SelectField}
-                                            options={[
-                                              {
-                                                value: "DENIED",
-                                                label: "DENIED"
-                                              },
-                                              {
-                                                value: "ALLOWED",
-                                                label: "ALLOWED"
-                                              },
-                                              {
-                                                value: "NOT_DETERMINED",
-                                                label: "NOT_DETERMINED"
-                                              }
-                                            ]}
-                                            placeholder="Select Value"
-                                            className="w-auto"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.resources`}
-                                            render={() => (
-                                              <div>
-                                                <div className="resource-list min-width-150">
-                                                  <div className="js-formInput">
-                                                    <div className="resourceGrp text-center">
-                                                      --
-                                                    </div>
-                                                  </div>
-                                                  <Button
-                                                    variant="outline-secondary"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                      this.renderResourcesModal(
-                                                        true
-                                                      )
-                                                    }
-                                                  >
-                                                    <i className="fa-fw fa fa-plus"></i>
-                                                  </Button>
-                                                  <a
-                                                    className="btn btn-danger btn-mini"
-                                                    data-action="deleteResources"
-                                                  >
-                                                    <i className="fa-fw fa fa-remove"></i>
-                                                  </a>
-                                                </div>
-                                              </div>
-                                            )}
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.actions`}
-                                            component="input"
-                                            className="form-control"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.accessTypes`}
-                                            render={({ input, meta }) => (
-                                              <div>
-                                                <Editable
-                                                  {...input}
-                                                  placement="right"
-                                                  type="checkbox"
-                                                  options={this.getAccessTypeOptions()}
-                                                  showSelectAll={true}
-                                                  selectAllLabel="Select All"
-                                                />
-                                              </div>
-                                            )}
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.users`}
-                                            component={this.AsyncSelectField}
-                                            loadOptions={this.loadUsers}
-                                            defaultOptions
-                                            placeholder="Select User"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.groups`}
-                                            component={this.AsyncSelectField}
-                                            loadOptions={this.loadGroups}
-                                            defaultOptions
-                                            placeholder="Select Group"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.roles`}
-                                            component={this.AsyncSelectField}
-                                            loadOptions={this.loadRoles}
-                                            defaultOptions
-                                            placeholder="Select Role"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Button
-                                            variant="danger"
-                                            size="sm"
-                                            title="Yes"
-                                            onClick={() => fields.remove(index)}
-                                          >
-                                            <i className="fa-fw fa fa-remove"></i>
-                                          </Button>
-                                        </td>
-                                      </tr>
-                                    ))
-                                  }
-                                </FieldArray>
-                              </tbody>
-                            </Table> */}
-                            {/* <div className="form-group row">
-                              <div className="col-sm-3">
-                                <Button
-                                  variant="outline-secondary"
-                                  size="sm"
-                                  onClick={() =>
-                                    push("auditFilters", undefined)
-                                  }
-                                >
-                                  <i className="fa-fw fa fa-plus"></i>
-                                </Button>
-                              </div>
-                            </div> */}
                           </div>
                         </div>
                         <div className="form-group row">

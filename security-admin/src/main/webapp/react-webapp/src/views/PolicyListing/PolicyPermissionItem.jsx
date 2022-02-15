@@ -4,7 +4,6 @@ import { FieldArray } from "react-final-form-arrays";
 import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
-// import { fetchApi } from "Utils/fetchAPI";
 import { find, groupBy } from "lodash";
 
 import Editable from "Components/Editable";
