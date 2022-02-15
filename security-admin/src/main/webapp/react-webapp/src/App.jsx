@@ -226,6 +226,7 @@ export default class App extends Component {
                       component={EditPermissionComp}
                       {...defaultProps}
                     />
+                    <Redirect from="/" to="/policymanager/resource" />
                   </Switch>
                 )}
               </section>
