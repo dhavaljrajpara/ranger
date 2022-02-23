@@ -157,6 +157,12 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
+                      path="/service/:serviceId/policies/:policyId/edit"
+                      component={AddUpdatePolicyForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
                       path="/zones/zone/list"
                       component={ZoneListingComp}
                       {...defaultProps}

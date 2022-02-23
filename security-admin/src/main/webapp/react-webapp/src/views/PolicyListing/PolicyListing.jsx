@@ -154,7 +154,7 @@ function PolicyListing() {
       {
         Header: "Actions",
         accessor: "actions",
-        Cell: (rawValue) => {
+        Cell: ({ row: { original } }) => {
           return (
             <div>
               <Button
@@ -165,14 +165,13 @@ function PolicyListing() {
               >
                 <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
               </Button>
-              <Button
-                variant="outline-dark"
-                size="sm"
-                className="m-r-5"
+              <Link
+                className="btn btn-outline-dark btn-sm m-r-5"
                 title="Edit"
+                to={`/service/${serviceId}/policies/${original.id}/edit`}
               >
-                <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
-              </Button>
+                <i className="fa-fw fa fa-edit"></i>
+              </Link>
               <Button
                 variant="danger"
                 size="sm"

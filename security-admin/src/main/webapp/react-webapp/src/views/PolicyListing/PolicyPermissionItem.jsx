@@ -168,7 +168,7 @@ export default function PolicyPermissionItem(props) {
                               className="form-control"
                               name={`${name}.accesses`}
                               render={({ input, meta }) => (
-                                <div>
+                                <div className="table-editable">
                                   <Editable
                                     {...input}
                                     placement="right"

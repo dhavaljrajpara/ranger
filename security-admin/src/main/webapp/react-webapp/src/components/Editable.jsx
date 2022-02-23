@@ -135,7 +135,9 @@ const Editable = (props) => {
       } else if (type === TYPE_CHECKBOX) {
         val =
           selectVal && selectVal.length > 0
-            ? selectVal.map((op) => op.value).join()
+            ? selectVal.map((op) => (
+                <span className="badge bg-info">{op.label}</span>
+              ))
             : "--";
       } else {
         val = selectVal || "--";

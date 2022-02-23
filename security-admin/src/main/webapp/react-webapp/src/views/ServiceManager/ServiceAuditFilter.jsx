@@ -56,10 +56,10 @@ export default function ServiceAuditFilter(props) {
       return <th key={data}>{data}</th>;
     });
   };
-  const renderResourcesModal = () => {
+  const renderResourcesModal = (input) => {
     setModalstate({
       showModalResource: true,
-      data: { policyType: 0 }
+      resourceInput: input
     });
   };
   return (
@@ -112,18 +112,20 @@ export default function ServiceAuditFilter(props) {
                           <td key={colName}>
                             <Field
                               name={`${name}.resources`}
-                              render={() => (
+                              render={(input) => (
                                 <div>
                                   <div className="resource-list min-width-150">
                                     <div className="js-formInput">
                                       <div className="resourceGrp text-center">
-                                        --
+                                        {input.value}
                                       </div>
                                     </div>
                                     <Button
                                       variant="outline-secondary"
                                       size="sm"
-                                      onClick={() => renderResourcesModal()}
+                                      onClick={() =>
+                                        renderResourcesModal(input)
+                                      }
                                     >
                                       <i className="fa-fw fa fa-plus"></i>
                                     </Button>

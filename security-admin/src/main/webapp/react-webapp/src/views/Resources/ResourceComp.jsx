@@ -148,7 +148,7 @@ export default function ResourceComp(props) {
 
   const removedSeletedAccess = () => {
     for (const name of [
-      "policyItem",
+      "policyItems",
       "allowExceptions",
       "denyPolicyItems",
       "denyExceptions"

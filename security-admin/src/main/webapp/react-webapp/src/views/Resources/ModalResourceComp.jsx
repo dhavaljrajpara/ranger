@@ -14,6 +14,10 @@ export default function ModalResourceComp(props) {
     handleClose
   } = props;
 
+  const saveResourceVal = () => {
+    input.onChange({});
+  };
+
   return (
     <div>
       <Modal
@@ -41,7 +45,7 @@ export default function ModalResourceComp(props) {
             Close
           </Button>{" "}
           &nbsp;&nbsp;
-          <Button type="submit" title="Save">
+          <Button type="submit" title="Save" onClick={saveResourceVal}>
             Save
           </Button>
         </Modal.Footer>

@@ -4,7 +4,7 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy } from "lodash";
+import { groupBy, filter, find } from "lodash";
 import { toast } from "react-toastify";
 
 import { fetchApi } from "Utils/fetchAPI";
@@ -132,7 +132,7 @@ export default function AddUpdatePolicyForm() {
     await fetchUsersData();
     await fetchGroupsData();
     await fetchRolesData();
-    let policyData;
+    let policyData = null;
     if (policyId) {
       policyData = await fetchPolicyData();
     }
@@ -141,7 +141,7 @@ export default function AddUpdatePolicyForm() {
       serviceDetails: serviceData,
       serviceCompDetails: serviceCompData,
       policyData: policyData || null,
-      formData: generateFormData()
+      formData: generateFormData(policyData, serviceCompData)
     });
   };
 
@@ -204,15 +204,68 @@ export default function AddUpdatePolicyForm() {
     }));
   };
 
-  const generateFormData = () => {
+  const generateFormData = (policyData, serviceCompData) => {
     let data = {};
     data.policyType = policyId ? policyData.policyType : policyType;
-    if (!policyData) {
-      data.policyItem = [{}];
-      data.allowExceptions = [{}];
-      data.denyPolicyItems = [{}];
-      data.denyExceptions = [{}];
+    data.policyItems =
+      policyId && policyData.policyItems.length > 0
+        ? setPolicyItemVal(policyData.policyItems, serviceCompData.accessTypes)
+        : [{}];
+    data.allowExceptions =
+      policyId && policyData.allowExceptions.length > 0
+        ? setPolicyItemVal(
+            policyData.allowExceptions,
+            serviceCompData.accessTypes
+          )
+        : [{}];
+    data.denyPolicyItems =
+      policyId && policyData.denyPolicyItems.length > 0
+        ? setPolicyItemVal(
+            policyData.denyPolicyItems,
+            serviceCompData.accessTypes
+          )
+        : [{}];
+    data.denyExceptions =
+      policyId && policyData.denyExceptions.length > 0
+        ? setPolicyItemVal(
+            policyData.denyExceptions,
+            serviceCompData.accessTypes
+          )
+        : [{}];
+    if (policyId) {
+      data.policyName = policyData.name;
+      data.isEnabled = policyData.isEnabled;
+      data.policyPriority = policyData.policyPriority == 0 ? false : true;
+      data.description = policyData.description;
+      data.isAuditEnabled = policyData.isAuditEnabled;
+      data.policyLabel = policyData.policyLabels.map((val) => {
+        return { label: val, value: val };
+      });
+      if (policyData.resources) {
+        Object.entries(policyData.resources).map(([key, value]) => {
+          console.log(key);
+          console.log(serviceCompData.resources);
+          let setResources = find(serviceCompData.resources, ["name", key]);
+          data[`resourceName-${setResources.level}`] = setResources;
+          data[`value-${setResources.level}`] = value.values.map((m) => {
+            return { label: m, value: m };
+          });
+          if (setResources.excludesSupported) {
+            data[`isExcludesSupport-${setResources.level}`] = value.isExcludes;
+          }
+          if (setResources.recursiveSupported) {
+            data[`recursiveSupported-${setResources.level}`] =
+              value.isRecursive;
+          }
+        });
+      }
     }
+    // if (!policyData) {
+    //   data.policyItems = [{}];
+    //   data.allowExceptions = [{}];
+    //   data.denyPolicyItems = [{}];
+    //   data.denyExceptions = [{}];
+    // }
     data.isDenyAllElse = policyData?.isDenyAllElse || false;
     return data;
   };
@@ -228,14 +281,49 @@ export default function AddUpdatePolicyForm() {
           isAllowed: true
         }));
       }
-      if (val.groups.length > 0) {
+      if (val.groups && val.groups.length > 0) {
         obj.groups = val.groups.map(({ value }) => value);
       }
-      if (val.roles.length > 0) {
+      if (val.roles && val.roles.length > 0) {
         obj.roles = val.roles.map(({ value }) => value);
       }
-      if (val.users.length > 0) {
+      if (val.users && val.users.length > 0) {
         obj.users = val.users.map(({ value }) => value);
+      }
+      return obj;
+    });
+  };
+
+  const setPolicyItemVal = (formData, accessTypes) => {
+    return formData.map((val) => {
+      let obj = {},
+        accessTypesObj = [];
+
+      if (val.hasOwnProperty("delegateAdmin")) {
+        obj.delegateAdmin = val.delegateAdmin;
+      }
+      for (let i = 0; val.accesses.length > i; i++) {
+        accessTypes.map((opt) => {
+          if (val.accesses[i].type == opt.name) {
+            accessTypesObj.push({ label: opt.label, value: opt.name });
+          }
+        });
+      }
+      obj["accesses"] = accessTypesObj;
+      if (val.groups.length > 0) {
+        obj.groups = val.groups.map((opt) => {
+          return { label: opt, value: opt };
+        });
+      }
+      if (val.users.length > 0) {
+        obj.users = val.users.map((opt) => {
+          return { label: opt, value: opt };
+        });
+      }
+      if (val.roles.length > 0) {
+        obj.roles = val.roles.map((opt) => {
+          return { label: opt, value: opt };
+        });
       }
       return obj;
     });
@@ -245,7 +333,7 @@ export default function AddUpdatePolicyForm() {
     let data = {};
     data.allowExceptions = getPolicyItemsVal(values, "allowExceptions");
     data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
-    data.policyItem = getPolicyItemsVal(values, "policyItem");
+    data.policyItems = getPolicyItemsVal(values, "policyItems");
     data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
     data.description = values.description;
     data.isAuditEnabled = values.isAuditEnabled;
@@ -384,6 +472,7 @@ export default function AddUpdatePolicyForm() {
                             name="isEnabled"
                             render={({ input }) => (
                               <BootstrapSwitchButton
+                                checked={true}
                                 onlabel="Enabled"
                                 onstyle="primary"
                                 offlabel="Disabled"
@@ -401,7 +490,7 @@ export default function AddUpdatePolicyForm() {
                             name="policyPriority"
                             render={({ input }) => (
                               <BootstrapSwitchButton
-                                checked={false}
+                                checked={input.value || false}
                                 onlabel="Override"
                                 onstyle="primary"
                                 offlabel="Normal"
@@ -477,7 +566,7 @@ export default function AddUpdatePolicyForm() {
                         </FormB.Label>
                         <Col sm={4}>
                           <BootstrapSwitchButton
-                            checked={false}
+                            checked={input.value || false}
                             onlabel="Yes"
                             onstyle="primary"
                             offlabel="No"
@@ -499,7 +588,7 @@ export default function AddUpdatePolicyForm() {
                         serviceCompDetails={serviceCompDetails}
                         formValues={values}
                         addPolicyItem={addPolicyItem}
-                        attrName="policyItem"
+                        attrName="policyItems"
                         fetchUsersData={fetchUsersData}
                         fetchGroupsData={fetchGroupsData}
                         fetchRolesData={fetchRolesData}
