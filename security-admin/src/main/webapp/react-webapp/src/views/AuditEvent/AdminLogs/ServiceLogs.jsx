@@ -11,6 +11,27 @@ export const ServiceLogs = ({ data, reportdata }) => {
   const tagServiceName = reportdata.filter((c) => {
     return c.attributeName == "Tag Service Name";
   });
+
+  const connectionUpdate = reportdata.filter((obj) => {
+    return (
+      obj.attributeName != "Connection Configurations" && obj.action == "update"
+    );
+  });
+  // const connectionnewValue = connectionUpdate.map((newval) => newval.newValue);
+  // const connectionoldValue = connectionUpdate.map(
+  //   (oldval) => oldval.previousValue
+  // );
+
+  // const arrdiff = (array1, array2) => {
+  //   let difference = [];
+  //   difference = array1.filter((x) => array2.indexOf(x) === -1);
+  //   return difference;
+  // };
+  // let added = arrdiff(connectionnewValue, connectionoldValue);
+  // let removed = arrdiff(connectionoldValue, connectionnewValue);
+  // console.log(added);
+  // console.log(removed);
+
   return (
     <div>
       {/* CREATE  */}
@@ -36,7 +57,10 @@ export const ServiceLogs = ({ data, reportdata }) => {
               </thead>
               {reportdata
                 .filter((obj) => {
-                  return obj.attributeName != "Connection Configurations";
+                  return (
+                    obj.attributeName != "Connection Configurations" &&
+                    obj.action == "create"
+                  );
                 })
                 .map((c, index) => {
                   return (
@@ -60,7 +84,10 @@ export const ServiceLogs = ({ data, reportdata }) => {
               <Table className="table  table-bordered table-responsive w-75">
                 {reportdata
                   .filter((obj) => {
-                    return obj.attributeName == "Connection Configurations";
+                    return (
+                      obj.attributeName == "Connection Configurations" &&
+                      obj.action == "create"
+                    );
                   })
                   .map((c) => {
                     return (
@@ -241,13 +268,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">
               Connection Configurations :
             </h5>
-            <Table className="table  table-bordered table-striped table-responsive w-auto">
-              <thead>
-                <tr>
-                  <th>Fields</th>
-                  <th>Old Value</th>
-                </tr>
-              </thead>
+            <Table className="table  table-bordered table-responsive w-75">
               {reportdata
                 .filter((obj) => {
                   return obj.attributeName == "Connection Configurations";
@@ -255,28 +276,26 @@ export const ServiceLogs = ({ data, reportdata }) => {
                 .map((c) => {
                   return (
                     <>
-                      <tbody>
+                      <thead>
                         <tr>
-                          {Object.keys(JSON.parse(c.previousValue)).map(
-                            (obj) => (
-                              <tr>
-                                <td className="table-warning">{obj}</td>
-                              </tr>
-                            )
-                          )}
-                          <td>
-                            {Object.values(JSON.parse(c.previousValue)).map(
-                              (obj) => (
-                                <tr>
-                                  <td className="overflow-auto text-nowrap table-warning">
-                                    {obj}
-                                  </td>
-                                </tr>
-                              )
-                            )}
-                          </td>
+                          <th>Fields</th>
+                          <th>Old Value</th>
                         </tr>
-                      </tbody>
+                      </thead>
+                      {Object.keys(JSON.parse(c.previousValue)).map(
+                        (obj, index) => (
+                          <tbody>
+                            <tr key={index}>
+                              <td className="overflow-auto text-nowrap table-warning">
+                                {obj}
+                              </td>
+                              <td className="overflow-auto text-nowrap table-warning ">
+                                {JSON.parse(c.previousValue)[obj]}
+                              </td>
+                            </tr>
+                          </tbody>
+                        )
+                      )}
                     </>
                   );
                 })}

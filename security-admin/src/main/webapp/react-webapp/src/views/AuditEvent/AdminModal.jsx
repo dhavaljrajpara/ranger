@@ -114,14 +114,6 @@ export const AdminModal = (props) => {
                   })}
                 </td>
               </tr>
-              <tr>
-                <th>Login Id</th>
-                <td>
-                  {authSession.map((obj) => {
-                    return obj.id;
-                  })}
-                </td>
-              </tr>
             </tbody>
           </Table>
         )}

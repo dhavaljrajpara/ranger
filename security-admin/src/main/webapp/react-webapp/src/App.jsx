@@ -30,6 +30,7 @@ const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
 const PermissionsComp = lazy(() => import("Views/Permissions"));
+
 const EditPermissionComp = lazy(() => import("Views/EditPermission"));
 const PolicyListingTabView = lazy(() =>
   import("Views/PolicyListing/PolicyListingTabView")
@@ -37,6 +38,8 @@ const PolicyListingTabView = lazy(() =>
 const AddUpdatePolicyForm = lazy(() =>
   import("Views/PolicyListing/AddUpdatePolicyForm")
 );
+const EncryptionComp = lazy(() => import("Views/Encryption/KeyManager"));
+const KeyCreateComp = lazy(() => import("Views/Encryption/KeyCreate"));
 
 function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
@@ -57,7 +60,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true
+      loader: true,
     };
   }
 
@@ -69,7 +72,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile"
+        url: "users/profile",
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -80,7 +83,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false
+      loader: false,
     });
   };
 
@@ -224,6 +227,18 @@ export default class App extends Component {
                       exact
                       path="/bigData"
                       component={AuditLayout}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/kms/keys/new/manage/service"
+                      component={EncryptionComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/kms/keys/cm_kms/create"
+                      component={KeyCreateComp}
                       {...defaultProps}
                     />
                     <AuthRoute

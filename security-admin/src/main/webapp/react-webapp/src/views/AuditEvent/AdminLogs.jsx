@@ -259,7 +259,6 @@ function Admin() {
           onHide={handleClosed}
         ></OperationAdminModal>
       }
-      )
     </div>
   );
 }

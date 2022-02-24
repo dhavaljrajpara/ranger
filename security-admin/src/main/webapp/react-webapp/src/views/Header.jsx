@@ -18,8 +18,8 @@ class Header extends Component {
         url: "logout",
         baseURL: "",
         headers: {
-          "cache-control": "no-cache"
-        }
+          "cache-control": "no-cache",
+        },
       });
       setUserProfile(null);
       window.location.replace("login.jsp");
@@ -41,6 +41,11 @@ class Header extends Component {
     const accessManager = (
       <span>
         <i className="fa fa-fw fa-shield"></i> Access Manager
+      </span>
+    );
+    const encryption = (
+      <span>
+        <i class="fa fa-fw fa-lock"></i> Encryption
       </span>
     );
     const settings = (
@@ -92,6 +97,15 @@ class Header extends Component {
               </span>
               {` Security Zone `}
             </Link>
+            <NavDropdown title={encryption}>
+              <Link
+                to="/kms/keys/new/manage/service"
+                className="dropdown-item"
+                replace
+              >
+                <i class="fa fa-fw fa-key m-r-xs"></i> Key Manager
+              </Link>
+            </NavDropdown>
             <NavDropdown title={settings}>
               <Link to="/users/usertab" className="dropdown-item" replace>
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles

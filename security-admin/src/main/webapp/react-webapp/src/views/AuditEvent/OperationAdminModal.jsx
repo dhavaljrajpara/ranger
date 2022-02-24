@@ -42,11 +42,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
   return loader ? (
     <Loader />
   ) : (
-    <Modal
-      show={showview == objectId ? show : onHide}
-      size="lg"
-      onHide={onHide}
-    >
+    <Modal show={show} size="lg" onHide={onHide}>
       <Modal.Header closeButton>
         <Modal.Title>Operation :{action || ""}</Modal.Title>
       </Modal.Header>

@@ -191,7 +191,7 @@ export class ZoneDisplay extends React.Component {
                     }}
                     onClick={this.showMoreLess}
                   >
-                    Zone Administrations
+                    Zone Tag Services
                     {this.state.show ? (
                       <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
                     ) : (
@@ -231,7 +231,7 @@ export class ZoneDisplay extends React.Component {
                     }}
                     onClick={this.showMoreLess}
                   >
-                    Zone Administrations
+                    Services
                     {this.state.show ? (
                       <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
                     ) : (
