@@ -193,12 +193,12 @@ export default function AddUpdatePolicyForm() {
     if (inputValue) {
       params["policyLabel"] = inputValue || "";
     }
-    const userResp = await fetchApi({
+    const policyLabalResp = await fetchApi({
       url: "plugins/policyLabels",
       params: params
     });
 
-    return userResp.data.vXUsers.map((name) => ({
+    return policyLabalResp.data.map((name) => ({
       label: name,
       value: name
     }));
@@ -232,6 +232,20 @@ export default function AddUpdatePolicyForm() {
             serviceCompData.accessTypes
           )
         : [{}];
+    data.dataMaskPolicyItems =
+      policyId && policyData.dataMaskPolicyItems.length > 0
+        ? setPolicyItemVal(
+            policyData.dataMaskPolicyItems,
+            serviceCompData.accessTypes
+          )
+        : [{}];
+    data.rowFilterPolicyItems =
+      policyId && policyData.rowFilterPolicyItems.length > 0
+        ? setPolicyItemVal(
+            policyData.rowFilterPolicyItems,
+            serviceCompData.accessTypes
+          )
+        : [{}];
     if (policyId) {
       data.policyName = policyData.name;
       data.isEnabled = policyData.isEnabled;
@@ -241,11 +255,23 @@ export default function AddUpdatePolicyForm() {
       data.policyLabel = policyData.policyLabels.map((val) => {
         return { label: val, value: val };
       });
+      let serviceCompResourcesDetails;
+      if (
+        RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value ==
+        policyData.policyType
+      ) {
+        serviceCompResourcesDetails = serviceCompData.dataMaskDef.resources;
+      } else if (
+        RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value ==
+        policyData.policyType
+      ) {
+        serviceCompResourcesDetails = serviceCompData.rowFilterDef.resources;
+      } else {
+        serviceCompResourcesDetails = serviceCompData.resources;
+      }
       if (policyData.resources) {
         Object.entries(policyData.resources).map(([key, value]) => {
-          console.log(key);
-          console.log(serviceCompData.resources);
-          let setResources = find(serviceCompData.resources, ["name", key]);
+          let setResources = find(serviceCompResourcesDetails, ["name", key]);
           data[`resourceName-${setResources.level}`] = setResources;
           data[`value-${setResources.level}`] = value.values.map((m) => {
             return { label: m, value: m };
@@ -260,38 +286,38 @@ export default function AddUpdatePolicyForm() {
         });
       }
     }
-    // if (!policyData) {
-    //   data.policyItems = [{}];
-    //   data.allowExceptions = [{}];
-    //   data.denyPolicyItems = [{}];
-    //   data.denyExceptions = [{}];
-    // }
     data.isDenyAllElse = policyData?.isDenyAllElse || false;
     return data;
   };
 
   const getPolicyItemsVal = (formData, name) => {
-    return formData[name].map((val) => {
-      let obj = {
-        delegateAdmin: val.delegateAdmin
-      };
-      if (val.accesses) {
-        obj.accesses = val.accesses.map(({ value }) => ({
-          type: value,
-          isAllowed: true
-        }));
+    var policyResourceItem = [];
+    for (let key of formData[name]) {
+      if (Object.entries(key).length > 0) {
+        let obj = {};
+        console.log(key);
+        if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
+          obj.delegateAdmin = key.delegateAdmin;
+        }
+        if (key.accesses) {
+          obj.accesses = key.accesses.map(({ value }) => ({
+            type: value,
+            isAllowed: true
+          }));
+        }
+        if (key.users && key.users.length > 0) {
+          obj.users = key.users.map(({ value }) => value);
+        }
+        if (key.groups && key.groups.length > 0) {
+          obj.groups = key.groups.map(({ value }) => value);
+        }
+        if (key.roles && key.roles.length > 0) {
+          obj.roles = key.roles.map(({ value }) => value);
+        }
+        policyResourceItem.push(obj);
       }
-      if (val.groups && val.groups.length > 0) {
-        obj.groups = val.groups.map(({ value }) => value);
-      }
-      if (val.roles && val.roles.length > 0) {
-        obj.roles = val.roles.map(({ value }) => value);
-      }
-      if (val.users && val.users.length > 0) {
-        obj.users = val.users.map(({ value }) => value);
-      }
-      return obj;
-    });
+    }
+    return policyResourceItem;
   };
 
   const setPolicyItemVal = (formData, accessTypes) => {
@@ -335,6 +361,8 @@ export default function AddUpdatePolicyForm() {
     data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
     data.policyItems = getPolicyItemsVal(values, "policyItems");
     data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
+    data.denyPolicyItems = getPolicyItemsVal(values, "dataMaskPolicyItems");
+    data.denyPolicyItems = getPolicyItemsVal(values, "rowFilterPolicyItems");
     data.description = values.description;
     data.isAuditEnabled = values.isAuditEnabled;
     data.isDenyAllElse = values.isDenyAllElse;
@@ -532,7 +560,7 @@ export default function AddUpdatePolicyForm() {
                     serviceDetails={serviceDetails}
                     serviceCompDetails={serviceCompDetails}
                     formValues={values}
-                    policyType={policyType}
+                    policyType={policyId ? policyData.policyType : policyType}
                   />
                   <Field
                     className="form-control"
@@ -578,71 +606,111 @@ export default function AddUpdatePolicyForm() {
                       </FormB.Group>
                     )}
                   />
-                  <div>
-                    <fieldset>
-                      <p className="formHeader">Allow Conditions:</p>
-                    </fieldset>
-                    <div className="wrap">
-                      <PolicyPermissionItem
-                        serviceDetails={serviceDetails}
-                        serviceCompDetails={serviceCompDetails}
-                        formValues={values}
-                        addPolicyItem={addPolicyItem}
-                        attrName="policyItems"
-                        fetchUsersData={fetchUsersData}
-                        fetchGroupsData={fetchGroupsData}
-                        fetchRolesData={fetchRolesData}
-                      />
-                    </div>
-                    <fieldset>
-                      <p className="formHeader">
-                        Exclude from Allow Conditions:
-                      </p>
-                    </fieldset>
-                    <div className="wrap">
-                      <PolicyPermissionItem
-                        serviceDetails={serviceDetails}
-                        serviceCompDetails={serviceCompDetails}
-                        formValues={values}
-                        addPolicyItem={addPolicyItem}
-                        attrName="allowExceptions"
-                        fetchUsersData={fetchUsersData}
-                        fetchGroupsData={fetchGroupsData}
-                        fetchRolesData={fetchRolesData}
-                      />
-                    </div>
-                  </div>
-                  <Field
-                    className="form-control"
-                    name="isDenyAllElse"
-                    render={({ input }) => (
-                      <FormB.Group
-                        as={Row}
-                        className="mb-3"
-                        controlId="description"
-                      >
-                        <FormB.Label column sm={2}>
-                          Deny All Other Accesses: *
-                        </FormB.Label>
-                        <Col sm={1}>
-                          <BootstrapSwitchButton
-                            checked={false}
-                            onlabel="True"
-                            onstyle="primary"
-                            offlabel="False"
-                            offstyle="outline-secondary"
-                            size="xs"
-                            style="w-100"
-                            {...input}
+                  {/* {conditio == 0 ? <div></div> : condgiotn === 1 ? <div></div> : null : null } */}
+                  {values.policyType == 0 ? (
+                    <div>
+                      <div>
+                        <fieldset>
+                          <p className="formHeader">Allow Conditions:</p>
+                        </fieldset>
+                        <div className="wrap">
+                          <PolicyPermissionItem
+                            serviceDetails={serviceDetails}
+                            serviceCompDetails={serviceCompDetails}
+                            formValues={values}
+                            addPolicyItem={addPolicyItem}
+                            attrName="policyItems"
+                            fetchUsersData={fetchUsersData}
+                            fetchGroupsData={fetchGroupsData}
+                            fetchRolesData={fetchRolesData}
                           />
-                        </Col>
-                      </FormB.Group>
-                    )}
-                  />
-                  <Condition when="isDenyAllElse" is={false}>
+                        </div>
+                        <fieldset>
+                          <p className="formHeader">
+                            Exclude from Allow Conditions:
+                          </p>
+                        </fieldset>
+                        <div className="wrap">
+                          <PolicyPermissionItem
+                            serviceDetails={serviceDetails}
+                            serviceCompDetails={serviceCompDetails}
+                            formValues={values}
+                            addPolicyItem={addPolicyItem}
+                            attrName="allowExceptions"
+                            fetchUsersData={fetchUsersData}
+                            fetchGroupsData={fetchGroupsData}
+                            fetchRolesData={fetchRolesData}
+                          />
+                        </div>
+                      </div>
+                      <Field
+                        className="form-control"
+                        name="isDenyAllElse"
+                        render={({ input }) => (
+                          <FormB.Group
+                            as={Row}
+                            className="mb-3"
+                            controlId="description"
+                          >
+                            <FormB.Label column sm={2}>
+                              Deny All Other Accesses: *
+                            </FormB.Label>
+                            <Col sm={1}>
+                              <BootstrapSwitchButton
+                                checked={false}
+                                onlabel="True"
+                                onstyle="primary"
+                                offlabel="False"
+                                offstyle="outline-secondary"
+                                size="xs"
+                                style="w-100"
+                                {...input}
+                              />
+                            </Col>
+                          </FormB.Group>
+                        )}
+                      />
+                      <Condition when="isDenyAllElse" is={false}>
+                        <div>
+                          <fieldset>
+                            <p className="formHeader">Deny Conditions:</p>
+                          </fieldset>
+                          <div className="wrap">
+                            <PolicyPermissionItem
+                              serviceDetails={serviceDetails}
+                              serviceCompDetails={serviceCompDetails}
+                              formValues={values}
+                              addPolicyItem={addPolicyItem}
+                              attrName="denyPolicyItems"
+                              fetchUsersData={fetchUsersData}
+                              fetchGroupsData={fetchGroupsData}
+                              fetchRolesData={fetchRolesData}
+                            />
+                          </div>
+                          <fieldset>
+                            <p className="formHeader">
+                              Exclude from Allow Conditions:
+                            </p>
+                          </fieldset>
+                          <div className="wrap">
+                            <PolicyPermissionItem
+                              serviceDetails={serviceDetails}
+                              serviceCompDetails={serviceCompDetails}
+                              formValues={values}
+                              addPolicyItem={addPolicyItem}
+                              attrName="denyExceptions"
+                              fetchUsersData={fetchUsersData}
+                              fetchGroupsData={fetchGroupsData}
+                              fetchRolesData={fetchRolesData}
+                            />
+                          </div>
+                        </div>
+                      </Condition>
+                    </div>
+                  ) : values.policyType == 1 ? (
                     <div>
                       <fieldset>
-                        <p className="formHeader">Deny Conditions:</p>
+                        <p className="formHeader">Mask Conditions:</p>
                       </fieldset>
                       <div className="wrap">
                         <PolicyPermissionItem
@@ -650,31 +718,35 @@ export default function AddUpdatePolicyForm() {
                           serviceCompDetails={serviceCompDetails}
                           formValues={values}
                           addPolicyItem={addPolicyItem}
-                          attrName="denyPolicyItems"
-                          fetchUsersData={fetchUsersData}
-                          fetchGroupsData={fetchGroupsData}
-                          fetchRolesData={fetchRolesData}
-                        />
-                      </div>
-                      <fieldset>
-                        <p className="formHeader">
-                          Exclude from Allow Conditions:
-                        </p>
-                      </fieldset>
-                      <div className="wrap">
-                        <PolicyPermissionItem
-                          serviceDetails={serviceDetails}
-                          serviceCompDetails={serviceCompDetails}
-                          formValues={values}
-                          addPolicyItem={addPolicyItem}
-                          attrName="denyExceptions"
+                          attrName="dataMaskPolicyItems"
                           fetchUsersData={fetchUsersData}
                           fetchGroupsData={fetchGroupsData}
                           fetchRolesData={fetchRolesData}
                         />
                       </div>
                     </div>
-                  </Condition>
+                  ) : (
+                    <div>
+                      <div>
+                        <fieldset>
+                          <p className="formHeader">Row Filter Conditions:</p>
+                        </fieldset>
+                        <div className="wrap">
+                          <PolicyPermissionItem
+                            serviceDetails={serviceDetails}
+                            serviceCompDetails={serviceCompDetails}
+                            formValues={values}
+                            addPolicyItem={addPolicyItem}
+                            attrName="rowFilterPolicyItems"
+                            fetchUsersData={fetchUsersData}
+                            fetchGroupsData={fetchGroupsData}
+                            fetchRolesData={fetchRolesData}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <Button type="submit">Save</Button>
                   </div>

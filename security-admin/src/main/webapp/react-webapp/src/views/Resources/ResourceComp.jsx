@@ -18,12 +18,12 @@ export default function ResourceComp(props) {
   const { serviceCompDetails, formValues, serviceDetails, policyType } = props;
   const [rsrcState, setLoader] = useState({ loader: false, resourceKey: -1 });
   let resources = serviceCompDetails.resources;
-  if (RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value === policyType) {
+  if (RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == policyType) {
     resources = serviceCompDetails.dataMaskDef.resources;
   } else if (
-    RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value === policyType
+    RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value == policyType
   ) {
-    resources = rowFilterDef.rowFilterDef.resources;
+    resources = serviceCompDetails.rowFilterDef.resources;
   }
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import AsyncSelect from "react-select/async";
 import { find, groupBy } from "lodash";
 
 import Editable from "Components/Editable";
+import { RangerPolicyType } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 
 const noneOptions = {
@@ -28,9 +29,24 @@ export default function PolicyPermissionItem(props) {
     "Select Roles",
     "Select Groups",
     "Select Users",
-    "Permissions",
-    "DeligateAdmin"
+    "Permissions"
   ];
+  if (
+    RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value == formValues.policyType
+  ) {
+    permList.push("DeligateAdmin");
+  }
+  if (
+    RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == formValues.policyType
+  ) {
+    permList.push("Select Masking Option");
+  }
+  if (
+    RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value ==
+    formValues.policyType
+  ) {
+    permList.push("Row Level Filter");
+  }
   const tableHeader = () => {
     return permList.map((data) => {
       return <th key={data}>{data}</th>;
@@ -56,7 +72,19 @@ export default function PolicyPermissionItem(props) {
         formValues[selectedResource] &&
         formValues[selectedResource].value !== noneOptions.value
       ) {
-        srcOp = serviceCompDetails.accessTypes;
+        if (
+          RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value ==
+          formValues.policyType
+        ) {
+          srcOp = serviceCompDetails.dataMaskDef.accessTypes;
+        } else if (
+          RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value ==
+          formValues.policyType
+        ) {
+          srcOp = serviceCompDetails.rowFilterDef.accessTypes;
+        } else {
+          srcOp = serviceCompDetails.accessTypes;
+        }
         if (formValues[selectedResource].accessTypeRestrictions?.length > 0) {
           let op = [];
           for (const name of formValues[selectedResource]
@@ -76,6 +104,7 @@ export default function PolicyPermissionItem(props) {
       value
     }));
   };
+  const getMaskingAccessTypeOptions = () => {};
   return (
     <div>
       <Col sm="12">
@@ -186,7 +215,36 @@ export default function PolicyPermissionItem(props) {
                           </td>
                         );
                       }
-                      if (colName == "DeligateAdmin") {
+                      if (colName == "Select Masking Option") {
+                        return (
+                          <td key={colName}>
+                            <Field
+                              className="form-control"
+                              name={`${name}.dataMaskInfo`}
+                              render={({ input, meta }) => (
+                                <div className="table-editable">
+                                  <Editable
+                                    {...input}
+                                    placement="right"
+                                    type="checkbox"
+                                    options={getMaskingAccessTypeOptions()}
+                                    showSelectAll={false}
+                                    selectAllLabel="Select All"
+                                  />
+                                  {meta.touched && meta.error && (
+                                    <span>{meta.error}</span>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </td>
+                        );
+                      }
+                      if (
+                        colName == "DeligateAdmin" &&
+                        RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value ==
+                          formValues.policyType
+                      ) {
                         return (
                           <td className="text-center">
                             <Field

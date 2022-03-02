@@ -15,5 +15,5 @@ module.exports = {
   host: process.env.UI_HOST || "0.0.0.0",
   port: process.env.UI_PORT || "8888",
   proxyHost: "http://localhost",
-  proxyPort: "3000"
+  proxyPort: "6080"
 };
