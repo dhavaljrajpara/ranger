@@ -7,10 +7,10 @@ import arrayMutators from "final-form-arrays";
 import { fetchApi } from "Utils/fetchAPI";
 
 class KeyCreate extends Component {
-  // constructor() {
-  //   super();
-  //   this.state = {};
-  // }
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
 
   onSubmit = async (values) => {
     const serviceJson = {};
@@ -19,10 +19,10 @@ class KeyCreate extends Component {
     serviceJson.length = values.length;
     serviceJson.description = values.description;
     serviceJson.attributes = {};
-    for (var key of Object.keys(values.attributes)) {
+
+    for (var key of Object.keys(values.attributes))
       serviceJson.attributes[values.attributes[key].name] =
         values.attributes[key].value;
-    }
 
     try {
       await fetchApi({
@@ -31,10 +31,19 @@ class KeyCreate extends Component {
         data: serviceJson,
       });
       toast.success(`Success! Key created succesfully`);
-      this.props.history.push("/kms/keys/new/manage/service");
+      this.props.history.push({
+        pathname: `/kms/keys/edit/manage/${this.props.location.state.detail}`,
+        state: { detail: this.props.location.state.detail },
+      });
     } catch (error) {
       console.error(`Error occurred while creating Key`);
     }
+  };
+
+  closeForm = () => {
+    this.props.history.push(
+      `/kms/keys/edit/manage/${this.props.location.state.detail}`
+    );
   };
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
@@ -47,6 +56,11 @@ class KeyCreate extends Component {
           onSubmit={this.onSubmit}
           mutators={{
             ...arrayMutators,
+          }}
+          initialValues={{
+            attributes: [{ name: "", value: "" }],
+            cipher: "AES/CTR/NoPadding",
+            length: "128",
           }}
           render={({
             handleSubmit,
@@ -88,6 +102,7 @@ class KeyCreate extends Component {
                       <div className="col-sm-4">
                         <input
                           {...input}
+                          name="cipher"
                           type="text"
                           className="form-control"
                         />
@@ -95,6 +110,7 @@ class KeyCreate extends Component {
                     </div>
                   )}
                 </Field>
+
                 <Field name="length">
                   {({ input }) => (
                     <div className="form-group row">
@@ -104,6 +120,7 @@ class KeyCreate extends Component {
                       <div className="col-sm-4">
                         <input
                           {...input}
+                          name="length"
                           type="number"
                           className="form-control"
                         />
@@ -199,7 +216,10 @@ class KeyCreate extends Component {
                     <Button
                       variant="secondary"
                       type="button"
-                      onClick={form.reset}
+                      onClick={() => {
+                        form.reset;
+                        this.closeForm();
+                      }}
                       disabled={submitting || pristine}
                     >
                       Cancel

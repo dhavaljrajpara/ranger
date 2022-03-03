@@ -1,7 +1,6 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
-import {Loader} from "Components/CommonComponents";
-
+import { Loader } from "Components/CommonComponents";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -11,14 +10,14 @@ function Plugin_Status() {
 
   const fetchPluginStatusInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    let totalCount= 0;
+    let totalCount = 0;
     const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const logsResp = await fetchApi({
           url: "plugins/plugins/info",
-          params:{
+          params: {
             pageSize: pageSize,
             startIndex: pageIndex * pageSize,
           },
@@ -34,7 +33,7 @@ function Plugin_Status() {
       setPageCount(Math.ceil(totalCount / pageSize));
       setLoader(false);
     }
-  },[]);
+  }, []);
 
   const columns = React.useMemo(
     () => [
@@ -85,7 +84,16 @@ function Plugin_Status() {
     ],
     []
   );
-  return loader ? <Loader /> : <XATableLayout data={pluginStatusListingData} columns={columns} fetchData={fetchPluginStatusInfo} pageCount={pageCount}/>;
+  return loader ? (
+    <Loader />
+  ) : (
+    <XATableLayout
+      data={pluginStatusListingData}
+      columns={columns}
+      fetchData={fetchPluginStatusInfo}
+      pageCount={pageCount}
+    />
+  );
 }
 
 export default Plugin_Status;

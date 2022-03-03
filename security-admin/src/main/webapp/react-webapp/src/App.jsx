@@ -6,6 +6,7 @@ import { Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
+import { isKeyAdmin } from "Utils/XAUtils";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
@@ -231,13 +232,13 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/kms/keys/new/manage/service"
+                      path="/kms/keys/:kmsManagePage/manage/:kmsServiceName"
                       component={EncryptionComp}
                       {...defaultProps}
                     />
                     <AuthRoute
                       exact
-                      path="/kms/keys/cm_kms/create"
+                      path="/kms/keys/:serviceName/create"
                       component={KeyCreateComp}
                       {...defaultProps}
                     />

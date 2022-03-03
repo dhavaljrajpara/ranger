@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import { Table } from "react-bootstrap";
-
+import { Loader } from "Components/CommonComponents";
 const IndeterminateCheckbox = forwardRef(
   ({ indeterminate, chkType, ...rest }, ref) => {
     const defaultRef = useRef();
@@ -28,11 +28,12 @@ const IndeterminateCheckbox = forwardRef(
 
 function XATableLayout({
   columns,
+  loading,
   data,
   fetchData,
   pageCount: controlledPageCount,
   rowSelectOp,
-  getRowProps = () => ({})
+  getRowProps = () => ({}),
 }) {
   const {
     getTableProps,
@@ -49,14 +50,14 @@ function XATableLayout({
     canNextPage,
     pageOptions,
     state: { pageIndex, pageSize, selectedRowIds },
-    selectedFlatRows
+    selectedFlatRows,
   } = useTable(
     {
       columns,
       data,
       initialState: { pageIndex: 0, pageSize: 25 }, // Pass our hoisted table state
       manualPagination: true,
-      pageCount: controlledPageCount
+      pageCount: controlledPageCount,
     },
     usePagination,
     useRowSelect,
@@ -84,7 +85,7 @@ function XATableLayout({
               <div>
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
               </div>
-            )
+            ),
           };
           if (rowSelectOp && rowSelectOp.position === "first") {
             cols.push(selectionCol, ...columns);
@@ -153,7 +154,7 @@ function XATableLayout({
                         <td {...cell.getCellProps()}>
                           {
                             // Render the cell contents
-                            cell.render("Cell")
+                            loading ? <Loader /> : cell.render("Cell")
                           }
                         </td>
                       );

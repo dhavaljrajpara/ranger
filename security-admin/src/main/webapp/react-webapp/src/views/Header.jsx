@@ -4,7 +4,7 @@ import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import rangerLogo from "Images/ranger_logo.png";
 import { Link } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
-
+import { UserRoles } from "Utils/XAEnums";
 class Header extends Component {
   constructor(props) {
     super(props);
@@ -97,15 +97,18 @@ class Header extends Component {
               </span>
               {` Security Zone `}
             </Link>
-            <NavDropdown title={encryption}>
-              <Link
-                to="/kms/keys/new/manage/service"
-                className="dropdown-item"
-                replace
-              >
-                <i class="fa fa-fw fa-key m-r-xs"></i> Key Manager
-              </Link>
-            </NavDropdown>
+
+            {userProps?.loginId == "keyadmin" && (
+              <NavDropdown title={encryption}>
+                <Link
+                  to="/kms/keys/new/manage/service"
+                  className="dropdown-item"
+                  replace
+                >
+                  <i class="fa fa-fw fa-key m-r-xs"></i> Key Manager
+                </Link>
+              </NavDropdown>
+            )}
             <NavDropdown title={settings}>
               <Link to="/users/usertab" className="dropdown-item" replace>
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles

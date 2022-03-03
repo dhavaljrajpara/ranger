@@ -14,7 +14,7 @@ const initialState = {
   loader: true,
   permissionData: null,
   selectedGrp: [],
-  selectedUsr: []
+  selectedUsr: [],
 };
 
 function reducer(state, action) {
@@ -23,19 +23,18 @@ function reducer(state, action) {
       return {
         ...state,
         loader: false,
-        permissionData: action.data,
         selectedGrp: action.grpData,
-        selectedUsr: action.usrData
+        selectedUsr: action.usrData,
       };
     case "SET_SELECTED_GRP":
       return {
         ...state,
-        selectedGrp: action.grpData
+        selectedGrp: action.grpData,
       };
     case "SET_SELECTED_USR":
       return {
         ...state,
-        selectedUsr: action.usrData
+        selectedUsr: action.usrData,
       };
     default:
       throw new Error();
@@ -74,7 +73,7 @@ const EditPermission = () => {
         formData.groupPermList.push({
           groupId: grpObj.value,
           isAllowed: AccessResult.ACCESS_RESULT_ALLOWED.value,
-          moduleId: formData.id
+          moduleId: formData.id,
         });
       }
     }
@@ -90,7 +89,7 @@ const EditPermission = () => {
         formData.userPermList.push({
           userId: grpObj.value,
           isAllowed: AccessResult.ACCESS_RESULT_ALLOWED.value,
-          moduleId: formData.id
+          moduleId: formData.id,
         });
       }
     }
@@ -100,7 +99,7 @@ const EditPermission = () => {
       await fetchApi({
         url: `xusers/permission/${permissionId}`,
         method: "PUT",
-        data: formData
+        data: formData,
       });
 
       history.push("/permissions");
@@ -115,23 +114,23 @@ const EditPermission = () => {
     try {
       const permissionResp = await fetchApi({
         url: `xusers/permission/${permissionId}`,
-        params: {}
+        params: {},
       });
       data = permissionResp.data;
     } catch (error) {
-      console.error(`Error occurred while fetching Policies ! ${error}`);
+      console.error(`Error occurred while fetching Permissions ! ${error}`);
     }
     dispatch({
       type: "SET_DATA",
       data,
       grpData: data?.groupPermList.map((obj) => ({
         label: obj.groupName,
-        value: obj.groupId
+        value: obj.groupId,
       })),
       usrData: data?.userPermList.map((obj) => ({
         label: obj.userName,
-        value: obj.userId
-      }))
+        value: obj.userId,
+      })),
     });
   };
 
@@ -142,11 +141,11 @@ const EditPermission = () => {
     }
     const groupResp = await fetchApi({
       url: "xusers/groups",
-      params: params
+      params: params,
     });
     return groupResp.data.vXGroups.map(({ name, id }) => ({
       label: name,
-      value: id
+      value: id,
     }));
   };
 
@@ -157,7 +156,7 @@ const EditPermission = () => {
   const addInSelectedGrp = (formData, input) => {
     dispatch({
       type: "SET_SELECTED_GRP",
-      grpData: [...selectedGrp, ...formData.selectgroup]
+      grpData: [...selectedGrp, ...formData.selectgroup],
     });
     input.onChange([]);
   };
@@ -168,7 +167,7 @@ const EditPermission = () => {
       selectedGrp.splice(index, 1);
       dispatch({
         type: "SET_SELECTED_GRP",
-        grpData: selectedGrp
+        grpData: selectedGrp,
       });
     }
   };
@@ -180,12 +179,12 @@ const EditPermission = () => {
     }
     const userResp = await fetchApi({
       url: "xusers/users",
-      params: params
+      params: params,
     });
 
     return userResp.data.vXUsers.map(({ name, id }) => ({
       label: name,
-      value: id
+      value: id,
     }));
   };
 
@@ -196,7 +195,7 @@ const EditPermission = () => {
   const addInSelectedUsr = (formData, input) => {
     dispatch({
       type: "SET_SELECTED_USR",
-      usrData: [...selectedUsr, ...formData.selectuser]
+      usrData: [...selectedUsr, ...formData.selectuser],
     });
     input.onChange([]);
   };
@@ -207,7 +206,7 @@ const EditPermission = () => {
       selectedUsr.splice(index, 1);
       dispatch({
         type: "SET_SELECTED_USR",
-        usrData: selectedUsr
+        usrData: selectedUsr,
       });
     }
   };
@@ -295,7 +294,7 @@ const EditPermission = () => {
                                         loadOptions={fetchGroups}
                                         components={{
                                           DropdownIndicator: () => null,
-                                          IndicatorSeparator: () => null
+                                          IndicatorSeparator: () => null,
                                         }}
                                         isClearable={false}
                                         placeholder="Select Groups"
@@ -342,7 +341,7 @@ const EditPermission = () => {
                                         width="500px"
                                         components={{
                                           DropdownIndicator: () => null,
-                                          IndicatorSeparator: () => null
+                                          IndicatorSeparator: () => null,
                                         }}
                                         isClearable={false}
                                         placeholder="Select Users"
@@ -382,7 +381,6 @@ const EditPermission = () => {
                                 ))}
                               </td>
                               <td>
-                                {" "}
                                 {selectedUsr.map((obj, index) => (
                                   <span className="selected-widget" key={index}>
                                     <i

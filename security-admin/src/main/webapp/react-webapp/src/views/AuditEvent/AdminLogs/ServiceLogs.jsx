@@ -14,7 +14,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
 
   const connectionUpdate = reportdata.filter((obj) => {
     return (
-      obj.attributeName != "Connection Configurations" && obj.action == "update"
+      obj.attributeName == "Connection Configurations" && obj.action == "update"
     );
   });
   // const connectionnewValue = connectionUpdate.map((newval) => newval.newValue);
@@ -181,46 +181,52 @@ export const ServiceLogs = ({ data, reportdata }) => {
             )}
             <br />
 
-            <h5 className="bold wrap-header m-t-sm">
-              Connection Configurations :
-            </h5>
-            <Table className="table  table-bordered table-responsive w-75">
-              {reportdata
-                .filter((obj) => {
-                  return (
-                    obj.attributeName == "Connection Configurations" &&
-                    obj.action == "update"
-                  );
-                })
-                .map((c) => {
-                  return (
-                    <>
-                      <thead>
-                        <tr>
-                          <th>Fields</th>
-                          <th>Old Value</th>
-                          <th>New Value</th>
-                        </tr>
-                      </thead>
-                      {Object.keys(JSON.parse(c.newValue)).map((obj, index) => (
-                        <tbody>
-                          <tr key={index}>
-                            <td className="overflow-auto text-nowrap table-warning">
-                              {obj}
-                            </td>
-                            <td className="overflow-auto text-nowrap table-warning">
-                              {JSON.parse(c.previousValue)[obj]}
-                            </td>
-                            <td className="overflow-auto text-nowrap table-warning">
-                              {JSON.parse(c.newValue)[obj]}
-                            </td>
+            {connectionUpdate > 0 && (
+              <h5 className="bold wrap-header m-t-sm">
+                Connection Configurations :
+              </h5>
+            )}
+            {connectionUpdate > 0 && (
+              <Table className="table  table-bordered table-responsive w-75">
+                {reportdata
+                  .filter((obj) => {
+                    return (
+                      obj.attributeName == "Connection Configurations" &&
+                      obj.action == "update"
+                    );
+                  })
+                  .map((c) => {
+                    return (
+                      <>
+                        <thead>
+                          <tr>
+                            <th>Fields</th>
+                            <th>Old Value</th>
+                            <th>New Value</th>
                           </tr>
-                        </tbody>
-                      ))}
-                    </>
-                  );
-                })}
-            </Table>
+                        </thead>
+                        {Object.keys(JSON.parse(c.newValue)).map(
+                          (obj, index) => (
+                            <tbody>
+                              <tr key={index}>
+                                <td className="overflow-auto text-nowrap table-warning">
+                                  {obj}
+                                </td>
+                                <td className="overflow-auto text-nowrap table-warning">
+                                  {JSON.parse(c.previousValue)[obj]}
+                                </td>
+                                <td className="overflow-auto text-nowrap table-warning">
+                                  {JSON.parse(c.newValue)[obj]}
+                                </td>
+                              </tr>
+                            </tbody>
+                          )
+                        )}
+                      </>
+                    );
+                  })}
+              </Table>
+            )}
           </div>
         )}
       {/* DELETE  */}
