@@ -555,44 +555,33 @@ header {
   color: #0b7fad;
 }
 
+/* XA Table */
+.table-responsive > .table > thead > tr > th,
+.table-responsive > .table > tbody > tr > th,
+.table-responsive > .table > tfoot > tr > th,
+.table-responsive > .table > thead > tr > td,
+.table-responsive > .table > tbody > tr > td,
+.table-responsive > .table > tfoot > tr > td {
+  white-space: nowrap;
+}
+
+.table-responsive .table thead th {
+  font-size: 13px;
+  padding: 8px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.bt-1 {
+  border-top: 1px solid #ddd;
+}
+
+.resource-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 85%;
+}
+
 /*Pagination Button */
-
-.pagebtn {
-  width: auto !important;
-  min-width: 30px;
-  max-width: 44px;
-  border: 1px solid #ddd;
-  color: #777777;
-  border-radius: 3px !important;
-  height: 30px;
-}
-
-.pagebtns {
-  margin-left: 25px;
-}
-
-.inputpagebtn {
-  width: 43px;
-  margin: 3px 3px;
-}
-
-.pageno {
-  margin-top: 7px;
-  margin-left: 412px;
-}
-
-.selectpage {
-  height: 28px;
-  margin-top: 3px;
-  margin-left: 413px;
-}
-
-#Pagination {
-  display: inline;
-}
-.pagelbl {
-  margin-left: 328px;
-}
 
 /*EditPermissionaddusergroup*/
 .editpermselect {

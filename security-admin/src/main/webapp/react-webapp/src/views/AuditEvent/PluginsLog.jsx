@@ -1,7 +1,7 @@
 import React, { Component, useState, useCallback, useRef } from "react";
+import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import {Loader} from "Components/CommonComponents";
-
+import { Loader } from "Components/CommonComponents";
 
 function Plugins() {
   const [pluginsListingData, setPluginsLogs] = useState([]);
@@ -11,66 +11,79 @@ function Plugins() {
 
   const fetchPluginsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    let totalCount= 0;
+    let totalCount = 0;
     const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const logsResp = await fetchApi({
           url: "assets/exportAudit",
-          params:{
+          params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
-        logs = logsResp.data.vXPolicyExportAudits
+        logs = logsResp.data.vXPolicyExportAudits;
         totalCount = logsResp.data.totalCount;
       } catch (error) {
-        console.error(
-          `Error occurred while fetching Plugins logs! ${error}`
-        );
+        console.error(`Error occurred while fetching Plugins logs! ${error}`);
       }
       setPluginsLogs(logs);
       setPageCount(Math.ceil(totalCount / pageSize));
       setLoader(false);
     }
-  },[]);
+  }, []);
 
   const columns = React.useMemo(
     () => [
       {
         Header: "Export Date ( India Standard Time )",
-        accessor: "createDate", // accessor is the "key" in the data
+        accessor: "createDate" // accessor is the "key" in the data
       },
       {
         Header: "Service Name",
-        accessor: "repositoryName", // accessor is the "key" in the data
+        accessor: "repositoryName" // accessor is the "key" in the data
       },
       {
         Header: "Plugin ID",
-        accessor: "agentId", // accessor is the "key" in the data
+        accessor: "agentId" // accessor is the "key" in the data
       },
       {
         Header: "Plugin IP",
-        accessor: "clientIP", // accessor is the "key" in the data
+        accessor: "clientIP" // accessor is the "key" in the data
       },
       {
         Header: "Cluster Name",
-        accessor: "clusterName", // accessor is the "key" in the data
+        accessor: "clusterName" // accessor is the "key" in the data
       },
       {
         Header: "Http Response Code",
-        accessor: "httpRetCode", // accessor is the "key" in the data
+        accessor: "httpRetCode",
+        Cell: (rawValue) => {
+          return (
+            <h6>
+              <Badge variant="success">{rawValue.value}</Badge>
+            </h6>
+          );
+        }
       },
       {
         Header: "Status",
-        accessor: "syncStatus", // accessor is the "key" in the data
-      },
+        accessor: "syncStatus" // accessor is the "key" in the data
+      }
     ],
     []
   );
-  return loader ? <Loader /> :
-  <XATableLayout data={pluginsListingData} columns={columns} fetchData={fetchPluginsInfo} pageCount={pageCount}/>;
+  return loader ? (
+    <Loader />
+  ) : (
+    <XATableLayout
+      data={pluginsListingData}
+      columns={columns}
+      fetchData={fetchPluginsInfo}
+      pageCount={pageCount}
+    />
+  );
 }
 
 export default Plugins;

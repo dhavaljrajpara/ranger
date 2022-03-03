@@ -93,11 +93,23 @@ function Login_Sessions() {
             if (rawValue.value == AuthStatus[item].value) {
               label = AuthStatus[item].label;
               if (AuthStatus[item].value == 1) {
-                html = <Badge variant="success">{label}</Badge>;
+                html = (
+                  <h6>
+                    <Badge variant="success">{label}</Badge>
+                  </h6>
+                );
               } else if (AuthStatus[item].value == 2) {
-                html = <Badge variant="danger">{label}</Badge>;
+                html = (
+                  <h6>
+                    <Badge variant="danger">{label}</Badge>
+                  </h6>
+                );
               } else {
-                html = <Badge>{label}</Badge>;
+                html = (
+                  <h6>
+                    <Badge>{label}</Badge>
+                  </h6>
+                );
               }
             }
           });
@@ -126,7 +138,7 @@ function Login_Sessions() {
         accessor: "requestUserAgent", // accessor is the "key" in the data
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return rawValue.value;
+            return <div className="resource-text">{rawValue.value}</div>;
           } else {
             return "--";
           }
@@ -159,7 +171,6 @@ function Login_Sessions() {
         data={sessionId}
         onHide={handleClose}
       ></AdminModal>
-      )
     </div>
   );
 }

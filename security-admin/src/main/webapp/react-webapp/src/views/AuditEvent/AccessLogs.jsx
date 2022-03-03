@@ -1,6 +1,8 @@
 import React, { Component, useState, useCallback, useRef } from "react";
+import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
+import dateFormat from "dateformat";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
@@ -10,17 +12,17 @@ function Access() {
 
   const fetchAccessLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
-    let totalCount= 0;
+    let totalCount = 0;
     const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const logsResp = await fetchApi({
           url: "assets/accessAudit",
-          params:{
+          params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         logs = logsResp.data.vXAccessAudits;
         totalCount = logsResp.data.totalCount;
@@ -31,85 +33,137 @@ function Access() {
       setPageCount(Math.ceil(totalCount / pageSize));
       setLoader(false);
     }
-  },[]);
+  }, []);
 
   const columns = React.useMemo(
     () => [
       {
         Header: "Policy ID",
-        accessor: "policyId", // accessor is the "key" in the data
+        accessor: "policyId",
+        Cell: (rawValue) => {
+          return rawValue.value == -1 ? (
+            "--"
+          ) : (
+            <a className="text-primary">{rawValue.value}</a>
+          );
+        }
       },
       {
         Header: "Policy Version",
-        accessor: "policyVersion", // accessor is the "key" in the data
+        accessor: "policyVersion",
+        Cell: (rawValue) => {
+          return rawValue.value !== undefined ? rawValue.value : "--";
+        }
       },
       {
         Header: "Event Time",
-        accessor: "eventTime", // accessor is the "key" in the data
+        accessor: "eventTime",
+        Cell: (rawValue) => {
+          return dateFormat(rawValue.value, "mm/dd/yyyy h:MM:ss TT");
+        }
       },
       {
         Header: "Application",
-        accessor: "agentId", // accessor is the "key" in the data
+        accessor: "agentId" // accessor is the "key" in the data
       },
       {
         Header: "User",
-        accessor: "requestUser", // accessor is the "key" in the data
+        accessor: "requestUser" // accessor is the "key" in the data
       },
       {
-        Header: "Service Name",
-        accessor: "repoName", // accessor is the "key" in the data
+        Header: "Service (Name / Type)",
+        accessor: (s) => (
+          <div>
+            <div>{s.repoName}</div>
+            <div className="bt-1"> {s.serviceType}</div>
+          </div>
+        )
       },
       {
-        Header: "Resource Name",
-        accessor: "resourceType", // accessor is the "key" in the data
+        Header: "Resource (Name / Type)",
+        accessor: (r) => (
+          <div>
+            <div className="resource-text">{r.resourcePath}</div>
+            <div className="bt-1"> {r.resourceType}</div>
+          </div>
+        )
       },
       {
         Header: "Access Type",
-        accessor: "accessType", // accessor is the "key" in the data
+        accessor: "accessType" // accessor is the "key" in the data
       },
       {
         Header: "Permission",
-        accessor: "action", // accessor is the "key" in the data
+        accessor: "action",
+        Cell: (rawValue) => {
+          return (
+            <h6>
+              <Badge variant="info">{rawValue.value}</Badge>
+            </h6>
+          );
+        }
       },
       {
         Header: "Result",
-        accessor: "accessResult", // accessor is the "key" in the data
+        accessor: "accessResult",
+        Cell: (rawValue) => {
+          if (rawValue.value == 1) {
+            return (
+              <h6>
+                <Badge variant="success">Allowed</Badge>
+              </h6>
+            );
+          } else
+            return (
+              <h6>
+                <Badge variant="danger">Denied</Badge>
+              </h6>
+            );
+        }
       },
       {
         Header: "Access Enforcer",
-        accessor: "aclEnforcer", // accessor is the "key" in the data
+        accessor: "aclEnforcer" // accessor is the "key" in the data
       },
       {
         Header: "Agent Host Name",
-        accessor: "agentHost", // accessor is the "key" in the data
+        accessor: "agentHost" // accessor is the "key" in the data
       },
       {
         Header: "Client IP",
-        accessor: "clientIP", // accessor is the "key" in the data
+        accessor: "clientIP" // accessor is the "key" in the data
       },
       {
         Header: "Cluster Name",
-        accessor: "clusterName", // accessor is the "key" in the data
+        accessor: "clusterName" // accessor is the "key" in the data
       },
       {
         Header: "Zone Name",
-        accessor: "zoneName", // accessor is the "key" in the data
+        accessor: "zoneName" // accessor is the "key" in the data
       },
       {
         Header: "Event Count",
-        accessor: "eventCount", // accessor is the "key" in the data
+        accessor: "eventCount" // accessor is the "key" in the data
       },
       {
         Header: "Tags",
-        accessor: "tags", // accessor is the "key" in the data
-      },
+        accessor: "tags",
+        Cell: (rawValue) => {
+          return rawValue.value !== undefined ? rawValue.value : "--";
+        }
+      }
     ],
     []
   );
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout data={accessListingData} columns={columns} fetchData={fetchAccessLogsInfo} pageCount={pageCount}/>
+    <XATableLayout
+      data={accessListingData}
+      columns={columns}
+      fetchData={fetchAccessLogsInfo}
+      pageCount={pageCount}
+    />
   );
 }
 

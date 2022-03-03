@@ -41,8 +41,8 @@ function Admin() {
           url: "assets/report",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         adminlogs = logsResp.data.vXTrxLogs;
         totalCount = logsResp.data.totalCount;
@@ -93,7 +93,7 @@ function Admin() {
             "EXPORT EXCEL",
             "EXPORT CSV",
             "IMPORT START",
-            "IMPORT END",
+            "IMPORT END"
           ];
           if (hasAction.includes(action)) {
             if (
@@ -131,7 +131,7 @@ function Admin() {
               operation = "Role " + action + "d " + objectname;
             return operation;
           }
-        },
+        }
       },
       {
         Header: "Audit Type",
@@ -140,11 +140,11 @@ function Admin() {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
           return Object.values(audittype.label);
-        },
+        }
       },
       {
         Header: "User",
-        accessor: "owner", // accessor is the "key" in the data
+        accessor: "owner" // accessor is the "key" in the data
       },
       {
         Header: "Date ( India Standard Time )",
@@ -153,7 +153,7 @@ function Admin() {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
           return newdate;
-        },
+        }
       },
       {
         Header: "Actions",
@@ -162,19 +162,23 @@ function Admin() {
           var operation = "";
           if (rawValue.value == "create") {
             operation = (
-              <Badge variant="success">
-                {" "}
-                {rawValue.value.charAt(0).toUpperCase() +
-                  rawValue.value.slice(1)}{" "}
-              </Badge>
+              <h6>
+                <Badge variant="success">
+                  {" "}
+                  {rawValue.value.charAt(0).toUpperCase() +
+                    rawValue.value.slice(1)}{" "}
+                </Badge>
+              </h6>
             );
           } else if (rawValue.value == "update") {
             operation = (
-              <Badge variant="warning">
-                {" "}
-                {rawValue.value.charAt(0).toUpperCase() +
-                  rawValue.value.slice(1)}{" "}
-              </Badge>
+              <h6>
+                <Badge variant="warning">
+                  {" "}
+                  {rawValue.value.charAt(0).toUpperCase() +
+                    rawValue.value.slice(1)}{" "}
+                </Badge>
+              </h6>
             );
           } else if (rawValue.value == "delete") {
             operation = (
@@ -186,25 +190,33 @@ function Admin() {
             );
           } else if (rawValue.value == "IMPORT START") {
             operation = (
-              <Badge variant="info">
-                {" "}
-                {rawValue.value.charAt(0).toUpperCase() +
-                  rawValue.value.slice(1)}{" "}
-              </Badge>
+              <h6>
+                <Badge variant="info">
+                  {" "}
+                  {rawValue.value.charAt(0).toUpperCase() +
+                    rawValue.value.slice(1)}{" "}
+                </Badge>
+              </h6>
             );
           } else if (rawValue.value == "IMPORT END") {
             operation = (
-              <Badge variant="info">
-                {" "}
-                {rawValue.value.charAt(0).toUpperCase() +
-                  rawValue.value.slice(1)}{" "}
-              </Badge>
+              <h6>
+                <Badge variant="info">
+                  {" "}
+                  {rawValue.value.charAt(0).toUpperCase() +
+                    rawValue.value.slice(1)}{" "}
+                </Badge>
+              </h6>
             );
           } else {
-            operation = <Badge variant="secondary"> {rawValue.value} </Badge>;
+            operation = (
+              <h6>
+                <Badge variant="secondary"> {rawValue.value} </Badge>
+              </h6>
+            );
           }
           return operation;
-        },
+        }
       },
       {
         Header: "Session ID",
@@ -226,8 +238,8 @@ function Admin() {
           } else {
             return "";
           }
-        },
-      },
+        }
+      }
     ],
     []
   );
@@ -243,7 +255,7 @@ function Admin() {
           fetchData={fetchAdminLogsInfo}
           pageCount={pageCount}
           getRowProps={(row) => ({
-            onClick: () => rowModal(row),
+            onClick: () => rowModal(row)
           })}
         />
       </div>
