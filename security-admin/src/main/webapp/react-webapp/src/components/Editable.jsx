@@ -4,6 +4,7 @@ import { findIndex } from "lodash";
 
 const TYPE_SELECT = "select";
 const TYPE_CHECKBOX = "checkbox";
+const TYPE_INPUT = "input";
 
 const CheckboxComp = (props) => {
   const { options, value = [], valRef, showSelectAll, selectAllLabel } = props;
@@ -60,6 +61,26 @@ const CheckboxComp = (props) => {
           />
         </Form.Group>
       )}
+    </>
+  );
+};
+
+const InputboxComp = (props) => {
+  const { value = "", valRef } = props;
+  const [selectedInputVal, setInputVal] = useState(value);
+  const handleChange = (e) => {
+    valRef.current = e.currentTarget.value;
+    setInputVal(e.currentTarget.value);
+  };
+  return (
+    <>
+      <Form.Group className="mb-3" controlId="expression">
+        <Form.Control
+          type="text"
+          placeholder="enter expression"
+          onChange={(e) => handleChange(e)}
+        />
+      </Form.Group>
     </>
   );
 };
@@ -139,6 +160,8 @@ const Editable = (props) => {
                 <span className="badge bg-info">{op.label}</span>
               ))
             : "--";
+      } else if (type === TYPE_INPUT) {
+        val = <span className="badge bg-info">{selectVal}</span> || "--";
       } else {
         val = selectVal || "--";
       }
@@ -193,6 +216,8 @@ const Editable = (props) => {
               showSelectAll={props.showSelectAll}
               selectAllLabel={props.selectAllLabel}
             />
+          ) : type === TYPE_INPUT ? (
+            <InputboxComp value={value} valRef={selectValRef} />
           ) : null}
           <hr />
           <div>

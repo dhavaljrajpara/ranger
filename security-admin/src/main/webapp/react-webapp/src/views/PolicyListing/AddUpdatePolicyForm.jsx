@@ -243,7 +243,7 @@ export default function AddUpdatePolicyForm() {
       policyId && policyData.rowFilterPolicyItems.length > 0
         ? setPolicyItemVal(
             policyData.rowFilterPolicyItems,
-            serviceCompData.accessTypes
+            serviceCompData.rowFilterDef.accessTypes
           )
         : [{}];
     if (policyId) {
@@ -314,6 +314,15 @@ export default function AddUpdatePolicyForm() {
         if (key.roles && key.roles.length > 0) {
           obj.roles = key.roles.map(({ value }) => value);
         }
+        if (key.rowFilterInfo != "undefined" && key.rowFilterInfo != null) {
+          obj.rowFilterInfo = {};
+          obj.rowFilterInfo.filterExpr = key.rowFilterInfo;
+        }
+        if (key.dataMaskInfo != "undefined" && key.dataMaskInfo != null) {
+          obj.dataMaskInfo = {};
+          obj.dataMaskInfo.dataMaskType = key.dataMaskInfo[0].value;
+          obj.dataMaskInfo.valueExpr = "";
+        }
         policyResourceItem.push(obj);
       }
     }
@@ -351,6 +360,22 @@ export default function AddUpdatePolicyForm() {
           return { label: opt, value: opt };
         });
       }
+      if (
+        val.hasOwnProperty("rowFilterInfo") &&
+        val.rowFilterInfo &&
+        val.rowFilterInfo.filterExpr
+      ) {
+        obj.rowFilterInfo = val.rowFilterInfo.filterExpr;
+      }
+      if (
+        val.hasOwnProperty("dataMaskInfo") &&
+        val.dataMaskInfo &&
+        val.dataMaskInfo.dataMaskType
+      ) {
+        obj.dataMaskInfo = {};
+        obj.dataMaskInfo.label = val.dataMaskInfo.dataMaskType;
+        obj.dataMaskInfo.value = val.dataMaskInfo.dataMaskType;
+      }
       return obj;
     });
   };
@@ -361,8 +386,11 @@ export default function AddUpdatePolicyForm() {
     data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
     data.policyItems = getPolicyItemsVal(values, "policyItems");
     data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
-    data.denyPolicyItems = getPolicyItemsVal(values, "dataMaskPolicyItems");
-    data.denyPolicyItems = getPolicyItemsVal(values, "rowFilterPolicyItems");
+    data.dataMaskPolicyItems = getPolicyItemsVal(values, "dataMaskPolicyItems");
+    data.rowFilterPolicyItems = getPolicyItemsVal(
+      values,
+      "rowFilterPolicyItems"
+    );
     data.description = values.description;
     data.isAuditEnabled = values.isAuditEnabled;
     data.isDenyAllElse = values.isDenyAllElse;
@@ -572,7 +600,7 @@ export default function AddUpdatePolicyForm() {
                         controlId="description"
                       >
                         <FormB.Label column sm={2}>
-                          Description*
+                          Description
                         </FormB.Label>
                         <Col sm={4}>
                           <FormB.Control {...input} as="textarea" rows={3} />

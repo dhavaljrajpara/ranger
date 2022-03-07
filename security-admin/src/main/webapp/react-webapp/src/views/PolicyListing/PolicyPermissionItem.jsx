@@ -104,7 +104,16 @@ export default function PolicyPermissionItem(props) {
       value
     }));
   };
-  const getMaskingAccessTypeOptions = () => {};
+  const getMaskingAccessTypeOptions = () => {
+    if (serviceCompDetails.dataMaskDef.maskTypes.length > 0) {
+      return serviceCompDetails.dataMaskDef.maskTypes.map(
+        ({ label, name: value }) => ({
+          label,
+          value
+        })
+      );
+    }
+  };
   return (
     <div>
       <Col sm="12">
@@ -240,11 +249,29 @@ export default function PolicyPermissionItem(props) {
                           </td>
                         );
                       }
-                      if (
-                        colName == "DeligateAdmin" &&
-                        RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value ==
-                          formValues.policyType
-                      ) {
+                      if (colName == "Row Level Filter") {
+                        return (
+                          <td key={colName}>
+                            <Field
+                              className="form-control"
+                              name={`${name}.rowFilterInfo`}
+                              render={({ input, meta }) => (
+                                <div className="table-editable">
+                                  <Editable
+                                    {...input}
+                                    placement="right"
+                                    type="input"
+                                  />
+                                  {meta.touched && meta.error && (
+                                    <span>{meta.error}</span>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </td>
+                        );
+                      }
+                      if (colName == "DeligateAdmin") {
                         return (
                           <td className="text-center">
                             <Field
