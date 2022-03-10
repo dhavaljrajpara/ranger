@@ -333,12 +333,6 @@ table.no-bg-color thead tr th:first-child {
   border-color: #0b7fad;
 }
 
-.servicename {
-  font-size: 13px;
-  font-weight: bolder;
-  color: black;
-}
-
 .externalbadge {
   background-color: #9bb922;
   color: white;

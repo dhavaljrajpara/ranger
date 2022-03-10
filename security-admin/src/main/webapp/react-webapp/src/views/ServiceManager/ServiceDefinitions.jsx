@@ -1,10 +1,12 @@
 import React, { Component } from "react";
+import Select from "react-select";
+import { withRouter } from "react-router-dom";
+import { toast } from "react-toastify";
+import { filter, map } from "lodash";
+import { fetchApi } from "Utils/fetchAPI";
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
-import Select from "react-select";
-import { fetchApi } from "Utils/fetchAPI";
-import { withRouter } from "react-router-dom";
 
 class ServiceDefinitions extends Component {
   constructor(props) {
@@ -12,12 +14,11 @@ class ServiceDefinitions extends Component {
     this.state = {
       serviceDefs: [],
       services: [],
-      show: false,
-      shows: false,
       zones: [],
-      selectedzone: [],
-      isCardButton: false,
-      filterDef: []
+      isTagView: this.props.isTagView,
+      showExportModal: false,
+      showImportModal: false,
+      isDisabled: true
     };
   }
 
@@ -27,18 +28,22 @@ class ServiceDefinitions extends Component {
     this.fetchZones();
   }
 
-  showModal = () => {
-    this.setState({ show: true });
+  showExportModal = () => {
+    this.setState({ showExportModal: true });
   };
-  hideModal = () => {
-    this.setState({ show: false });
+
+  hideExportModal = () => {
+    this.setState({ showExportModal: false });
   };
-  showModals = () => {
-    this.setState({ shows: true });
+
+  showImportModal = () => {
+    this.setState({ showImportModal: true });
   };
-  hideModals = () => {
-    this.setState({ shows: false });
+
+  hideImportModal = () => {
+    this.setState({ showImportModal: false });
   };
+
   fetchZones = async () => {
     let zoneList = [];
     try {
@@ -51,38 +56,30 @@ class ServiceDefinitions extends Component {
     }
 
     this.setState({
-      zones: zoneList
+      zones: zoneList,
+      isDisabled: zoneList.length === 0 ? true : false
     });
   };
 
   fetchServiceDefs = async () => {
     let serviceDefsResp;
-    let tags;
-    let filterdef;
-    let tag;
+    let resourceServiceDef;
+    let tagServiceDef;
 
     try {
       serviceDefsResp = await fetchApi({
         url: "plugins/definitions"
       });
 
-      if (this.props.isTagView) {
-        try {
-          const tagResp = await fetchApi({
-            url: "plugins/definitions/name/tag"
-          });
-          tags = serviceDefsResp.data.serviceDefs.filter((obj) => {
-            return obj.name == "tag";
-          });
-        } catch (error) {
-          console.error(`Error occurred while fetching Zones! ${error}`);
-        }
+      if (this.state.isTagView) {
+        tagServiceDef = _.filter(serviceDefsResp.data.serviceDefs, [
+          "name",
+          "tag"
+        ]);
       } else {
-        tag = serviceDefsResp.data.serviceDefs.filter((obj) => {
-          return obj.name == "tag";
-        });
-        filterdef = serviceDefsResp.data.serviceDefs.filter(
-          (val) => !tag.includes(val)
+        resourceServiceDef = _.filter(
+          serviceDefsResp.data.serviceDefs,
+          (serviceDef) => serviceDef.name !== "tag"
         );
       }
     } catch (error) {
@@ -91,80 +88,92 @@ class ServiceDefinitions extends Component {
       );
     }
     this.setState({
-      serviceDefs: serviceDefsResp.data.serviceDefs,
-      filterDef: !this.props.isTagView ? filterdef : tags
+      serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef
     });
   };
 
   fetchServices = async () => {
     let servicesResp;
+    let resourceServices;
+    let tagServices;
+
     try {
       servicesResp = await fetchApi({
         url: "plugins/services"
       });
+      if (this.state.isTagView) {
+        tagServices = _.filter(servicesResp.data.services, ["type", "tag"]);
+      } else {
+        resourceServices = _.filter(
+          servicesResp.data.services,
+          (service) => service.type !== "tag"
+        );
+      }
     } catch (error) {
       console.error(
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
     this.setState({
-      services: servicesResp.data.services,
-      filterserv: servicesResp.data.services
+      services: this.state.isTagView ? tagServices : resourceServices
     });
   };
 
-  selectedZone = async (e) => {
+  getSelectedZone = async (e) => {
+    const { serviceDefs, services, isTagView } = this.state;
+
     try {
       let zonesResp = [];
 
-      if (e != undefined) {
+      if (e && e !== undefined) {
         zonesResp = await fetchApi({
           url: `public/v2/api/zones/${e && e.value}/service-headers`
         });
+
         zonesResp &&
           this.props.history.replace({
             search: `?securityZone=${e.label}`
           });
 
-        let zonenames = zonesResp.data.map((obj) => {
-          return obj.name;
-        });
+        let zoneServiceNames = _.map(zonesResp.data, "name");
 
-        let zoneservice = zonenames.map((obj) => {
-          return this.state.services.filter((serv) => {
-            return serv.name == obj;
+        let zoneServices = zoneServiceNames.map((zoneService) => {
+          return services.filter((service) => {
+            return service.name === zoneService;
           });
         });
 
-        let zoneservicetype = zoneservice.map((obj) => {
-          return obj.map((obj) => {
-            return obj.type;
+        zoneServices = zoneServices.flat();
+
+        if (isTagView) {
+          zoneServices = _.filter(zoneServices, function (zoneService) {
+            return zoneService.type === "tag";
+          });
+        } else {
+          zoneServices = _.filter(zoneServices, function (zoneService) {
+            return zoneService.type !== "tag";
+          });
+        }
+
+        let zoneServiceDefTypes = _.map(zoneServices, "type");
+
+        let filterZoneServiceDef = zoneServiceDefTypes.map((obj) => {
+          return serviceDefs.find((serviceDef) => {
+            return serviceDef.name == obj;
           });
         });
-        let zoneservicetypes = zoneservicetype.flat();
-        let filterzonetype = zoneservicetypes.filter((element, index) => {
-          return zoneservicetypes.indexOf(element) === index;
-        });
-        let zonetag = this.state.serviceDefs.filter((obj) => {
-          return obj.name == "tag";
-        });
-        let filterzonedef = filterzonetype.map((obj) => {
-          return this.state.serviceDefs.find((servc) => {
-            return servc.name == obj;
-          });
-        });
-        let filterdef = filterzonedef.filter((val) => !zonetag.includes(val));
 
         this.setState({
-          selectedzone: zonenames,
-          filterDef: filterdef,
-          filterserv: zoneservice
+          serviceDefs: filterZoneServiceDef,
+          services: zoneServices
         });
+      } else {
+        this.props.history.push("/policymanager/resource");
+        this.fetchServiceDefs();
+        this.fetchServices();
       }
     } catch (error) {
-      console.error(
-        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
-      );
+      console.error(`Error occurred while fetching Zone Services ! ${error}`);
     }
   };
 
@@ -178,108 +187,98 @@ class ServiceDefinitions extends Component {
       }
     };
   };
+
   render() {
+    const {
+      serviceDefs,
+      services,
+      zones,
+      isDisabled,
+      showExportModal,
+      showImportModal
+    } = this.state;
     return (
-      <div>
+      <React.Fragment>
         <div className="row">
-          <div className="col">
+          <div className="col-sm-2">
             <h3 className="wrap-header bold pull-left">Service Manager</h3>
           </div>
-          <div className="col-md-auto">
+          <div className="col-sm-5 text-right">
             <b className="bold"> Security Zone: </b>
           </div>
-
-          <Select
-            className="w-25 p-1"
-            isDisabled={this.state.zones ? false : true}
-            onChange={this.selectedZone}
-            isClearable
-            components={{
-              IndicatorSeparator: () => null
-            }}
-            theme={this.Theme}
-            options={this.state.zones.map((zone) => {
-              return {
-                value: zone.id,
-                label: zone.name
-              };
-            })}
-            name="colors"
-            placeholder="Select Zone Name"
-          />
-
-          <div className="col col-lg-2">
+          <div className="col-sm-3">
+            <Select
+              isDisabled={zones ? false : true}
+              onChange={this.getSelectedZone}
+              isClearable={true}
+              isDisabled={isDisabled}
+              components={{
+                IndicatorSeparator: () => null
+              }}
+              theme={this.Theme}
+              options={zones.map((zone) => {
+                return {
+                  value: zone.id,
+                  label: zone.name
+                };
+              })}
+              name="colors"
+              placeholder="Select Zone Name"
+            />
+          </div>
+          <div className="col-sm-2">
             <button
               type="button"
               className="btn btn-outline-secondary btn-sm"
-              onClick={this.showModals}
+              onClick={this.showImportModal}
             >
               <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
               Import
             </button>
-            {/* {
-this.state.filterDef.map((obj)=>{let services =this.state.services.filter((o)=>{return o.type === obj.name});
-console.log(services.map((ser)=>{return ser}))})} */}
-            <ImportPolicy
-              shows={this.state.shows}
-              serviceDef={this.state.filterDef}
-              onHides={this.hideModals}
-              // service={this.state.filterDef.map((serviceDef) => {
-              //   let service = this.state.services.filter(
-              //     (s) => s.type === serviceDef.name
-              //   );
-              // })}
-              zones={this.state.zones}
-            />
-
+            {serviceDefs.length > 0 && (
+              <ImportPolicy
+                serviceDef={serviceDefs}
+                services={services}
+                zones={zones}
+                show={showImportModal}
+                onHide={this.hideImportModal}
+              />
+            )}
             <button
               type="button"
               className="btn btn-outline-secondary btn-sm pull-right"
-              onClick={this.showModal}
+              onClick={this.showExportModal}
             >
               <i className="fa fa-fw fa-external-link-square" />
               Export
             </button>
-
-            <ExportPolicy
-              serviceDef={this.state.filterDef}
-              service={this.state.services}
-              isCardButton={this.state.isCardButton}
-              show={this.state.show}
-              onHide={this.hideModal}
-            />
+            {serviceDefs.length > 0 && (
+              <ExportPolicy
+                serviceDef={serviceDefs}
+                services={services}
+                isParentExport={true}
+                show={showExportModal}
+                onHide={this.hideExportModal}
+              />
+            )}
           </div>
         </div>
-        {/* {this.state.filterDef.map((serviceDef) => {
-          let service = this.state.services.filter(
-            (s) => s.type === serviceDef.name
-          );
-          console.log(
-            serviceDef.name +
-              ":" +
-              service.map((ser) => {
-                return ser.name;
-              })
-          );
-        })} */}
-        <div className="wrap policy-manager">
+        <div className="wrap policy-manager mt-3">
           <div className="row">
-            {this.state.filterDef.map((serviceDef) => (
+            {serviceDefs.map((serviceDef) => (
               <ServiceDefinition
-                zones={this.state.zones}
+                zones={zones}
                 key={serviceDef.id}
-                servicedefs={this.state.serviceDefs}
-                services={this.state.services}
-                selectedzoneservice={this.state.selectedzone}
+                services={services}
                 serviceDefData={serviceDef}
-                serviceData={this.state.services.filter(
-                  (s) => s.type === serviceDef.name
+                servicesData={services.filter(
+                  (service) => service.type === serviceDef.name
                 )}
               ></ServiceDefinition>
             ))}
           </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }

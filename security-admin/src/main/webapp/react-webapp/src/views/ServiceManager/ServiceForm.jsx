@@ -510,7 +510,7 @@ class ServiceForm extends Component {
                   pristine,
                   values,
                   form: {
-                    mutators: { push: addAuditFilter, pop: removeAuditFilter }
+                    mutators: { push: addItem, pop: removeItem }
                   }
                 }) => (
                   <form onSubmit={handleSubmit}>
@@ -616,7 +616,6 @@ class ServiceForm extends Component {
                                   label: s.name
                                 };
                               })}
-                              defaultValue={this.state.tagServiceValue}
                               placeholder="Select Tag Service"
                             />
                           </div>
@@ -664,7 +663,7 @@ class ServiceForm extends Component {
                                           <Button
                                             variant="danger"
                                             size="sm"
-                                            title="Yes"
+                                            title="Remove"
                                             onClick={() => fields.remove(index)}
                                           >
                                             <i className="fa-fw fa fa-remove"></i>
@@ -683,7 +682,9 @@ class ServiceForm extends Component {
                             <Button
                               variant="outline-secondary"
                               size="sm"
-                              onClick={() => push("customConfigs", undefined)}
+                              onClick={() =>
+                                addItem("customConfigs", undefined)
+                              }
                             >
                               <i className="fa-fw fa fa-plus"></i>
                             </Button>
@@ -706,14 +707,14 @@ class ServiceForm extends Component {
                               fetchUsersData={this.loadUsers}
                               fetchGroupsData={this.loadGroups}
                               fetchRolesData={this.loadRoles}
-                              addAuditFilter={addAuditFilter}
+                              addAuditFilter={addItem}
                               formValue={values}
                             />
                           </div>
                         </div>
-                        <div className="form-group row">
+                        <div className="form-group row mt-2">
                           <div className="col-sm-3 col-form-label">
-                            <Button variant="secondary" type="button" size="sm">
+                            <Button variant="outline-dark">
                               Test Connection
                             </Button>
                           </div>

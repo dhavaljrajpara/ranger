@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { Modal, Form, Button, Row, Col } from "react-bootstrap";
-import { fetchApi } from "Utils/fetchAPI";
 import Select from "react-select";
+import { Modal, Form, Button, Row, Col } from "react-bootstrap";
 import { groupBy } from "lodash";
-export class ImportPolicy extends Component {
+import { fetchApi } from "Utils/fetchAPI";
+
+class ImportPolicy extends Component {
   constructor() {
     super();
     this.state = {
@@ -25,9 +26,11 @@ export class ImportPolicy extends Component {
     values.splice(i, 1);
     this.setState({ fields: values });
   };
+
   removeFile = () => {
     this.setState({ files: null, fileselc: null });
   };
+
   handleUpload = (e) => {
     e.preventDefault();
     const fileReader = new FileReader();
@@ -49,6 +52,7 @@ export class ImportPolicy extends Component {
       });
     };
   };
+
   import = async () => {
     let importResp;
 
@@ -78,10 +82,11 @@ export class ImportPolicy extends Component {
       );
     }
   };
+
   render() {
     return (
       <>
-        <Modal show={this.props.shows} onHide={this.props.onHides} size="lg">
+        <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>Import Policy </Modal.Title>
           </Modal.Header>
@@ -108,8 +113,8 @@ export class ImportPolicy extends Component {
                   </div>
                   <div className="col">
                     <label>
-                      Override Policy:
-                      <input type="checkbox" />
+                      <span>Override Policy:</span>
+                      <input className="ml-2 align-middle" type="checkbox" />
                     </label>
                   </div>
                 </div>
@@ -217,8 +222,7 @@ export class ImportPolicy extends Component {
                                   return { label: obj };
                                 }
                               )}
-                              name="colors"
-                              placeholder="Enter service "
+                              placeholder="Enter service"
                             />
                           </Col>
                           To
@@ -229,13 +233,13 @@ export class ImportPolicy extends Component {
                                 IndicatorSeparator: () => null
                               }}
                               theme={this.Theme}
-                              options={this.props.service.map((services) => {
+                              options={this.props.services.map((service) => {
                                 return {
-                                  label: services.name
+                                  label: service.name
                                 };
                               })}
                               name="colors"
-                              placeholder="Enter service "
+                              placeholder="Enter service"
                             />
                           </Col>
                           <Col xs={1}>
@@ -268,7 +272,7 @@ export class ImportPolicy extends Component {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.props.onHides}>
+            <Button variant="secondary" onClick={this.props.onHide}>
               Cancel
             </Button>
             <Button variant="primary" onClick={this.import}>

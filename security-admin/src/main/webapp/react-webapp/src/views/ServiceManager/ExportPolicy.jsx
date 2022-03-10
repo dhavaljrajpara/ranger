@@ -1,18 +1,31 @@
 import React, { Component, Fragment } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Select from "react-select";
+import { map, toString } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
 class ExportPolicy extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    this.serviceDefOptions = this.props.serviceDef.map((serviceDef) => {
+      return {
+        value: serviceDef.name,
+        label: serviceDef.displayName
+      };
+    });
+    this.serviceOptions = this.props.services.map((service) => {
+      return {
+        value: service.name,
+        label: service.displayName
+      };
+    });
     this.state = {
-      service: [],
-      selectedServices: [],
-      services: [],
-      servicename: []
+      isParentExport: this.props.isParentExport,
+      selectedServices: this.serviceOptions,
+      serviceOptions: this.serviceOptions
     };
   }
+
   Theme = (theme) => {
     return {
       ...theme,
@@ -23,12 +36,14 @@ class ExportPolicy extends Component {
       }
     };
   };
+
   downloadFile = ({ data, fileName, fileType }) => {
     const blob = new Blob([data], { type: fileType });
-
     const a = document.createElement("a");
+
     a.download = fileName;
     a.href = window.URL.createObjectURL(blob);
+
     const clickEvt = new MouseEvent("click", {
       view: window,
       bubbles: true,
@@ -38,28 +53,49 @@ class ExportPolicy extends Component {
     a.remove();
   };
 
-  handletypeChange = (e) => {
-    e.map((serviceDef) => {
-      this.state.selectedServices = [];
-      this.state.services = [];
-      let service = this.props.service.filter(
-        (s) => s.type === serviceDef.label
-      );
+  handleServiceChange = (value) => {
+    let difference = this.state.selectedServices.filter(
+      (service) => !value.includes(service)
+    );
 
-      service.forEach((s) => {
-        this.state.selectedServices.push(s.name);
-        this.state.services.push({ name: s.name });
-      });
-      this.setState({ servicename: service });
+    this.setState({ selectedServices: value });
+  };
+
+  handleServiceDefChange = (value) => {
+    let filterServices = value.map((serviceDef) => {
+      return this.props.services.filter(
+        (service) => service.type === serviceDef.value
+      );
+    });
+
+    let filterServiceOptions = filterServices.flat().map((service) => {
+      return {
+        value: service.name,
+        label: service.displayName
+      };
+    });
+
+    this.setState({
+      selectedServices: filterServiceOptions,
+      serviceOptions: filterServiceOptions
     });
   };
+
   export = async (e) => {
     e.preventDefault();
+
     let exportResp;
+    let serviceNameList = _.toString(
+      _.map(this.state.selectedServices, "value")
+    );
 
     try {
       exportResp = await fetchApi({
-        url: "/plugins/policies/exportJson"
+        url: "/plugins/policies/exportJson",
+        params: {
+          serviceName: serviceNameList,
+          checkPoliciesExists: true
+        }
       });
 
       this.downloadFile({
@@ -75,59 +111,52 @@ class ExportPolicy extends Component {
   };
 
   render() {
-    let option = this.props.serviceDef.map((servicedef) => {
-      return {
-        label: servicedef.name
-      };
-    });
+    const { isParentExport, serviceOptions, selectedServices } = this.state;
     return (
-      <>
+      <React.Fragment>
         <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Export Policy </Modal.Title>
+            <Modal.Title>Export Policy</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {!this.props.isCardButton && (
-              <div>
+            {isParentExport && (
+              <div className="mb-3">
                 <b>
-                  <h6 className="servicename">Service Type*</h6>
+                  <h6>Service Type *</h6>
                 </b>
                 <Select
-                  onChange={this.handletypeChange}
                   isMulti
+                  onChange={this.handleServiceDefChange}
                   components={{
                     DropdownIndicator: () => null,
                     IndicatorSeparator: () => null
                   }}
                   isClearable={false}
                   theme={this.Theme}
-                  name="colors"
-                  options={option}
-                  defaultValue={option.slice(0, 19)}
-                  placeholder="Select Component"
+                  options={this.serviceDefOptions}
+                  defaultValue={this.serviceDefOptions}
+                  placeholder="Select Service Type"
                 />
               </div>
             )}
-            <br />
 
-            <div>
+            <div className="mt-2">
               <b>
-                <h6 className="servicename">Select Service Name*</h6>
+                <h6>Select Service Name *</h6>
               </b>
               <Select
                 isMulti
-                isClearable={false}
+                onChange={this.handleServiceChange}
                 components={{
                   DropdownIndicator: () => null,
                   IndicatorSeparator: () => null
                 }}
+                isClearable={false}
                 theme={this.Theme}
-                name="colors"
-                options={this.state.selectedServices.map((obj) => {
-                  return { label: obj };
-                })}
-                // defaultValue={options.slice(0)}
-                placeholder="Select Component"
+                options={serviceOptions}
+                defaultValue={this.serviceOptions}
+                value={selectedServices}
+                placeholder="Select Service Name"
               />
             </div>
           </Modal.Body>
@@ -140,7 +169,7 @@ class ExportPolicy extends Component {
             </Button>
           </Modal.Footer>
         </Modal>
-      </>
+      </React.Fragment>
     );
   }
 }

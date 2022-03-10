@@ -4,17 +4,14 @@ import ServiceDefinitions from "./ServiceManager/ServiceDefinitions";
 class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      isTagView: this.props.isTagView
+    };
   }
 
   render() {
-    this.props;
     return (
-      <div>
-        <ServiceDefinitions
-          isTagView={this.props.isTagView}
-        ></ServiceDefinitions>
-      </div>
+      <ServiceDefinitions isTagView={this.state.isTagView}></ServiceDefinitions>
     );
   }
 }

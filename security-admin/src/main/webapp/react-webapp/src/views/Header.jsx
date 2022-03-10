@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
-
 import rangerLogo from "Images/ranger_logo.png";
 import { Link } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
@@ -18,12 +17,11 @@ class Header extends Component {
         url: "logout",
         baseURL: "",
         headers: {
-          "cache-control": "no-cache",
-        },
+          "cache-control": "no-cache"
+        }
       });
       setUserProfile(null);
       window.location.replace("login.jsp");
-      // this.props.history.push("/signin")
     } catch (error) {
       console.error(`Error occurred while login! ${error}`);
     }
@@ -33,7 +31,6 @@ class Header extends Component {
     const loginId = (
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
-        {/* {userProps.loginId} */}
         {userProps?.loginId.charAt(0).toUpperCase() +
           userProps?.loginId.slice(1)}
       </span>
@@ -53,9 +50,7 @@ class Header extends Component {
         <i className="fa-fw fa fa-gear"></i> Settings
       </span>
     );
-    // if (this.props.location && this.props.location.pathname === "/signin") {
-    //   return null;
-    // }
+
     return (
       <Navbar
         fixed="top"

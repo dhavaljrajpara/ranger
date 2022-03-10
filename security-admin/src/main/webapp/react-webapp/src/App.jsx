@@ -31,7 +31,6 @@ const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
 const PermissionsComp = lazy(() => import("Views/Permissions"));
-
 const EditPermissionComp = lazy(() => import("Views/EditPermission"));
 const PolicyListingTabView = lazy(() =>
   import("Views/PolicyListing/PolicyListingTabView")
@@ -44,7 +43,6 @@ const KeyCreateComp = lazy(() => import("Views/Encryption/KeyCreate"));
 
 function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
-    // return <Redirect to="/signin" />;
     window.location.replace("login.jsp");
     return;
   }
@@ -61,7 +59,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loader: true,
+      loader: true
     };
   }
 
@@ -73,7 +71,7 @@ export default class App extends Component {
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       const profResp = await fetchApi({
-        url: "users/profile",
+        url: "users/profile"
       });
       await fetchCSRFConf();
       setUserProfile(profResp.data);
@@ -84,7 +82,7 @@ export default class App extends Component {
       );
     }
     this.setState({
-      loader: false,
+      loader: false
     });
   };
 
@@ -95,7 +93,6 @@ export default class App extends Component {
       <ErrorBoundary>
         <Router history={history}>
           <Suspense fallback={<Loader />}>
-            {/* Add Header / Sidebar component here. */}
             {!this.state.loader && <HeaderComp />}
             <section className="container-fluid">
               <div className="row mt-2">
@@ -109,7 +106,7 @@ export default class App extends Component {
                   {new Date().toLocaleString("en-US", { hour12: true })}
                 </div>
               </div>
-              <section id="ranger-content">
+              <div id="ranger-content">
                 {this.state.loader ? (
                   <Loader />
                 ) : (
@@ -119,7 +116,7 @@ export default class App extends Component {
                       path="/policymanager/resource"
                       component={HomeComp}
                       userProfile={userProfile}
-                      istag={true}
+                      compProps={{ isTagView: false, key: "resourceHomeComp" }}
                       {...defaultProps}
                     />
                     <AuthRoute
@@ -150,8 +147,8 @@ export default class App extends Component {
                       path="/policymanager/tag"
                       component={HomeComp}
                       userProfile={userProfile}
+                      compProps={{ isTagView: true, key: "tagHomeComp" }}
                       {...defaultProps}
-                      compProps={{ isTagView: true }}
                     ></AuthRoute>
                     <AuthRoute
                       exact
@@ -251,7 +248,7 @@ export default class App extends Component {
                     <Redirect from="/" to="/policymanager/resource" />
                   </Switch>
                 )}
-              </section>
+              </div>
               <footer>
                 <div className="main-footer">
                   <div className="pull-left copy-right-text">

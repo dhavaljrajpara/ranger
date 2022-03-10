@@ -1,52 +1,54 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import Table from "react-bootstrap/Table";
-import folderLogo from "Images/folder-grey.png";
+import { Button, Table, Modal, Badge } from "react-bootstrap";
+import { toast } from "react-toastify";
+import { difference, isEmpty, keys, omit, pick } from "lodash";
 import { RangerPolicyType } from "Utils/XAEnums";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
-import { Button } from "react-bootstrap";
-import { toast } from "react-toastify";
-import Modal from "react-bootstrap/Modal";
-import Badge from "react-bootstrap/Badge";
-import { difference, isEmpty, keys, omit, pick } from "lodash";
+import folderLogo from "Images/folder-grey.png";
 
 class ServiceDefinition extends Component {
   constructor(props) {
     super(props);
     this.state = {
       serviceDef: this.props.serviceDefData,
-      service: this.props.serviceData,
-      show: false,
-      shows: false,
+      services: this.props.servicesData,
+      showExportModal: false,
+      showImportModal: false,
       showDelete: null,
-      showView: null,
-      isCardButton: true,
-      filterselzone: this.props.selectedzoneservice,
+      showView: null
     };
   }
 
-  showModal = () => {
-    this.setState({ show: true });
+  showExportModal = () => {
+    this.setState({ showExportModal: true });
   };
-  hideModal = () => {
-    this.setState({ show: false });
+
+  hideExportModal = () => {
+    this.setState({ showExportModal: false });
   };
-  showModals = () => {
-    this.setState({ shows: true });
+
+  showImportModal = () => {
+    this.setState({ showImportModal: true });
   };
-  hideModals = () => {
-    this.setState({ shows: false });
+
+  hideImportModal = () => {
+    this.setState({ showImportModal: false });
   };
+
   showDeleteModal = (id) => {
     this.setState({ showDelete: id });
   };
+
   hideDeleteModal = () => {
     this.setState({ showDelete: null });
   };
+
   showViewModal = (id) => {
     this.setState({ showView: id });
   };
+
   hideViewModal = () => {
     this.setState({ showView: null });
   };
@@ -57,8 +59,8 @@ class ServiceDefinition extends Component {
       colors: {
         ...theme.colors,
         primary25: "#0b7fad;",
-        primary: "#0b7fad;",
-      },
+        primary: "#0b7fad;"
+      }
     };
   };
 
@@ -68,10 +70,10 @@ class ServiceDefinition extends Component {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
         url: `plugins/services/${sid}`,
-        method: "delete",
+        method: "delete"
       });
       this.setState({
-        service: this.state.service.filter((s) => s.id != sid),
+        services: this.state.services.filter((s) => s.id !== sid)
       });
       toast.success("Successfully deleted the service");
     } catch (error) {
@@ -250,6 +252,8 @@ class ServiceDefinition extends Component {
   };
 
   render() {
+    const { serviceDef, services, showImportModal, showExportModal } =
+      this.state;
     return (
       <div className="col-sm-4">
         <div className="position-relative">
@@ -264,39 +268,49 @@ class ServiceDefinition extends Component {
                         alt="Folder logo"
                         className="m-r-5"
                       />
-                      {this.state.serviceDef.name}
+                      {serviceDef.name}
                     </span>
                     <span className="float-right">
-                      <Link to={`/service/${this.state.serviceDef.id}/create`}>
+                      <Link to={`/service/${serviceDef.id}/create`}>
                         <i className="fa-fw fa fa-plus"></i>
                       </Link>
-                      <a className="text-decoration" onClick={this.showModals}>
+                      <a
+                        className="text-decoration"
+                        onClick={this.showImportModal}
+                      >
                         <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
                       </a>
-                      <a className="text-decoration" onClick={this.showModal}>
+                      <a
+                        className="text-decoration"
+                        onClick={this.showExportModal}
+                      >
                         <i className="fa-fw fa fa-external-link-square"></i>
                       </a>
-                      <ImportPolicy
-                        shows={this.state.shows}
-                        onHides={this.hideModals}
-                        zones={this.props.zones}
-                        service={this.props.serviceData}
-                        serviceDef={this.props.servicedefs}
-                      />
-                      <ExportPolicy
-                        serviceDef={this.props.servicedefs}
-                        service={this.props.serviceData}
-                        isCardButton={this.state.isCardButton}
-                        show={this.state.show}
-                        onHide={this.hideModal}
-                      />
+                      {[serviceDef].length > 0 && (
+                        <ImportPolicy
+                          serviceDef={serviceDef}
+                          services={services}
+                          zones={this.props.zones}
+                          show={showImportModal}
+                          onHide={this.hideImportModal}
+                        />
+                      )}
+                      {[serviceDef].length > 0 && (
+                        <ExportPolicy
+                          serviceDef={[serviceDef]}
+                          services={services}
+                          isParentExport={false}
+                          show={showExportModal}
+                          onHide={this.hideExportModal}
+                        />
+                      )}
                     </span>
                   </div>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {this.state.service.map((s) => (
+              {this.state.services.map((s) => (
                 <tr key={s.id}>
                   <td>
                     <div className="clearfix">
