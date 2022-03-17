@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import Select from "react-select";
 import { withRouter } from "react-router-dom";
+import { Button, Col, Row } from "react-bootstrap";
+import Select from "react-select";
 import { toast } from "react-toastify";
-import { filter, map } from "lodash";
+import { filter, map, uniq } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
@@ -13,7 +14,9 @@ class ServiceDefinitions extends Component {
     super(props);
     this.state = {
       serviceDefs: [],
+      filterServiceDefs: [],
       services: [],
+      filterServices: [],
       zones: [],
       isTagView: this.props.isTagView,
       showExportModal: false,
@@ -88,7 +91,10 @@ class ServiceDefinitions extends Component {
       );
     }
     this.setState({
-      serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef
+      serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef,
+      filterServiceDefs: this.state.isTagView
+        ? tagServiceDef
+        : resourceServiceDef
     });
   };
 
@@ -115,7 +121,8 @@ class ServiceDefinitions extends Component {
       );
     }
     this.setState({
-      services: this.state.isTagView ? tagServices : resourceServices
+      services: this.state.isTagView ? tagServices : resourceServices,
+      filterServices: this.state.isTagView ? tagServices : resourceServices
     });
   };
 
@@ -155,7 +162,7 @@ class ServiceDefinitions extends Component {
           });
         }
 
-        let zoneServiceDefTypes = _.map(zoneServices, "type");
+        let zoneServiceDefTypes = _.uniq(_.map(zoneServices, "type"));
 
         let filterZoneServiceDef = zoneServiceDefTypes.map((obj) => {
           return serviceDefs.find((serviceDef) => {
@@ -164,16 +171,38 @@ class ServiceDefinitions extends Component {
         });
 
         this.setState({
-          serviceDefs: filterZoneServiceDef,
-          services: zoneServices
+          filterServiceDefs: filterZoneServiceDef,
+          filterServices: zoneServices
         });
       } else {
-        this.props.history.push("/policymanager/resource");
-        this.fetchServiceDefs();
-        this.fetchServices();
+        this.props.history.push(this.props.location.pathname);
+        this.setState({
+          filterServiceDefs: serviceDefs,
+          filterServices: services
+        });
       }
     } catch (error) {
       console.error(`Error occurred while fetching Zone Services ! ${error}`);
+    }
+  };
+
+  deleteService = async (sid) => {
+    console.log("Service Id to delete is ", sid);
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      await fetchApi({
+        url: `plugins/services/${sid}`,
+        method: "delete"
+      });
+      this.setState({
+        services: this.state.filterServices.filter((s) => s.id !== sid),
+        filterServices: this.state.filterServices.filter((s) => s.id !== sid)
+      });
+      toast.success("Successfully deleted the service");
+    } catch (error) {
+      console.error(
+        `Error occurred while deleting Service id - ${sid}!  ${error}`
+      );
     }
   };
 
@@ -190,8 +219,8 @@ class ServiceDefinitions extends Component {
 
   render() {
     const {
-      serviceDefs,
-      services,
+      filterServiceDefs,
+      filterServices,
       zones,
       isDisabled,
       showExportModal,
@@ -199,14 +228,14 @@ class ServiceDefinitions extends Component {
     } = this.state;
     return (
       <React.Fragment>
-        <div className="row">
-          <div className="col-sm-2">
+        <Row>
+          <Col sm={2}>
             <h3 className="wrap-header bold pull-left">Service Manager</h3>
-          </div>
-          <div className="col-sm-5 text-right">
+          </Col>
+          <Col sm={5} className="text-right">
             <b className="bold"> Security Zone: </b>
-          </div>
-          <div className="col-sm-3">
+          </Col>
+          <Col sm={3}>
             <Select
               isDisabled={zones ? false : true}
               onChange={this.getSelectedZone}
@@ -225,58 +254,61 @@ class ServiceDefinitions extends Component {
               name="colors"
               placeholder="Select Zone Name"
             />
-          </div>
-          <div className="col-sm-2">
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
+          </Col>
+          <Col sm={2} className="text-right">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              className="mr-2"
               onClick={this.showImportModal}
             >
               <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
               Import
-            </button>
-            {serviceDefs.length > 0 && (
+            </Button>
+            {filterServiceDefs.length > 0 && showImportModal && (
               <ImportPolicy
-                serviceDef={serviceDefs}
-                services={services}
+                serviceDef={filterServiceDefs}
+                services={filterServices}
                 zones={zones}
+                isParentImport={true}
                 show={showImportModal}
                 onHide={this.hideImportModal}
               />
             )}
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm pull-right"
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              className="pull-right"
               onClick={this.showExportModal}
             >
               <i className="fa fa-fw fa-external-link-square" />
               Export
-            </button>
-            {serviceDefs.length > 0 && (
+            </Button>
+            {filterServiceDefs.length > 0 && showExportModal && (
               <ExportPolicy
-                serviceDef={serviceDefs}
-                services={services}
+                serviceDef={filterServiceDefs}
+                services={filterServices}
                 isParentExport={true}
                 show={showExportModal}
                 onHide={this.hideExportModal}
               />
             )}
-          </div>
-        </div>
+          </Col>
+        </Row>
         <div className="wrap policy-manager mt-3">
-          <div className="row">
-            {serviceDefs.map((serviceDef) => (
+          <Row className="row">
+            {filterServiceDefs.map((serviceDef) => (
               <ServiceDefinition
                 zones={zones}
                 key={serviceDef.id}
-                services={services}
                 serviceDefData={serviceDef}
-                servicesData={services.filter(
+                servicesData={filterServices.filter(
                   (service) => service.type === serviceDef.name
                 )}
+                deleteService={this.deleteService}
               ></ServiceDefinition>
             ))}
-          </div>
+          </Row>
         </div>
       </React.Fragment>
     );

@@ -305,39 +305,11 @@ table.no-bg-color thead tr th:first-child {
   border-bottom: 1px solid #0b7fad;
 }
 
-/* cancel and Export Button */
-.btn-secondary {
-  padding: 0.25rem 0.5rem;
-  font-size: 13px;
-  text-decoration: none;
-  line-height: 1.5;
-  border: 1px solid #d9d9d9;
-  background-color: white;
-  color: #424242;
-}
-.btn-primary {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  border-radius: 0.2rem;
-}
-
-.btn-primary:hover {
-  color: #0b7fad;
-  background-color: white;
-  border-color: #0b7fad;
-}
-.btn-secondary:hover {
-  color: #0b7fad;
-  background-color: white;
-  border-color: #0b7fad;
-}
-
-.externalbadge {
+.external-badge {
   background-color: #9bb922;
   color: white;
 }
-.hiddenbadge {
+.hidden-badge {
   background-color: #9bb922;
   color: white;
 }
@@ -374,9 +346,6 @@ a:active {
 }
 a {
   color: #212529;
-}
-.usersbadge {
-  margin: 2px;
 }
 .headerperm {
   text-align-last: center;

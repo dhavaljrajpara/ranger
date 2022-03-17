@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Modal, Badge } from "react-bootstrap";
+import { Badge, Button, Col, Modal, Row, Table } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { difference, isEmpty, keys, omit, pick } from "lodash";
 import { RangerPolicyType } from "Utils/XAEnums";
@@ -13,7 +13,6 @@ class ServiceDefinition extends Component {
     super(props);
     this.state = {
       serviceDef: this.props.serviceDefData,
-      services: this.props.servicesData,
       showExportModal: false,
       showImportModal: false,
       showDelete: null,
@@ -62,25 +61,6 @@ class ServiceDefinition extends Component {
         primary: "#0b7fad;"
       }
     };
-  };
-
-  deleteService = async (sid) => {
-    console.log("Service Id to delete is ", sid);
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      await fetchApi({
-        url: `plugins/services/${sid}`,
-        method: "delete"
-      });
-      this.setState({
-        services: this.state.services.filter((s) => s.id !== sid)
-      });
-      toast.success("Successfully deleted the service");
-    } catch (error) {
-      console.error(
-        `Error occurred while deleting Service id - ${sid}!  ${error}`
-      );
-    }
   };
 
   getServiceConfigs = (serviceDef, serviceConfigs) => {
@@ -146,7 +126,11 @@ class ServiceDefinition extends Component {
             ""
           )}
           {resources[key].isRecursive !== undefined ? (
-            <span className="badge badge-secondary float-right">Recursive</span>
+            <h6 className="d-inline">
+              <span className="badge badge-secondary float-right">
+                Recursive
+              </span>
+            </h6>
           ) : (
             ""
           )}
@@ -252,10 +236,9 @@ class ServiceDefinition extends Component {
   };
 
   render() {
-    const { serviceDef, services, showImportModal, showExportModal } =
-      this.state;
+    const { serviceDef, showImportModal, showExportModal } = this.state;
     return (
-      <div className="col-sm-4">
+      <Col sm={4}>
         <div className="position-relative">
           <Table striped bordered hover size="sm">
             <thead>
@@ -286,19 +269,20 @@ class ServiceDefinition extends Component {
                       >
                         <i className="fa-fw fa fa-external-link-square"></i>
                       </a>
-                      {[serviceDef].length > 0 && (
+                      {[serviceDef].length > 0 && showImportModal && (
                         <ImportPolicy
                           serviceDef={serviceDef}
-                          services={services}
+                          services={this.props.servicesData}
                           zones={this.props.zones}
+                          isParentImport={false}
                           show={showImportModal}
                           onHide={this.hideImportModal}
                         />
                       )}
-                      {[serviceDef].length > 0 && (
+                      {[serviceDef].length > 0 && showExportModal && (
                         <ExportPolicy
                           serviceDef={[serviceDef]}
-                          services={services}
+                          services={this.props.servicesData}
                           isParentExport={false}
                           show={showExportModal}
                           onHide={this.hideExportModal}
@@ -310,7 +294,7 @@ class ServiceDefinition extends Component {
               </tr>
             </thead>
             <tbody>
-              {this.state.services.map((s) => (
+              {this.props.servicesData.map((s) => (
                 <tr key={s.id}>
                   <td>
                     <div className="clearfix">
@@ -343,8 +327,8 @@ class ServiceDefinition extends Component {
                             <Modal.Title>Service Details</Modal.Title>
                           </Modal.Header>
                           <Modal.Body>
-                            <div className="row">
-                              <div className="col-sm-12">
+                            <Row>
+                              <Col sm={12}>
                                 <p className="form-header">Service Details :</p>
                                 <Table bordered size="sm">
                                   <tbody>
@@ -413,8 +397,8 @@ class ServiceDefinition extends Component {
                                     {this.getAuditFilters(s.configs)}
                                   </tbody>
                                 </Table>
-                              </div>
-                            </div>
+                              </Col>
+                            </Row>
                           </Modal.Body>
                           <Modal.Footer>
                             <Button
@@ -463,7 +447,7 @@ class ServiceDefinition extends Component {
                               variant="primary"
                               size="sm"
                               title="Yes"
-                              onClick={(sid) => this.deleteService(s.id)}
+                              onClick={() => this.props.deleteService(s.id)}
                             >
                               Yes
                             </Button>
@@ -477,7 +461,7 @@ class ServiceDefinition extends Component {
             </tbody>
           </Table>
         </div>
-      </div>
+      </Col>
     );
   }
 }

@@ -114,7 +114,11 @@ class ServiceForm extends Component {
         data: { ...this.state.service, ...serviceJson }
       });
       toast.success(`Successfully ${apiSuccess} the service`);
-      this.props.history.push("/policymanager/resource");
+      this.props.history.push(
+        this.state.serviceDef.name === "tag"
+          ? "/policymanager/tag"
+          : "/policymanager/resource"
+      );
     } catch (error) {
       console.error(`${apiError} ${error}`);
     }

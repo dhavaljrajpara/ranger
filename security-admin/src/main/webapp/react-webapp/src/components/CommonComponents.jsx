@@ -47,7 +47,7 @@ export class MoreLess extends Component {
     super(props);
     this.state = {
       data: props.data.length > 4 ? props.data.slice(0, 4) : props.data,
-      show: true,
+      show: true
     };
   }
 
@@ -62,7 +62,7 @@ export class MoreLess extends Component {
       <div>
         {this.state.data.map((name) => {
           return (
-            <Badge variant="info" className="usersbadge">
+            <Badge variant="info" className="m-1">
               {name}
             </Badge>
           );
