@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Select from "react-select";
+import dateFormat from "dateformat";
 import { map, toString } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
@@ -94,16 +95,22 @@ class ExportPolicy extends Component {
         url: "/plugins/policies/exportJson",
         params: {
           serviceName: serviceNameList,
-          checkPoliciesExists: true
+          checkPoliciesExists: true,
+          zoneName: this.props.zone
         }
       });
 
       this.downloadFile({
         data: JSON.stringify(exportResp.data),
-        fileName: "Ranger_Policy.json",
+        fileName:
+          "Ranger_Policies_" +
+          dateFormat(new Date(), "yyyymmdd_HHMMss") +
+          ".json",
         fileType: "text/json"
       });
+      this.props.onHide();
     } catch (error) {
+      this.props.onHide();
       console.error(
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );

@@ -1,79 +1,206 @@
 import React, { Component } from "react";
+import { Form, Field } from "react-final-form";
 import Select from "react-select";
-import { Modal, Form, Button, Row, Col } from "react-bootstrap";
-import { groupBy } from "lodash";
+import { Alert, Button, Col, Modal, Row } from "react-bootstrap";
+import { FieldArray } from "react-final-form-arrays";
+import arrayMutators from "final-form-arrays";
+import { toast } from "react-toastify";
+import { find, has, groupBy, map, toString, uniq } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
 class ImportPolicy extends Component {
   constructor() {
     super();
     this.state = {
-      files: null,
-      fileselc: null,
-      fields: [{ value: null }],
-      servicemap: null
+      file: null,
+      fileName: null,
+      fileJsonData: null,
+      sourceServicesMap: null,
+      destServices: null,
+      sourceZoneName: "",
+      destZoneName: "",
+      initialFormFields: {},
+      filterFormFields: {}
     };
   }
 
-  addServices = () => {
-    const values = [...this.state.fields];
-    values.push([{ value: null }]);
-    this.setState({ fields: values });
-  };
-
-  removeServices = (i) => {
-    const values = [...this.state.fields];
-    values.splice(i, 1);
-    this.setState({ fields: values });
-  };
-
   removeFile = () => {
-    this.setState({ files: null, fileselc: null });
+    this.setState({ fileName: null, fileJsonData: null });
   };
 
-  handleUpload = (e) => {
+  handleFileUpload = (e) => {
     e.preventDefault();
     const fileReader = new FileReader();
     fileReader.readAsText(e.target.files[0]);
     if (e.target && e.target.files.length > 0) {
       this.setState({
-        files: e.target.files[0].name
+        fileName: e.target.files[0].name,
+        file: e.target.files[0]
       });
     } else {
       return;
     }
 
     fileReader.onload = (e) => {
+      let jsonParseFileData = JSON.parse(e.target.result);
+      let servicesJsonParseFile = _.groupBy(
+        jsonParseFileData.policies,
+        function (policy) {
+          return policy.service;
+        }
+      );
+
+      let zoneNameJsonParseFile;
+      if (
+        _.has(jsonParseFileData, "policies") &&
+        jsonParseFileData.policies.length > 0
+      ) {
+        zoneNameJsonParseFile = jsonParseFileData.policies[0].zoneName;
+      }
+
+      let serviceFieldsFromJson = Object.keys(servicesJsonParseFile).map(
+        (obj) => {
+          if (this.props.isParentImport) {
+            return {
+              sourceServiceName: { value: obj, label: obj },
+              destServiceName: { value: obj, label: obj }
+            };
+          } else {
+            let sameDefType = _.find(this.props.services, {
+              name: obj,
+              type: this.props.serviceDef.name
+            });
+            return {
+              sourceServiceName: { value: obj, label: obj },
+              destServiceName:
+                sameDefType !== undefined
+                  ? { value: obj, label: obj }
+                  : undefined
+            };
+          }
+        }
+      );
+
+      const formFields = {};
+      formFields["serviceFields"] = serviceFieldsFromJson;
+      formFields["sourceZoneName"] = zoneNameJsonParseFile;
+      formFields["isOverride"] = false;
+
       this.setState({
-        fileselc: JSON.parse(e.target.result),
-        servicemap: groupBy(JSON.parse(e.target.result).policies, function (m) {
-          return m.service;
-        })
+        fileJsonData: jsonParseFileData,
+        sourceServicesMap: servicesJsonParseFile,
+        destServices: this.props.services,
+        sourceZoneName: zoneNameJsonParseFile,
+        initialFormFields: formFields,
+        filterFormFields: formFields
       });
     };
   };
 
-  import = async () => {
-    let importResp;
+  importJsonFile = async (values) => {
+    let serviceTypeList;
+    let servicesMapJson = {};
+    let zoneMapJson = {};
+
+    _.map(values.serviceFields, function (field) {
+      return (
+        field !== undefined &&
+        (servicesMapJson[field.sourceServiceName.value] =
+          field.destServiceName.value)
+      );
+    });
+
+    zoneMapJson[values.sourceZoneName] = this.state.destZoneName;
+
+    let importData = new FormData();
+    importData.append("file", this.state.file);
+    importData.append(
+      "servicesMapJson",
+      new Blob([JSON.stringify(servicesMapJson)], {
+        type: "application/json"
+      })
+    );
+    importData.append(
+      "zoneMapJson",
+      new Blob([JSON.stringify(zoneMapJson)], {
+        type: "application/json"
+      })
+    );
+
+    if (this.props.isParentImport) {
+      serviceTypeList = _.toString(_.uniq(_.map(this.props.services, "type")));
+    } else {
+      serviceTypeList = this.props.serviceDef.name;
+    }
 
     try {
-      importResp = await fetchApi({
-        url: "/plugins/policies/importPoliciesFromFile"
+      await fetchApi({
+        url: "/plugins/policies/importPoliciesFromFile",
+        params: {
+          serviceType: serviceTypeList,
+          isOverride: values.isOverride
+        },
+        method: "post",
+        data: importData
       });
+      this.props.onHide();
+      toast.success("Successfully imported the file");
     } catch (error) {
-      console.error(
-        `Error occurred while fetching Services or CSRF headers! ${error}`
-      );
+      this.props.onHide();
+      toast.error(error.response.data.msgDesc);
+      console.error(`Error occurred while importing policies! ${error}`);
     }
   };
 
-  selectedZone = async (e) => {
-    try {
-      let zonesResp = [];
+  handleSelectedZone = async (e) => {
+    let zonesResp = [];
 
-      if (e != undefined) {
+    try {
+      if (e && e !== undefined) {
         zonesResp = await fetchApi({
           url: `public/v2/api/zones/${e && e.value}/service-headers`
+        });
+
+        let zoneServiceNames = _.map(zonesResp.data, "name");
+
+        let zoneServices = zoneServiceNames.map((zoneService) => {
+          return this.props.services.filter((service) => {
+            return service.name === zoneService;
+          });
+        });
+
+        zoneServices = zoneServices.flat();
+
+        let serviceFieldsFromJson = Object.keys(
+          this.state.sourceServicesMap
+        ).map((obj) => {
+          let zoneServiceType = _.find(zoneServices, {
+            name: obj
+          });
+          return {
+            sourceServiceName: { value: obj, label: obj },
+            destServiceName:
+              zoneServiceType !== undefined
+                ? { value: obj, label: obj }
+                : undefined
+          };
+        });
+
+        const formFields = {};
+        formFields["serviceFields"] = serviceFieldsFromJson;
+        formFields["sourceZoneName"] =
+          this.state.initialFormFields["sourceZoneName"];
+
+        this.setState({
+          destZoneName: e && e.label,
+          destServices: zoneServices,
+          filterFormFields: formFields
+        });
+      } else {
+        this.setState({
+          destZoneName: "",
+          destServices: this.props.services,
+          filterFormFields: this.state.initialFormFields
         });
       }
     } catch (error) {
@@ -83,204 +210,222 @@ class ImportPolicy extends Component {
     }
   };
 
+  SelectField = ({ input, ...rest }) => (
+    <Select {...input} {...rest} searchable />
+  );
+
   render() {
     return (
-      <>
+      <React.Fragment>
         <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
-          <Modal.Header closeButton>
-            <Modal.Title>Import Policy </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div>
-              <div>
-                <div className="row">
-                  <div className="col">
-                    <b>Select File : </b>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col">
-                    <label className="btn btn-default btn-file btn-sm border">
-                      Select file
-                      <i className="fa-fw fa fa-arrow-circle-o-up"> </i>
-                      <input
-                        type="file"
-                        style={{ display: "none" }}
-                        onChange={this.handleUpload}
-                        accept=" .json "
-                      />
-                    </label>
-                  </div>
-                  <div className="col">
-                    <label>
-                      <span>Override Policy:</span>
-                      <input className="ml-2 align-middle" type="checkbox" />
-                    </label>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col">
-                    {this.state.files}
-                    {this.state.files && (
-                      <label
-                        className="icon fa-fw fa fa-remove fa-fw fa fa-1x fa-fw fa fa-remove-btn"
-                        onClick={() => {
-                          this.removeFile();
-                        }}
-                      ></label>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  {!this.state.files && (
-                    <div className="selectFile margin-left6">
-                      No file chosen
-                    </div>
-                  )}
-                </div>
-              </div>
-              {this.state.fileselc && (
-                <div>
-                  <hr />
-                  <div className="alert alert-warning show">
-                    <i className="fa-fw fa fa-info-circle searchInfo m-r-xs"></i>
-                    All services gets listed on service destination when Zone
-                    destination is blank. When zone is selected at destination,
-                    then only services associated with that zone will be listed.
-                  </div>
-
-                  <Form>
-                    <span className="font-weight-bold">
-                      Specify Zone Mapping :
-                    </span>
-
-                    <Row className="mt-3">
-                      <Col xs={4}>
-                        <div className="col text-center">Source</div>
-                      </Col>
-                      <Col xs={4}>
-                        <div className="col text-center">Destination</div>
-                      </Col>
-                    </Row>
-                    <Row className="mt-3">
-                      <Col xs={4}>
-                        <input
-                          type="text"
-                          className="form-control h-100 w-100"
-                          disabled
-                        />
-                      </Col>
-                      To
-                      <Col xs={4}>
-                        <Select
-                          onChange={this.selectedZone}
-                          isClearable
-                          components={{
-                            IndicatorSeparator: () => null
-                          }}
-                          theme={this.Theme}
-                          options={this.props.zones.map((zone) => {
-                            return {
-                              value: zone.id,
-                              label: zone.name
-                            };
-                          })}
-                          name="colors"
-                          placeholder="Enter service "
-                        />
-                      </Col>
-                    </Row>
-                  </Form>
-                  <hr />
-
-                  <Form>
-                    <span className="font-weight-bold">
-                      Specify Service Mapping :
-                    </span>
-
-                    <Row className="mt-3">
-                      <Col xs={4}>
-                        <div className="col text-center">Source</div>
-                      </Col>
-                      <Col xs={4}>
-                        <div className="col text-center">Destination</div>
-                      </Col>
-                    </Row>
-                    {this.state.fields.map((field, index) => {
-                      return (
-                        <Row className="mt-3" key={`${field}-${index}`}>
-                          <Col xs={4}>
-                            <Select
-                              isClearable
-                              components={{
-                                IndicatorSeparator: () => null
-                              }}
-                              theme={this.Theme}
-                              options={Object.keys(this.state.servicemap).map(
-                                (obj) => {
-                                  return { label: obj };
-                                }
-                              )}
-                              placeholder="Enter service"
-                            />
-                          </Col>
-                          To
-                          <Col xs={4}>
-                            <Select
-                              isClearable
-                              components={{
-                                IndicatorSeparator: () => null
-                              }}
-                              theme={this.Theme}
-                              options={this.props.services.map((service) => {
-                                return {
-                                  label: service.name
-                                };
-                              })}
-                              name="colors"
-                              placeholder="Enter service"
-                            />
-                          </Col>
-                          <Col xs={1}>
-                            <div className="col">
-                              <a
-                                className="pull-right"
-                                onClick={() => this.removeServices(index)}
-                              >
-                                <i className="icon fa-fw fa fa-remove fa-fw fa fa-1x fa-fw fa fa-remove-btn"></i>
-                              </a>
+          <Form
+            onSubmit={this.importJsonFile}
+            mutators={{
+              ...arrayMutators
+            }}
+            initialValues={this.state.filterFormFields}
+            render={({
+              handleSubmit,
+              values,
+              form: {
+                mutators: { push: addItem, pop: removeItem }
+              }
+            }) => (
+              <form onSubmit={handleSubmit}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Import Policy </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <React.Fragment>
+                    <Row>
+                      <Col sm={12}>
+                        <div className="form-row">
+                          <Field name="uploadPolicyFile">
+                            {({ input, meta }) => (
+                              <div className="form-group col-sm-6">
+                                <label className="">Select File :</label>
+                                <input
+                                  {...input}
+                                  type="file"
+                                  className="form-control-file"
+                                  accept=" .json "
+                                  onChange={this.handleFileUpload}
+                                />
+                              </div>
+                            )}
+                          </Field>
+                          <div className="form-group col-sm-6 text-center">
+                            <div className="form-check">
+                              <Field
+                                name="isOverride"
+                                component="input"
+                                type="checkbox"
+                                className="form-check-input"
+                              />
+                              <label className="form-check-label">
+                                Override Policy
+                              </label>
                             </div>
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
+                    {this.state.fileJsonData && (
+                      <React.Fragment>
+                        <hr />
+                        <Row>
+                          <Col sm={12}>
+                            <Alert variant="warning" show={true}>
+                              <i className="fa-fw fa fa-info-circle searchInfo m-r-xs"></i>
+                              All services gets listed on service destination
+                              when Zone destination is blank. When zone is
+                              selected at destination, then only services
+                              associated with that zone will be listed.
+                            </Alert>
                           </Col>
                         </Row>
-                      );
-                    })}
-                    <Row>
-                      <Col className="pt-3 d-flex justify-content-between">
-                        <button
-                          type="button"
-                          className="btn btn-sm border"
-                          onClick={this.addServices}
-                        >
-                          <i className="fa-fw fa fa-plus"></i>
-                        </button>
-                      </Col>
-                    </Row>
-                  </Form>
-                </div>
-              )}
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={this.props.onHide}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={this.import}>
-              Import
-            </Button>
-          </Modal.Footer>
+                        <Row>
+                          <Col sm={12}>
+                            <p className="font-weight-bold">
+                              Specify Zone Mapping :
+                            </p>
+                          </Col>
+                        </Row>
+                        <Row className="mt-3">
+                          <Col sm={4}>
+                            <div className="col text-center">Source</div>
+                          </Col>
+                          <Col sm={4}>
+                            <div className="col text-center">Destination</div>
+                          </Col>
+                        </Row>
+                        <Row className="mt-3">
+                          <Col sm={4}>
+                            <Field name="sourceZoneName">
+                              {({ input, meta }) => (
+                                <input
+                                  {...input}
+                                  type="text"
+                                  className="form-control"
+                                  disabled
+                                />
+                              )}
+                            </Field>
+                          </Col>
+                          <Col sm={1}>To</Col>
+                          <Col sm={4}>
+                            <Select
+                              onChange={this.handleSelectedZone}
+                              isClearable
+                              components={{
+                                IndicatorSeparator: () => null
+                              }}
+                              theme={this.Theme}
+                              options={this.props.zones.map((zone) => {
+                                return {
+                                  value: zone.id,
+                                  label: zone.name
+                                };
+                              })}
+                              placeholder="No Zone Selected"
+                            />
+                          </Col>
+                        </Row>
+                        <hr />
+                        <Row>
+                          <Col sm={12}>
+                            <p className="font-weight-bold">
+                              Specify Service Mapping :
+                            </p>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col sm={4}>
+                            <div className="col text-center">Source</div>
+                          </Col>
+                          <Col sm={4}>
+                            <div className="col text-center">Destination</div>
+                          </Col>
+                        </Row>
+                        <FieldArray name="serviceFields">
+                          {({ fields }) =>
+                            fields.map((name, index) => (
+                              <Row className="mt-2" key={name}>
+                                <Col sm={4}>
+                                  <Field
+                                    isClearable
+                                    name={`${name}.sourceServiceName`}
+                                    component={this.SelectField}
+                                    options={Object.keys(
+                                      this.state.sourceServicesMap
+                                    ).map((obj) => {
+                                      return { value: obj, label: obj };
+                                    })}
+                                    placeholder="No Service Selected"
+                                  />
+                                </Col>
+                                <Col sm={1}>To</Col>
+                                <Col sm={4}>
+                                  <Field
+                                    isClearable
+                                    name={`${name}.destServiceName`}
+                                    component={this.SelectField}
+                                    options={this.state.destServices.map(
+                                      (service) => {
+                                        return {
+                                          value: service.name,
+                                          label: service.name
+                                        };
+                                      }
+                                    )}
+                                    placeholder="No Service Selected"
+                                  />
+                                </Col>
+                                <Col sm={1}>
+                                  <Button
+                                    className="mt-1"
+                                    variant="danger"
+                                    size="sm"
+                                    title="Remove"
+                                    onClick={() => fields.remove(index)}
+                                  >
+                                    <i className="fa-fw fa fa-remove"></i>
+                                  </Button>
+                                </Col>
+                              </Row>
+                            ))
+                          }
+                        </FieldArray>
+                        <Row className="mt-3">
+                          <Col sm={2}>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() =>
+                                addItem("serviceFields", undefined)
+                              }
+                            >
+                              <i className="fa-fw fa fa-plus"></i>
+                            </Button>
+                          </Col>
+                        </Row>
+                      </React.Fragment>
+                    )}
+                  </React.Fragment>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={this.props.onHide}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit">
+                    Import
+                  </Button>
+                </Modal.Footer>
+              </form>
+            )}
+          />
         </Modal>
-      </>
+      </React.Fragment>
     );
   }
 }

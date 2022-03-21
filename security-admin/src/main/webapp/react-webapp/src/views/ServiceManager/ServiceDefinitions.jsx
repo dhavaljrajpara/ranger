@@ -17,6 +17,7 @@ class ServiceDefinitions extends Component {
       filterServiceDefs: [],
       services: [],
       filterServices: [],
+      selectedZone: null,
       zones: [],
       isTagView: this.props.isTagView,
       showExportModal: false,
@@ -172,13 +173,15 @@ class ServiceDefinitions extends Component {
 
         this.setState({
           filterServiceDefs: filterZoneServiceDef,
-          filterServices: zoneServices
+          filterServices: zoneServices,
+          selectedZone: e.label
         });
       } else {
         this.props.history.push(this.props.location.pathname);
         this.setState({
           filterServiceDefs: serviceDefs,
-          filterServices: services
+          filterServices: services,
+          selectedZone: null
         });
       }
     } catch (error) {
@@ -223,6 +226,7 @@ class ServiceDefinitions extends Component {
       filterServices,
       zones,
       isDisabled,
+      selectedZone,
       showExportModal,
       showImportModal
     } = this.state;
@@ -237,10 +241,9 @@ class ServiceDefinitions extends Component {
           </Col>
           <Col sm={3}>
             <Select
-              isDisabled={zones ? false : true}
+              isDisabled={isDisabled}
               onChange={this.getSelectedZone}
               isClearable={true}
-              isDisabled={isDisabled}
               components={{
                 IndicatorSeparator: () => null
               }}
@@ -288,6 +291,7 @@ class ServiceDefinitions extends Component {
               <ExportPolicy
                 serviceDef={filterServiceDefs}
                 services={filterServices}
+                zone={selectedZone}
                 isParentExport={true}
                 show={showExportModal}
                 onHide={this.hideExportModal}
@@ -299,13 +303,14 @@ class ServiceDefinitions extends Component {
           <Row className="row">
             {filterServiceDefs.map((serviceDef) => (
               <ServiceDefinition
-                zones={zones}
                 key={serviceDef.id}
                 serviceDefData={serviceDef}
                 servicesData={filterServices.filter(
                   (service) => service.type === serviceDef.name
                 )}
                 deleteService={this.deleteService}
+                selectedZone={selectedZone}
+                zones={zones}
               ></ServiceDefinition>
             ))}
           </Row>

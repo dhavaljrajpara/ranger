@@ -283,6 +283,7 @@ class ServiceDefinition extends Component {
                         <ExportPolicy
                           serviceDef={[serviceDef]}
                           services={this.props.servicesData}
+                          zone={this.props.selectedZone}
                           isParentExport={false}
                           show={showExportModal}
                           onHide={this.hideExportModal}
