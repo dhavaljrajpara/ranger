@@ -1,39 +1,68 @@
-import React from "react";
+import React, { Component } from "react";
 import { fetchApi } from "Utils/fetchAPI";
-import { Accordion, Card, Form, Row, Col, Table, Badge } from "react-bootstrap";
+import {
+  Accordion,
+  Card,
+  Form,
+  Row,
+  Col,
+  Table,
+  Badge,
+  Button,
+  Modal
+} from "react-bootstrap";
+import { Link } from "react-router-dom";
 
-export class ZoneDisplay extends React.Component {
+class ZoneDisplay extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      zoneslist: this.props.zoneslisting,
-      expand: true,
       services: [],
+      expand: true,
       show: true,
+      showDeleteModal: null
     };
     this.expandbtn = this.expandbtn.bind(this);
     this.showMoreLess = this.showMoreLess.bind(this);
+    this.closeZoneModal = this.closeZoneModal.bind(this);
   }
 
   componentDidMount() {
     this.fetchServices();
   }
+
+  deleteZoneModal = (zoneId) => {
+    this.setState({ showDeleteModal: zoneId });
+  };
+
+  closeZoneModal = () => {
+    this.setState({ showDeleteModal: null });
+  };
+
   fetchServices = async () => {
     var servicesResp;
     try {
       servicesResp = await fetchApi({
         url: "plugins/services",
+        params: {
+          page: 0,
+          pageSize: 200,
+          total_pages: 0,
+          startIndex: 0
+        }
       });
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
     }
     this.setState({
-      services: servicesResp.data.services,
+      services: servicesResp.data.services
     });
   };
+
   expandbtn = () => {
-    this.setState({ expand: !this.state.expand });
+    this.setState({ expand: true });
   };
+
   showMoreLess = () => {
     this.setState({ show: !this.state.show });
   };
@@ -50,26 +79,51 @@ export class ZoneDisplay extends React.Component {
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </button>
-              <span className="text-info h2 px-2">
-                {this.props.zoneslisting.name}
-              </span>
+              <span className="text-info h2 px-2">{this.props.zone.name}</span>
             </div>
             <div className="float-right">
-              <button
-                type="button"
+              <Link
                 className="btn btn-sm btn-outline-primary m-r-5"
+                title="Edit"
+                to={`/zones/edit/${this.props.zone.id}`}
               >
-                <i className="fa-fw fa fa-edit"></i>
-                Edit
-              </button>
-              <button type="button" className="btn btn-sm btn-danger">
-                <i className="fa-fw fa fa-trash"></i>
-                Delete
-              </button>
+                <i className="fa-fw fa fa-edit"></i> Edit
+              </Link>
+              <Button
+                variant="danger"
+                size="sm"
+                title="Yes"
+                onClick={() => this.deleteZoneModal(this.props.zone.id)}
+              >
+                <i className="fa-fw fa fa-trash"></i> Delete
+              </Button>
+              <Modal
+                show={this.state.showDeleteModal === this.props.zone.id}
+                onHide={this.closeZoneModal}
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header
+                  closeButton
+                >{`Are you sure you want to delete ?`}</Modal.Header>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={this.closeZoneModal}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      this.props.deleteZone(this.props.zone.id);
+                    }}
+                  >
+                    OK
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </div>
           </div>
           <br />
-          <span className="h6">{this.props.zoneslisting.name}</span>
+          <span className="h6">{this.props.zone.description}</span>
           <br />
           <div>
             <Accordion defaultActiveKey="0">
@@ -78,11 +132,8 @@ export class ZoneDisplay extends React.Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="0"
-                    style={{
-                      background: "#f7f7f7",
-                      border: "none",
-                    }}
                     onClick={this.showMoreLess}
+                    className="border-bottom-0"
                   >
                     Zone Administrations
                     {this.state.show ? (
@@ -100,15 +151,13 @@ export class ZoneDisplay extends React.Component {
                           Admin Users
                         </Form.Label>
                         <Col sm="15">
-                          {this.props.zoneslisting.adminUsers.map((obj) => {
+                          {this.props.zone.adminUsers.map((obj, index) => {
                             return (
-                              <Badge
-                                key={obj.id}
-                                variant="info"
-                                className="usersbadge"
-                              >
-                                {obj}
-                              </Badge>
+                              <h6 key={index}>
+                                <Badge variant="info" className="usersbadge">
+                                  {obj}
+                                </Badge>
+                              </h6>
                             );
                           })}
                         </Col>
@@ -118,19 +167,18 @@ export class ZoneDisplay extends React.Component {
                           Admin Usergroups
                         </Form.Label>
                         <Col sm="15">
-                          {this.props.zoneslisting.adminUserGroups.map(
-                            (obj) => {
-                              return (
+                          {this.props.zone.adminUserGroups.map((obj, index) => {
+                            return (
+                              <h6 key={index}>
                                 <Badge
-                                  key={obj.id}
                                   variant="secondary"
                                   className="usersbadge"
                                 >
                                   {obj}
                                 </Badge>
-                              );
-                            }
-                          )}
+                              </h6>
+                            );
+                          })}
                         </Col>
                       </Form.Group>
                       <Form.Group as={Row} className="mb-3">
@@ -138,15 +186,13 @@ export class ZoneDisplay extends React.Component {
                           Auditor Users
                         </Form.Label>
                         <Col sm="15">
-                          {this.props.zoneslisting.auditUsers.map((obj) => {
+                          {this.props.zone.auditUsers.map((obj, index) => {
                             return (
-                              <Badge
-                                key={obj.id}
-                                variant="info"
-                                className="usersbadge"
-                              >
-                                {obj}
-                              </Badge>
+                              <h6 key={index}>
+                                <Badge variant="info" className="usersbadge">
+                                  {obj}
+                                </Badge>
+                              </h6>
                             );
                           })}
                         </Col>
@@ -156,19 +202,18 @@ export class ZoneDisplay extends React.Component {
                           Auditor Usergroups
                         </Form.Label>
                         <Col sm="15">
-                          {this.props.zoneslisting.auditUserGroups.map(
-                            (obj) => {
-                              return (
+                          {this.props.zone.auditUserGroups.map((obj, index) => {
+                            return (
+                              <h6 key={index}>
                                 <Badge
-                                  key={obj.id}
                                   variant="secondary"
                                   className="usersbadge"
                                 >
                                   {obj}
                                 </Badge>
-                              );
-                            }
-                          )}
+                              </h6>
+                            );
+                          })}
                         </Col>
                       </Form.Group>
                     </Form>
@@ -185,11 +230,8 @@ export class ZoneDisplay extends React.Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="1"
-                    style={{
-                      background: "#f7f7f7",
-                      border: "none",
-                    }}
                     onClick={this.showMoreLess}
+                    className="border-bottom-0"
                   >
                     Zone Tag Services
                     {this.state.show ? (
@@ -201,11 +243,13 @@ export class ZoneDisplay extends React.Component {
                 </div>
                 <Accordion.Collapse eventKey="1">
                   <Card.Body>
-                    {this.props.zoneslisting.tagServices.length !== 0 ? (
-                      this.props.zoneslisting.tagServices.map((obj) => (
-                        <Badge variant="info" className="usersbadge">
-                          {obj}
-                        </Badge>
+                    {this.props.zone.tagServices.length !== 0 ? (
+                      this.props.zone.tagServices.map((obj, index) => (
+                        <h6 key={index}>
+                          <Badge variant="info" className="usersbadge">
+                            {obj}
+                          </Badge>
+                        </h6>
                       ))
                     ) : (
                       <h6 className="text-muted h6 large">
@@ -225,11 +269,8 @@ export class ZoneDisplay extends React.Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="2"
-                    style={{
-                      background: "#f7f7f7",
-                      border: "none",
-                    }}
                     onClick={this.showMoreLess}
+                    className="border-bottom-0"
                   >
                     Services
                     {this.state.show ? (
@@ -241,7 +282,6 @@ export class ZoneDisplay extends React.Component {
                 </div>
                 <Accordion.Collapse eventKey="2">
                   <Card.Body>
-                    {" "}
                     <Table striped bordered>
                       <thead>
                         <tr>
@@ -257,8 +297,8 @@ export class ZoneDisplay extends React.Component {
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.keys(this.props.zoneslisting.services).map(
-                          (key) => {
+                        {Object.keys(this.props.zone.services).map(
+                          (key, index) => {
                             let servicetype = Object.values(
                               this.state.services
                             ).find((obj) => {
@@ -266,7 +306,7 @@ export class ZoneDisplay extends React.Component {
                             });
 
                             return (
-                              <tr className="bg-white">
+                              <tr className="bg-white" key={index}>
                                 <td className="align-middle" width="20%">
                                   {key}
                                 </td>
@@ -279,20 +319,20 @@ export class ZoneDisplay extends React.Component {
                                   width="32%"
                                   height="55px"
                                 >
-                                  {this.props.zoneslisting.services[
-                                    key
-                                  ].resources.map((resource) => (
-                                    <div className="resourceGrp">
-                                      {Object.keys(resource).map(
-                                        (resourceKey) => (
-                                          <p>
-                                            <strong>{`${resourceKey} : `}</strong>
-                                            {resource[resourceKey].join(", ")}
-                                          </p>
-                                        )
-                                      )}
-                                    </div>
-                                  ))}
+                                  {this.props.zone.services[key].resources.map(
+                                    (resource, index) => (
+                                      <div className="resourceGrp" key={index}>
+                                        {Object.keys(resource).map(
+                                          (resourceKey, index) => (
+                                            <p key={index}>
+                                              <strong>{`${resourceKey} : `}</strong>
+                                              {resource[resourceKey].join(", ")}
+                                            </p>
+                                          )
+                                        )}
+                                      </div>
+                                    )
+                                  )}
                                 </td>
                               </tr>
                             );

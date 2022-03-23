@@ -97,9 +97,11 @@ export default class App extends Component {
             <section className="container-fluid">
               <div className="row mt-2">
                 <div className="col-auto mr-auto">
-                  <Breadcrumb>
-                    <Breadcrumb.Item href="#"></Breadcrumb.Item>
-                  </Breadcrumb>
+                  <div className="col-auto mr-auto">
+                    <Breadcrumb>
+                      <Breadcrumb.Item href="#"></Breadcrumb.Item>
+                    </Breadcrumb>
+                  </div>
                 </div>
                 <div className="col-auto">
                   <b>Last Response Time: </b>
@@ -172,10 +174,17 @@ export default class App extends Component {
                       exact
                       path="/zones/zone/:id"
                       component={ZoneListingComp}
+                      {...defaultProps}
                     />
                     <AuthRoute
                       exact
                       path="/zones/create"
+                      component={CreateZoneComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/zones/edit/:id"
                       component={CreateZoneComp}
                       {...defaultProps}
                     />

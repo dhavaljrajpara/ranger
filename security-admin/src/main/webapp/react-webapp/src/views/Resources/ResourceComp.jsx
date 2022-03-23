@@ -11,11 +11,17 @@ import { RangerPolicyType } from "Utils/XAEnums";
 
 const noneOptions = {
   label: "None",
-  value: "none"
+  value: "none",
 };
 
 export default function ResourceComp(props) {
-  const { serviceCompDetails, formValues, serviceDetails, policyType } = props;
+  const {
+    serviceCompDetails,
+    formValues,
+    serviceDetails,
+    policyType,
+    policyItem,
+  } = props;
   const [rsrcState, setLoader] = useState({ loader: false, resourceKey: -1 });
   let resources = serviceCompDetails.resources;
   if (RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == policyType) {
@@ -30,7 +36,7 @@ export default function ResourceComp(props) {
     if (rsrcState.loader) {
       setLoader({
         loader: false,
-        resourceKey: -1
+        resourceKey: -1,
       });
     }
   }, [rsrcState.loader]);
@@ -51,21 +57,21 @@ export default function ResourceComp(props) {
     let data = {
       resourceName,
       resources: {
-        [resourceName]: selectedValues?.map(({ value }) => value) || []
-      }
+        [resourceName]: selectedValues?.map(({ value }) => value) || [],
+      },
     };
     if (inputValue) {
       data["userInput"] = inputValue || "";
     }
     const resourceResp = await fetchApi({
-      url: `plugins/services/lookupResource/${serviceDetails.name}`,
+      url: `plugins/services/lookupResource`,
       method: "POST",
-      data
+      data,
     });
 
     return resourceResp.data.map((name) => ({
       label: name,
-      value: name
+      value: name,
     }));
   };
 
@@ -77,7 +83,7 @@ export default function ResourceComp(props) {
       const resourceKey = `resourceName-${levelKey}`;
       if (formValues && formValues[parentResourceKey]) {
         op = filter(grpResources[levelKey], {
-          parent: formValues[parentResourceKey].name
+          parent: formValues[parentResourceKey].name,
         });
         if (formValues[parentResourceKey].isValidLeaf) {
           op.push(noneOptions);
@@ -107,7 +113,7 @@ export default function ResourceComp(props) {
         let previousKey = grpResourcesKeys[index - 1];
         const parentResourceKey = `resourceName-${previousKey}`;
         let op = filter(levelOp, {
-          parent: formValues[parentResourceKey].name
+          parent: formValues[parentResourceKey].name,
         });
         if (op.length === 1 && !formValues[parentResourceKey].isValidLeaf) {
           renderLabel = true;
@@ -123,7 +129,7 @@ export default function ResourceComp(props) {
     let hasValid = false;
     if (formValues && formValues[resourceKey]) {
       hasValid = some(grpResources[levelKey], {
-        parent: formValues[resourceKey].name
+        parent: formValues[resourceKey].name,
       });
     }
     return hasValid;
@@ -138,10 +144,12 @@ export default function ResourceComp(props) {
       delete formValues[`isExcludesSupport-${levelKey}`];
       delete formValues[`isRecursiveSupport-${levelKey}`];
     }
-    removedSeletedAccess();
+    if (policyItem) {
+      removedSeletedAccess();
+    }
     setLoader({
       loader: true,
-      resourceKey: grpResourcesKeys[index]
+      resourceKey: grpResourcesKeys[index],
     });
     input.onChange(selectedVal);
   };
@@ -151,7 +159,7 @@ export default function ResourceComp(props) {
       "policyItems",
       "allowExceptions",
       "denyPolicyItems",
-      "denyExceptions"
+      "denyExceptions",
     ]) {
       for (const policyObj of formValues[name]) {
         policyObj.accesses = [];

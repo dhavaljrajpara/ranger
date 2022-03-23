@@ -676,3 +676,12 @@ header {
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+/* Zonelisting */
+
+.list-group {
+  max-height: 300px;
+  margin-bottom: 10px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+}

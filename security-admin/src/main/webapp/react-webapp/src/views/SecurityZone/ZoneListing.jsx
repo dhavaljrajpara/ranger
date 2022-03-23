@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import noZoneImage from "Images/defult_zone.png";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
-import { ZoneDisplay } from "./ZoneDisplay";
+import ZoneDisplay from "./ZoneDisplay";
 import { Loader } from "Components/CommonComponents";
 
 class ZoneListing extends Component {
@@ -35,7 +36,8 @@ class ZoneListing extends Component {
     } catch (error) {
       console.error(`Error occurred while fetching Zones! ${error}`);
     }
-    if (zoneId) {
+
+    if (zoneId !== undefined) {
       selectedZone = zoneList.find((obj) => obj.id === +zoneId) || null;
     } else {
       if (zoneList.length > 0) {
@@ -45,10 +47,11 @@ class ZoneListing extends Component {
         });
       }
     }
+
     this.setState({
+      loader: false,
       selectedZone: selectedZone,
       zones: zoneList,
-      loader: false,
       filterZone: zoneList
     });
   };
@@ -56,17 +59,50 @@ class ZoneListing extends Component {
   clickBtn = (zoneid) => {
     let selectedZone = this.state.zones.find((obj) => zoneid === obj.id);
     if (selectedZone) {
-      this.setState({ selectedZone });
+      this.setState({ selectedZone: selectedZone });
       this.props.history.replace({
         pathname: `/zones/zone/${zoneid}`
       });
     }
   };
+
   onChangeSearch = (e) => {
     let filterZone = this.state.zones.filter((obj) =>
       obj.name.includes(e.target.value)
     );
     this.setState({ searchText: e.target.value, filterZone: filterZone });
+  };
+
+  deleteZone = async (zoneId) => {
+    let getSelectedZone = [];
+
+    try {
+      await fetchApi({
+        url: `zones/zones/${zoneId}`,
+        method: "delete"
+      });
+      let availableZone = this.state.filterZone.filter(
+        (obj) => obj.id !== zoneId
+      );
+      getSelectedZone = availableZone.length > 0 ? availableZone[0] : null;
+
+      this.setState({
+        selectedZone: getSelectedZone,
+        filterZone: availableZone,
+        zones: availableZone
+      });
+
+      if (getSelectedZone && getSelectedZone !== undefined) {
+        this.props.history.replace(`/zones/zone/${getSelectedZone.id}`);
+      } else {
+        this.props.history.replace(`/zones/zone/list`);
+      }
+      toast.success("Successfully deleted the zone");
+    } catch (error) {
+      console.error(
+        `Error occurred while deleting Zone id - ${zoneId}!  ${error}`
+      );
+    }
   };
 
   render() {
@@ -82,13 +118,13 @@ class ZoneListing extends Component {
                   Security Zones
                 </h5>
               </div>
-              <div className="float-right">
-                <Link to="/zones/create" className="btn btn-secondary btn-sm">
+              <div className="float-right ">
+                <Link to="/zones/create" className="btn btn-secondary btn-sm ">
                   <i className="fa-fw fa fa-plus"></i>
                 </Link>
               </div>
             </div>
-            <div className="row">
+            <div className="row mt-3">
               <div className="col-sm-12">
                 <input
                   className="form-control"
@@ -99,12 +135,12 @@ class ZoneListing extends Component {
                 ></input>
               </div>
             </div>
-            <div className="row m-t-5">
-              <div className="col-sm-12">
+            <div className="row mt-3">
+              <div className="col-sm-12 ">
                 {this.state.filterZone.length !== 0 ? (
-                  <ul className="list-group mt-3">
+                  <ul className="list-group">
                     {this.state.filterZone.map((zone) => (
-                      <li className="list-group-item border" key={zone.id}>
+                      <li className="list-group-item border " key={zone.id}>
                         <a
                           className="text-primary"
                           onClick={() => {
@@ -118,8 +154,8 @@ class ZoneListing extends Component {
                   </ul>
                 ) : (
                   <ul className="p-4">
-                    <li className="list-unstyled text-auto">
-                      <h4 className="text-muted  large">No Zone Found!</h4>
+                    <li className="list-unstyled text-auto" key="no-zone">
+                      <h5 className="text-muted large">No Zone Found!</h5>
                     </li>
                   </ul>
                 )}
@@ -144,7 +180,11 @@ class ZoneListing extends Component {
                 </div>
               </div>
             ) : (
-              <ZoneDisplay zoneslisting={this.state.selectedZone} />
+              <ZoneDisplay
+                history={this.props.history}
+                zone={this.state.selectedZone}
+                deleteZone={this.deleteZone}
+              />
             )}
             <div></div>
           </div>

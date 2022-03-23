@@ -9,17 +9,22 @@ export default function ModalResourceComp(props) {
   const {
     serviceDetails,
     serviceCompDetails,
-    formValues,
     modelState,
-    handleClose
+    handleClose,
+    handleSave,
   } = props;
 
-  const saveResourceVal = () => {
-    input.onChange({});
+  const saveResourceVal = (values) => {
+    modelState.data = values;
+    handleSave();
   };
 
+  if (!modelState.data) {
+    return null;
+  }
+
   return (
-    <div>
+    <>
       <Modal
         show={modelState.showModalResource}
         onHide={handleClose}
@@ -27,29 +32,46 @@ export default function ModalResourceComp(props) {
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
-        <Modal.Header>
-          <Modal.Title>Resource Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="wrap">
-            <ResourceComp
-              serviceDetails={serviceDetails}
-              serviceCompDetails={serviceCompDetails}
-              formValues={formValues}
-              policyType={0}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>{" "}
-          &nbsp;&nbsp;
-          <Button type="submit" title="Save" onClick={saveResourceVal}>
-            Save
-          </Button>
-        </Modal.Footer>
+        <Form
+          onSubmit={saveResourceVal}
+          initialValues={modelState.data}
+          render={({ handleSubmit, form, submitting, pristine, values }) => (
+            <form onSubmit={handleSubmit}>
+              <Modal.Header>
+                <Modal.Title>Resource Details</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Field name="resources">
+                  {(input) => (
+                    <div className="wrap">
+                      <ResourceComp
+                        {...input}
+                        serviceDetails={serviceDetails}
+                        serviceCompDetails={serviceCompDetails}
+                        formValues={values}
+                        policyType={0}
+                      />
+                    </div>
+                  )}
+                </Field>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button
+                  variant="secondary"
+                  disabled={submitting || pristine}
+                  onClick={handleClose}
+                >
+                  Close
+                </Button>
+
+                <Button title="Save" type="submit">
+                  Save
+                </Button>
+              </Modal.Footer>
+            </form>
+          )}
+        />
       </Modal>
-    </div>
+    </>
   );
 }
