@@ -352,11 +352,14 @@ a {
   font-size: 13px;
 }
 
-.More {
+.show-more-less {
   color: #0b7fad;
+  font-size: 12px;
+  cursor: pointer;
 }
-.Less {
-  color: #0b7fad;
+
+.show-more-less:hover {
+  text-decoration: underline;
 }
 
 /*Security Zone*/

@@ -60,7 +60,9 @@ function Permissions() {
 
           return (
             <>
-              <MoreLess data={Groups} />
+              <h6>
+                <MoreLess data={Groups} />
+              </h6>
             </>
           );
         },
@@ -74,7 +76,9 @@ function Permissions() {
 
           return (
             <>
-              <MoreLess data={Users} />
+              <h6>
+                <MoreLess data={Users} />
+              </h6>
             </>
           );
         },
@@ -84,15 +88,15 @@ function Permissions() {
         accessor: "action",
         Cell: (rawValue) => {
           return (
-            <Link
-              className="permissions"
-              title="Edit"
-              to={`permissions/${rawValue.row.original.id}/edit`}
-            >
-              <button className="permissionbtn">
+            <div className="text-center">
+              <Link
+                className="btn btn-outline-dark btn-sm m-r-5"
+                title="Edit"
+                to={`permissions/${rawValue.row.original.id}/edit`}
+              >
                 <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
-              </button>
-            </Link>
+              </Link>
+            </div>
           );
         },
       },
@@ -104,7 +108,7 @@ function Permissions() {
     <Loader />
   ) : (
     <div>
-      <h1>Permissions</h1>
+      <h3 className="wrap-header bold">Permissions</h3>
 
       <div className="wrap">
         <XATableLayout

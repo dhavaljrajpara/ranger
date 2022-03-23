@@ -23,6 +23,7 @@ function reducer(state, action) {
       return {
         ...state,
         loader: false,
+        permissionData: action.data,
         selectedGrp: action.grpData,
         selectedUsr: action.usrData,
       };
@@ -40,7 +41,7 @@ function reducer(state, action) {
       throw new Error();
   }
 }
-const EditPermission = () => {
+const EditPermission = (props) => {
   let { permissionId } = useParams();
   const history = useHistory();
   const [permissionState, dispatch] = useReducer(reducer, initialState);
@@ -214,7 +215,8 @@ const EditPermission = () => {
     <Loader />
   ) : (
     <div>
-      <h4>Edit Permission</h4>
+      <h3 className="wrap-header bold">Edit Permission</h3>
+
       <div className="wrap non-collapsible">
         <Form
           id="myform2"
@@ -402,18 +404,26 @@ const EditPermission = () => {
 
               <br />
               <hr />
-              <div className="buttons">
+              <div className="text-center">
                 <Button
+                  className="mr-2"
                   type="submit"
                   variant="primary"
-                  className="savebtn"
+                  size="sm"
                   type="submit"
                   disabled={submitting}
                 >
                   Save
                 </Button>
-                <Button variant="secondary" className="cancelbtn">
-                  <Link to={`/permissions`}> Cancel </Link>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  onClick={() => {
+                    props.history.push(`/permissions`);
+                  }}
+                >
+                  Cancel
                 </Button>
               </div>
             </form>

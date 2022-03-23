@@ -47,7 +47,7 @@ export class MoreLess extends Component {
     super(props);
     this.state = {
       data: props.data.length > 4 ? props.data.slice(0, 4) : props.data,
-      show: true
+      show: true,
     };
   }
 
@@ -60,19 +60,19 @@ export class MoreLess extends Component {
   render() {
     return (
       <div>
-        {this.state.data.map((name) => {
+        {this.state.data.map((key, index) => {
           return (
             <Badge variant="info" className="m-1">
-              {name}
+              {key}
             </Badge>
           );
         })}
         <a onClick={this.handleShowMoreClick}>
           {this.props.data.length > 4 ? (
             this.state.show ? (
-              <a className="More"> + More..</a>
+              <code className="show-more-less"> + More..</code>
             ) : (
-              <a className="Less"> - Less..</a>
+              <code className="show-more-less"> - Less..</code>
             )
           ) : null}
         </a>
