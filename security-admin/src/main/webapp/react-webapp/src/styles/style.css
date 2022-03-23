@@ -588,6 +588,7 @@ header {
 
 .invalid-field {
   color: #dc3545;
+  font-size: 12px;
 }
 
 /* Security Zone Service Table Resorces */

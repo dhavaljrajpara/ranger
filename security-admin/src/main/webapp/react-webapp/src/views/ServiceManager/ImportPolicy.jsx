@@ -5,7 +5,7 @@ import { Alert, Button, Col, Modal, Row } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
 import { toast } from "react-toastify";
-import { find, has, groupBy, map, toString, uniq } from "lodash";
+import { find, has, groupBy, map, isNull, toString, uniq } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
 class ImportPolicy extends Component {
@@ -19,7 +19,9 @@ class ImportPolicy extends Component {
       destServices: null,
       sourceZoneName: "",
       destZoneName: "",
-      initialFormFields: {},
+      initialFormFields: {
+        isOverride: false
+      },
       filterFormFields: {}
     };
   }
@@ -84,7 +86,6 @@ class ImportPolicy extends Component {
       const formFields = {};
       formFields["serviceFields"] = serviceFieldsFromJson;
       formFields["sourceZoneName"] = zoneNameJsonParseFile;
-      formFields["isOverride"] = false;
 
       this.setState({
         fileJsonData: jsonParseFileData,
@@ -101,6 +102,7 @@ class ImportPolicy extends Component {
     let serviceTypeList;
     let servicesMapJson = {};
     let zoneMapJson = {};
+    let importData = new FormData();
 
     _.map(values.serviceFields, function (field) {
       return (
@@ -112,7 +114,6 @@ class ImportPolicy extends Component {
 
     zoneMapJson[values.sourceZoneName] = this.state.destZoneName;
 
-    let importData = new FormData();
     importData.append("file", this.state.file);
     importData.append(
       "servicesMapJson",
@@ -210,9 +211,46 @@ class ImportPolicy extends Component {
     }
   };
 
-  SelectField = ({ input, ...rest }) => (
-    <Select {...input} {...rest} searchable />
-  );
+  getSourceServiceOptions = () => {
+    return Object.keys(this.state.sourceServicesMap).map((obj) => ({
+      value: obj,
+      label: obj
+    }));
+  };
+
+  getDestServiceOptions = () => {
+    return this.state.destServices.map((service) => ({
+      value: service.name,
+      label: service.name
+    }));
+  };
+
+  Theme = (theme) => {
+    return {
+      ...theme,
+      colors: {
+        ...theme.colors,
+        text: "#444444",
+        primary25: "#0b7fad;",
+        primary: "#0b7fad;"
+      }
+    };
+  };
+
+  requiredField = (value) =>
+    value ? undefined : "Please select/enter service name";
+
+  requiredFieldArray = (value) => {
+    let errorMsg = "Required";
+
+    if (value && value.length > 0) {
+      value.map((v) => {
+        return v.sourceServiceName !== v.destServiceName
+          ? "Source service name should not be same."
+          : "";
+      });
+    }
+  };
 
   render() {
     return (
@@ -226,6 +264,7 @@ class ImportPolicy extends Component {
             initialValues={this.state.filterFormFields}
             render={({
               handleSubmit,
+              submitting,
               values,
               form: {
                 mutators: { push: addItem, pop: removeItem }
@@ -268,6 +307,19 @@ class ImportPolicy extends Component {
                             </div>
                           </div>
                         </div>
+                      </Col>
+                      <Col sm={12}>
+                        {this.state.fileName && (
+                          <span>
+                            {this.state.fileName}
+                            <label
+                              className="fa fa-fw fa-remove fa-remove-btn"
+                              onClick={() => {
+                                this.removeFile();
+                              }}
+                            ></label>
+                          </span>
+                        )}
                       </Col>
                     </Row>
                     {this.state.fileJsonData && (
@@ -327,7 +379,7 @@ class ImportPolicy extends Component {
                                   label: zone.name
                                 };
                               })}
-                              placeholder="No Zone Selected"
+                              placeholder="No zone selected"
                             />
                           </Col>
                         </Row>
@@ -347,39 +399,61 @@ class ImportPolicy extends Component {
                             <div className="col text-center">Destination</div>
                           </Col>
                         </Row>
-                        <FieldArray name="serviceFields">
+                        <FieldArray
+                          name="serviceFields"
+                          validate={this.requiredFieldArray}
+                        >
                           {({ fields }) =>
                             fields.map((name, index) => (
                               <Row className="mt-2" key={name}>
                                 <Col sm={4}>
                                   <Field
-                                    isClearable
                                     name={`${name}.sourceServiceName`}
-                                    component={this.SelectField}
-                                    options={Object.keys(
-                                      this.state.sourceServicesMap
-                                    ).map((obj) => {
-                                      return { value: obj, label: obj };
-                                    })}
-                                    placeholder="No Service Selected"
-                                  />
+                                    validate={this.requiredField}
+                                  >
+                                    {({ input, meta }) => (
+                                      <React.Fragment>
+                                        <Select
+                                          {...input}
+                                          searchable
+                                          isClearable
+                                          options={this.getSourceServiceOptions()}
+                                          menuPlacement="auto"
+                                          placeholder="Enter service name"
+                                        />
+                                        {meta.error && meta.touched && (
+                                          <span className="invalid-field">
+                                            {meta.error}
+                                          </span>
+                                        )}
+                                      </React.Fragment>
+                                    )}
+                                  </Field>
                                 </Col>
                                 <Col sm={1}>To</Col>
                                 <Col sm={4}>
                                   <Field
-                                    isClearable
                                     name={`${name}.destServiceName`}
-                                    component={this.SelectField}
-                                    options={this.state.destServices.map(
-                                      (service) => {
-                                        return {
-                                          value: service.name,
-                                          label: service.name
-                                        };
-                                      }
+                                    validate={this.requiredField}
+                                  >
+                                    {({ input, meta }) => (
+                                      <React.Fragment>
+                                        <Select
+                                          {...input}
+                                          searchable
+                                          isClearable
+                                          options={this.getDestServiceOptions()}
+                                          menuPlacement="auto"
+                                          placeholder="Select service name"
+                                        />
+                                        {meta.error && meta.touched && (
+                                          <span className="invalid-field">
+                                            {meta.error}
+                                          </span>
+                                        )}
+                                      </React.Fragment>
                                     )}
-                                    placeholder="No Service Selected"
-                                  />
+                                  </Field>
                                 </Col>
                                 <Col sm={1}>
                                   <Button
@@ -399,7 +473,7 @@ class ImportPolicy extends Component {
                         <Row className="mt-3">
                           <Col sm={2}>
                             <Button
-                              variant="outline-secondary"
+                              variant="outline-dark"
                               size="sm"
                               onClick={() =>
                                 addItem("serviceFields", undefined)
@@ -417,7 +491,11 @@ class ImportPolicy extends Component {
                   <Button variant="secondary" onClick={this.props.onHide}>
                     Cancel
                   </Button>
-                  <Button variant="primary" type="submit">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={_.isNull(this.state.fileName)}
+                  >
                     Import
                   </Button>
                 </Modal.Footer>

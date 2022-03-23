@@ -256,7 +256,7 @@ export default function ServiceAuditFilter(props) {
       </Table>
 
       <Button
-        variant="outline-secondary"
+        variant="outline-dark"
         size="sm"
         type="button"
         onClick={() => addAuditFilter("auditFilters", undefined)}

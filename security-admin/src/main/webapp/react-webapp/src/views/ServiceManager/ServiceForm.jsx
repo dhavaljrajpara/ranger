@@ -684,7 +684,7 @@ class ServiceForm extends Component {
                         <div className="form-group row">
                           <div className="col-sm-4 offset-sm-3">
                             <Button
-                              variant="outline-secondary"
+                              variant="outline-dark"
                               size="sm"
                               onClick={() =>
                                 addItem("customConfigs", undefined)
@@ -716,9 +716,9 @@ class ServiceForm extends Component {
                             />
                           </div>
                         </div>
-                        <div className="form-group row mt-2">
+                        <div className="form-group row mt-2 text-right">
                           <div className="col-sm-3 col-form-label">
-                            <Button variant="outline-dark">
+                            <Button variant="outline-dark" size="sm">
                               Test Connection
                             </Button>
                           </div>
@@ -741,8 +741,13 @@ class ServiceForm extends Component {
                           variant="secondary"
                           type="button"
                           size="sm"
-                          onClick={form.reset}
-                          disabled={submitting || pristine}
+                          onClick={() =>
+                            this.props.history.push(
+                              this.state.serviceDef.name === "tag"
+                                ? "/policymanager/tag"
+                                : "/policymanager/resource"
+                            )
+                          }
                         >
                           Cancel
                         </Button>

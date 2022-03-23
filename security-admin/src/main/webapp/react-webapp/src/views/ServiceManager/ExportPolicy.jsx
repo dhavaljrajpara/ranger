@@ -32,6 +32,7 @@ class ExportPolicy extends Component {
       ...theme,
       colors: {
         ...theme.colors,
+        text: "#444444",
         primary25: "#0b7fad;",
         primary: "#0b7fad;"
       }
@@ -142,6 +143,7 @@ class ExportPolicy extends Component {
                   theme={this.Theme}
                   options={this.serviceDefOptions}
                   defaultValue={this.serviceDefOptions}
+                  menuPlacement="auto"
                   placeholder="Select Service Type"
                 />
               </div>
@@ -163,6 +165,7 @@ class ExportPolicy extends Component {
                 options={serviceOptions}
                 defaultValue={this.serviceOptions}
                 value={selectedServices}
+                menuPlacement="auto"
                 placeholder="Select Service Name"
               />
             </div>

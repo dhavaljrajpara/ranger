@@ -52,17 +52,6 @@ class ServiceDefinition extends Component {
     this.setState({ showView: null });
   };
 
-  Theme = (theme) => {
-    return {
-      ...theme,
-      colors: {
-        ...theme.colors,
-        primary25: "#0b7fad;",
-        primary: "#0b7fad;"
-      }
-    };
-  };
-
   getServiceConfigs = (serviceDef, serviceConfigs) => {
     let tableRow = [];
     let configs = {};

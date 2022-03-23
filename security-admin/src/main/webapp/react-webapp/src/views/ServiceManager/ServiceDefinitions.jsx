@@ -214,6 +214,7 @@ class ServiceDefinitions extends Component {
       ...theme,
       colors: {
         ...theme.colors,
+        text: "#444444",
         primary25: "#0b7fad;",
         primary: "#0b7fad;"
       }
@@ -243,7 +244,7 @@ class ServiceDefinitions extends Component {
             <Select
               isDisabled={isDisabled}
               onChange={this.getSelectedZone}
-              isClearable={true}
+              isClearable
               components={{
                 IndicatorSeparator: () => null
               }}
@@ -254,7 +255,7 @@ class ServiceDefinitions extends Component {
                   label: zone.name
                 };
               })}
-              name="colors"
+              menuPlacement="auto"
               placeholder="Select Zone Name"
             />
           </Col>
