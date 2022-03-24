@@ -3,29 +3,72 @@ import { Button } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { FieldError } from "Components/CommonComponents";
 import AsyncSelect from "react-select/async";
+import Select from "react-select";
 import { fetchApi } from "Utils/fetchAPI";
 import { ActivationStatus } from "Utils/XAEnums";
+import { toast } from "react-toastify";
+import { getUserAccessRoleList } from "Utils/XAUtils";
+import { UserRoles, UserSource } from "Utils/XAEnums";
+import { getUserProfile } from "Utils/appState";
 
 class UserFormComp extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
   handleSubmit = async (formData) => {
-    console.log(formData);
-    const userFormData = { ...formData };
-    userFormData.groupIdList = userFormData.groupIdList.map(
-      (obj) => obj.value + ""
-    );
+    let userFormData = { ...formData };
+    let userRoleListVal = [];
+    if (userFormData.groupIdList) {
+      userFormData.groupIdList = userFormData.groupIdList.map(
+        (obj) => obj.value + ""
+      );
+    }
+    if (userFormData.userRoleList) {
+      userRoleListVal.push(userFormData.userRoleList.value);
+      userFormData.userRoleList = userRoleListVal;
+    }
     delete userFormData.passwordConfirm;
     userFormData.status = ActivationStatus.ACT_STATUS_ACTIVE.value;
-    try {
-      const { fetchApi } = await import("Utils/fetchAPI");
-      const passwdResp = await fetchApi({
-        url: "xusers/secure/users",
-        method: "post",
-        data: userFormData
-      });
-      this.props.history.push("/users/usertab");
-    } catch (error) {
-      console.error(`Error occurred while creating user`);
+    if (this.props && this.props.isEditView) {
+      userFormData = {
+        ...this.state.userInfo,
+        ...userFormData
+      };
+      delete userFormData.password;
     }
+    if (this.props && this.props.isEditView) {
+      try {
+        const { fetchApi } = await import("Utils/fetchAPI");
+        const userEdit = await fetchApi({
+          url: `xusers/secure/users/${this.state.userInfo.id}`,
+          method: "put",
+          data: userFormData
+        });
+        toast.success("User updated successfully!!");
+        self.location.hash = "#/users/usertab";
+      } catch (error) {
+        console.error(`Error occurred while creating user`);
+        toast.error(error.msgDesc);
+      }
+    } else {
+      try {
+        const { fetchApi } = await import("Utils/fetchAPI");
+        const userCreate = await fetchApi({
+          url: "xusers/secure/users",
+          method: "post",
+          data: userFormData
+        });
+        toast.success("User created successfully!!");
+        self.location.hash = "#/users/usertab";
+      } catch (error) {
+        console.error(`Error occurred while creating user`);
+        toast.error(error.msgDesc);
+      }
+    }
+  };
+  closeForm = () => {
+    self.location.hash = "#/users/usertab";
   };
   groupNameList = ({ input, ...rest }) => {
     const loadOptions = async (inputValue, callback) => {
@@ -56,9 +99,45 @@ class UserFormComp extends Component {
         loadOptions={loadOptions}
         defaultOptions
         isMulti
-        // onInputChange={this.handleInputChange}
+        isDisabled={
+          this.props.isEditView &&
+          this.state &&
+          this.state.userInfo &&
+          this.state.userInfo.userSource == UserSource.XA_USER.value
+            ? true
+            : false
+        }
       />
     );
+  };
+  disabledUserRoleField = () => {
+    const userProps = getUserProfile();
+    let disabledUserRolefield;
+    if (this.props.isEditView && this.state && this.state.userInfo) {
+      if (this.state.userInfo.userSource == UserSource.XA_USER.value) {
+        disabledUserRolefield = true;
+      }
+      if (userProps.loginId != "admin") {
+        if (this.state.userInfo.name != "admin") {
+          if (
+            userProps.userRoleList[0] == "ROLE_SYS_ADMIN" ||
+            userProps.userRoleList[0] == "ROLE_KEY_ADMIN"
+          ) {
+            disabledUserRolefield = false;
+          } else {
+            disabledUserRolefield = true;
+          }
+        } else {
+          disabledUserRolefield = true;
+        }
+      } else {
+        disabledUserRolefield = false;
+      }
+      if (this.state.userInfo.name == userProps.loginId) {
+        disabledUserRolefield = true;
+      }
+    }
+    return disabledUserRolefield;
   };
   fetchUserData = async (userID) => {
     let userRespData;
@@ -77,6 +156,10 @@ class UserFormComp extends Component {
     });
   };
 
+  userRoleListData = () => {
+    return getUserAccessRoleList();
+  };
+
   componentDidMount = () => {
     if (this.props.isEditView) {
       this.fetchUserData(this.props.userID);
@@ -91,13 +174,48 @@ class UserFormComp extends Component {
     }
   };
 
+  setUserFormData = () => {
+    let formValueObj = {};
+    console.log(this.state);
+    if (this.props.isEditView && this.state && this.state.userInfo) {
+      formValueObj.name = this.state.userInfo.name;
+      formValueObj.firstName = this.state.userInfo.firstName;
+      formValueObj.lastName = this.state.userInfo.lastName;
+      formValueObj.emailAddress = this.state.userInfo.emailAddress;
+      formValueObj.firstName = this.state.userInfo.firstName;
+    }
+    if (this.state && this.state.userInfo && this.state.userInfo.userRoleList) {
+      formValueObj.userRoleList = {
+        label: UserRoles[this.state.userInfo.userRoleList[0]].label,
+        value: this.state.userInfo.userRoleList[0]
+      };
+      console.log(this.groupNameList);
+    } else {
+      formValueObj.userRoleList = this.userRoleListData()[0];
+    }
+    if (
+      this.state &&
+      this.state.userInfo &&
+      this.state.userInfo.groupIdList &&
+      this.state.userInfo.groupNameList
+    ) {
+      formValueObj.groupIdList = this.state.userInfo.groupNameList.map(
+        (val, index) => {
+          return { label: val, value: this.state.userInfo.groupIdList[index] };
+        }
+      );
+    }
+
+    return formValueObj;
+  };
+
   render() {
     return (
-      <div>
+      <>
         <h4 className="wrap-header bold">User Form</h4>
         <Form
           onSubmit={this.handleSubmit}
-          initialValues={this.userData()}
+          initialValues={(this.userData(), this.setUserFormData())}
           render={({ handleSubmit, form, submitting, values, pristine }) => (
             <div className="wrap">
               <form onSubmit={handleSubmit}>
@@ -109,6 +227,7 @@ class UserFormComp extends Component {
                       component="input"
                       placeholder="User Name"
                       className="form-control"
+                      disabled={this.props.isEditView ? true : false}
                     />
                   </div>
                   <FieldError name="name" />
@@ -157,6 +276,15 @@ class UserFormComp extends Component {
                       component="input"
                       placeholder="First Name"
                       className="form-control"
+                      disabled={
+                        this.props.isEditView &&
+                        this.state &&
+                        this.state.userInfo &&
+                        this.state.userInfo.userSource ==
+                          UserSource.XA_USER.value
+                          ? true
+                          : false
+                      }
                     />
                   </div>
                   <FieldError name="firstName" />
@@ -169,6 +297,15 @@ class UserFormComp extends Component {
                       component="input"
                       placeholder="Last Name"
                       className="form-control"
+                      disabled={
+                        this.props.isEditView &&
+                        this.state &&
+                        this.state.userInfo &&
+                        this.state.userInfo.userSource ==
+                          UserSource.XA_USER.value
+                          ? true
+                          : false
+                      }
                     />
                   </div>
                   <FieldError name="lastName" />
@@ -184,6 +321,15 @@ class UserFormComp extends Component {
                       component="input"
                       placeholder="Email Address"
                       className="form-control"
+                      disabled={
+                        this.props.isEditView &&
+                        this.state &&
+                        this.state.userInfo &&
+                        this.state.userInfo.userSource ==
+                          UserSource.XA_USER.value
+                          ? true
+                          : false
+                      }
                     />
                   </div>
                   <FieldError name="emailAddress" />
@@ -195,13 +341,15 @@ class UserFormComp extends Component {
                   <div className="col-sm-6">
                     <Field
                       name="userRoleList"
-                      component="select"
                       className="form-control"
-                    >
-                      <option value="ROLE_SYS_ADMIN">Admin</option>
-                      <option value="ROLE_USER">User</option>
-                      <option value="ROLE_ADMIN_AUDITOR">Auditor</option>
-                    </Field>
+                      render={({ input }) => (
+                        <Select
+                          {...input}
+                          options={this.userRoleListData()}
+                          isDisabled={this.disabledUserRoleField()}
+                        ></Select>
+                      )}
+                    ></Field>
                   </div>
                 </div>
                 <div className="form-group row">
@@ -226,7 +374,10 @@ class UserFormComp extends Component {
                     <Button
                       variant="secondary"
                       type="button"
-                      onClick={form.reset}
+                      onClick={() => {
+                        form.reset;
+                        this.closeForm();
+                      }}
                       disabled={submitting || pristine}
                     >
                       Cancel
@@ -237,7 +388,7 @@ class UserFormComp extends Component {
             </div>
           )}
         />
-      </div>
+      </>
     );
   }
 }

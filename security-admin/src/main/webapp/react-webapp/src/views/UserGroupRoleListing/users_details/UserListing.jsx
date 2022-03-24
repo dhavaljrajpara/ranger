@@ -3,10 +3,12 @@ import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 
 import XATableLayout from "Components/XATableLayout";
-import { UserRoles } from "Utils/XAEnums";
-import { UserSource } from "Utils/XAEnums";
-import { UserTypes } from "Utils/XAEnums";
-import { VisibilityStatus } from "Utils/XAEnums";
+import {
+  UserRoles,
+  UserSource,
+  UserTypes,
+  VisibilityStatus
+} from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
 
@@ -209,7 +211,10 @@ function Users() {
     []
   );
   const addUser = () => {
-    history.push("/user/create");
+    history.push({
+      pathname: "/user/create",
+      state: history
+    });
   };
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);
@@ -220,13 +225,25 @@ function Users() {
   return loader ? (
     <Loader />
   ) : (
-    <div>
+    <>
       <h1>User List</h1>
       <Row className="mb-4">
         <Col md={9}></Col>
-        <Col md={3}>
+        <Col md={1}>
           <Button onClick={addUser}>Add User</Button>
-          <Button onClick={handleDeleteBtnClick}>Delete User</Button>
+        </Col>
+        <Col md={1}>
+          <Button onClick={addUser}>Set Visibility</Button>
+        </Col>
+        <Col md={1}>
+          <Button
+            variant="danger"
+            size="sm"
+            title="Delete"
+            onClick={handleDeleteBtnClick}
+          >
+            <i className="fa-fw fa fa-trash"></i>
+          </Button>
         </Col>
       </Row>
       <div>
@@ -249,7 +266,7 @@ function Users() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </>
   );
 }
 

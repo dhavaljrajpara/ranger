@@ -1,33 +1,30 @@
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { UserRoles } from "Utils/XAEnums";
+import { filter } from "lodash";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
-  const currentUserRoles = userProfile.userRoleList;
-  currentUserRoles = userProfile.userRoleList;
+  const currentUserRoles = userProfile.userRoleList[0];
   if (!currentUserRoles && currentUserRoles == "") {
     return false;
-  }
-  if (currentUserRoles.constructor != Array) {
-    currentUserRoles = [currentUserRoles];
   }
   return currentUserRoles.indexOf(role) > -1;
 };
 
 export const isSystemAdmin = () => {
-  return this.LoginUser("ROLE_SYS_ADMIN") ? true : false;
+  return LoginUser("ROLE_SYS_ADMIN") ? true : false;
 };
 export const isKeyAdmin = () => {
-  return this.LoginUser("ROLE_KEY_ADMIN") ? true : false;
+  return LoginUser("ROLE_KEY_ADMIN") ? true : false;
 };
 export const isUser = () => {
-  return this.LoginUser("ROLE_USER") ? true : false;
+  return LoginUser("ROLE_USER") ? true : false;
 };
 export const isAuditor = () => {
-  return this.LoginUser("ROLE_ADMIN_AUDITOR") ? true : false;
+  return LoginUser("ROLE_ADMIN_AUDITOR") ? true : false;
 };
 export const isKMSAuditor = () => {
-  return this.LoginUser("ROLE_KEY_ADMIN_AUDITOR") ? true : false;
+  return LoginUser("ROLE_KEY_ADMIN_AUDITOR") ? true : false;
 };
 export const isRenderMasking = (dataMaskDef) => {
   return dataMaskDef &&
@@ -46,34 +43,34 @@ export const isRenderRowFilter = (rowFilterDef) => {
 
 export const getUserAccessRoleList = () => {
   var userRoleList = [];
-  _.each(UserRoles, function (val, key) {
+  filter(UserRoles, function (val, key) {
     if (
-      this.isKeyAdmin() &&
+      isKeyAdmin() &&
       UserRoles.ROLE_SYS_ADMIN.value != val.value &&
       UserRoles.ROLE_ADMIN_AUDITOR.value != val.value
     ) {
-      userRoleList.push(key);
+      userRoleList.push({ value: key, label: val.label });
     } else if (
-      this.isSystemAdmin() &&
+      isSystemAdmin() &&
       UserRoles.ROLE_KEY_ADMIN.value != val.value &&
       UserRoles.ROLE_KEY_ADMIN_AUDITOR.value != val.value
     ) {
-      userRoleList.push(key);
-    } else if (this.isUser() && UserRoles.ROLE_USER.value == val.value) {
-      userRoleList.push(key);
+      userRoleList.push({ value: key, label: val.label });
+    } else if (isUser() && UserRoles.ROLE_USER.value == val.value) {
+      userRoleList.push({ value: key, label: val.label });
     } else if (
-      this.isAuditor() &&
+      isAuditor() &&
       UserRoles.ROLE_KEY_ADMIN.value != val.value &&
       UserRoles.ROLE_KEY_ADMIN_AUDITOR.value != val.value
     ) {
-      userRoleList.push(key);
+      userRoleList.push({ value: key, label: val.label });
     } else if (
-      this.isKMSAuditor() &&
+      isKMSAuditor() &&
       UserRoles.ROLE_SYS_ADMIN.value != val.value &&
       UserRoles.ROLE_ADMIN_AUDITOR.value != val.value
     ) {
-      userRoleList.push(key);
+      userRoleList.push({ value: key, label: val.label });
     }
   });
-  return { userRoleList: userRoleList };
+  return userRoleList;
 };

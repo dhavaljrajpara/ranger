@@ -32,7 +32,9 @@ class GroupForm extends Component {
             <div className="wrap">
               <form onSubmit={handleSubmit}>
                 <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">User Name *</label>
+                  <label className="col-sm-2 col-form-label">
+                    Group Name *
+                  </label>
                   <div className="col-sm-6">
                     <Field
                       name="name"

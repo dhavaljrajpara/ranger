@@ -196,12 +196,6 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/bigData"
-                      component={AuditLayout}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
                       path="/user/create"
                       component={UserForm}
                       {...defaultProps}
@@ -214,8 +208,20 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
+                      path="/users/grouptab"
+                      component={UserListingComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
                       path="/groupCreate"
                       component={GroupForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/users/roletab"
+                      component={UserListingComp}
                       {...defaultProps}
                     />
                     <AuthRoute

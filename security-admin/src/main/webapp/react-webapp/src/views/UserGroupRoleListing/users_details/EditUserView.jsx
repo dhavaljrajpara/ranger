@@ -55,8 +55,7 @@ class AddUserView extends Component {
   render() {
     const userProps = getUserProfile();
     return (
-      <div>
-        <h4 className="wrap-header bold">User Profile</h4>
+      <>
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">
             <Nav variant="tabs">
@@ -150,7 +149,7 @@ class AddUserView extends Component {
             </div>
           </Tab.Container>
         </div>
-      </div>
+      </>
     );
   }
 }
