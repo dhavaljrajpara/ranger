@@ -315,6 +315,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const validitynewVal = validityschedules.map((obj) => obj.newValue);
   const validityoldVal = validityschedules.map((obj) => obj.previousValue);
   const exportJson = reportdata.filter((obj) => obj.action == "EXPORT JSON");
+  const importJson = reportdata.filter((obj) => obj.action == "IMPORT END");
 
   const rowmask = reportdata.filter(
     (obj) => obj.attributeName == "Row level filter Policy Items"
@@ -2374,20 +2375,18 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <div>
             <h5 className="bold wrap-header m-t-sm">Details:</h5>
             <Table className="table table-striped table-bordered w-50">
-              {reportdata.map((c) => {
-                return JSON.parse(c.previousValue).map((s) => {
-                  return (
-                    <tbody>
-                      <tr>
-                        <td className="table-warning">{s}</td>
-                        <td className="table-warning">
-                          {JSON.parse(c.previousValue)[s]}
-                        </td>
-                      </tr>
-                    </tbody>
-                  );
-                });
-              })}
+              {importJson.map((c) =>
+                Object.keys(JSON.parse(c.previousValue)).map((s, index) => (
+                  <tbody key={index}>
+                    <tr>
+                      <td className="table-warning">{s}</td>
+                      <td className="table-warning">
+                        {JSON.parse(c.previousValue)[s]}
+                      </td>
+                    </tr>
+                  </tbody>
+                ))
+              )}
             </Table>
           </div>
         )}
