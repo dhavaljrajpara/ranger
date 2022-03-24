@@ -116,14 +116,15 @@ function Roles() {
     <Loader />
   ) : (
     <div>
-      <h1>Role List</h1>
+      <h4 className="wrap-header font-weight-bold">Role List</h4>
       <Row className="mb-4">
-        <Col md={9}></Col>
-        <Col md={2}>
-          <Button onClick={addRole}>Add Role</Button>
-        </Col>
-        <Col md={1}>
+        <Col md={7}></Col>
+        <Col md={5} className="text-right">
+          <Button variant="primary" size="sm" onClick={addRole}>
+            Add Role
+          </Button>
           <Button
+            className="ml-2"
             variant="danger"
             size="sm"
             title="Delete"

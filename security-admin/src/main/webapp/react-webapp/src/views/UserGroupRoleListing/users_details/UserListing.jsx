@@ -143,7 +143,7 @@ function Users() {
             else
               return (
                 <h6>
-                  <Badge className="externalbadge">
+                  <Badge variant="warning">
                     {UserTypes.USER_EXTERNAL.label}{" "}
                   </Badge>
                 </h6>
@@ -210,6 +210,7 @@ function Users() {
           if (rawValue.value) {
             return (
               <button
+                className="btn btn-outline-dark btn-sm"
                 data-id="syncDetailes"
                 data-for="users"
                 title="Sync Details"
@@ -242,24 +243,26 @@ function Users() {
     <Loader />
   ) : (
     <>
-      <h1>User List</h1>
-      <Row className="mb-4">
-        <Col md={9}></Col>
-        <Col md={1}>
+      <h4 className="wrap-header font-weight-bold">User List</h4>
+      <Row className="mb-4 text-right">
+        <Col md={7}></Col>
+        <Col md={5}>
           <Button variant="primary" size="sm" onClick={addUser}>
             Add User
           </Button>
-        </Col>
-        <Col md={1}>
-          <Button variant="primary" size="sm" onClick={addUser}>
+          <Button
+            variant="primary"
+            className="ml-2"
+            size="sm"
+            onClick={addUser}
+          >
             Set Visibility
           </Button>
-        </Col>
-        <Col md={1}>
           <Button
             variant="danger"
             size="sm"
             title="Delete"
+            className="ml-2"
             onClick={handleDeleteBtnClick}
           >
             <i className="fa-fw fa fa-trash"></i>

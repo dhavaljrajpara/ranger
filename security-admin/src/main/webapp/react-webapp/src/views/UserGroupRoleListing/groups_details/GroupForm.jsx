@@ -97,12 +97,21 @@ class GroupForm extends Component {
   closeForm = () => {
     this.props.history.push("/users/grouptab");
   };
+  validateForm = (values) => {
+    const errors = {};
+    if (!values.name) {
+      errors.name = "Required";
+    }
+
+    return errors;
+  };
   render() {
     return (
       <div>
         <h4 className="wrap-header bold">Group Form</h4>
         <Form
           onSubmit={this.handleSubmit}
+          validate={this.validateForm}
           initialValues={this.setGroupFormData()}
           render={({ handleSubmit, form, submitting, values, pristine }) => (
             <div className="wrap">

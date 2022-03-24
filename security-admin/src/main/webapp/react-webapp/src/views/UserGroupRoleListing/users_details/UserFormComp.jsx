@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 import { UserRoles, UserSource } from "Utils/XAEnums";
 import { getUserProfile } from "Utils/appState";
+import _ from "lodash";
 
 class UserFormComp extends Component {
   constructor(props) {
@@ -209,12 +210,34 @@ class UserFormComp extends Component {
     return formValueObj;
   };
 
+  validateForm = (values) => {
+    const errors = {};
+    if (!values.name) {
+      errors.name = "Required";
+    }
+    if (!values.password) {
+      errors.password = "Required";
+    }
+    if (!values.passwordConfirm) {
+      errors.passwordConfirm = "Required";
+    }
+    if (!values.firstName) {
+      errors.firstName = "Required";
+    }
+    if (values && _.has(values, "password") && values.password.length < 8) {
+      errors.password = "Invalid Password";
+    }
+
+    return errors;
+  };
+
   render() {
     return (
       <>
         <h4 className="wrap-header bold">User Form</h4>
         <Form
           onSubmit={this.handleSubmit}
+          validate={this.validateForm}
           initialValues={(this.userData(), this.setUserFormData())}
           render={({ handleSubmit, form, submitting, values, pristine }) => (
             <div className="wrap">

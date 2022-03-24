@@ -37,7 +37,9 @@ const Loader = () => {
 export const FieldError = ({ name }) => (
   <Field name={name}>
     {({ meta: { error, touched } }) => {
-      return error && touched ? <div className="col-sm-2">{error}</div> : null;
+      return error && touched ? (
+        <div className="col-sm-2 invalid-field">{error}</div>
+      ) : null;
     }}
   </Field>
 );
@@ -47,7 +49,7 @@ export class MoreLess extends Component {
     super(props);
     this.state = {
       data: props.data.length > 4 ? props.data.slice(0, 4) : props.data,
-      show: true,
+      show: true
     };
   }
 

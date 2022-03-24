@@ -80,8 +80,8 @@ function Groups() {
             else
               return (
                 <h6>
-                  <Badge className="externalbadge">
-                    {GroupTypes.GROUP_EXTERNAL.label}{" "}
+                  <Badge variant="warning">
+                    {GroupTypes.GROUP_EXTERNAL.label}
                   </Badge>
                 </h6>
               );
@@ -131,7 +131,7 @@ function Groups() {
         Cell: (model) => {
           return (
             <button
-              className="userViewicon"
+              className="btn btn-outline-dark btn-sm"
               title="View Users"
               data-js="showUserList"
               data-name={model.name}
@@ -149,6 +149,7 @@ function Groups() {
           if (rawValue.value) {
             return (
               <button
+                className="btn btn-outline-dark btn-sm"
                 data-id="syncDetailes"
                 data-for="users"
                 title="Sync Details"
@@ -172,24 +173,26 @@ function Groups() {
     <Loader />
   ) : (
     <div>
-      <h1>Group List</h1>
-      <Row className="mb-4">
-        <Col md={9}></Col>
-        <Col md={1}>
+      <h4 className="wrap-header font-weight-bold">Group List</h4>
+      <Row className="mb-4 text-right">
+        <Col md={7}></Col>
+        <Col md={5}>
           <Button variant="primary" size="sm" onClick={addGroup}>
             Add Group
           </Button>
-        </Col>
-        <Col md={1}>
-          <Button variant="primary" size="sm" onClick={addGroup}>
+          <Button
+            variant="primary"
+            className="ml-2"
+            size="sm"
+            onClick={addGroup}
+          >
             Set Visibility
           </Button>
-        </Col>
-        <Col md={1}>
           <Button
             variant="danger"
             size="sm"
             title="Delete"
+            className="ml-2"
             onClick={handleDeleteBtnClick}
           >
             <i className="fa-fw fa fa-trash"></i>
