@@ -488,9 +488,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select User"
                       />
                     </div>
@@ -518,9 +519,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select Group"
                         required
                       />
@@ -552,9 +554,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select User"
                       />
                     </div>
@@ -583,9 +586,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select Group"
                       />
                       {meta.error && meta.touched && (
@@ -615,9 +619,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select Tag Services"
                       />
                     </div>
@@ -646,9 +651,10 @@ const CreateZone = (props) => {
                         width="500px"
                         components={{
                           DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null,
+                          IndicatorSeparator: () => null
                         }}
                         isClearable={false}
+                        menuPlacement="auto"
                         placeholder="Select Service Name"
                       />
                       {meta.error && meta.touched && (
@@ -776,12 +782,18 @@ const CreateZone = (props) => {
 
               <div className="row form-actions">
                 <div className="col-md-9 offset-md-3">
-                  <Button variant="primary" type="submit" disabled={submitting}>
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    size="sm"
+                    disabled={submitting}
+                  >
                     Save
                   </Button>
                   <Button
                     variant="secondary"
                     type="button"
+                    size="sm"
                     onClick={() => {
                       props.history.goBack();
                     }}

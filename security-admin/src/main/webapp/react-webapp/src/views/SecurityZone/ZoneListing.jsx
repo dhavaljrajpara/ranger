@@ -119,7 +119,10 @@ class ZoneListing extends Component {
                 </h5>
               </div>
               <div className="float-right ">
-                <Link to="/zones/create" className="btn btn-secondary btn-sm ">
+                <Link
+                  to="/zones/create"
+                  className="btn btn-outline-secondary btn-sm"
+                >
                   <i className="fa-fw fa fa-plus"></i>
                 </Link>
               </div>

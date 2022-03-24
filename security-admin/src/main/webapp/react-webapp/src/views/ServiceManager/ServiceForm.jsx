@@ -120,7 +120,17 @@ class ServiceForm extends Component {
           : "/policymanager/resource"
       );
     } catch (error) {
-      console.error(`${apiError} ${error}`);
+      if (
+        error.response !== undefined &&
+        _.has(error.response, "data.msgDesc")
+      ) {
+        toast.error(error.response.data.msgDesc);
+        this.props.history.push(
+          this.state.serviceDef.name === "tag"
+            ? "/policymanager/tag"
+            : "/policymanager/resource"
+        );
+      }
     }
   };
 
@@ -146,10 +156,13 @@ class ServiceForm extends Component {
     let getAuditFilters = _.find(this.state.serviceDef.configs, {
       name: "ranger.plugin.audit.filters"
     });
-    getAuditFilters = JSON.parse(
-      getAuditFilters.defaultValue.replace(/'/g, '"')
-    );
-    console.log(getAuditFilters);
+
+    if (getAuditFilters && getAuditFilters !== undefined) {
+      getAuditFilters = JSON.parse(
+        getAuditFilters.defaultValue.replace(/'/g, '"')
+      );
+    }
+
     if (this.props.match.params.serviceId !== undefined) {
       this.fetchService();
     }

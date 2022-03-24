@@ -75,7 +75,7 @@ class ZoneDisplay extends Component {
             <div className="float-left">
               <button
                 onClick={this.expandbtn}
-                className="btn btn-sm btn-slide-toggle m-r-sm btn-secondary pull-left"
+                className="btn btn-sm btn-slide-toggle m-r-sm btn-outline-secondary pull-left"
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </button>
@@ -150,70 +150,76 @@ class ZoneDisplay extends Component {
                         <Form.Label className="text-right" column sm="3">
                           Admin Users
                         </Form.Label>
-                        <Col sm="15">
-                          {this.props.zone.adminUsers.map((obj, index) => {
-                            return (
-                              <h6 key={index}>
-                                <Badge variant="info" className="usersbadge">
-                                  {obj}
-                                </Badge>
-                              </h6>
-                            );
-                          })}
+                        <Col sm="9">
+                          {this.props.zone.adminUsers.length > 0 ? (
+                            this.props.zone.adminUsers.map((obj, index) => {
+                              return (
+                                <h6 key={index} className="mt-2">
+                                  <Badge variant="info">{obj}</Badge>
+                                </h6>
+                              );
+                            })
+                          ) : (
+                            <p className="mt-1">--</p>
+                          )}
                         </Col>
                       </Form.Group>
                       <Form.Group as={Row} className="mb-3">
                         <Form.Label className="text-right" column sm="3">
                           Admin Usergroups
                         </Form.Label>
-                        <Col sm="15">
-                          {this.props.zone.adminUserGroups.map((obj, index) => {
-                            return (
-                              <h6 key={index}>
-                                <Badge
-                                  variant="secondary"
-                                  className="usersbadge"
-                                >
-                                  {obj}
-                                </Badge>
-                              </h6>
-                            );
-                          })}
+                        <Col sm="9">
+                          {this.props.zone.adminUserGroups.length > 0 ? (
+                            this.props.zone.adminUserGroups.map(
+                              (obj, index) => {
+                                return (
+                                  <h6 key={index} className="mt-2">
+                                    <Badge variant="secondary">{obj}</Badge>
+                                  </h6>
+                                );
+                              }
+                            )
+                          ) : (
+                            <span className="mt-1">--</span>
+                          )}
                         </Col>
                       </Form.Group>
                       <Form.Group as={Row} className="mb-3">
                         <Form.Label className="text-right" column sm="3">
                           Auditor Users
                         </Form.Label>
-                        <Col sm="15">
-                          {this.props.zone.auditUsers.map((obj, index) => {
-                            return (
-                              <h6 key={index}>
-                                <Badge variant="info" className="usersbadge">
-                                  {obj}
-                                </Badge>
-                              </h6>
-                            );
-                          })}
+                        <Col sm="9">
+                          {this.props.zone.auditUsers.length > 0 ? (
+                            this.props.zone.auditUsers.map((obj, index) => {
+                              return (
+                                <h6 key={index} className="mt-2">
+                                  <Badge variant="info">{obj}</Badge>
+                                </h6>
+                              );
+                            })
+                          ) : (
+                            <span className="mt-1">--</span>
+                          )}
                         </Col>
                       </Form.Group>
                       <Form.Group as={Row} className="mb-3">
                         <Form.Label className="text-right" column sm="3">
                           Auditor Usergroups
                         </Form.Label>
-                        <Col sm="15">
-                          {this.props.zone.auditUserGroups.map((obj, index) => {
-                            return (
-                              <h6 key={index}>
-                                <Badge
-                                  variant="secondary"
-                                  className="usersbadge"
-                                >
-                                  {obj}
-                                </Badge>
-                              </h6>
-                            );
-                          })}
+                        <Col sm="9">
+                          {this.props.zone.auditUserGroups.length > 0 ? (
+                            this.props.zone.auditUserGroups.map(
+                              (obj, index) => {
+                                return (
+                                  <h6 key={index} className="mt-2">
+                                    <Badge variant="secondary">{obj}</Badge>
+                                  </h6>
+                                );
+                              }
+                            )
+                          ) : (
+                            <span className="mt-1">--</span>
+                          )}
                         </Col>
                       </Form.Group>
                     </Form>
@@ -245,14 +251,12 @@ class ZoneDisplay extends Component {
                   <Card.Body>
                     {this.props.zone.tagServices.length !== 0 ? (
                       this.props.zone.tagServices.map((obj, index) => (
-                        <h6 key={index}>
-                          <Badge variant="info" className="usersbadge">
-                            {obj}
-                          </Badge>
+                        <h6 key={index} className="mt-2">
+                          <Badge variant="info">{obj}</Badge>
                         </h6>
                       ))
                     ) : (
-                      <h6 className="text-muted h6 large">
+                      <h6 className="text-muted large mt-2">
                         No tag based services are associated with this zone
                       </h6>
                     )}

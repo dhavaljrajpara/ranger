@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Button, Col, Modal, Row, Table } from "react-bootstrap";
-import { toast } from "react-toastify";
 import { difference, isEmpty, keys, omit, pick } from "lodash";
 import { RangerPolicyType } from "Utils/XAEnums";
 import ExportPolicy from "./ExportPolicy";

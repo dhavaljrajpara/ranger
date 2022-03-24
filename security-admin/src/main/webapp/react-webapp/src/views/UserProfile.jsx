@@ -1,8 +1,7 @@
 import React, { Component } from "react";
-import Tab from "react-bootstrap/Tab";
-import Nav from "react-bootstrap/Nav";
-import Button from "react-bootstrap/Button";
+import { Button, Nav, Tab } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
+import { toast } from "react-toastify";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 
 class UserProfile extends Component {
@@ -21,6 +20,7 @@ class UserProfile extends Component {
         data: userProps
       });
       setUserProfile(profResp.data);
+      toast.success("Successfully updated user profile");
       this.props.history.push("/");
     } catch (error) {
       console.error(`Error occurred while updating user profile! ${error}`);
@@ -43,6 +43,8 @@ class UserProfile extends Component {
         method: "post",
         data: jsonData
       });
+      toast.success("Successfully updated user password");
+      this.props.history.push("/");
     } catch (error) {
       console.error(`Error occurred while updating user password! ${error}`);
     }
@@ -112,7 +114,7 @@ class UserProfile extends Component {
                     render={({ handleSubmit, form, submitting, values }) => (
                       <form onSubmit={handleSubmit}>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             First Name *
                           </label>
                           <div className="col-sm-6">
@@ -126,7 +128,7 @@ class UserProfile extends Component {
                           </div>
                         </div>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             Last Name
                           </label>
                           <Field name="lastName">
@@ -150,7 +152,7 @@ class UserProfile extends Component {
                           </Field>
                         </div>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             Email Address
                           </label>
                           <div className="col-sm-6">
@@ -164,7 +166,7 @@ class UserProfile extends Component {
                           </div>
                         </div>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             Select Role *
                           </label>
                           <div className="col-sm-6">
@@ -216,7 +218,7 @@ class UserProfile extends Component {
                     render={({ handleSubmit, form, submitting, values }) => (
                       <form onSubmit={handleSubmit}>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             Old Password *
                           </label>
                           <Field name="oldPassword">
@@ -240,7 +242,7 @@ class UserProfile extends Component {
                           </Field>
                         </div>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             New Password *
                           </label>
                           <Field name="newPassword">
@@ -264,7 +266,7 @@ class UserProfile extends Component {
                           </Field>
                         </div>
                         <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
+                          <label className="col-sm-2 col-form-label text-right">
                             Re-enter New Password *
                           </label>
                           <Field name="reEnterPassword">

@@ -12,7 +12,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
     createDate,
     owner,
     action,
-    objectId,
+    objectId
   } = data;
 
   const policydelete = reportdata.filter((obj) => {
@@ -337,7 +337,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               India Standard Time
             </div>
             <div className="font-weight-bolder">Created By: {owner}</div>
-            <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
+            <h5 className="bold wrap-header mt-3">Policy Details:</h5>
 
             <Table className="table table-striped table-bordered w-auto">
               <thead>
