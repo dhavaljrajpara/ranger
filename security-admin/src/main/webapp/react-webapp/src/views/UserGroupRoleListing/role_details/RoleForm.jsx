@@ -5,6 +5,8 @@ import { FieldError } from "Components/CommonComponents";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
 import AsyncSelect from "react-select/async";
+import { toast } from "react-toastify";
+import { findIndex } from "lodash";
 
 class GroupForm extends Component {
   constructor(props) {
@@ -15,19 +17,74 @@ class GroupForm extends Component {
       selectedRole: []
     };
   }
+  componentDidMount = () => {
+    if (
+      this.props &&
+      this.props.match &&
+      this.props.match.params &&
+      this.props.match.params.roleId
+    ) {
+      this.fetchRoleData(this.props.match.params.roleId);
+    }
+  };
+  filterUsrOp = ({ data }) => {
+    return findIndex(this.state.selectedUser, data) === -1;
+  };
+  fetchRoleData = async (roleId) => {
+    let roleRespData;
+    try {
+      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+      roleRespData = await fetchApi({
+        url: "roles/roles/" + roleId
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Role or CSRF headers! ${error}`
+      );
+    }
+    this.setState({
+      roleInfo: roleRespData.data
+    });
+  };
 
   handleSubmit = async (formData) => {
     console.log(formData);
-    try {
-      const { fetchApi } = await import("Utils/fetchAPI");
-      const passwdResp = await fetchApi({
-        url: "xusers/secure/groups",
-        method: "post",
-        data: formData
-      });
-      this.props.history.push("/users/usertab");
-    } catch (error) {
-      console.error(`Error occurred while updating user password! ${error}`);
+    let roleFormData = {
+      ...this.state.roleInfo,
+      ...formData
+    };
+    if (
+      this.props &&
+      this.props.match &&
+      this.props.match.params &&
+      this.props.match.params.roleId
+    ) {
+      try {
+        const { fetchApi } = await import("Utils/fetchAPI");
+        const userEdit = await fetchApi({
+          url: `roles/roles/${this.props.match.params.roleId}`,
+          method: "put",
+          data: roleFormData
+        });
+        toast.success("Role updated successfully!!");
+        self.location.hash = "#/users/roletab";
+      } catch (error) {
+        console.error(`Error occurred while creating Role`);
+        toast.error(error.msgDesc);
+      }
+    } else {
+      try {
+        const { fetchApi } = await import("Utils/fetchAPI");
+        const passwdResp = await fetchApi({
+          url: "roles/roles",
+          method: "post",
+          data: formData
+        });
+        toast.success("Role created successfully!!");
+        this.props.history.push("/users/roletab");
+      } catch (error) {
+        console.error(`Error occurred while updating role password! ${error}`);
+      }
     }
   };
 
@@ -36,7 +93,9 @@ class GroupForm extends Component {
       name: value,
       isAdmin: false
     }));
-    push("users", usr);
+    usr.map((val) => {
+      push("users", val);
+    });
   };
   fetchUserOp = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
@@ -62,7 +121,9 @@ class GroupForm extends Component {
       name: value,
       isAdmin: false
     }));
-    push("groups", grp);
+    grp.map((val) => {
+      push("groups", val);
+    });
   };
   fetchGroupOp = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
@@ -88,7 +149,9 @@ class GroupForm extends Component {
       name: value,
       isAdmin: false
     }));
-    push("roles", rol);
+    rol.map((val) => {
+      push("roles", val);
+    });
   };
   fetchRoleOp = async (inputValue) => {
     let params = { roleNamePartial: inputValue || "" };
@@ -109,12 +172,36 @@ class GroupForm extends Component {
       selectedRole: value
     });
   };
+  closeForm = () => {
+    this.props.history.push("/users/roletab");
+  };
+  setRoleFormData = () => {
+    let formValueObj = {};
+    if (
+      this.props &&
+      this.props.match &&
+      this.props.match.params &&
+      this.props.match.params.roleId
+    ) {
+      console.log(this.props);
+
+      if (this.state && this.state.roleInfo) {
+        formValueObj.name = this.state.roleInfo.name;
+        formValueObj.description = this.state.roleInfo.description;
+        formValueObj.users = this.state.roleInfo.users;
+        formValueObj.groups = this.state.roleInfo.groups;
+        formValueObj.roles = this.state.roleInfo.roles;
+      }
+    }
+    return formValueObj;
+  };
   render() {
     return (
       <>
         <h4 className="wrap-header bold">User Form</h4>
         <Form
           onSubmit={this.handleSubmit}
+          initialValues={this.setRoleFormData()}
           mutators={{
             ...arrayMutators
           }}
@@ -173,7 +260,7 @@ class GroupForm extends Component {
                             <tbody>
                               {fields.map((name, index) => (
                                 <tr>
-                                  <td>{fields.value[index][0].name}</td>
+                                  <td>{fields.value[index].name}</td>
                                   <td>
                                     <Field
                                       className="form-control"
@@ -206,6 +293,7 @@ class GroupForm extends Component {
                       </FieldArray>
                       <AsyncSelect
                         value={this.state.selectedUser}
+                        filterOption={this.filterUsrOp}
                         onChange={this.handleUserChange}
                         loadOptions={this.fetchUserOp}
                         defaultOptions
@@ -213,6 +301,7 @@ class GroupForm extends Component {
                       />
                       <button
                         type="button"
+                        className="btn btn-primary"
                         onClick={() => this.handleUserAdd(push)}
                       >
                         Add Users
@@ -239,7 +328,7 @@ class GroupForm extends Component {
                             <tbody>
                               {fields.map((name, index) => (
                                 <tr>
-                                  <td>{fields.value[index][0].name}</td>
+                                  <td>{fields.value[index].name}</td>
                                   <td>
                                     <Field
                                       className="form-control"
@@ -279,6 +368,7 @@ class GroupForm extends Component {
                       />
                       <button
                         type="button"
+                        className="btn btn-primary"
                         onClick={() => this.handleGroupAdd(push)}
                       >
                         Add Group
@@ -305,7 +395,7 @@ class GroupForm extends Component {
                             <tbody>
                               {fields.map((name, index) => (
                                 <tr>
-                                  <td>{fields.value[index][0].name}</td>
+                                  <td>{fields.value[index].name}</td>
                                   <td>
                                     <Field
                                       className="form-control"
@@ -345,6 +435,7 @@ class GroupForm extends Component {
                       />
                       <button
                         type="button"
+                        className="btn btn-primary"
                         onClick={() => this.handleRoleAdd(push)}
                       >
                         Add Role
@@ -365,8 +456,10 @@ class GroupForm extends Component {
                     <Button
                       variant="secondary"
                       type="button"
-                      onClick={form.reset}
-                      disabled={submitting || pristine}
+                      onClick={() => {
+                        form.reset;
+                        this.closeForm();
+                      }}
                     >
                       Cancel
                     </Button>

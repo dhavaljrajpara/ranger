@@ -241,6 +241,12 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
+                      path="/role/:roleId"
+                      component={RoleForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
                       path="/permissions"
                       component={PermissionsComp}
                       {...defaultProps}

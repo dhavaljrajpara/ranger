@@ -118,7 +118,11 @@ function Users() {
         Cell: (rawValue) => {
           if (rawValue.value && rawValue.value.length > 0) {
             let role = rawValue.value[0];
-            return <Badge variant="info">{UserRoles[role].label} </Badge>;
+            return (
+              <h6>
+                <Badge variant="info">{UserRoles[role].label} </Badge>
+              </h6>
+            );
           }
           return "--";
         }
@@ -130,15 +134,19 @@ function Users() {
           if (rawValue.value !== null && rawValue.value !== undefined) {
             if (rawValue.value == UserSource.XA_PORTAL_USER.value)
               return (
-                <Badge variant="success">
-                  {UserTypes.USER_INTERNAL.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge variant="success">
+                    {UserTypes.USER_INTERNAL.label}{" "}
+                  </Badge>
+                </h6>
               );
             else
               return (
-                <Badge className="externalbadge">
-                  {UserTypes.USER_EXTERNAL.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge className="externalbadge">
+                    {UserTypes.USER_EXTERNAL.label}{" "}
+                  </Badge>
+                </h6>
               );
           } else return "--";
         }
@@ -148,7 +156,11 @@ function Users() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return <Badge variant="success">{rawValue.value} </Badge>;
+            return (
+              <h6>
+                <Badge variant="success">{rawValue.value} </Badge>
+              </h6>
+            );
           } else return "--";
         }
       },
@@ -157,11 +169,11 @@ function Users() {
         accessor: "groupNameList",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return rawValue.value.map((name) => {
+            return rawValue.value.map((name, index) => {
               return (
-                <Badge variant="info" className="usersbadge">
-                  {name}
-                </Badge>
+                <h6 key={index}>
+                  <Badge variant="info">{name}</Badge>
+                </h6>
               );
             });
           } else return "--";
@@ -174,15 +186,19 @@ function Users() {
           if (rawValue.value) {
             if (rawValue)
               return (
-                <Badge variant="success">
-                  {VisibilityStatus.STATUS_VISIBLE.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge variant="success">
+                    {VisibilityStatus.STATUS_VISIBLE.label}{" "}
+                  </Badge>
+                </h6>
               );
             else
               return (
-                <Badge variant="info">
-                  {VisibilityStatus.STATUS_HIDDEN.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge variant="info">
+                    {VisibilityStatus.STATUS_HIDDEN.label}{" "}
+                  </Badge>
+                </h6>
               );
           } else return "--";
         }
@@ -230,10 +246,14 @@ function Users() {
       <Row className="mb-4">
         <Col md={9}></Col>
         <Col md={1}>
-          <Button onClick={addUser}>Add User</Button>
+          <Button variant="primary" size="sm" onClick={addUser}>
+            Add User
+          </Button>
         </Col>
         <Col md={1}>
-          <Button onClick={addUser}>Set Visibility</Button>
+          <Button variant="primary" size="sm" onClick={addUser}>
+            Set Visibility
+          </Button>
         </Col>
         <Col md={1}>
           <Button

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Badge, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 function Roles() {
   let history = useHistory();
@@ -36,12 +36,29 @@ function Roles() {
       setLoader(false);
     }
   }, []);
+  const handleDeleteBtnClick = () => {
+    if (selectedRows.current.length > 0) {
+      toggleConfirmModal();
+    } else {
+      toast.info("Please select atleast one group!!");
+    }
+  };
 
   const columns = React.useMemo(
     () => [
       {
         Header: "Role Name",
-        accessor: "name"
+        accessor: "name",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <Link to={"/role/" + rawValue.row.original.id}>
+                {rawValue.value}
+              </Link>
+            );
+          }
+          return "--";
+        }
       },
 
       {
@@ -50,7 +67,9 @@ function Roles() {
         accessor: (raw) => {
           if (!raw.users[0] == 0) {
             return (
-              <Badge variant="info">{Object.values(raw.users[0].name)}</Badge>
+              <h6>
+                <Badge variant="info">{Object.values(raw.users[0].name)}</Badge>
+              </h6>
             );
           } else {
             return "--";
@@ -62,7 +81,11 @@ function Roles() {
         accessor: "groups",
         accessor: (raw) => {
           if (!raw.groups[0] == 0) {
-            return <Badge variant="info">{Object.values(raw.groups[0])}</Badge>;
+            return (
+              <h6>
+                <Badge variant="info">{Object.values(raw.groups[0])}</Badge>
+              </h6>
+            );
           } else {
             return "--";
           }
@@ -73,7 +96,11 @@ function Roles() {
         accessor: "roles",
         accessor: (raw) => {
           if (raw.roles.length !== 0) {
-            return <Badge variant="info">{raw.roles[0].name}</Badge>;
+            return (
+              <h6>
+                <Badge variant="info">{raw.roles[0].name}</Badge>
+              </h6>
+            );
           } else {
             return "--";
           }
@@ -92,8 +119,18 @@ function Roles() {
       <h1>Role List</h1>
       <Row className="mb-4">
         <Col md={9}></Col>
-        <Col md={3}>
+        <Col md={2}>
           <Button onClick={addRole}>Add Role</Button>
+        </Col>
+        <Col md={1}>
+          <Button
+            variant="danger"
+            size="sm"
+            title="Delete"
+            onClick={handleDeleteBtnClick}
+          >
+            <i className="fa-fw fa fa-trash"></i>
+          </Button>
         </Col>
       </Row>
       <div>

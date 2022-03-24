@@ -69,6 +69,7 @@ class UserFormComp extends Component {
   };
   closeForm = () => {
     self.location.hash = "#/users/usertab";
+    // this.props.history.push("/users/grouptab");
   };
   groupNameList = ({ input, ...rest }) => {
     const loadOptions = async (inputValue, callback) => {
@@ -377,7 +378,6 @@ class UserFormComp extends Component {
                         form.reset;
                         this.closeForm();
                       }}
-                      disabled={submitting || pristine}
                     >
                       Cancel
                     </Button>

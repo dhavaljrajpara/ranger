@@ -94,6 +94,9 @@ class GroupForm extends Component {
     }
     return formValueObj;
   };
+  closeForm = () => {
+    this.props.history.push("/users/grouptab");
+  };
   render() {
     return (
       <div>
@@ -142,8 +145,10 @@ class GroupForm extends Component {
                     <Button
                       variant="secondary"
                       type="button"
-                      onClick={form.reset}
-                      disabled={submitting || pristine}
+                      onClick={() => {
+                        form.reset;
+                        this.closeForm();
+                      }}
                     >
                       Cancel
                     </Button>

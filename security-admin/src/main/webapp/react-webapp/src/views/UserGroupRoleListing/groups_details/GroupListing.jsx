@@ -71,15 +71,19 @@ function Groups() {
           if (rawValue.value !== null && rawValue.value !== undefined) {
             if (rawValue.value == GroupSource.XA_PORTAL_GROUP.value)
               return (
-                <Badge variant="success">
-                  {GroupTypes.GROUP_INTERNAL.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge variant="success">
+                    {GroupTypes.GROUP_INTERNAL.label}{" "}
+                  </Badge>
+                </h6>
               );
             else
               return (
-                <Badge className="externalbadge">
-                  {GroupTypes.GROUP_EXTERNAL.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge className="externalbadge">
+                    {GroupTypes.GROUP_EXTERNAL.label}{" "}
+                  </Badge>
+                </h6>
               );
           } else return "--";
         }
@@ -89,7 +93,11 @@ function Groups() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return <Badge variant="success">{rawValue.value} </Badge>;
+            return (
+              <h6>
+                <Badge variant="success">{rawValue.value} </Badge>
+              </h6>
+            );
           } else return "--";
         }
       },
@@ -100,15 +108,19 @@ function Groups() {
           if (rawValue.value) {
             if (rawValue)
               return (
-                <Badge variant="success">
-                  {VisibilityStatus.STATUS_VISIBLE.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge variant="success">
+                    {VisibilityStatus.STATUS_VISIBLE.label}{" "}
+                  </Badge>
+                </h6>
               );
             else
               return (
-                <Badge className="hiddenbadge">
-                  {VisibilityStatus.STATUS_HIDDEN.label}{" "}
-                </Badge>
+                <h6>
+                  <Badge className="hiddenbadge">
+                    {VisibilityStatus.STATUS_HIDDEN.label}{" "}
+                  </Badge>
+                </h6>
               );
           } else return "--";
         }
@@ -164,10 +176,14 @@ function Groups() {
       <Row className="mb-4">
         <Col md={9}></Col>
         <Col md={1}>
-          <Button onClick={addGroup}>Add Group</Button>
+          <Button variant="primary" size="sm" onClick={addGroup}>
+            Add Group
+          </Button>
         </Col>
         <Col md={1}>
-          <Button onClick={addGroup}>Set Visibility</Button>
+          <Button variant="primary" size="sm" onClick={addGroup}>
+            Set Visibility
+          </Button>
         </Col>
         <Col md={1}>
           <Button
