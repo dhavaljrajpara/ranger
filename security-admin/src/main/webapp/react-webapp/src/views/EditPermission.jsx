@@ -63,7 +63,7 @@ const EditPermission = (props) => {
       return false;
     }
     for (const grpObj of formData.groupPermList) {
-      let index = findIndex(selectedUsr, { value: grpObj.groupId });
+      let index = findIndex(selectedGrp, { value: grpObj.groupId });
       if (index === -1) {
         grpObj.isAllowed = AccessResult.ACCESS_RESULT_DENIED.value;
       }
@@ -84,11 +84,11 @@ const EditPermission = (props) => {
         userObj.isAllowed = AccessResult.ACCESS_RESULT_DENIED.value;
       }
     }
-    for (const grpObj of selectedUsr) {
-      let obj = find(formData.userPermList, { userId: grpObj.value });
+    for (const userObj of selectedUsr) {
+      let obj = find(formData.userPermList, { userId: userObj.value });
       if (!obj) {
         formData.userPermList.push({
-          userId: grpObj.value,
+          userId: userObj.value,
           isAllowed: AccessResult.ACCESS_RESULT_ALLOWED.value,
           moduleId: formData.id,
         });
@@ -371,28 +371,50 @@ const EditPermission = (props) => {
                               </td>
                             </tr>
                             <tr>
-                              <td>
-                                {selectedGrp.map((obj, index) => (
-                                  <span className="selected-widget" key={index}>
-                                    <i
-                                      className="icon remove fa-fw fa fa-remove"
-                                      onClick={(e) => handleRemoveGrp(obj)}
-                                    />
-                                    {obj.label}
-                                  </span>
-                                ))}
-                              </td>
-                              <td>
-                                {selectedUsr.map((obj, index) => (
-                                  <span className="selected-widget" key={index}>
-                                    <i
-                                      className="icon remove fa-fw fa fa-remove"
-                                      onClick={(e) => handleRemoveUsr(obj)}
-                                    />
-                                    {obj.label}
-                                  </span>
-                                ))}
-                              </td>
+                              {selectedGrp.length !== 0 ? (
+                                <td>
+                                  {selectedGrp.map((obj, index) => (
+                                    <span
+                                      className="selected-widget"
+                                      key={index}
+                                    >
+                                      <i
+                                        className="icon remove fa-fw fa fa-remove"
+                                        onClick={(e) => handleRemoveGrp(obj)}
+                                      />
+                                      {obj.label}
+                                    </span>
+                                  ))}
+                                </td>
+                              ) : (
+                                <td className="align-middle text-center">
+                                  <strong class="text-danger font-italic">
+                                    No Selected Groups
+                                  </strong>
+                                </td>
+                              )}
+                              {selectedUsr.length > 0 ? (
+                                <td>
+                                  {selectedUsr.map((obj, index) => (
+                                    <span
+                                      className="selected-widget"
+                                      key={index}
+                                    >
+                                      <i
+                                        className="icon remove fa-fw fa fa-remove"
+                                        onClick={(e) => handleRemoveUsr(obj)}
+                                      />
+                                      {obj.label}
+                                    </span>
+                                  ))}
+                                </td>
+                              ) : (
+                                <td className="align-middle text-center">
+                                  <strong class="text-danger font-italic">
+                                    No Selected Users
+                                  </strong>
+                                </td>
+                              )}
                             </tr>
                           </tbody>
                         </Table>
