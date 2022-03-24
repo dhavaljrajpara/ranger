@@ -5,7 +5,7 @@ import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 function Groups() {
   let history = useHistory();
@@ -13,19 +13,20 @@ function Groups() {
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const selectedRows = useRef([]);
 
   const fetchGroupInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let groupData = [];
-    let totalCount= 0;
-    const fetchId = ++fetchIdRef.current
+    let totalCount = 0;
+    const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
         const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const groupResp = await fetchApi({
           url: "xusers/groups",
-          params:{
+          params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
+            startIndex: pageIndex * pageSize
           }
         });
         groupData = groupResp.data.vXGroups;
@@ -37,17 +38,31 @@ function Groups() {
       setPageCount(Math.ceil(totalCount / pageSize));
       setLoader(false);
     }
-  },[]);
+  }, []);
+
+  const handleDeleteBtnClick = () => {
+    if (selectedRows.current.length > 0) {
+      toggleConfirmModal();
+    } else {
+      toast.info("Please select atleast one group!!");
+    }
+  };
 
   const columns = React.useMemo(
     () => [
       {
-        Header: "Select",
-        accessor: "select", // accessor is the "key" in the data
-      },
-      {
         Header: "Group Name",
         accessor: "name",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <Link to={"/group/" + rawValue.row.original.id}>
+                {rawValue.value}
+              </Link>
+            );
+          }
+          return "--";
+        }
       },
       {
         Header: "Group Source",
@@ -67,7 +82,7 @@ function Groups() {
                 </Badge>
               );
           } else return "--";
-        },
+        }
       },
       {
         Header: "Sync Source",
@@ -76,7 +91,7 @@ function Groups() {
           if (rawValue.value) {
             return <Badge variant="success">{rawValue.value} </Badge>;
           } else return "--";
-        },
+        }
       },
       {
         Header: "Visibility",
@@ -96,7 +111,7 @@ function Groups() {
                 </Badge>
               );
           } else return "--";
-        },
+        }
       },
       {
         Header: "Users",
@@ -113,7 +128,7 @@ function Groups() {
               <i className="fa-fw fa fa-group"> </i>
             </button>
           );
-        },
+        }
       },
       {
         Header: "Sync Details",
@@ -133,25 +148,46 @@ function Groups() {
           } else {
             return " -- ";
           }
-        },
-      },
+        }
+      }
     ],
     []
   );
   const addGroup = () => {
     history.push("/groupCreate");
-  }
+  };
   return loader ? (
     <Loader />
   ) : (
     <div>
       <h1>Group List</h1>
-      <Row className='mb-4'>
+      <Row className="mb-4">
         <Col md={9}></Col>
-        <Col md={3}><Button onClick={addGroup}>Add Group</Button></Col>
+        <Col md={1}>
+          <Button onClick={addGroup}>Add Group</Button>
+        </Col>
+        <Col md={1}>
+          <Button onClick={addGroup}>Set Visibility</Button>
+        </Col>
+        <Col md={1}>
+          <Button
+            variant="danger"
+            size="sm"
+            title="Delete"
+            onClick={handleDeleteBtnClick}
+          >
+            <i className="fa-fw fa fa-trash"></i>
+          </Button>
+        </Col>
       </Row>
       <div>
-        <XATableLayout data={groupListingData} columns={columns} fetchData={fetchGroupInfo} pageCount={pageCount}/>
+        <XATableLayout
+          data={groupListingData}
+          columns={columns}
+          fetchData={fetchGroupInfo}
+          pageCount={pageCount}
+          rowSelectOp={{ position: "first", selectedRows }}
+        />
       </div>
     </div>
   );

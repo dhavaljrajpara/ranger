@@ -16,6 +16,19 @@ class UserGroupRoleListing extends Component {
       activeKey: tabName
     });
   };
+  activeTab = () => {
+    let activeTabVal;
+    if (this.props && this.props.match && this.props.match.path) {
+      if (this.props.match.path == "/users/usertab") {
+        activeTabVal = "usertab";
+      } else if (this.props.match.path == "/users/grouptab") {
+        activeTabVal = "grouptab";
+      } else {
+        activeTabVal = "roletab";
+      }
+    }
+    return activeTabVal;
+  };
   render() {
     return (
       <div>
@@ -25,7 +38,7 @@ class UserGroupRoleListing extends Component {
             // defaultActiveKey="userTab"
             id="userGroupRoleListing"
             className="mb-3"
-            activeKey={this.state.activeKey}
+            activeKey={this.activeTab()}
             onSelect={(k) => this.tabChange(k)}
           >
             <Tab eventKey="usertab" title="Users">

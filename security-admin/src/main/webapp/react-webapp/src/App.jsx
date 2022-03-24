@@ -17,6 +17,9 @@ const CreateZoneComp = lazy(() => import("Views/SecurityZone/CreateZone"));
 const UserListingComp = lazy(() =>
   import("Views/UserGroupRoleListing/UserGroupRoleListing")
 );
+const GroupListingComp = lazy(() =>
+  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+);
 const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
 const UserForm = lazy(() =>
   import("Views/UserGroupRoleListing/users_details/AddUserView")
@@ -209,12 +212,18 @@ export default class App extends Component {
                     <AuthRoute
                       exact
                       path="/users/grouptab"
-                      component={UserListingComp}
+                      component={GroupListingComp}
                       {...defaultProps}
                     />
                     <AuthRoute
                       exact
                       path="/groupCreate"
+                      component={GroupForm}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/group/:groupId"
                       component={GroupForm}
                       {...defaultProps}
                     />

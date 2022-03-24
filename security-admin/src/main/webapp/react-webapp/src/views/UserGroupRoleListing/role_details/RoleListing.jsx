@@ -10,6 +10,7 @@ function Roles() {
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const selectedRows = useRef([]);
 
   const fetchRoleInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let roleData = [];
@@ -22,8 +23,8 @@ function Roles() {
           url: "roles/lookup/roles",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         roleData = roleResp.data.roles;
         totalCount = roleResp.data.totalCount;
@@ -39,12 +40,8 @@ function Roles() {
   const columns = React.useMemo(
     () => [
       {
-        Header: "Select",
-        accessor: "Select", // accessor is the "key" in the data
-      },
-      {
         Header: "Role Name",
-        accessor: "name",
+        accessor: "name"
       },
 
       {
@@ -58,7 +55,7 @@ function Roles() {
           } else {
             return "--";
           }
-        },
+        }
       },
       {
         Header: "Groups",
@@ -69,7 +66,7 @@ function Roles() {
           } else {
             return "--";
           }
-        },
+        }
       },
       {
         Header: "Roles",
@@ -80,8 +77,8 @@ function Roles() {
           } else {
             return "--";
           }
-        },
-      },
+        }
+      }
     ],
     []
   );
@@ -105,6 +102,7 @@ function Roles() {
           columns={columns}
           fetchData={fetchRoleInfo}
           pageCount={pageCount}
+          rowSelectOp={{ position: "first", selectedRows }}
         />
       </div>
     </div>

@@ -176,7 +176,6 @@ class UserFormComp extends Component {
 
   setUserFormData = () => {
     let formValueObj = {};
-    console.log(this.state);
     if (this.props.isEditView && this.state && this.state.userInfo) {
       formValueObj.name = this.state.userInfo.name;
       formValueObj.firstName = this.state.userInfo.firstName;
