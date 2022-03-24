@@ -12,7 +12,7 @@ import ModalResourceComp from "../Resources/ModalResourceComp";
 import { toast } from "react-toastify";
 const noneOptions = {
   label: "None",
-  value: "none",
+  value: "none"
 };
 const CreateZone = (props) => {
   const history = useHistory();
@@ -26,7 +26,7 @@ const CreateZone = (props) => {
     showModalResource: false,
     data: null,
     inputval: null,
-    index: 0,
+    index: 0
   });
 
   useEffect(() => {
@@ -49,7 +49,7 @@ const CreateZone = (props) => {
     setModalstate({
       showModalResource: false,
       data: null,
-      inputval: null,
+      inputval: null
     });
 
   const renderResourcesModal = (input, serviceType) => {
@@ -66,7 +66,7 @@ const CreateZone = (props) => {
       showModalResource: true,
       data: {},
       inputval: input,
-      index: -1,
+      index: -1
     });
   };
   const editResourcesModal = (idx, input) => {
@@ -76,7 +76,7 @@ const CreateZone = (props) => {
       showModalResource: true,
       data: editData,
       inputval: input,
-      index: idx,
+      index: idx
     });
   };
   const onSubmit = async (values) => {
@@ -155,7 +155,7 @@ const CreateZone = (props) => {
       await fetchApi({
         url: "/zones/zones",
         method: "post",
-        data: zoneData,
+        data: zoneData
       });
       toast.success(`Success! Key created succesfully`);
       history.goBack();
@@ -169,7 +169,7 @@ const CreateZone = (props) => {
     let Id = this.props.match.params.id;
     try {
       zoneResp = await fetchApi({
-        url: `zones/zones/${Id}`,
+        url: `zones/zones/${Id}`
       });
     } catch (error) {
       console.error(
@@ -191,12 +191,12 @@ const CreateZone = (props) => {
     }
     const userResp = await fetchApi({
       url: "xusers/users",
-      params: params,
+      params: params
     });
 
     return userResp.data.vXUsers.map(({ name, id }) => ({
       label: name,
-      value: id,
+      value: id
     }));
   };
 
@@ -207,11 +207,11 @@ const CreateZone = (props) => {
     }
     const groupResp = await fetchApi({
       url: "xusers/groups",
-      params: params,
+      params: params
     });
     return groupResp.data.vXGroups.map(({ name, id }) => ({
       label: name,
-      value: id,
+      value: id
     }));
   };
 
@@ -223,14 +223,14 @@ const CreateZone = (props) => {
     }
     const serviceResp = await fetchApi({
       url: "plugins/services",
-      params: params,
+      params: params
     });
     const services = serviceResp.data.services.filter(
       (obj) => obj.type == "tag"
     );
     return services.map(({ name, id }) => ({
       label: name,
-      value: id,
+      value: id
     }));
   };
 
@@ -241,7 +241,7 @@ const CreateZone = (props) => {
     }
     const serviceDefnsResp = await fetchApi({
       url: "plugins/services",
-      params: params,
+      params: params
     });
 
     const services = serviceDefnsResp.data.services.filter(
@@ -257,7 +257,7 @@ const CreateZone = (props) => {
         label: <span className="font-weight-bold text-body h6">{key}</span>,
         options: service[key].map((name) => {
           return { label: name.name, value: name.id };
-        }),
+        })
       });
     }
 
@@ -267,7 +267,7 @@ const CreateZone = (props) => {
   const fetchServiceDefs = async () => {
     try {
       const servicetypeResp = await fetchApi({
-        url: `plugins/definitions`,
+        url: `plugins/definitions`
       });
 
       SetServiceDef(servicetypeResp.data.serviceDefs);
@@ -292,14 +292,14 @@ const CreateZone = (props) => {
       push("tableList", {
         serviceName: e.option.label,
         serviceType: servicetype,
-        resources: [],
+        resources: []
       });
     }
 
     if (e.action == "remove-value") {
       let Removedvalindex = findIndex(input.value, [
         "label",
-        e.removedValue.label,
+        e.removedValue.label
       ]);
       remove("tableList", Removedvalindex);
     }
@@ -347,7 +347,7 @@ const CreateZone = (props) => {
           values:
             value[`value-${level}`] !== undefined
               ? value[`value-${level}`].map(({ value }) => value)
-              : "",
+              : ""
         };
       }
     }
@@ -373,43 +373,43 @@ const CreateZone = (props) => {
       <Form
         onSubmit={onSubmit}
         mutators={{
-          ...arrayMutators,
+          ...arrayMutators
         }}
         validate={(values) => {
           const errors = {};
           if (!values.name) {
             errors.name = {
               required: true,
-              text: "Required",
+              text: "Required"
             };
           }
 
           if (isEmpty(values.adminUsers) && isEmpty(values.adminUserGroups)) {
             errors.adminUserGroups = {
               required: true,
-              text: "Please provide atleast one audit user or group!",
+              text: "Please provide atleast one audit user or group!"
             };
             errors.adminUsers = {
               required: true,
-              text: "",
+              text: ""
             };
           }
 
           if (isEmpty(values.auditUsers) && isEmpty(values.auditUserGroups)) {
             errors.auditUserGroups = {
               required: true,
-              text: "Please provide atleast one audit user or group!",
+              text: "Please provide atleast one audit user or group!"
             };
             errors.auditUsers = {
               required: true,
-              text: "",
+              text: ""
             };
           }
 
           if (!values.resourceservices) {
             errors.resourceservices = {
               required: true,
-              text: "Required",
+              text: "Required"
             };
           }
 
@@ -418,13 +418,13 @@ const CreateZone = (props) => {
         render={({
           handleSubmit,
           form: {
-            mutators: { push, remove },
+            mutators: { push, remove }
           },
           form,
           values,
           submitting,
           pristine,
-          errors,
+          errors
         }) => (
           <div className="wrap">
             <form onSubmit={handleSubmit}>

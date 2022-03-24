@@ -396,7 +396,7 @@ export default function AddUpdatePolicyForm() {
     data.isDenyAllElse = values.isDenyAllElse;
     data.isEnabled = values.isEnabled;
     data.name = values.policyName;
-    data.policyLabel = (values.policyLabel || []).map(({ value }) => value);
+    data.policyLabels = (values.policyLabel || []).map(({ value }) => value);
     data.policyPriority = values.policyPriority ? "1" : "0";
     data.policyType = values.policyType;
     data.service = serviceDetails.name;
@@ -419,17 +419,40 @@ export default function AddUpdatePolicyForm() {
         };
       }
     }
-    try {
-      const resp = await fetchApi({
-        url: "plugins/policies",
-        method: "POST",
-        data
-      });
-      history.push(`/service/${serviceId}/policies/${policyType}`);
-    } catch (error) {
-      toast.error("Failed to save policy form!!");
-      console.error(`Error while saving policy form!!! ${error}`);
+    if (policyId) {
+      let dataVal = {
+        ...policyData,
+        ...data
+      };
+      try {
+        const resp = await fetchApi({
+          url: `plugins/policies/${policyId}`,
+          method: "PUT",
+          data: dataVal
+        });
+        history.push(`/service/${serviceId}/policies/${policyData.policyType}`);
+      } catch (error) {
+        toast.error("Failed to save policy form!!");
+        console.error(`Error while saving policy form!!! ${error}`);
+      }
+    } else {
+      try {
+        const resp = await fetchApi({
+          url: "plugins/policies",
+          method: "POST",
+          data
+        });
+        history.push(`/service/${serviceId}/policies/${policyType}`);
+      } catch (error) {
+        toast.error("Failed to save policy form!!");
+        console.error(`Error while saving policy form!!! ${error}`);
+      }
     }
+  };
+
+  const closeForm = () => {
+    let polType = policyId ? policyData.policyType : policyType;
+    history.push(`/service/${serviceId}/policies/${polType}`);
   };
 
   return (
@@ -528,14 +551,14 @@ export default function AddUpdatePolicyForm() {
                             name="isEnabled"
                             render={({ input }) => (
                               <BootstrapSwitchButton
-                                checked={true}
+                                {...input}
+                                checked={input.value}
                                 onlabel="Enabled"
                                 onstyle="primary"
                                 offlabel="Disabled"
                                 offstyle="outline-secondary"
                                 style="w-100"
                                 size="xs"
-                                {...input}
                               />
                             )}
                           />
@@ -546,14 +569,14 @@ export default function AddUpdatePolicyForm() {
                             name="policyPriority"
                             render={({ input }) => (
                               <BootstrapSwitchButton
-                                checked={input.value || false}
+                                {...input}
+                                checked={input.value}
                                 onlabel="Override"
                                 onstyle="primary"
                                 offlabel="Normal"
                                 offstyle="outline-secondary"
                                 style="w-100"
                                 size="xs"
-                                {...input}
                               />
                             )}
                           />
@@ -622,13 +645,13 @@ export default function AddUpdatePolicyForm() {
                         </FormB.Label>
                         <Col sm={4}>
                           <BootstrapSwitchButton
-                            checked={input.value || false}
+                            {...input}
+                            checked={input.value}
                             onlabel="Yes"
                             onstyle="primary"
                             offlabel="No"
                             offstyle="outline-secondary"
                             size="xs"
-                            {...input}
                           />
                         </Col>
                       </FormB.Group>
@@ -685,14 +708,14 @@ export default function AddUpdatePolicyForm() {
                             </FormB.Label>
                             <Col sm={1}>
                               <BootstrapSwitchButton
-                                checked={false}
+                                {...input}
+                                checked={input.value}
                                 onlabel="True"
                                 onstyle="primary"
                                 offlabel="False"
                                 offstyle="outline-secondary"
                                 size="xs"
                                 style="w-100"
-                                {...input}
                               />
                             </Col>
                           </FormB.Group>
@@ -777,6 +800,15 @@ export default function AddUpdatePolicyForm() {
 
                   <div>
                     <Button type="submit">Save</Button>
+                    <Button
+                      variant="secondary"
+                      type="button"
+                      onClick={() => {
+                        closeForm();
+                      }}
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </form>
               )}

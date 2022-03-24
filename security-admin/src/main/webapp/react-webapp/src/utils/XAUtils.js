@@ -74,3 +74,7 @@ export const getUserAccessRoleList = () => {
   });
   return userRoleList;
 };
+
+export const isObject = (value) => {
+  return typeof value === "object" && !Array.isArray(value) && value !== null;
+};

@@ -1,10 +1,12 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
 import { OverlayTrigger, Popover, Button, Form } from "react-bootstrap";
 import { findIndex } from "lodash";
+import { isObject } from "Utils/XAUtils";
 
 const TYPE_SELECT = "select";
 const TYPE_CHECKBOX = "checkbox";
 const TYPE_INPUT = "input";
+const TYPE_RADIO = "radio";
 
 const CheckboxComp = (props) => {
   const { options, value = [], valRef, showSelectAll, selectAllLabel } = props;
@@ -63,6 +65,32 @@ const CheckboxComp = (props) => {
       )}
     </>
   );
+};
+
+const RadioBtnComp = (props) => {
+  const { options, value, valRef } = props;
+  const [selectedVal, setVal] = useState(value);
+
+  const handleChange = (e, val) => {
+    valRef.current = val;
+    setVal(val);
+  };
+
+  return options.map((obj) => (
+    <Form.Group className="mb-3" controlId={obj.label} key={obj.label}>
+      <Form.Check
+        type="radio"
+        value={obj}
+        label={obj.label}
+        checked={
+          isObject(selectedVal)
+            ? selectedVal.value === obj.value
+            : selectedVal === obj.value
+        }
+        onChange={(e) => handleChange(e, obj)}
+      />
+    </Form.Group>
+  ));
 };
 
 const InputboxComp = (props) => {
@@ -162,6 +190,8 @@ const Editable = (props) => {
             : "--";
       } else if (type === TYPE_INPUT) {
         val = <span className="badge bg-info">{selectVal}</span> || "--";
+      } else if (type === TYPE_RADIO) {
+        val = selectVal && selectVal.value ? selectVal.value : selectVal;
       } else {
         val = selectVal || "--";
       }
@@ -215,6 +245,12 @@ const Editable = (props) => {
               valRef={selectValRef}
               showSelectAll={props.showSelectAll}
               selectAllLabel={props.selectAllLabel}
+            />
+          ) : type === TYPE_RADIO ? (
+            <RadioBtnComp
+              value={value}
+              options={options}
+              valRef={selectValRef}
             />
           ) : type === TYPE_INPUT ? (
             <InputboxComp value={value} valRef={selectValRef} />
