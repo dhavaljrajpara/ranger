@@ -185,11 +185,18 @@ const Editable = (props) => {
         val =
           selectVal && selectVal.length > 0
             ? selectVal.map((op) => (
-                <span className="badge bg-info">{op.label}</span>
+                <h6>
+                  <span className="badge bg-info">{op.label}</span>
+                </h6>
               ))
             : "--";
       } else if (type === TYPE_INPUT) {
-        val = <span className="badge bg-info">{selectVal}</span> || "--";
+        val =
+          (
+            <h6>
+              <span className="badge bg-info">{selectVal}</span>{" "}
+            </h6>
+          ) || "--";
       } else if (type === TYPE_RADIO) {
         val = selectVal && selectVal.value ? selectVal.value : selectVal;
       } else {

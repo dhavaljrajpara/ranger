@@ -1,5 +1,13 @@
-import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
+import React, { useState, useCallback, useRef } from "react";
+import {
+  Badge,
+  Button,
+  Row,
+  Col,
+  Modal,
+  DropdownButton,
+  Dropdown
+} from "react-bootstrap";
 import moment from "moment-timezone";
 
 import XATableLayout from "Components/XATableLayout";
@@ -56,7 +64,44 @@ function Users() {
     if (selectedRows.current.length > 0) {
       toggleConfirmModal();
     } else {
-      toast.info("Please select atleast one user!!");
+      toast.warning("Please select atleast one user!!");
+    }
+  };
+
+  const handleSetVisibility = async (e) => {
+    if (selectedRows.current.length > 0) {
+      let selectedRowData = selectedRows.current;
+      for (const { original } of selectedRowData) {
+        if (original.isVisible == e) {
+          toast.warning(
+            e == VisibilityStatus.STATUS_VISIBLE.value
+              ? "Selected user is already visible"
+              : "Selected user is already hidden"
+          );
+        } else {
+          let obj = {};
+          obj[original.id] = e;
+          try {
+            await fetchApi({
+              url: "xusers/secure/users/visibility",
+              method: "PUT",
+              data: obj
+            });
+            toast.success("Sucessfully updated Users visibility!!");
+            setUpdateTable(moment.now());
+          } catch (error) {
+            if (error) {
+              if (error && error.response) {
+                toast.error(error.response);
+              } else {
+                toast.error("Error occurred during set Users visibility");
+              }
+            }
+          }
+        }
+      }
+    } else {
+      toast.warning("Please select atleast one user!!");
     }
   };
 
@@ -110,7 +155,12 @@ function Users() {
       },
       {
         Header: "Email Address",
-        accessor: "emailAddress" // accessor is the "key" in the data
+        accessor: "emailAddress", // accessor is the "key" in the data
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return rawValue.value;
+          } else return "--";
+        }
       },
       {
         Header: "Role",
@@ -136,7 +186,7 @@ function Users() {
               return (
                 <h6>
                   <Badge variant="success">
-                    {UserTypes.USER_INTERNAL.label}{" "}
+                    {UserTypes.USER_INTERNAL.label}
                   </Badge>
                 </h6>
               );
@@ -144,7 +194,7 @@ function Users() {
               return (
                 <h6>
                   <Badge variant="warning">
-                    {UserTypes.USER_EXTERNAL.label}{" "}
+                    {UserTypes.USER_EXTERNAL.label}
                   </Badge>
                 </h6>
               );
@@ -183,12 +233,12 @@ function Users() {
         Header: "Visibility",
         accessor: "isVisible",
         Cell: (rawValue) => {
-          if (rawValue.value) {
-            if (rawValue)
+          if (rawValue) {
+            if (rawValue.value == VisibilityStatus.STATUS_VISIBLE.value)
               return (
                 <h6>
                   <Badge variant="success">
-                    {VisibilityStatus.STATUS_VISIBLE.label}{" "}
+                    {VisibilityStatus.STATUS_VISIBLE.label}
                   </Badge>
                 </h6>
               );
@@ -196,7 +246,7 @@ function Users() {
               return (
                 <h6>
                   <Badge variant="info">
-                    {VisibilityStatus.STATUS_HIDDEN.label}{" "}
+                    {VisibilityStatus.STATUS_HIDDEN.label}
                   </Badge>
                 </h6>
               );
@@ -250,20 +300,22 @@ function Users() {
           <Button variant="primary" size="sm" onClick={addUser}>
             Add User
           </Button>
-          <Button
-            variant="primary"
-            className="ml-2"
+          <DropdownButton
+            title="Set Visibility"
             size="sm"
-            onClick={addUser}
+            style={{ display: "inline-block" }}
+            className="ml-2"
+            onSelect={handleSetVisibility}
           >
-            Set Visibility
-          </Button>
+            <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
+            <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
+          </DropdownButton>
           <Button
             variant="danger"
             size="sm"
             title="Delete"
-            className="ml-2"
             onClick={handleDeleteBtnClick}
+            className="ml-2"
           >
             <i className="fa-fw fa fa-trash"></i>
           </Button>
@@ -276,15 +328,20 @@ function Users() {
           fetchData={fetchUserInfo}
           pageCount={pageCount}
           rowSelectOp={{ position: "first", selectedRows }}
+          getRowProps={(row) => ({
+            style: {
+              background: row.values.isVisible == 0 ? "rgba(0,0,0,.1)" : "white"
+            }
+          })}
         />
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
         <Modal.Body>{`Are you sure you want to delete ${selectedRows.current.length} users`}</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={toggleConfirmModal}>
+          <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleConfirmClick}>
+          <Button variant="primary" size="sm" onClick={handleConfirmClick}>
             Ok
           </Button>
         </Modal.Footer>

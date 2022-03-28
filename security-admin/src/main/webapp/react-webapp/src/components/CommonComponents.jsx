@@ -38,7 +38,7 @@ export const FieldError = ({ name }) => (
   <Field name={name}>
     {({ meta: { error, touched } }) => {
       return error && touched ? (
-        <div className="col-sm-2 invalid-field">{error}</div>
+        <div className="invalid-field">{error}</div>
       ) : null;
     }}
   </Field>

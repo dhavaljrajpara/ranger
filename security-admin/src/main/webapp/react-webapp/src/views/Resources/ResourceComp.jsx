@@ -144,7 +144,7 @@ export default function ResourceComp(props) {
       delete formValues[`isExcludesSupport-${levelKey}`];
       delete formValues[`isRecursiveSupport-${levelKey}`];
     }
-    if (!policyItem) {
+    if (policyItem) {
       removedSeletedAccess();
     }
     setLoader({

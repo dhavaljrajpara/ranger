@@ -1,11 +1,22 @@
-import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge, Button, Row, Col } from "react-bootstrap";
+import React, { useState, useCallback, useRef } from "react";
+import {
+  Badge,
+  Button,
+  Row,
+  Col,
+  Modal,
+  DropdownButton,
+  Dropdown
+} from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
+import moment from "moment-timezone";
+import { fetchApi } from "Utils/fetchAPI";
+import { toast } from "react-toastify";
 
 function Groups() {
   let history = useHistory();
@@ -14,37 +25,119 @@ function Groups() {
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
+  const [showModal, setConfirmModal] = useState(false);
+  const [updateTable, setUpdateTable] = useState(moment.now());
 
-  const fetchGroupInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let groupData = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const groupResp = await fetchApi({
-          url: "xusers/groups",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        groupData = groupResp.data.vXGroups;
-        totalCount = groupResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching Group list! ${error}`);
+  const fetchGroupInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let groupData = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          const groupResp = await fetchApi({
+            url: "xusers/groups",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          groupData = groupResp.data.vXGroups;
+          totalCount = groupResp.data.totalCount;
+        } catch (error) {
+          toast.error(`Error occurred while fetching Group list! ${error}`);
+        }
+        setGroupData(groupData);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setGroupData(groupData);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
+    },
+    [updateTable]
+  );
 
   const handleDeleteBtnClick = () => {
     if (selectedRows.current.length > 0) {
       toggleConfirmModal();
     } else {
-      toast.info("Please select atleast one group!!");
+      toast.warning("Please select atleast one group!!");
+    }
+  };
+
+  const toggleConfirmModal = () => {
+    setConfirmModal((state) => !state);
+  };
+
+  const handleConfirmClick = () => {
+    handleDeleteClick();
+  };
+
+  const handleDeleteClick = async () => {
+    const selectedData = selectedRows.current;
+    let errorMsg = "";
+    if (selectedData.length > 0) {
+      for (const { original } of selectedData) {
+        try {
+          await fetchApi({
+            url: `xusers/secure/groups/id/${original.id}`,
+            method: "DELETE",
+            params: {
+              forceDelete: true
+            }
+          });
+        } catch (error) {
+          if (error.response.data.msgDesc) {
+            errorMsg += error.response.data.msgDesc + "\n";
+          } else {
+            errorMsg +=
+              `Error occurred during deleting Groups: ${original.name}` + "\n";
+          }
+        }
+      }
+      if (errorMsg) {
+        toast.error(errorMsg);
+      } else {
+        toast.success("Group deleted successfully!");
+      }
+      setUpdateTable(moment.now());
+      toggleConfirmModal();
+    }
+  };
+
+  const handleSetVisibility = async (e) => {
+    if (selectedRows.current.length > 0) {
+      let selectedRowData = selectedRows.current;
+      for (const { original } of selectedRowData) {
+        if (original.isVisible == e) {
+          toast.warning(
+            e == VisibilityStatus.STATUS_VISIBLE.value
+              ? "Selected group is already visible"
+              : "Selected group is already hidden"
+          );
+        } else {
+          let obj = {};
+          obj[original.id] = e;
+          try {
+            await fetchApi({
+              url: "xusers/secure/groups/visibility",
+              method: "PUT",
+              data: obj
+            });
+            toast.success("Sucessfully updated Group visibility!!");
+            setUpdateTable(moment.now());
+          } catch (error) {
+            if (error) {
+              if (error && error.response) {
+                toast.error(error.response);
+              } else {
+                toast.error("Error occurred during set Group visibility");
+              }
+            }
+          }
+        }
+      }
+    } else {
+      toast.warning("Please select atleast one group!!");
     }
   };
 
@@ -105,20 +198,20 @@ function Groups() {
         Header: "Visibility",
         accessor: "isVisible",
         Cell: (rawValue) => {
-          if (rawValue.value) {
-            if (rawValue)
+          if (rawValue) {
+            if (rawValue.value == VisibilityStatus.STATUS_VISIBLE.value)
               return (
                 <h6>
                   <Badge variant="success">
-                    {VisibilityStatus.STATUS_VISIBLE.label}{" "}
+                    {VisibilityStatus.STATUS_VISIBLE.label}
                   </Badge>
                 </h6>
               );
             else
               return (
                 <h6>
-                  <Badge className="hiddenbadge">
-                    {VisibilityStatus.STATUS_HIDDEN.label}{" "}
+                  <Badge variant="info">
+                    {VisibilityStatus.STATUS_HIDDEN.label}
                   </Badge>
                 </h6>
               );
@@ -180,14 +273,16 @@ function Groups() {
           <Button variant="primary" size="sm" onClick={addGroup}>
             Add Group
           </Button>
-          <Button
-            variant="primary"
-            className="ml-2"
+          <DropdownButton
+            title="Set Visibility"
             size="sm"
-            onClick={addGroup}
+            style={{ display: "inline-block" }}
+            className="ml-2"
+            onSelect={handleSetVisibility}
           >
-            Set Visibility
-          </Button>
+            <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
+            <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
+          </DropdownButton>
           <Button
             variant="danger"
             size="sm"
@@ -206,8 +301,24 @@ function Groups() {
           fetchData={fetchGroupInfo}
           pageCount={pageCount}
           rowSelectOp={{ position: "first", selectedRows }}
+          getRowProps={(row) => ({
+            style: {
+              background: row.values.isVisible == 0 ? "rgba(0,0,0,.1)" : "white"
+            }
+          })}
         />
       </div>
+      <Modal show={showModal} onHide={toggleConfirmModal}>
+        <Modal.Body>{`Are you sure you want to delete ${selectedRows.current.length} group`}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
+            Close
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleConfirmClick}>
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

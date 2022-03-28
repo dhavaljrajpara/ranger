@@ -449,6 +449,7 @@ class GroupForm extends Component {
                     <Button
                       variant="primary"
                       type="submit"
+                      size="sm"
                       disabled={submitting}
                     >
                       Save
@@ -456,6 +457,7 @@ class GroupForm extends Component {
                     <Button
                       variant="secondary"
                       type="button"
+                      size="sm"
                       onClick={() => {
                         form.reset;
                         this.closeForm();

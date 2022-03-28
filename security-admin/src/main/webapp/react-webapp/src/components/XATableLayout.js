@@ -115,8 +115,8 @@ function XATableLayout({
     <div className="row">
       <div className="col-sm-12">
         <div className="table-responsive">
-          <Table striped bordered hover {...getTableProps()}>
-            <thead>
+          <Table bordered hover {...getTableProps()}>
+            <thead className="thead-light">
               {
                 // Loop over the header rows
                 headerGroups.map((headerGroup) => (

@@ -430,6 +430,7 @@ export default function AddUpdatePolicyForm() {
           method: "PUT",
           data: dataVal
         });
+        toast.success("Policy updated successfully!!");
         history.push(`/service/${serviceId}/policies/${policyData.policyType}`);
       } catch (error) {
         toast.error("Failed to save policy form!!");
@@ -442,6 +443,7 @@ export default function AddUpdatePolicyForm() {
           method: "POST",
           data
         });
+        toast.success("Policy save successfully!!");
         history.push(`/service/${serviceId}/policies/${policyType}`);
       } catch (error) {
         toast.error("Failed to save policy form!!");
@@ -612,6 +614,7 @@ export default function AddUpdatePolicyForm() {
                     serviceCompDetails={serviceCompDetails}
                     formValues={values}
                     policyType={policyId ? policyData.policyType : policyType}
+                    policyItem={true}
                   />
                   <Field
                     className="form-control"
@@ -797,18 +800,22 @@ export default function AddUpdatePolicyForm() {
                       </div>
                     </div>
                   )}
-
-                  <div>
-                    <Button type="submit">Save</Button>
-                    <Button
-                      variant="secondary"
-                      type="button"
-                      onClick={() => {
-                        closeForm();
-                      }}
-                    >
-                      Cancel
-                    </Button>
+                  <div className="row form-actions">
+                    <div className="col-md-9 offset-md-3">
+                      <Button type="submit" variant="primary" size="sm">
+                        Save
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          closeForm();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </form>
               )}

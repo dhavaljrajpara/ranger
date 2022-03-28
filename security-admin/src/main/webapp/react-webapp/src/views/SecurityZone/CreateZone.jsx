@@ -826,7 +826,7 @@ const CreateZone = (props) => {
               modelState={modelState}
               handleSave={handleSave}
               handleClose={handleClose}
-              policyItem={true}
+              policyItem={false}
             />
           </div>
         )}

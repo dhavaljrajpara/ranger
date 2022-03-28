@@ -252,8 +252,8 @@ class UserFormComp extends Component {
                       className="form-control"
                       disabled={this.props.isEditView ? true : false}
                     />
+                    <FieldError name="name" />
                   </div>
-                  <FieldError name="name" />
                 </div>
                 {!this.props.isEditView && (
                   <div className="form-group row">
@@ -390,6 +390,7 @@ class UserFormComp extends Component {
                     <Button
                       variant="primary"
                       type="submit"
+                      size="sm"
                       disabled={submitting}
                     >
                       Save
@@ -397,6 +398,7 @@ class UserFormComp extends Component {
                     <Button
                       variant="secondary"
                       type="button"
+                      size="sm"
                       onClick={() => {
                         form.reset;
                         this.closeForm();
