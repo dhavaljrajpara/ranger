@@ -251,9 +251,9 @@ define(function(require){
 		getColumns : function(){
 			var that = this;
 			var cols = {
-				id : {
+				policyId : {
                     cell : 'html',
-					label	: localization.tt("lbl.policyId"),
+                    label : localization.tt("lbl.policyId"),
                     formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
                         fromRaw: function (rawValue, model) {
                             if(XAUtil.isAuditorOrKMSAuditor(SessionMgr)){
@@ -281,14 +281,24 @@ define(function(require){
                             }
                         }
                     }),
-					editable: false,
-					sortable : false
-				},
-				name : {
-					cell : 'string',
-					label	: localization.tt("lbl.policyName"),
-					editable: false,
-					sortable : false
+                    editable: false,
+                    sortable : true,
+                    direction: "ascending",
+                },
+                policyName : {
+                    cell : 'string',
+                    label : localization.tt("lbl.policyName"),
+                    editable: false,
+                    sortable:true,
+                    formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+                        fromRaw: function (rawValue, model) {
+                            if(model) {
+                                return model.get('name');
+                            } else {
+                                return '--';
+                            }
+                        }
+                    })
                 },
                 policyLabels: {
                     cell	: Backgrid.HtmlCell.extend({className: 'cellWidth-1'}),
@@ -466,7 +476,7 @@ define(function(require){
                                 resources = this.rangerServiceDefModel.get('rowFilterDef')['resources'];
                         }
                         var resourceSearchOpt = _.map(resources, function(resource){
-                                        return { 'name' : resource.name, 'label' : resource.label };
+                                        return { 'name' : resource.name, 'label' : resource.label, 'description':resource.description };
                         });
 			var PolicyStatusValue = _.map(XAEnums.ActiveStatus, function(status) { return { 'label': status.label, 'value': Boolean(status.value)}; });
 	
@@ -479,9 +489,7 @@ define(function(require){
                                                {text : "Role Name",   label :"role" ,  info :localization.tt('h.roleMsg'), urlLabel : 'roleName'},
                                                {text : "Policy Label",   label :"policyLabelsPartial" ,  info :localization.tt('h.policyLabelsinfo'), urlLabel : 'policyLabel'},
                                                ];
-			                     // {text : 'Start Date',label :'startDate'},{text : 'End Date',label :'endDate'},
-				                 //  {text : 'Today',label :'today'}];
-                        var info = { collection : localization.tt('h.collection')    , column   :localization.tt('lbl.columnName'),
+			            var info = { collection : localization.tt('h.collection')    , column   :localization.tt('lbl.columnName'),
                                          'column-family':localization.tt('msg.columnfamily') , database :localization.tt('h.database'),
                                           entity        :localization.tt('h.entity') , keyname  :localization.tt('lbl.keyName'),
                                           path:localization.tt('h.path'), queue: localization.tt('h.queue'), service:localization.tt('h.serviceNameMsg'),
@@ -497,7 +505,7 @@ define(function(require){
                                         return {
                                                 'text': opt.label,
                                                 'label': 'resource:'+ opt.name,
-                                                'info' : info[opt.name],
+                                                'info' : !_.isUndefined(info[opt.name]) ? info[opt.name] : opt.description,
                                                 'urlLabel' : XAUtil.stringToCamelCase(opt.label.toLowerCase()),
                                         };
 			});

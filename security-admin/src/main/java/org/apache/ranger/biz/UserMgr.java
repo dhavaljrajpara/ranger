@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.ContextUtil;
@@ -66,6 +65,8 @@ import org.apache.ranger.view.VXPortalUserList;
 import org.apache.ranger.view.VXResponse;
 import org.apache.ranger.view.VXString;
 import org.apache.ranger.view.VXUserPermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Component;
@@ -75,7 +76,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class UserMgr {
 
-	private static final Logger logger = Logger.getLogger(UserMgr.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserMgr.class);
 	@Autowired
 	RangerDaoManager daoManager;
 
@@ -699,7 +700,7 @@ public class UserMgr {
 		// Add sort by
 		String sortBy = searchCriteria.getSortBy();
 		String querySortBy = "u.loginId";
-		if (!stringUtil.isEmpty(sortBy)) {
+		if (sortBy != null && !sortBy.trim().isEmpty()) {
 			sortBy = sortBy.trim();
 			if (sortBy.equalsIgnoreCase("userId")) {
 				querySortBy = "u.id";
@@ -1118,7 +1119,7 @@ public class UserMgr {
                 if (loginId != null && !loginId.isEmpty()) {
 			xXPortalUser = this.findByLoginId(loginId);
 			if (xXPortalUser == null) {
-				if (!stringUtil.isEmpty(emailAddress)) {
+				if (emailAddress != null && !emailAddress.trim().isEmpty()) {
 					xXPortalUser = this.findByEmailAddress(emailAddress);
 					if (xXPortalUser == null) {
                                             xXPortalUser = this.createUser(userProfile,
@@ -1201,7 +1202,7 @@ public class UserMgr {
             if (logger.isDebugEnabled()) {
                 logger.debug("Permission"
                         + " denied. LoggedInUser="
-                        + (session != null ? session.getXXPortalUser().getId()
+                        + (session != null && session.getXXPortalUser() != null ? session.getXXPortalUser().getId()
                                 : "")
                         + " isn't permitted to perform the action.");
             }
@@ -1272,9 +1273,6 @@ public class UserMgr {
             if (xXPortalUser.getUserSource() != RangerCommonEnums.USER_EXTERNAL) {
 		xXPortalUser.setPassword(encryptedNewPwd);
              }
-             else if (xXPortalUser.getUserSource() != RangerCommonEnums.USER_EXTERNAL) {
-		 xXPortalUser.setPassword(xXPortalUser.getPassword());
-             }
              xXPortalUser = daoManager.getXXPortalUser().update(xXPortalUser);
 		}
 		return xXPortalUser;
@@ -1295,9 +1293,6 @@ public class UserMgr {
 		String encryptedNewPwd = encrypt(xXPortalUser.getLoginId(),userPassword);
        if (xXPortalUser.getUserSource() != RangerCommonEnums.USER_EXTERNAL) {
                 xXPortalUser.setPassword(encryptedNewPwd);
-       }
-       else if (xXPortalUser.getUserSource() != RangerCommonEnums.USER_EXTERNAL) {
-	   xXPortalUser.setPassword(xXPortalUser.getPassword());
        }
 
 		xXPortalUser = daoManager.getXXPortalUser().update(xXPortalUser);

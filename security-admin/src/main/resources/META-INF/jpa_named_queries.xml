@@ -24,6 +24,18 @@
 			   WHERE obj.extSessionId = :sessionId
 		</query>
 	</named-query>
+	<named-query name="XXAuthSession.getRecentAuthFailureCountByLoginId">
+		<query>SELECT COUNT(1) FROM XXAuthSession obj
+			WHERE obj.loginId = :loginId
+			  AND obj.authStatus != 1
+			  AND obj.createTime &gt; COALESCE(
+			    (SELECT MAX(obj2.createTime) FROM XXAuthSession obj2
+			      WHERE obj2.loginId = :loginId
+			        AND obj2.authStatus = 1
+			        AND obj2.createTime &gt; :authWindowStartTime),
+			    :authWindowStartTime)
+		</query>
+	</named-query>
 
 	<!-- XXPortalUser -->
 	<named-query name="XXPortalUser.findByEmailAddress">
@@ -41,6 +53,11 @@
 	<named-query name="XXPortalUser.findByRole">
 		<query>SELECT obj FROM XXPortalUser obj, XXPortalUserRole role WHERE obj.id = role.userId
 			and role.userRole = :userRole</query>
+	</named-query>
+
+	<named-query name="XXPortalUser.getNonUserRoleExternalUsers">
+		<query>SELECT obj.loginId FROM XXPortalUser obj, XXPortalUserRole role WHERE obj.id = role.userId
+			and role.userRole != :userRole and obj.userSource = :userSource </query>
 	</named-query>
 
 	<named-query name="XXPortalUser.getUserAddedReport">
@@ -705,12 +722,16 @@
 		<query>select obj from XXPolicyRefAccessType obj where obj.policyId = :policyId </query>
 	</named-query>
 
+	<named-query name="XXPolicyRefAccessType.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefAccessType obj where obj.policyId = :policyId </query>
+	</named-query>
+
 	<named-query name="XXPolicyRefAccessType.findByAccessTypeDefId">
 		<query>select obj from XXPolicyRefAccessType obj where obj.accessDefId = :accessDefId</query>
 	</named-query>
 
-	<named-query name="XXPolicyRefAccessType.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefAccessType obj WHERE obj.policyId = :policyId</query>
+	<named-query name="XXPolicyRefAccessType.deleteByIds">
+		<query>DELETE FROM XXPolicyRefAccessType obj WHERE obj.id IN :ids</query>
 	</named-query>
 
 	<!-- XXPolicyRefCondition -->
@@ -718,17 +739,25 @@
 		<query>select obj from XXPolicyRefCondition obj where obj.policyId = :policyId </query>
 	</named-query>
 
+	<named-query name="XXPolicyRefCondition.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefCondition obj where obj.policyId = :policyId </query>
+	</named-query>
+
 	<named-query name="XXPolicyRefCondition.findByConditionName">
 		<query>select obj from XXPolicyRefCondition obj where obj.conditionName = :conditionName</query>
 	</named-query>
 
-	<named-query name="XXPolicyRefCondition.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefCondition obj WHERE obj.policyId = :policyId </query>
+	<named-query name="XXPolicyRefCondition.deleteByIds">
+		<query>DELETE FROM XXPolicyRefCondition obj WHERE obj.id IN :ids </query>
 	</named-query>
 
 	<!-- XXPolicyRefGroup -->
 	<named-query name="XXPolicyRefGroup.findByPolicyId">
 		<query>select obj from XXPolicyRefGroup obj where obj.policyId = :policyId </query>
+	</named-query>
+
+	<named-query name="XXPolicyRefGroup.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefGroup obj where obj.policyId = :policyId </query>
 	</named-query>
 
 	<named-query name="XXPolicyRefGroup.findByGroupName">
@@ -740,8 +769,8 @@
 		<query>select obj from XXPolicyRefGroup obj where obj.groupId = :groupId and obj.policyId = :policyId </query>
 	</named-query>
 
-	<named-query name="XXPolicyRefGroup.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefGroup obj WHERE obj.policyId = :policyId</query>
+	<named-query name="XXPolicyRefGroup.deleteByIds">
+		<query>DELETE FROM XXPolicyRefGroup obj WHERE obj.id IN :ids</query>
 	</named-query>
 
 	<named-query name="XXPolicyRefCondition.findByConditionDefIdAndPolicyId">
@@ -891,12 +920,16 @@
 		<query>select obj from XXPolicyRefDataMaskType obj where obj.policyId = :policyId </query>
 	</named-query>
 
+	<named-query name="XXPolicyRefDataMaskType.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefDataMaskType obj where obj.policyId = :policyId </query>
+	</named-query>
+
 	<named-query name="XXPolicyRefDataMaskType.findByDataMaskTypeName">
 		<query>select obj from XXPolicyRefDataMaskType obj where obj.dataMaskTypeName = :dataMaskTypeName</query>
 	</named-query>
 
-	<named-query name="XXPolicyRefDataMaskType.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefDataMaskType obj WHERE obj.policyId = :policyId </query>
+	<named-query name="XXPolicyRefDataMaskType.deleteByIds">
+		<query>DELETE FROM XXPolicyRefDataMaskType obj WHERE obj.id IN :ids </query>
 	</named-query>
 
 	<!-- XXPolicyRefResource -->
@@ -904,17 +937,25 @@
 		<query>select obj from XXPolicyRefResource obj where obj.policyId = :policyId </query>
 	</named-query>
 
+	<named-query name="XXPolicyRefResource.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefResource obj where obj.policyId = :policyId </query>
+	</named-query>
+
 	<named-query name="XXPolicyRefResource.findByResourceDefId">
 		<query>select obj from XXPolicyRefResource obj where obj.resourceDefId = :resourceDefId</query>
 	</named-query>
 
-	<named-query name="XXPolicyRefResource.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefResource obj WHERE obj.policyId = :policyId </query>
+	<named-query name="XXPolicyRefResource.deleteByIds">
+		<query>DELETE FROM XXPolicyRefResource obj WHERE obj.id IN :ids </query>
 	</named-query>
 
 	<!-- XXPolicyRefUser -->
 	<named-query name="XXPolicyRefUser.findByPolicyId">
 		<query>select obj from XXPolicyRefUser obj where obj.policyId = :policyId </query>
+	</named-query>
+
+	<named-query name="XXPolicyRefUser.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefUser obj where obj.policyId = :policyId </query>
 	</named-query>
 
 	<named-query name="XXPolicyRefUser.findByUserName">
@@ -925,8 +966,8 @@
 		<query>select obj from XXPolicyRefUser obj where obj.userId = :userId</query>
 	</named-query>
 
-	<named-query name="XXPolicyRefUser.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefUser obj WHERE obj.policyId = :policyId</query>
+	<named-query name="XXPolicyRefUser.deleteByIds">
+		<query>DELETE FROM XXPolicyRefUser obj WHERE obj.id IN :ids</query>
 	</named-query>
 
 	<!-- XXPolicyItemCondition -->
@@ -1086,6 +1127,10 @@
 		<query>DELETE FROM XXUserPermission obj WHERE obj.moduleId=:moduleId</query>
 	</named-query>
 
+	<named-query name="XXUserPermission.findModuleUsersByModuleId">
+	<query>select xpu.loginId from XXUserPermission xump, XXPortalUser xpu where xump.moduleId=:moduleId and xump.isAllowed=:isAllowed and xump.userId = xpu.id </query>
+	</named-query>
+
 	<!-- XXGroupPermission -->
 	<named-query name="XXGroupPermission.findByGroupId">
 		<query>SELECT obj FROM XXGroupPermission obj
@@ -1095,17 +1140,11 @@
 
 	<named-query name="XXGroupPermission.findByModuleId">
 		<query>SELECT obj FROM XXGroupPermission obj
-			   WHERE obj.moduleId=:moduleId	AND Obj.isAllowed=:isAllowed
+			   WHERE obj.moduleId=:moduleId	AND obj.isAllowed=:isAllowed
 		 </query>
 	</named-query>
-	
+
 	<named-query name="XXGroupPermissionUpdates.findByModuleId">
-		<query>SELECT obj FROM XXGroupPermission obj
-			   WHERE obj.moduleId=:moduleId	AND Obj.isAllowed=:isAllowed
-		 </query>
-	</named-query>
-	
-	<named-query name="XXGroupPermissionUpdate.findByModuleId">
 		<query>SELECT obj FROM XXGroupPermission obj
 			   WHERE obj.moduleId=:moduleId
 		 </query>
@@ -1126,7 +1165,12 @@
 	<named-query name="XXGroupPermission.deleteByModuleId">
 		<query>DELETE FROM XXGroupPermission obj WHERE obj.moduleId=:moduleId</query>
 	</named-query>
-	
+
+	<named-query name="XXGroupPermission.findModuleGroupsByModuleId">
+	<query>select xg.name from XXGroupPermission xgmp, XXGroup xg where xgmp.moduleId=:moduleId and xgmp.isAllowed=:isAllowed and xgmp.groupId =xg.id </query>
+	</named-query>
+
+
 	<named-query name="XXPortalUser.findByUserName">
 		<query>SELECT Obj FROM XXPortalUser obj
 			   WHERE obj.loginId=:loginId
@@ -1738,6 +1782,10 @@
 		<query>select obj from XXPolicyRefRole obj where obj.policyId = :policyId </query>
 	</named-query>
 
+	<named-query name="XXPolicyRefRole.findIdsByPolicyId">
+		<query>select obj.id from XXPolicyRefRole obj where obj.policyId = :policyId </query>
+	</named-query>
+
 	<named-query name="XXPolicyRefRole.findByRoleName">
 		<query>select obj from XXPolicyRefRole obj where obj.roleName = :roleName</query>
 	</named-query>
@@ -1765,8 +1813,8 @@
         <query>select count(obj.policyId) from XXPolicyRefRole obj where obj.roleName = :roleName </query>
     </named-query>
 
-	<named-query name="XXPolicyRefRole.deleteByPolicyId">
-		<query>DELETE FROM XXPolicyRefRole obj WHERE obj.policyId = :policyId </query>
+	<named-query name="XXPolicyRefRole.deleteByIds">
+		<query>DELETE FROM XXPolicyRefRole obj WHERE obj.id IN :ids </query>
 	</named-query>
 
 	<!-- XXTagChangeLog -->

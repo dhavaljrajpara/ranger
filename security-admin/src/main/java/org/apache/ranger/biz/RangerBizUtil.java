@@ -36,7 +36,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.ContextUtil;
@@ -72,12 +71,14 @@ import org.apache.ranger.view.VXResponse;
 import org.apache.ranger.view.VXString;
 import org.apache.ranger.view.VXStringList;
 import org.apache.ranger.view.VXUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RangerBizUtil {
-	private static final Logger logger = Logger.getLogger(RangerBizUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(RangerBizUtil.class);
 
 	@Autowired
 	RESTErrorUtil restErrorUtil;
@@ -111,6 +112,7 @@ public class RangerBizUtil {
 	public static final String AUDIT_STORE_RDBMS = "DB";
 	public static final String AUDIT_STORE_SOLR = "solr";
 	public static final String AUDIT_STORE_ElasticSearch = "elasticSearch";
+	public static final String AUDIT_STORE_CloudWatch = "cloudwatch";
 	public static final boolean batchClearEnabled = PropertiesUtil.getBooleanProperty("ranger.jpa.jdbc.batch-clear.enable", true);
 	public static final int policyBatchSize = PropertiesUtil.getIntProperty("ranger.jpa.jdbc.batch-clear.size", 10);
 	public static final int batchPersistSize = PropertiesUtil.getIntProperty("ranger.jpa.jdbc.batch-persist.size", 500);
@@ -1535,14 +1537,8 @@ public class RangerBizUtil {
 
 	public boolean checkAdminAccess() {
 		UserSessionBase currentUserSession = ContextUtil.getCurrentUserSession();
-		if (currentUserSession != null) {
-			return currentUserSession.isUserAdmin();
-		} else {
-			VXResponse vXResponse = new VXResponse();
-			vXResponse.setStatusCode(HttpServletResponse.SC_UNAUTHORIZED);
-			vXResponse.setMsgDesc("Bad Credentials");
-			throw restErrorUtil.generateRESTException(vXResponse);
-		}
+
+		return currentUserSession != null && currentUserSession.isUserAdmin();
 	}
 
 }

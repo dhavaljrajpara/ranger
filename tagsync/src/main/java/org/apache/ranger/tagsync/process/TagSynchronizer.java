@@ -31,14 +31,14 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.SecureClientLogin;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.ranger.tagsync.model.TagSink;
 import org.apache.ranger.tagsync.model.TagSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TagSynchronizer {
 
-	private static final Logger LOG = Logger.getLogger(TagSynchronizer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(TagSynchronizer.class);
 
 	private static final String AUTH_TYPE_KERBEROS = "kerberos";
 
@@ -54,17 +54,6 @@ public class TagSynchronizer {
 	private volatile boolean isShutdownInProgress = false;
 
 	public static void main(String[] args) {
-
-		try {
-			// load log configuration file dynamically if log4j.properties changed
-			if (StringUtils.isNotBlank(System.getProperty("log4j.configuration"))) {
-				String logPropFile = StringUtils.splitByWholeSeparator(System.getProperty("log4j.configuration"), ":")[1];
-				PropertyConfigurator.configureAndWatch(logPropFile, 10000L);
-			}
-		} catch (Exception ignored) {
-			LOG.warn("Failed to get log4j.configuration  Reason: " + ignored.toString());
-		}
-
 		TagSynchronizer tagSynchronizer = new TagSynchronizer();
 
 		TagSyncConfig config = TagSyncConfig.getInstance();
@@ -370,7 +359,7 @@ public class TagSynchronizer {
 				}
 				tagSource.setName(tagSourceName);
 			} catch (Exception e) {
-				LOG.fatal("Can't instantiate tagSource class for tagSourceName="
+				LOG.error("Can't instantiate tagSource class for tagSourceName="
 						+ tagSourceName + ", className=" + className
 						+ ", propertyPrefix=" + propPrefix, e);
 			}
@@ -404,17 +393,13 @@ public class TagSynchronizer {
 			LOG.info("Configured for Kerberos Authentication");
 
 			if (SecureClientLogin.isKerberosCredentialExists(principal, keytab)) {
-				LOG.error("Invalid Kerberos principal and/or keytab specified. Failed to initialize Kerberos identity");
-			} else {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Trying to get kerberos identity");
 				}
 
-				UserGroupInformation kerberosIdentity;
-
 				try {
 					UserGroupInformation.loginUserFromKeytab(principal, keytab);
-					kerberosIdentity = UserGroupInformation.getLoginUser();
+					UserGroupInformation kerberosIdentity = UserGroupInformation.getLoginUser();
 					if (kerberosIdentity != null) {
 						props.put(TagSyncConfig.TAGSYNC_KERBEROS_IDENTITY, kerberosIdentity.getUserName());
 						if (LOG.isDebugEnabled()) {
@@ -427,6 +412,8 @@ public class TagSynchronizer {
 				} catch (IOException exception) {
 					LOG.error("Failed to get UGI from principal:[" + principal + "], and keytab:[" + keytab + "]", exception);
 				}
+			} else {
+				LOG.error("Invalid Kerberos principal and/or keytab specified. Failed to initialize Kerberos identity");
 			}
 		} else {
 			LOG.info("Not configured for Kerberos Authentication");

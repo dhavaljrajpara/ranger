@@ -23,8 +23,6 @@
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -34,6 +32,8 @@ import org.apache.ranger.authorization.hadoop.config.RangerPluginConfig;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.plugin.model.RangerRole;
 import org.apache.ranger.plugin.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Cookie;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RangerAdminRESTClient extends AbstractRangerAdminClient {
-	private static final Log LOG = LogFactory.getLog(RangerAdminRESTClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAdminRESTClient.class);
 
 	private String           serviceName;
     private String           serviceNameUrlParam;
@@ -107,6 +107,9 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		}
 		int	 restClientConnTimeOutMs	= config.getInt(propertyPrefix + ".policy.rest.client.connection.timeoutMs", 120 * 1000);
 		int	 restClientReadTimeOutMs	= config.getInt(propertyPrefix + ".policy.rest.client.read.timeoutMs", 30 * 1000);
+		int	 restClientMaxRetryAttempts	= config.getInt(propertyPrefix + ".policy.rest.client.max.retry.attempts", 3);
+		int	 restClientRetryIntervalMs	= config.getInt(propertyPrefix + ".policy.rest.client.retry.interval.ms", 1 * 1000);
+
 		supportsPolicyDeltas            = config.getBoolean(propertyPrefix + RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_POLICY_DELTA, RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_POLICY_DELTA_DEFAULT);
 		supportsTagDeltas               = config.getBoolean(propertyPrefix + RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_TAG_DELTA, RangerCommonConstants.PLUGIN_CONFIG_SUFFIX_TAG_DELTA_DEFAULT);
 		isRangerCookieEnabled			= config.getBoolean(propertyPrefix + ".policy.rest.client.cookie.enabled", RangerCommonConstants.POLICY_REST_CLIENT_SESSION_COOKIE_ENABLED);
@@ -119,7 +122,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
             url = url.substring(0, url.length() - 1);
         }
 
-		init(url, sslConfigFileName, restClientConnTimeOutMs , restClientReadTimeOutMs, config);
+		init(url, sslConfigFileName, restClientConnTimeOutMs , restClientReadTimeOutMs, restClientMaxRetryAttempts, restClientRetryIntervalMs, config);
 
         try {
             this.serviceNameUrlParam = URLEncoderUtil.encodeURIParam(serviceName);
@@ -655,7 +658,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		}
 	}
 
-	private void init(String url, String sslConfigFileName, int restClientConnTimeOutMs , int restClientReadTimeOutMs, Configuration config) {
+	private void init(String url, String sslConfigFileName, int restClientConnTimeOutMs , int restClientReadTimeOutMs, int restClientMaxRetryAttempts, int restClientRetryIntervalMs, Configuration config) {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("==> RangerAdminRESTClient.init(" + url + ", " + sslConfigFileName + ")");
 		}
@@ -663,6 +666,8 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		restClient = new RangerRESTClient(url, sslConfigFileName, config);
 		restClient.setRestClientConnTimeOutMs(restClientConnTimeOutMs);
 		restClient.setRestClientReadTimeOutMs(restClientReadTimeOutMs);
+		restClient.setMaxRetryAttempts(restClientMaxRetryAttempts);
+		restClient.setRetryIntervalMs(restClientRetryIntervalMs);
 
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerAdminRESTClient.init(" + url + ", " + sslConfigFileName + ")");
@@ -781,7 +786,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking UserStore updated as user : " + user);
 			}
-			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE + serviceNameUrlParam;
+			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_USERSTORE + serviceNameUrlParam;
 			response = restClient.get(relativeURL, queryParams);
 		}
 

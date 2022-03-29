@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,13 +35,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.DefaultValue;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.ranger.biz.RangerBizUtil;
 import org.apache.ranger.biz.SessionMgr;
 import org.apache.ranger.biz.XUserMgr;
@@ -80,6 +80,8 @@ import org.apache.ranger.service.XUserService;
 import org.apache.ranger.ugsyncutil.model.GroupUserInfo;
 import org.apache.ranger.ugsyncutil.model.UsersGroupRoleAssignments;
 import org.apache.ranger.view.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -160,7 +162,7 @@ public class XUserREST {
 	@Autowired
 	ServiceDBStore svcStore;
 	
-	static final Logger logger = Logger.getLogger(XUserMgr.class);
+	static final Logger logger = LoggerFactory.getLogger(XUserMgr.class);
 
 	// Handle XGroup
 	@GET
@@ -977,6 +979,27 @@ public class XUserREST {
 	}
 
 	@GET
+	@Path("/permissionlist")
+	@Produces({ "application/xml", "application/json" })
+	@PreAuthorize("@rangerPreAuthSecurityHandler.isAPIAccessible(\"" + RangerAPIList.SEARCH_X_MODULE_DEF + "\")")
+	public VXModulePermissionList searchXModuleDefList(@Context HttpServletRequest request) {
+		SearchCriteria searchCriteria = searchUtil.extractCommonCriterias(
+				request, xModuleDefService.sortFields);
+
+		searchUtil.extractString(request, searchCriteria, "module",
+				"modulename", null);
+
+		searchUtil.extractString(request, searchCriteria, "moduleDefList",
+				"id", null);
+		searchUtil.extractString(request, searchCriteria, "userName",
+				"userName", null);
+		searchUtil.extractString(request, searchCriteria, "groupName",
+				"groupName", null);
+
+		return xUserMgr.searchXModuleDefList(searchCriteria);
+	}
+
+	@GET
 	@Path("/permission/count")
 	@Produces({ "application/xml", "application/json" })
 	@PreAuthorize("@rangerPreAuthSecurityHandler.isAPIAccessible(\"" + RangerAPIList.COUNT_X_MODULE_DEF + "\")")
@@ -1271,6 +1294,84 @@ public class XUserREST {
                         xUserMgr.deleteXGroup(groupId, forceDelete);
                 }
         }
+
+    @GET
+    @Path("/download/{serviceName}")
+    @Produces({ "application/xml", "application/json" })
+    public RangerUserStore getRangerUserStoreIfUpdated(@PathParam("serviceName") String serviceName,
+                                                       @QueryParam("lastKnownUserStoreVersion") Long lastKnownUserStoreVersion,
+                                                       @DefaultValue("0") @QueryParam("lastActivationTime") Long lastActivationTime,
+                                                       @QueryParam("pluginId") String pluginId,
+                                                       @DefaultValue("") @QueryParam("clusterName") String clusterName,
+                                                       @DefaultValue("") @QueryParam(RangerRESTUtils.REST_PARAM_CAPABILITIES) String pluginCapabilities,
+                                                       @Context HttpServletRequest request) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.debug("==> XUserREST.getRangerUserStoreIfUpdated(serviceName={}, lastKnownUserStoreVersion={}, lastActivationTime={})", serviceName, lastKnownUserStoreVersion, lastActivationTime);
+        }
+
+        RangerUserStore ret      = null;
+        boolean         isValid  = false;
+        int             httpCode = HttpServletResponse.SC_OK;
+        String          logMsg   = null;
+
+        try {
+            bizUtil.failUnauthenticatedIfNotAllowed();
+
+            isValid = serviceUtil.isValidService(serviceName, request);
+        } catch (WebApplicationException webException) {
+            httpCode = webException.getResponse().getStatus();
+            logMsg   = webException.getResponse().getEntity().toString();
+        } catch (Exception e) {
+            httpCode = HttpServletResponse.SC_BAD_REQUEST;
+            logMsg   = e.getMessage();
+        }
+
+        Long downloadedVersion = null;
+
+        if (isValid) {
+            try {
+                XXService xService = rangerDaoManager.getXXService().findByName(serviceName);
+
+                if (xService != null) {
+                    if (lastKnownUserStoreVersion == null) {
+                        lastKnownUserStoreVersion = Long.valueOf(-1);
+                    }
+
+                    RangerUserStore rangerUserStore = xUserMgr.getRangerUserStore(lastKnownUserStoreVersion);
+
+                    if (rangerUserStore == null) {
+                        downloadedVersion = lastKnownUserStoreVersion;
+                        httpCode          = HttpServletResponse.SC_NOT_MODIFIED;
+                        logMsg            = "No change since last update";
+                    } else {
+                        downloadedVersion = rangerUserStore.getUserStoreVersion();
+                        ret               = rangerUserStore;
+                        httpCode          = HttpServletResponse.SC_OK;
+                        logMsg            = "Returning RangerUserStore version " + downloadedVersion;
+                    }
+                }
+            } catch (Throwable excp) {
+                logger.error("getRangerUserStoreIfUpdated(serviceName={}, lastKnownUserStoreVersion={}, lastActivationTime={}) failed", serviceName, lastKnownUserStoreVersion, lastActivationTime, excp);
+
+                httpCode = HttpServletResponse.SC_BAD_REQUEST;
+                logMsg   = excp.getMessage();
+            }
+        }
+
+        assetMgr.createPluginInfo(serviceName, pluginId, request, RangerPluginInfo.ENTITY_TYPE_USERSTORE, downloadedVersion, lastKnownUserStoreVersion, lastActivationTime, httpCode, clusterName, pluginCapabilities);
+
+        if (httpCode != HttpServletResponse.SC_OK) {
+            boolean logError = httpCode != HttpServletResponse.SC_NOT_MODIFIED;
+
+            throw restErrorUtil.createRESTException(httpCode, logMsg, logError);
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("<== XUserREST.getRangerUserStoreIfUpdated(serviceName={}, lastKnownUserStoreVersion={}, lastActivationTime={}): {}", serviceName, lastKnownUserStoreVersion, lastActivationTime, ret);
+        }
+
+        return ret;
+    }
 
 	@GET
 	@Path("/secure/download/{serviceName}")

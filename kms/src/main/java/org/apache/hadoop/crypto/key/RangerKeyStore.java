@@ -70,7 +70,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.crypto.key.KeyProvider.Metadata;
 import org.apache.hadoop.crypto.key.RangerKeyStoreProvider.KeyMetadata;
-import org.apache.log4j.Logger;
 import org.apache.ranger.entity.XXRangerKeyStore;
 import org.apache.ranger.kms.dao.DaoManager;
 import org.apache.ranger.kms.dao.RangerKMSDao;
@@ -78,6 +77,8 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides the Database store implementation.
@@ -85,15 +86,15 @@ import org.codehaus.jackson.type.TypeReference;
 
 public class RangerKeyStore extends KeyStoreSpi {
 
-    static final Logger logger = Logger.getLogger(RangerKeyStore.class);
+    static final Logger logger = LoggerFactory.getLogger(RangerKeyStore.class);
     private static final String KEY_METADATA = "KeyMetadata";
     private static final String KEY_NAME_VALIDATION = "[a-z,A-Z,0-9](?!.*--)(?!.*__)(?!.*-_)(?!.*_-)[\\w\\-\\_]*";
     private static final Pattern pattern = Pattern.compile(KEY_NAME_VALIDATION);
     private static final String AZURE_KEYVAULT_ENABLED = "ranger.kms.azurekeyvault.enabled";
-    private boolean azureKeyVaultEnabled = false;
+    private boolean keyVaultEnabled = false;
 
     private DaoManager daoManager;
-    private RangerKeyVaultKeyGenerator kvKeyGen;
+    private RangerKMSMKI masterKeyProvider;
 
     // keys
     private static class KeyEntry {
@@ -124,23 +125,29 @@ public class RangerKeyStore extends KeyStoreSpi {
     private Map<String, Object> keyEntries = new ConcurrentHashMap<>();
     private Map<String, Object> deltaEntries = new ConcurrentHashMap<>();
 
-    RangerKeyStore() {
+    public RangerKeyStore() {
     }
 
     public RangerKeyStore(DaoManager daoManager) {
         this.daoManager = daoManager;
     }
-    
+
     public RangerKeyStore(DaoManager daoManager, Configuration conf, KeyVaultClient kvClient) {
         this.daoManager = daoManager;
-        this.kvKeyGen = new RangerKeyVaultKeyGenerator(conf, kvClient);
+        this.masterKeyProvider = new RangerAzureKeyVaultKeyGenerator(conf, kvClient);
         if(conf != null
 				&& StringUtils.isNotEmpty(conf
 						.get(AZURE_KEYVAULT_ENABLED))
 				&& conf.get(AZURE_KEYVAULT_ENABLED).equalsIgnoreCase(
 						"true")){
-        	azureKeyVaultEnabled = true;
+            keyVaultEnabled = true;
         }
+    }
+
+    public RangerKeyStore(DaoManager daoManager, boolean keyVaultEnabled, RangerKMSMKI masterKeyProvider) {
+        this.daoManager = daoManager;
+        this.masterKeyProvider = masterKeyProvider;
+        this.keyVaultEnabled = keyVaultEnabled;
     }
 
     String convertAlias(String alias) {
@@ -176,7 +183,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 				return null;
 			}
 			SecretKeyByteEntry key = (SecretKeyByteEntry) entry;
-			byte[] decryptKeyByte = kvKeyGen.dencryptZoneKey(key.key);
+			byte[] decryptKeyByte = masterKeyProvider.decryptZoneKey(key.key);
 			return decryptKeyByte;
 		} catch (Exception ex) {
 			throw new Exception("Error while decrpting zone key. Name : "
@@ -224,7 +231,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 			try {
 				entry.date = new Date();
 				// encrypt and store the key
-				entry.key = kvKeyGen.encryptZoneKey(key);
+				entry.key = masterKeyProvider.encryptZoneKey(key);
 				entry.cipher_field = cipher;
 				entry.bit_length = bitLength;
 				entry.description = description;
@@ -396,7 +403,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 			logger.debug("==> RangerKeyStore.engineStore()");
 		}
 		synchronized (deltaEntries) {
-			if (azureKeyVaultEnabled) {
+			if (keyVaultEnabled) {
 				for (Entry<String, Object> entry : deltaEntries.entrySet()) {
 					Long creationDate = ((SecretKeyByteEntry) entry.getValue()).date
 							.getTime();
@@ -528,7 +535,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 			}
 
 			keyEntries.clear();
-			if (azureKeyVaultEnabled) {
+			if (keyVaultEnabled) {
 				for (XXRangerKeyStore rangerKey : rangerKeyDetails) {
 					String encodedStr = rangerKey.getEncoded();
 					byte[] encodedByte = DatatypeConverter
@@ -731,7 +738,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 		}
 		synchronized (deltaEntries) {
 			KeyStore ks;
-			if (azureKeyVaultEnabled) {
+			if (keyVaultEnabled) {
 				try {
 					ks = KeyStore.getInstance(fileFormat);
 					ks.load(stream, storePass);
@@ -816,7 +823,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 						validateKeyName(keyName);
 						entry.attributes = "{\"key.acl.name\":\"" + keyName
 								+ "\"}";
-						entry.key = kvKeyGen.encryptZoneKey(secretKey);
+						entry.key = masterKeyProvider.encryptZoneKey(secretKey);
 						entry.date = ks.getCreationDate(alias);
 						entry.description = k.getFormat() + " - "
 								+ ks.getType();
@@ -921,7 +928,7 @@ public class RangerKeyStore extends KeyStoreSpi {
                     Key key;
                     while (e.hasMoreElements()) {
                         alias = e.nextElement();
-                        if(azureKeyVaultEnabled){
+                        if(keyVaultEnabled){
                         	key = engineGetDecryptedZoneKey(alias);
 						} else {
 							key = engineGetKey(alias, masterKey);
@@ -963,9 +970,7 @@ public class RangerKeyStore extends KeyStoreSpi {
     	   	return keyEntries.get(alias);
     }
 
-	public XXRangerKeyStore convertKeysBetweenRangerKMSAndAzureKeyVault(
-			String alias, Key key,
-			RangerKeyVaultKeyGenerator rangerKVKeyGenerator) {
+	private XXRangerKeyStore convertKeysBetweenRangerKMSAndHSM(String alias, Key key, RangerKMSMKI rangerMKeyProvider) {
 		try {
 			XXRangerKeyStore xxRangerKeyStore;
 			SecretKeyEntry secretKey = (SecretKeyEntry) getKeyEntry(alias);
@@ -977,7 +982,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 				byte[] keyByte = keyGenerator.generateKey().getEncoded();
 				Key ezkey = new SecretKeySpec(keyByte,
 						getAlgorithm(meta.getCipher()));
-				byte[] encryptedKey = rangerKVKeyGenerator
+				byte[] encryptedKey = rangerMKeyProvider
 						.encryptZoneKey(ezkey);
 				Long creationDate = new Date().getTime();
 				String attributes = secretKey.attributes;
@@ -986,7 +991,7 @@ public class RangerKeyStore extends KeyStoreSpi {
 						meta.getDescription(), meta.getVersions(),
 						attributes);
 			} else {
-				byte[] encryptedKey = rangerKVKeyGenerator.encryptZoneKey(key);
+				byte[] encryptedKey = rangerMKeyProvider.encryptZoneKey(key);
 				Long creationDate = secretKey.date.getTime();
 				int version = secretKey.version;
 				if ((alias.split("@").length == 2)
@@ -1003,6 +1008,14 @@ public class RangerKeyStore extends KeyStoreSpi {
 			throw new RuntimeException(
 					"Migration failed between key secure and Ranger DB : ", t);
 		}
+	}
+
+	public XXRangerKeyStore convertKeysBetweenRangerKMSAndGCP(String alias, Key key, RangerKMSMKI rangerGCPProvider) {
+		return this.convertKeysBetweenRangerKMSAndHSM(alias, key, rangerGCPProvider);
+	}
+
+	public XXRangerKeyStore convertKeysBetweenRangerKMSAndAzureKeyVault(String alias, Key key, RangerKMSMKI rangerKVKeyGenerator) {
+		return this.convertKeysBetweenRangerKMSAndHSM(alias, key, rangerKVKeyGenerator);
 	}
 
 	public String getAlgorithm(String cipher) {

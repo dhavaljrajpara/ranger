@@ -553,10 +553,11 @@ define(function(require) {
 	};
 
 	XAUtils.showGroupsOrUsers = function(rawValue, model, userOrGroups) {
-                var showMoreLess = false, objArr, lastShowMoreCnt = 1, j = 1, listShownCnt = 5000;
+                var showMoreLess = false, objArr, lastShowMoreCnt = 1, j = 1, listShownCnt = 1000;
 		if (!_.isArray(rawValue) && rawValue.length == 0)
 			return '--';
-                objArr = (userOrGroups == 'groups') ? _.pluck(rawValue, 'groupName') : _.pluck(rawValue, 'userName');
+               // objArr = (userOrGroups == 'groups') ? _.pluck(rawValue, 'groupName') : _.pluck(rawValue, 'userName');
+               objArr = rawValue;
 		var newObjArr = _.map(objArr, function(name, i) {
 			if (i >= 4) {
                                 var eleStr = '', span = '<span class="badge badge-info float-left-margin-2" policy-' + userOrGroups
@@ -934,7 +935,6 @@ define(function(require) {
 		$el.parents('body').find('.datepicker').hide();
 		input.datepicker({
 			autoclose : true,
-                        dateFormat : 'yy-mm-dd',
 		}).on('changeDate', function(ev) {
 			callback(ev.date);
 			input.datepicker("hide");
@@ -1542,11 +1542,17 @@ define(function(require) {
                             return null;
                         }else{
                             return {
-                                id : term,
+                                id : "<b><i class='text-muted-select2'>Create</i></b> " + term,
                                 text: term
                             };
                         }
                     }
+                },
+                formatResult : function(result){
+                    return result.id;
+                },
+                formatSelection : function(result){
+                    return result.text;
                 },
             };
 

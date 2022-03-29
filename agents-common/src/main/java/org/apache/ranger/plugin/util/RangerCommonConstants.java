@@ -67,9 +67,9 @@ public class RangerCommonConstants {
 	public static final String SCRIPT_VAR_TAGNAMES                  = "TAGNAMES";
 	public static final String SCRIPT_VAR_TAGS                      = "TAGS";
 	public static final String SCRIPT_VAR_UGA                       = "UGA";
-	public static final String SCRIPT_VAR_UGROUP                    = "UGROUP";
-	public static final String SCRIPT_VAR_UGROUPS                   = "UGROUPS";
-	public static final String SCRIPT_VAR_UROLES                    = "UROLES";
+	public static final String SCRIPT_VAR_UG                        = "UG";
+	public static final String SCRIPT_VAR_UGNAMES                   = "UGNAMES";
+	public static final String SCRIPT_VAR_URNAMES                   = "URNAMES";
 	public static final String SCRIPT_VAR_USER                      = "USER";
 
 	public static final String SCRIPT_FIELD_ACCESS_TIME             = "accessTime";
@@ -98,4 +98,21 @@ public class RangerCommonConstants {
 	public static final String SCRIPT_FIELD_USER_GROUP_ATTRIBUTES   = "userGroupAttributes";
 	public static final String SCRIPT_FIELD_UGA                     = "uga";
 	public static final String SCRIPT_FIELD_USER_ROLES              = "userRoles";
+
+	public static final String SCRIPT_MACRO_GET_TAG_ATTR_CSV      = "GET_TAG_ATTR_CSV";
+	public static final String SCRIPT_MACRO_GET_TAG_ATTR_Q_CSV    = "GET_TAG_ATTR_Q_CSV";
+	public static final String SCRIPT_MACRO_GET_UG_ATTR_CSV       = "GET_UG_ATTR_CSV";
+	public static final String SCRIPT_MACRO_GET_UG_ATTR_Q_CSV     = "GET_UG_ATTR_Q_CSV";
+	public static final String SCRIPT_MACRO_TAG_ATTR_NAMES_CSV    = "TAG_ATTR_NAMES_CSV";
+	public static final String SCRIPT_MACRO_TAG_ATTR_NAMES_Q_CSV  = "TAG_ATTR_NAMES_Q_CSV";
+	public static final String SCRIPT_MACRO_TAG_NAMES_CSV         = "TAG_NAMES_CSV";
+	public static final String SCRIPT_MACRO_TAG_NAMES_Q_CSV       = "TAG_NAMES_Q_CSV";
+	public static final String SCRIPT_MACRO_UG_ATTR_NAMES_CSV     = "UG_ATTR_NAMES_CSV";
+	public static final String SCRIPT_MACRO_UG_ATTR_NAMES_Q_CSV   = "UG_ATTR_NAMES_Q_CSV";
+	public static final String SCRIPT_MACRO_UG_NAMES_CSV          = "UG_NAMES_CSV";
+	public static final String SCRIPT_MACRO_UG_NAMES_Q_CSV        = "UG_NAMES_Q_CSV";
+	public static final String SCRIPT_MACRO_UR_NAMES_CSV          = "UR_NAMES_CSV";
+	public static final String SCRIPT_MACRO_UR_NAMES_Q_CSV        = "UR_NAMES_Q_CSV";
+	public static final String SCRIPT_MACRO_USER_ATTR_NAMES_CSV   = "USER_ATTR_NAMES_CSV";
+	public static final String SCRIPT_MACRO_USER_ATTR_NAMES_Q_CSV = "USER_ATTR_NAMES_Q_CSV";
 }

@@ -34,10 +34,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.apache.ranger.biz.RangerBizUtil;
 import org.apache.ranger.credentialapi.CredentialReader;
 import org.apache.ranger.plugin.util.RangerCommonConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -46,7 +47,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 public class PropertiesUtil extends PropertyPlaceholderConfigurer {
     private static Map<String, String> propertiesMap = new HashMap<String, String>();
-    private static final Logger logger = Logger.getLogger(PropertiesUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
     protected List<String> xmlPropertyConfigurer  = new ArrayList<String>();
 
     private PropertiesUtil() {
@@ -259,6 +260,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				db_ssl_enabled="false";
 			}
 			db_ssl_enabled=db_ssl_enabled.toLowerCase();
+                       String ranger_jpa_jdbc_url=propertiesMap.get("ranger.jpa.jdbc.url");
 			if("true".equalsIgnoreCase(db_ssl_enabled)){
 				String db_ssl_required=propertiesMap.get("ranger.db.ssl.required");
 				if(StringUtils.isEmpty(db_ssl_required)|| !"true".equalsIgnoreCase(db_ssl_required)){
@@ -282,7 +284,7 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 				props.put("ranger.db.ssl.verifyServerCertificate", db_ssl_verifyServerCertificate);
 				propertiesMap.put("ranger.db.ssl.auth.type", db_ssl_auth_type);
 				props.put("ranger.db.ssl.auth.type", db_ssl_auth_type);
-				String ranger_jpa_jdbc_url=propertiesMap.get("ranger.jpa.jdbc.url");
+
 				if(StringUtils.isNotEmpty(ranger_jpa_jdbc_url) && !ranger_jpa_jdbc_url.contains("?")){
 					StringBuffer ranger_jpa_jdbc_url_ssl=new StringBuffer(ranger_jpa_jdbc_url);
 					if (RangerBizUtil.getDBFlavor()==AppConstants.DB_FLAVOR_MYSQL) {
@@ -304,7 +306,32 @@ public class PropertiesUtil extends PropertyPlaceholderConfigurer {
 					props.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url);
 				}
 				logger.info("ranger.jpa.jdbc.url="+ranger_jpa_jdbc_url);
-			}
+                               } else {
+				           String ranger_jpa_jdbc_url_extra_args="";
+					   if(!StringUtils.isEmpty(ranger_jpa_jdbc_url)) {
+						   if (ranger_jpa_jdbc_url.contains("?")) {
+							   ranger_jpa_jdbc_url_extra_args = ranger_jpa_jdbc_url.substring(ranger_jpa_jdbc_url.indexOf("?")+1);
+							   ranger_jpa_jdbc_url = ranger_jpa_jdbc_url.substring(0, ranger_jpa_jdbc_url.indexOf("?"));
+						   }
+						   if (RangerBizUtil.getDBFlavor()==AppConstants.DB_FLAVOR_MYSQL) {
+							   StringBuilder ranger_jpa_jdbc_url_no_ssl=new StringBuilder(ranger_jpa_jdbc_url);
+							   if (!ranger_jpa_jdbc_url_extra_args.contains("useSSL")) {
+								   ranger_jpa_jdbc_url_no_ssl.append("?useSSL=false");
+							   }
+							   if (!StringUtils.isEmpty(ranger_jpa_jdbc_url_extra_args) && ranger_jpa_jdbc_url_no_ssl.toString().contains("useSSL")) {
+								   ranger_jpa_jdbc_url_no_ssl.append("&").append(ranger_jpa_jdbc_url_extra_args);
+							   } else if (!StringUtils.isEmpty(ranger_jpa_jdbc_url_extra_args) && !ranger_jpa_jdbc_url_no_ssl.toString().contains("useSSL")) {
+								   ranger_jpa_jdbc_url_no_ssl.append("?").append(ranger_jpa_jdbc_url_extra_args);
+							   }
+							   propertiesMap.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url_no_ssl.toString());
+						   }
+						   ranger_jpa_jdbc_url=propertiesMap.get("ranger.jpa.jdbc.url");
+						   if(StringUtils.isNotEmpty(ranger_jpa_jdbc_url)) {
+							   props.put("ranger.jpa.jdbc.url", ranger_jpa_jdbc_url);
+						   }
+						   logger.info("ranger.jpa.jdbc.url="+ranger_jpa_jdbc_url);
+					   }
+			   }
 		}
 	}
 

@@ -22,8 +22,6 @@ package org.apache.ranger.biz;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.plugin.contextenricher.RangerTagForEval;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyResource;
@@ -52,6 +50,8 @@ import org.apache.ranger.plugin.util.RangerRoles;
 import org.apache.ranger.plugin.util.ServiceDefUtil;
 import org.apache.ranger.plugin.util.ServicePolicies;
 import org.apache.ranger.plugin.util.StringTokenReplacer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,9 +63,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class RangerPolicyAdminImpl implements RangerPolicyAdmin {
-    private static final Log LOG = LogFactory.getLog(RangerPolicyAdminImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerPolicyAdminImpl.class);
 
-    private static final Log PERF_POLICYENGINE_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policyengine.request");
+    private static final Logger PERF_POLICYENGINE_REQUEST_LOG = RangerPerfTracer.getPerfLogger("policyengine.request");
 
     private final PolicyEngine                 policyEngine;
     private final RangerAccessRequestProcessor requestProcessor;
@@ -259,16 +259,11 @@ public class RangerPolicyAdminImpl implements RangerPolicyAdmin {
 
         boolean ret = false;
 
-        if (accessTypes == null) {
-            LOG.error("Could not get added access-types for policy-id:[" + policy.getId() + "]");
-        } else if (accessTypes.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No need to check any access-types for delegated admin check");
-            }
-            ret = true;
+        if (CollectionUtils.isEmpty(accessTypes)) {
+            LOG.error("Could not get access-types for policy-id:[" + policy.getId() + "]");
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Checking admin-access for the access-types:[" + accessTypes + "]");
+                LOG.debug("Checking delegate-admin access for the access-types:[" + accessTypes + "]");
             }
 
             // RANGER-3082
@@ -726,6 +721,7 @@ public class RangerPolicyAdminImpl implements RangerPolicyAdmin {
     private Set<String> getAllAccessTypes(RangerPolicy policy, RangerServiceDef serviceDef) {
         Set<String> ret = new HashSet<>();
 
+        boolean     isValid = true;
         Map<String, Collection<String>> expandedAccesses = ServiceDefUtil.getExpandedImpliedGrants(serviceDef);
 
         if (MapUtils.isNotEmpty(expandedAccesses)) {
@@ -773,6 +769,10 @@ public class RangerPolicyAdminImpl implements RangerPolicyAdmin {
                 }
             } else {
                 LOG.error("Unknown policy-type :[" + policyType + "], returning empty access-type set");
+                isValid = false;
+            }
+            if (isValid && ret.isEmpty()) {
+                ret.add(RangerPolicyEngine.ADMIN_ACCESS);
             }
         }
         return ret;
@@ -797,6 +797,9 @@ public class RangerPolicyAdminImpl implements RangerPolicyAdmin {
         ret.addAll(getAccessTypesDiff(newGroupAccesses, oldGroupAccesses));
         ret.addAll(getAccessTypesDiff(newRoleAccesses, oldRoleAccesses));
 
+        if (ret.isEmpty()) {
+            ret.add(RangerPolicyEngine.ADMIN_ACCESS);
+        }
         return ret;
     }
 

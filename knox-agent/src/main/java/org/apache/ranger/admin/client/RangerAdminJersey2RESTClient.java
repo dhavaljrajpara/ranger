@@ -19,6 +19,7 @@
 
 package org.apache.ranger.admin.client;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -44,8 +45,6 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -53,6 +52,8 @@ import org.apache.ranger.plugin.util.*;
 import org.apache.ranger.audit.provider.MiscUtil;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.glassfish.jersey.client.ClientProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -60,12 +61,11 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.sun.jersey.api.client.ClientHandlerException;
 
 public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 
 	// none of the members are public -- this is only for testability.  None of these is meant to be accessible
-	private static final Log LOG = LogFactory.getLog(RangerAdminJersey2RESTClient.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerAdminJersey2RESTClient.class);
 
 	boolean _isSSL = false;
 	volatile Client _client = null;
@@ -73,12 +73,15 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 	HostnameVerifier _hv;
 	String _sslConfigFileName = null;
 	String _serviceName = null;
+	String _serviceNameUrlParam = null;
 	String _clusterName = null;
 	boolean _supportsPolicyDeltas = false;
 	boolean _supportsTagDeltas = false;
 	String _pluginId = null;
 	int	   _restClientConnTimeOutMs;
 	int	   _restClientReadTimeOutMs;
+	int	   _restClientMaxRetryAttempts;
+	int	   _restClientRetryIntervalMs;
 	private int lastKnownActiveUrlIndex;
 	private List<String> configURLs;
 	private boolean			 isRangerCookieEnabled;
@@ -107,6 +110,9 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 		_sslConfigFileName 		 = config.get(configPropertyPrefix + ".policy.rest.ssl.config.file");
 		_restClientConnTimeOutMs = config.getInt(configPropertyPrefix + ".policy.rest.client.connection.timeoutMs", 120 * 1000);
 		_restClientReadTimeOutMs = config.getInt(configPropertyPrefix + ".policy.rest.client.read.timeoutMs", 30 * 1000);
+		_restClientMaxRetryAttempts	= config.getInt(configPropertyPrefix + ".policy.rest.client.max.retry.attempts", 3);
+		_restClientRetryIntervalMs	= config.getInt(configPropertyPrefix + ".policy.rest.client.retry.interval.ms", 1 * 1000);
+
 		_clusterName             = config.get(configPropertyPrefix + ".access.cluster.name", "");
 		if(StringUtil.isEmpty(_clusterName)){
 			_clusterName =config.get(configPropertyPrefix + ".ambari.cluster.name", "");
@@ -128,6 +134,13 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerAdminJersey2RESTClient.init(" + configPropertyPrefix + "): " + _client.toString());
+		}
+
+		try {
+			this._serviceNameUrlParam = URLEncoderUtil.encodeURIParam(serviceName);
+		} catch (UnsupportedEncodingException e) {
+			LOG.warn("Unsupported encoding, serviceName=" + serviceName);
+			this._serviceNameUrlParam = serviceName;
 		}
 	}
 
@@ -268,6 +281,96 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 		throw new Exception("RangerAdminjersey2RESTClient.getTagTypes() -- *** NOT IMPLEMENTED *** ");
 	}
 
+	@Override
+	public RangerUserStore getUserStoreIfUpdated(long lastKnownUserStoreVersion, long lastActivationTimeInMillis) throws Exception {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("==> RangerAdminjersey2RESTClient.getUserStoreIfUpdated(lastKnownUserStoreVersion={}, lastActivationTimeInMillis={})", lastKnownUserStoreVersion, lastActivationTimeInMillis);
+		}
+
+		final RangerUserStore      ret;
+		final UserGroupInformation user         = MiscUtil.getUGILoginUser();
+		final boolean              isSecureMode = user != null && UserGroupInformation.isSecurityEnabled();
+		final Response             response;
+
+		Map<String, String> queryParams = new HashMap<String, String>();
+
+		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_KNOWN_USERSTORE_VERSION, Long.toString(lastKnownUserStoreVersion));
+		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_ACTIVATION_TIME, Long.toString(lastActivationTimeInMillis));
+		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, _pluginId);
+		queryParams.put(RangerRESTUtils.REST_PARAM_CLUSTER_NAME, _clusterName);
+		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
+
+		if (isSecureMode) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Checking UserStore updated as user: {}", user);
+			}
+
+			PrivilegedAction<Response> action = () -> {
+				Response resp        = null;
+				String   relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE + _serviceNameUrlParam;
+
+				try {
+					resp = get(queryParams, relativeURL);
+				} catch (Exception e) {
+					LOG.error("Failed to get response", e);
+				}
+
+				return resp;
+			};
+
+			response = user.doAs(action);
+		} else {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Checking UserStore updated as user: {}", user);
+			}
+
+			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_USERSTORE + _serviceNameUrlParam;
+
+			response = get(queryParams, relativeURL);
+		}
+
+		if (response == null || response.getStatus() == 304) { // NOT_MODIFIED
+			if (response == null) {
+				LOG.error("Error getting UserStore; Received NULL response!!. secureMode={}, user={}, serviceName={}", isSecureMode, user, _serviceName);
+			} else {
+				String resp = response.hasEntity() ? response.readEntity(String.class) : null;
+
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("No change in UserStore. secureMode={}, user={}, response={}, serviceName={}, lastKnownUserStoreVersion={}, lastActivationTimeInMillis={}",
+							  isSecureMode, user, resp, _serviceName, lastKnownUserStoreVersion, lastActivationTimeInMillis);
+				}
+			}
+
+			ret = null;
+		} else if (response.getStatus() == 200) { // OK
+			ret = response.readEntity(RangerUserStore.class);
+		} else if (response.getStatus() == 404) { // NOT_FOUND
+			ret = null;
+
+			LOG.error("Error getting UserStore; service not found. secureMode={}, user={}, response={}, serviceName={}, lastKnownUserStoreVersion={}, lastActivationTimeInMillis={}",
+					  isSecureMode, user, response.getStatus(), _serviceName, lastKnownUserStoreVersion, lastActivationTimeInMillis);
+
+			String exceptionMsg = response.hasEntity() ? response.readEntity(String.class) : null;
+
+			RangerServiceNotFoundException.throwExceptionIfServiceNotFound(_serviceName, exceptionMsg);
+
+			LOG.warn("Received 404 error code with body:[{}], Ignoring", exceptionMsg);
+		} else {
+			String resp = response.hasEntity() ? response.readEntity(String.class) : null;
+
+			LOG.warn("Error getting UserStore. secureMode={}, user={}, response={}, serviceName={}, lastKnownUserStoreVersion={}, lastActivationTimeInMillis={}",
+					 isSecureMode, user, resp, _serviceName, lastKnownUserStoreVersion, lastActivationTimeInMillis);
+
+			ret = null;
+		}
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("<== RangerAdminjersey2RESTClient.getUserStoreIfUpdated(lastKnownUserStoreVersion={}, lastActivationTimeInMillis={}): ret={}", lastKnownUserStoreVersion, lastActivationTimeInMillis, ret);
+		}
+
+		return ret;
+	}
+
 	// We get date from the policy manager as unix long!  This deserializer exists to deal with it.  Remove this class once we start send date/time per RFC 3339
 	public static class GsonUnixDateDeserializer implements JsonDeserializer<Date> {
 
@@ -332,6 +435,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 		Response response = null;
 		int startIndex = this.lastKnownActiveUrlIndex;
         int currentIndex = 0;
+        int retryAttempt = 0;
 
 		for (int index = 0; index < configURLs.size(); index++) {
 			try {
@@ -344,10 +448,10 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 					break;
 				}
 			} catch (ProcessingException e) {
-				LOG.warn("Failed to communicate with Ranger Admin, URL : " + configURLs.get(currentIndex));
-				if (index == configURLs.size() - 1) {
-					throw new ClientHandlerException(
-							"Failed to communicate with all Ranger Admin's URL's : [ " + configURLs + " ]", e);
+				if (shouldRetry(configURLs.get(currentIndex), index, retryAttempt, e)) {
+					retryAttempt++;
+
+					index = -1; // start from first url
 				}
 			}
 		}
@@ -358,6 +462,7 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 		Response response = null;
 		int startIndex = this.lastKnownActiveUrlIndex;
 		int currentIndex = 0;
+		int retryAttempt = 0;
 
 		for (int index = 0; index < configURLs.size(); index++) {
 			try {
@@ -372,9 +477,10 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 					break;
 				}
 			} catch (ProcessingException e) {
-				LOG.warn("Failed to communicate with Ranger Admin, URL : "+configURLs.get(currentIndex));
-				if(index == configURLs.size()-1) {
-					throw new ProcessingException("Failed to communicate with all Ranger Admin's URL : [ "+ configURLs+" ]", e);
+				if (shouldRetry(configURLs.get(currentIndex), index, retryAttempt, e)) {
+					retryAttempt++;
+
+					index = -1; // start from first url
 				}
 			}
 		}
@@ -1064,5 +1170,30 @@ public class RangerAdminJersey2RESTClient extends AbstractRangerAdminClient {
 			roleDownloadSessionId = sessionCookie;
 			isValidRoleDownloadSessionCookie = (roleDownloadSessionId != null);
 		}
+	}
+
+	protected boolean shouldRetry(String currentUrl, int index, int retryAttemptCount, ProcessingException ex) {
+		LOG.warn("Failed to communicate with Ranger Admin. URL: " + currentUrl + ". Error: " + ex.getMessage());
+
+		boolean isLastUrl = index == (configURLs.size() - 1);
+
+		// attempt retry after failure on the last url
+		boolean ret = isLastUrl && (retryAttemptCount < _restClientMaxRetryAttempts);
+
+		if (ret) {
+			LOG.warn("Waiting for " + _restClientRetryIntervalMs + "ms before retry attempt #" + (retryAttemptCount + 1));
+
+			try {
+				Thread.sleep(_restClientRetryIntervalMs);
+			} catch (InterruptedException excp) {
+				LOG.error("Failed while waiting to retry", excp);
+			}
+		} else if (isLastUrl) {
+			LOG.error("Failed to communicate with all Ranger Admin's URL's : [ " + configURLs + " ]");
+
+			throw new ProcessingException("Failed to communicate with all Ranger Admin's URL : [ "+ configURLs+" ]", ex);
+		}
+
+		return ret;
 	}
 }

@@ -47,6 +47,11 @@
             <artifactId>mockito-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-linq4j</artifactId>
+            <version>1.16.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.kylin</groupId>
             <artifactId>kylin-server-base</artifactId>
             <version>${kylin.version}</version>
@@ -59,6 +64,10 @@
                 <exclusion>
                     <groupId>org.apache.calcite</groupId>
                     <artifactId>calcite-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -113,6 +122,10 @@
                 <exclusion>
                    <groupId>io.netty</groupId>
                    <artifactId>netty-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

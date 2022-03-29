@@ -36,15 +36,16 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
@@ -82,6 +83,8 @@ import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.apache.ranger.plugin.util.GrantRevokeRequest;
 import org.apache.ranger.plugin.util.RangerAccessRequestUtil;
 import org.apache.ranger.plugin.util.GrantRevokeRoleRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 import org.apache.ranger.plugin.util.RangerPerfTracer;
@@ -89,9 +92,9 @@ import org.apache.ranger.plugin.util.RangerRoles;
 import org.apache.ranger.plugin.util.RangerRequestedResources;
 
 public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
-	private static final Log LOG = LogFactory.getLog(RangerHiveAuthorizer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RangerHiveAuthorizer.class);
 
-	private static final Log PERF_HIVEAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("hiveauth.request");
+	private static final Logger PERF_HIVEAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("hiveauth.request");
 
 	private static final char COLUMN_SEP = ',';
 
@@ -1186,7 +1189,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 					if (result == null) {
 						LOG.error("filterListCmdObjects: Internal error: null RangerAccessResult object received back from isAccessAllowed()!");
 					} else if (!result.getIsAllowed()) {
-						if (!LOG.isDebugEnabled()) {
+						if (LOG.isDebugEnabled()) {
 							String path = resource.getAsString();
 							LOG.debug(String.format("filterListCmdObjects: Permission denied: user [%s] does not have [%s] privilege on [%s]. resource[%s], request[%s], result[%s]",
 									user, request.getHiveAccessType().name(), path, resource, request, result));
@@ -1441,7 +1444,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		return ret;
 	}
 
-	static RangerHiveResource createHiveResourceForFiltering(HivePrivilegeObject privilegeObject) {
+	private RangerHiveResource createHiveResourceForFiltering(HivePrivilegeObject privilegeObject) {
 		RangerHiveResource resource = null;
 
 		HivePrivilegeObjectType objectType = privilegeObject.getType();
@@ -1449,16 +1452,16 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		switch(objectType) {
 			case DATABASE:
 			case TABLE_OR_VIEW:
-				resource = createHiveResource(privilegeObject);
+				resource = createHiveResource(privilegeObject, getMetaStoreClient());
 				break;
 			default:
-				LOG.warn("RangerHiveAuthorizer.getHiveResourceForFiltering: unexpected objectType:" + objectType);
+				LOG.warn("RangerHiveAuthorizer.createHiveResourceForFiltering: unexpected objectType:" + objectType);
 		}
 
 		return resource;
 	}
 
-	static RangerHiveResource createHiveResource(HivePrivilegeObject privilegeObject) {
+	static RangerHiveResource createHiveResource(HivePrivilegeObject privilegeObject, IMetaStoreClient metaStoreClient) {
 		RangerHiveResource resource = null;
 
 		HivePrivilegeObjectType objectType = privilegeObject.getType();
@@ -1471,14 +1474,14 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 				break;
 			case TABLE_OR_VIEW:
 				resource = new RangerHiveResource(HiveObjectType.TABLE, dbName, objectName);
-				//resource.setOwnerUser(privilegeObject.getOwnerName());
+				setOwnerUser(resource, privilegeObject, metaStoreClient);
 				break;
 			case COLUMN:
 				List<String> columns = privilegeObject.getColumns();
 				int numOfColumns = columns == null ? 0 : columns.size();
 				if (numOfColumns == 1) {
 					resource = new RangerHiveResource(HiveObjectType.COLUMN, dbName, objectName, columns.get(0));
-					//resource.setOwnerUser(privilegeObject.getOwnerName());
+					setOwnerUser(resource, privilegeObject, metaStoreClient);
 				} else {
 					LOG.warn("RangerHiveAuthorizer.getHiveResource: unexpected number of columns requested:" + numOfColumns + ", objectType:" + objectType);
 				}
@@ -1506,12 +1509,9 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		switch(objectType) {
 			case DATABASE:
 				ret = new RangerHiveResource(objectType, hiveObj.getDbname());
-				/*
 				if (!isCreateOperation(hiveOpType)) {
-					ret.setOwnerUser(hiveObj.getOwnerName());
+					setOwnerUser(ret, hiveObj, getMetaStoreClient());
 				}
-
-				 */
 			break;
 	
 			case TABLE:
@@ -1524,19 +1524,14 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 							", Size of outputs = [" + (CollectionUtils.isNotEmpty(outputs) ? outputs.size() : 0) + "]");
 				}
 
-				/*
-				String ownerName = hiveObj.getOwnerName();
+				setOwnerUser(ret, hiveObj, getMetaStoreClient());
 
 				if (isCreateOperation(hiveOpType)) {
 					HivePrivilegeObject dbObject = getDatabaseObject(hiveObj.getDbname(), inputs, outputs);
 					if (dbObject != null) {
-						ownerName = dbObject.getOwnerName();
+						setOwnerUser(ret, dbObject, getMetaStoreClient());
 					}
 				}
-
-				ret.setOwnerUser(ownerName);
-
-				 */
 
 			break;
 
@@ -1547,7 +1542,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 	
 			case COLUMN:
 				ret = new RangerHiveResource(objectType, hiveObj.getDbname(), hiveObj.getObjectName(), StringUtils.join(hiveObj.getColumns(), COLUMN_SEP));
-				//ret.setOwnerUser(hiveObj.getOwnerName());
+				setOwnerUser(ret, hiveObj, getMetaStoreClient());
 			break;
 
             case URI:
@@ -1570,7 +1565,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 		return ret;
 	}
 
-	/*
 	private boolean isCreateOperation(HiveOperationType hiveOpType){
 		boolean ret = false;
 		switch (hiveOpType) {
@@ -1608,8 +1602,6 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 
 		return ret;
 	}
-	
-	 */
 
 	private HiveObjectType getObjectType(HivePrivilegeObject hiveObj, HiveOperationType hiveOpType) {
 		HiveObjectType objType = HiveObjectType.NONE;
@@ -2684,7 +2676,7 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			LOG.debug("==> RangerHivePolicyProvider.getRangerResourceACLs:[" + hiveObject + "]");
 		}
 
-		RangerHiveResource hiveResource = RangerHiveAuthorizer.createHiveResource(hiveObject);
+		RangerHiveResource hiveResource = createHiveResource(hiveObject, getMetaStoreClient());
 		RangerAccessRequestImpl request = new RangerAccessRequestImpl(hiveResource, RangerPolicyEngine.ANY_ACCESS, null, null, null);
 
 		ret = hivePlugin.getResourceACLs(request);
@@ -3113,6 +3105,54 @@ public class RangerHiveAuthorizer extends RangerHiveAuthorizerBase {
 			request  = new RangerHiveAccessRequest(resource, user, userGroups, userRoles, hiveOpTypeName, HiveAccessType.ALTER, context, sessionContext);
 		}
 		return request;
+	}
+
+	static void setOwnerUser(RangerHiveResource resource, HivePrivilegeObject hiveObj, IMetaStoreClient metaStoreClient) {
+		if (hiveObj != null) {
+			// resource.setOwnerUser(hiveObj.getOwnerName());
+			switch (hiveObj.getType()) {
+				case DATABASE:
+					try {
+						Database database = metaStoreClient != null ? metaStoreClient.getDatabase(hiveObj.getDbname()) : null;
+
+						if (database != null) {
+							resource.setOwnerUser(database.getOwnerName());
+						}
+					} catch (Exception excp) {
+						LOG.error("failed to get database object from Hive metastore. dbName=" + hiveObj.getDbname(), excp);
+					}
+					break;
+
+				case TABLE_OR_VIEW:
+				case COLUMN:
+					try {
+						Table table = metaStoreClient != null ? metaStoreClient.getTable(hiveObj.getDbname(), hiveObj.getObjectName()) : null;
+
+						if (table != null) {
+							resource.setOwnerUser(table.getOwner());
+						}
+					} catch (Exception excp) {
+						LOG.error("failed to get table object from Hive metastore. dbName=" + hiveObj.getDbname() + ", tblName=" + hiveObj.getObjectName(), excp);
+					}
+					break;
+			}
+		}
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("setOwnerUser(" + hiveObj + "): ownerName=" + resource.getOwnerUser());
+		}
+	}
+
+	private IMetaStoreClient getMetaStoreClient() {
+		IMetaStoreClient ret = null;
+
+		try {
+			ret = getMetastoreClientFactory().getHiveMetastoreClient();
+		} catch (HiveAuthzPluginException excp) {
+			LOG.warn("failed to get meta-store client", excp);
+		}
+
+		return ret;
 	}
 }
 

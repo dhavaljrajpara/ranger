@@ -29,14 +29,14 @@ import org.apache.atlas.notification.NotificationInterface;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.plugin.util.ServiceTags;
 import org.apache.ranger.tagsync.model.AbstractTagSource;
 import org.apache.atlas.kafka.AtlasKafkaMessage;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.ranger.tagsync.process.TagSyncConfig;
 import org.apache.ranger.tagsync.source.atlasrest.RangerAtlasEntityWithTags;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class AtlasTagSource extends AbstractTagSource {
-	private static final Log LOG = LogFactory.getLog(AtlasTagSource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AtlasTagSource.class);
 
 	public static final String TAGSYNC_ATLAS_PROPERTIES_FILE_NAME = "atlas-application.properties";
 
@@ -190,7 +190,9 @@ public class AtlasTagSource extends AbstractTagSource {
 					List<AtlasKafkaMessage<EntityNotification>> newMessages = consumer.receive(MAX_WAIT_TIME_IN_MILLIS);
 
 					if (newMessages.size() == 0) {
-						LOG.info("AtlasTagSource.ConsumerRunnable.run: no message from NotificationConsumer within " + MAX_WAIT_TIME_IN_MILLIS + " milliseconds");
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("AtlasTagSource.ConsumerRunnable.run: no message from NotificationConsumer within " + MAX_WAIT_TIME_IN_MILLIS + " milliseconds");
+						}
 						if (CollectionUtils.isNotEmpty(atlasEntitiesWithTags)) {
 							buildAndUploadServiceTags();
 						}
@@ -274,7 +276,9 @@ public class AtlasTagSource extends AbstractTagSource {
 					updateSink(entry.getValue());
 				}
 				offsetOfLastMessageDeliveredToRanger = messages.get(messages.size()-1).getOffset();
-				LOG.info("Completed processing batch of messages of size:[" + messages.size() + "] received from NotificationConsumer");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Completed processing batch of messages of size:[" + messages.size() + "] received from NotificationConsumer");
+				}
 
 				commitToKafka();
 			}

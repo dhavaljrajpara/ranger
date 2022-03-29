@@ -32,7 +32,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.crypto.key.kms.server.KeyAuthorizationKeyProvider.KeyACLs;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.VersionInfo;
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -40,16 +39,12 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
+import java.util.ServiceLoader;
 
 @InterfaceAudience.Private
 public class KMSWebApp implements ServletContextListener {
-
-  private static final String LOG4J_PROPERTIES = "kms-log4j.properties";
-
   private static final String METRICS_PREFIX = "hadoop.kms.";
   private static final String ADMIN_CALLS_METER = METRICS_PREFIX +
       "admin.calls.meter";
@@ -93,30 +88,29 @@ public class KMSWebApp implements ServletContextListener {
     SLF4JBridgeHandler.install();
   }
 
-  private void initLogging(String confDir) {
-    if (System.getProperty("log4j.configuration") == null) {
-      System.setProperty("log4j.defaultInitOverride", "true");
-      boolean fromClasspath = true;
-      File log4jConf = new File(confDir, LOG4J_PROPERTIES).getAbsoluteFile();
-      if (log4jConf.exists()) {
-        PropertyConfigurator.configureAndWatch(log4jConf.getPath(), 1000);
-        fromClasspath = false;
-      } else {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        URL log4jUrl = cl.getResource(LOG4J_PROPERTIES);
-        if (log4jUrl != null) {
-          PropertyConfigurator.configure(log4jUrl);
-        }
+  private void initLogging() {
+    LOG = LoggerFactory.getLogger(KMSWebApp.class);
+  }
+
+  /**
+   * @see org.apache.hadoop.crypto.key.KeyProviderFactory
+   *
+   * Code here to ensure KeyProvideFactory subclasses in ews/webapp/ can be loaded.
+   * The hadoop-common.jar in ews/lib can only load subclasses in ews/lib.
+   * This is due to the limitation of ClassLoader mechanism of java/tomcat.
+   */
+  private static KeyProvider createKeyProvider(URI uri, Configuration conf)
+          throws IOException {
+    ServiceLoader<KeyProviderFactory> serviceLoader =
+            ServiceLoader.load(KeyProviderFactory.class);
+    KeyProvider kp = null;
+    for (KeyProviderFactory factory : serviceLoader) {
+      kp = factory.createProvider(uri, conf);
+      if (kp != null) {
+        break;
       }
-      LOG = LoggerFactory.getLogger(KMSWebApp.class);
-      LOG.debug("KMS log starting");
-      if (fromClasspath) {
-        LOG.warn("Log4j configuration file '{}' not found", LOG4J_PROPERTIES);
-        LOG.warn("Logging with INFO level to standard output");
-      }
-    } else {
-      LOG = LoggerFactory.getLogger(KMSWebApp.class);
     }
+    return kp;
   }
 
   @Override
@@ -128,7 +122,7 @@ public class KMSWebApp implements ServletContextListener {
             KMSConfiguration.KMS_CONFIG_DIR + "' not defined");
       }
       kmsConf = KMSConfiguration.getKMSConf();
-      initLogging(confDir);
+      initLogging();
       UserGroupInformation.setConfiguration(kmsConf);
       LOG.info("-------------------------------------------------------------");
       LOG.info("  Java runtime version : {}", System.getProperty(
@@ -174,7 +168,7 @@ public class KMSWebApp implements ServletContextListener {
       LOG.info("kmsconf size= "+kmsConf.size() + " kms classname="+kmsConf.getClass().getName());
       LOG.info("----------------Instantiating key provider ---------------");
       KeyProvider keyProvider =
-          KeyProviderFactory.get(new URI(providerString), kmsConf);
+          createKeyProvider(new URI(providerString), kmsConf);
       Preconditions.checkNotNull(keyProvider, String.format("No" +
               " KeyProvider has been initialized, please" +
               " check whether %s '%s' is configured correctly in" +

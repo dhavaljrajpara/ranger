@@ -324,7 +324,6 @@ define(function(require) {
                         closeOnSelect: true,
                         tags: true,
                         multiple: true,
-                        minimumInputLength: 1,
                         width: '220px',
                         tokenSeparators: [" "],
                         initSelection: function(element, callback) {
@@ -348,7 +347,7 @@ define(function(require) {
                                     return null;
                                 } else {
                                     return {
-                                        id: term,
+                                        id: "<b><i class='text-muted-select2'>Create</i></b> " + term,
                                         text: term
                                     };
                                 }
@@ -400,7 +399,7 @@ define(function(require) {
 
                         },
                         formatResult: function(result) {
-                            return result.text;
+                            return result.id;
                         },
                         formatSelection: function(result) {
                             return result.text;

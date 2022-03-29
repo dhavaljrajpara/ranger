@@ -28,14 +28,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StringUtil implements Serializable {
-	private static final Logger logger = Logger.getLogger(StringUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
-	static final public int MIN_PASSWORD_LENGTH = 8;
+	static final public String VALIDATION_CRED = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}";
 
 	static final public String VALIDATION_NAME = "^([A-Za-z0-9_]|[\u00C0-\u017F])([a-zA-Z0-9\\s_. -@]|[\u00C0-\u017F])+$";
 	static final public String VALIDATION_TEXT = "[a-zA-Z0-9\\ \"!@#$%^&amp;*()-_=+;:'&quot;|~`&lt;&gt;?/{}\\.\\,\\-\\?<>\\x00-\\x7F\\p{L}-]*";
@@ -125,23 +126,8 @@ public class StringUtil implements Serializable {
 			return false;
 		}
 		password = password.trim();
-		if (password.length() < MIN_PASSWORD_LENGTH) {
-			return false;
-		}
-
-		boolean hasAlpha = false;
-		boolean hasNum = false;
-		for (int i = 0; i < password.length(); i++) {
-			char ch = password.charAt(i);
-
-			if (Character.isDigit(ch)) {
-				hasNum = true;
-			} else if (Character.isLetter(ch)) {
-				hasAlpha = true;
-			}
-		}
-
-		if (!hasAlpha || !hasNum) {
+		boolean checkPassword = password.matches(VALIDATION_CRED);
+		if (!checkPassword) {
 			return false;
 		}
 

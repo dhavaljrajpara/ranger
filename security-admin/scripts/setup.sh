@@ -85,6 +85,9 @@ audit_solr_urls=$(get_prop 'audit_solr_urls' $PROPFILE)
 audit_solr_user=$(get_prop 'audit_solr_user' $PROPFILE)
 audit_solr_password=$(get_prop 'audit_solr_password' $PROPFILE)
 audit_solr_zookeepers=$(get_prop 'audit_solr_zookeepers' $PROPFILE)
+audit_cloudwatch_region=$(get_prop 'audit_cloudwatch_region' $PROPFILE)
+audit_cloudwatch_log_group=$(get_prop 'audit_cloudwatch_log_group' $PROPFILE)
+audit_cloudwatch_log_stream_prefix=$(get_prop 'audit_cloudwatch_log_stream_prefix' $PROPFILE)
 policymgr_external_url=$(get_prop 'policymgr_external_url' $PROPFILE)
 policymgr_http_enabled=$(get_prop 'policymgr_http_enabled' $PROPFILE)
 policymgr_https_keystore_file=$(get_prop 'policymgr_https_keystore_file' $PROPFILE)
@@ -141,7 +144,7 @@ sso_enabled=$(get_prop 'sso_enabled' $PROPFILE)
 sso_providerurl=$(get_prop 'sso_providerurl' $PROPFILE)
 sso_publickey=$(get_prop 'sso_publickey' $PROPFILE)
 RANGER_ADMIN_LOG_DIR=$(eval echo "$(get_prop 'RANGER_ADMIN_LOG_DIR' $PROPFILE)")
-RANGER_ADMIN_LOG4J_CONF_FILE=$(eval echo "$(get_prop 'RANGER_ADMIN_LOG4J_CONF_FILE' $PROPFILE)")
+RANGER_ADMIN_LOGBACK_CONF_FILE=$(eval echo "$(get_prop 'RANGER_ADMIN_LOGBACK_CONF_FILE' $PROPFILE)")
 RANGER_PID_DIR_PATH=$(eval echo "$(get_prop 'RANGER_PID_DIR_PATH' $PROPFILE)")
 
 spnego_principal=$(get_prop 'spnego_principal' $PROPFILE)
@@ -265,6 +268,17 @@ init_variables(){
 		fi
 		if [ "${audit_elasticsearch_port}" == "" ] ;then
 			log "[I] Please provide valid port for 'elasticsearch' audit store!"
+			exit 1
+		fi
+	fi
+
+	if [ "${audit_store}" == "cloudwatch" ] ;then
+		if [ "${audit_cloudwatch_region}" == "" ] ;then
+			log "[I] Please provide valid region for 'amazon cloudwatch' audit store!"
+			exit 1
+		fi
+		if [ "${audit_cloudwatch_log_group}" == "" ] ;then
+			log "[I] Please provide valid log-group for 'amazon cloudwatch' audit store!"
 			exit 1
 		fi
 	fi
@@ -798,6 +812,21 @@ update_properties() {
 		newPropertyValue=${audit_elasticsearch_bootstrap_enabled}
 		updatePropertyToFilePy $propertyName $newPropertyValue $to_file_ranger
 
+	fi
+
+	if [ "${audit_store}" == "cloudwatch" ]
+	then
+		propertyName=ranger.audit.amazon_cloudwatch.region
+		newPropertyValue=${audit_cloudwatch_region}
+		updatePropertyToFilePy $propertyName $newPropertyValue $to_file_ranger
+
+		propertyName=ranger.audit.amazon_cloudwatch.log_group
+		newPropertyValue=${audit_cloudwatch_log_group}
+		updatePropertyToFilePy $propertyName $newPropertyValue $to_file_ranger
+
+		propertyName=ranger.audit.amazon_cloudwatch.log_stream_prefix
+		newPropertyValue=${audit_cloudwatch_log_stream_prefix}
+		updatePropertyToFilePy $propertyName $newPropertyValue $to_file_ranger
 	fi
 
 	if [ "${audit_store}" != "" ]
@@ -1491,12 +1520,12 @@ setup_install_files(){
 		fi
 	fi
 
-	if [ -z "${RANGER_ADMIN_LOG4J_CONF_FILE}" ]; then
-		RANGER_ADMIN_LOG4J_CONF_FILE=${WEBAPP_ROOT}/WEB-INF/log4j.properties
+	if [ -z "${RANGER_ADMIN_LOGBACK_CONF_FILE}" ]; then
+		RANGER_ADMIN_LOGBACK_CONF_FILE=${WEBAPP_ROOT}/WEB-INF/classes/conf/logback.xml
 	fi
-	echo "export RANGER_ADMIN_LOG4J_CONF_FILE=${RANGER_ADMIN_LOG4J_CONF_FILE}" > ${WEBAPP_ROOT}/WEB-INF/classes/conf/ranger-admin-env-log4j-conf-file.sh
-	chmod a+rx ${WEBAPP_ROOT}/WEB-INF/classes/conf/ranger-admin-env-log4j-conf-file.sh
-	log "[I] RANGER ADMIN LOG4J CONF FILE : ${RANGER_ADMIN_LOG4J_CONF_FILE}"
+	echo "export RANGER_ADMIN_LOGBACK_CONF_FILE=${RANGER_ADMIN_LOGBACK_CONF_FILE}" > ${WEBAPP_ROOT}/WEB-INF/classes/conf/ranger-admin-env-logback-conf-file.sh
+	chmod a+rx ${WEBAPP_ROOT}/WEB-INF/classes/conf/ranger-admin-env-logback-conf-file.sh
+	log "[I] RANGER ADMIN LOGBACK CONF FILE : ${RANGER_ADMIN_LOGBACK_CONF_FILE}"
 
 	if [ -z "${RANGER_ADMIN_LOG_DIR}" ] || [ ${RANGER_ADMIN_LOG_DIR} == ${XAPOLICYMGR_DIR} ]; then 
                 RANGER_ADMIN_LOG_DIR=${XAPOLICYMGR_DIR}/ews/logs;
@@ -1576,9 +1605,9 @@ validateDefaultUsersPassword(){
         then
                 log "[E] validatePassword(). Password for ${1} user cannot be blank"
                 exit 1
-        elif ! [[ ${#2} -ge 8 && "$2" =~ [A-Za-z] && "$2" =~ [0-9] ]] || [[ "${2}" =~ [\"\`\\"'"] ]]
+        elif ! [[ ${#2} -ge 8 && "$2" =~ [A-Z] && "$2" =~ [a-z] && "$2" =~ [0-9] ]] || [[ "${2}" =~ [\"\`\\"'"] ]]
         then
-                log "[E] validatePassword(). ${1} password change failed. Password should be minimum 8 characters with minimum one alphabet and one numeric. Unsupported special characters are \\\`'\""
+                log "[E] validatePassword(). ${1} password change failed. Password should be minimum 8 characters, at least one uppercase letter, one lowercase letter and one numeric. Unsupported special characters are \\\`'\""
                 exit 1
         fi
 }

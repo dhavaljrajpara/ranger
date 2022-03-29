@@ -286,7 +286,7 @@ define(function(require) {
             getColumns: function() {
                 var that = this;
                 var cols = {
-                    id: {
+                    policyId : {
                         cell: 'html',
                         label: localization.tt("lbl.policyId"),
                         formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
@@ -317,13 +317,23 @@ define(function(require) {
                             }
                         }),
                         editable: false,
-                        sortable: false
+                        sortable: true,
+                        direction: "ascending",
                     },
-                    name: {
-                        cell: 'string',
-                        label: localization.tt("lbl.policyName"),
+                    policyName : {
+                        cell : 'string',
+                        label : localization.tt("lbl.policyName"),
                         editable: false,
-                        sortable: false
+                        sortable:true,
+                        formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+                            fromRaw: function (rawValue, model) {
+                                if(model) {
+                                    return model.get('name');
+                                } else {
+                                    return '--';
+                                }
+                            }
+                        })
                     },
                     policyLabels: {
                         cell: Backgrid.HtmlCell.extend({
@@ -514,7 +524,8 @@ define(function(require) {
                 var resourceSearchOpt = _.map(resources, function(resource) {
                     return {
                         'name': resource.name,
-                        'label': resource.label
+                        'label': resource.label,
+                        'description':resource.description
                     };
                 });
                 var PolicyStatusValue = _.map(XAEnums.ActiveStatus, function(status) {
@@ -561,8 +572,6 @@ define(function(require) {
                     info :localization.tt('h.roleMsg'),
                     urlLabel : 'roleName'
                 }];
-                // {text : 'Start Date',label :'startDate'},{text : 'End Date',label :'endDate'},
-                //  {text : 'Today',label :'today'}];
                 var info = {
                     collection: localization.tt('h.collection'),
                     column: localization.tt('lbl.columnName'),
@@ -594,7 +603,7 @@ define(function(require) {
                     return {
                         'text': opt.label,
                         'label': 'resource:' + opt.name,
-                        'info': info[opt.name],
+                        'info': !_.isUndefined(info[opt.name]) ? info[opt.name] : opt.description,
                         'urlLabel': XAUtil.stringToCamelCase(opt.label.toLowerCase()),
                     };
                 });

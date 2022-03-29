@@ -43,18 +43,17 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.ranger.credentialapi.CredentialReader;
 import org.apache.ranger.plugin.util.XMLUtils;
 import org.apache.ranger.unixusersync.config.UserGroupSyncConfig;
 import org.apache.ranger.usergroupsync.UserGroupSync;
 import org.apache.ranger.usergroupsync.UserSyncMetricsProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnixAuthenticationService {
 
-	private static final Logger LOG = Logger.getLogger(UnixAuthenticationService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UnixAuthenticationService.class);
 
 	private static final String serviceName = "UnixAuthenticationService";
 
@@ -80,6 +79,7 @@ public class UnixAuthenticationService {
 	private String keyStorePath;
 	private String keyStoreType;
 	private List<String> enabledProtocolsList;
+	private List<String> enabledCipherSuiteList;
 	private String keyStorePathPassword;
 	private String trustStorePath;
 	private String trustStorePathPassword;
@@ -96,17 +96,6 @@ public class UnixAuthenticationService {
 	private static final String[] UGSYNC_CONFIG_XML_FILES = { "ranger-ugsync-default.xml",  "ranger-ugsync-site.xml" };
 
 	public static void main(String[] args) {
-
-		try {
-			// load log configuration file dynamically if log4j.properties changed
-			if (StringUtils.isNotBlank(System.getProperty("log4j.configuration"))) {
-				String logPropFile = StringUtils.splitByWholeSeparator(System.getProperty("log4j.configuration"), ":")[1];
-				PropertyConfigurator.configureAndWatch(logPropFile, 10000L);
-			}
-		} catch (Exception ignored) {
-			LOG.warn("Failed to get log4j.configuration  Reason: " + ignored.toString());
-		}
-
 		if (args.length > 0) {
 			for (String s : args) {
 				if ("-enableUnixAuth".equalsIgnoreCase(s)) {
@@ -239,7 +228,9 @@ public class UnixAuthenticationService {
 		SSLEnabled = (SSLEnabledProp != null &&  (SSLEnabledProp.equalsIgnoreCase("true")));
 		String defaultEnabledProtocols = "TLSv1.2";
 		String enabledProtocols = prop.getProperty("ranger.usersync.https.ssl.enabled.protocols", defaultEnabledProtocols);
+		String enabledCipherSuites = prop.getProperty("ranger.usersync.https.ssl.enabled.cipher.suites", "");
 		enabledProtocolsList=new ArrayList<String>(Arrays.asList(enabledProtocols.toUpperCase().trim().split("\\s*,\\s*")));
+		enabledCipherSuiteList = new ArrayList<String>(Arrays.asList(enabledCipherSuites.toUpperCase().trim().split("\\s*,\\s*")));
 //		LOG.info("Key:" + keyStorePath);
 //		LOG.info("KeyPassword:" + keyStorePathPassword);
 //		LOG.info("TrustStore:" + trustStorePath);
@@ -332,6 +323,23 @@ public class UnixAuthenticationService {
 			
 			if (!allowedProtocols.isEmpty()) {
 				secureSocket.setEnabledProtocols(allowedProtocols.toArray(new String[0]));
+			}
+			String[] enabledCipherSuites = secureSocket.getEnabledCipherSuites();
+			Set<String> allowedCipherSuites = new HashSet<String>();
+			for(String enabledCipherSuite : enabledCipherSuites) {
+				if (enabledCipherSuiteList.contains(enabledCipherSuite)) {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Enabling CipherSuite : [" + enabledCipherSuite + "]");
+					}
+					allowedCipherSuites.add(enabledCipherSuite);
+				} else {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Disabling CipherSuite : [" + enabledCipherSuite + "]");
+					}
+				}
+			}
+			if (!allowedCipherSuites.isEmpty()) {
+				secureSocket.setEnabledCipherSuites(allowedCipherSuites.toArray(new String[0]));
 			}
 		}
 		

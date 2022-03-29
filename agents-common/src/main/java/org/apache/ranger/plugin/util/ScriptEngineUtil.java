@@ -21,10 +21,10 @@ package org.apache.ranger.plugin.util;
 
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.plugin.classloader.RangerPluginClassLoader;
 import org.apache.ranger.plugin.conditionevaluator.RangerScriptConditionEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -32,7 +32,7 @@ import javax.script.ScriptEngineManager;
 import java.util.List;
 
 public class ScriptEngineUtil {
-    private static final Log LOG = LogFactory.getLog(RangerScriptConditionEvaluator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerScriptConditionEvaluator.class);
 
 
     public static ScriptEngine createScriptEngine(String engineName, String serviceType) {
@@ -54,8 +54,8 @@ public class ScriptEngineUtil {
             }
 
             ret = manager.getEngineByName(engineName);
-        } catch (Exception exp) {
-            LOG.error("RangerScriptConditionEvaluator.init() failed with exception=" + exp);
+        } catch (Throwable exp) {
+            LOG.error("RangerScriptConditionEvaluator.init() failed", exp);
         }
 
         if (ret == null) {
@@ -73,7 +73,7 @@ public class ScriptEngineUtil {
                     LOG.error("Cannot get script-engine from null pluginClassLoader");
                 }
             } catch (Throwable exp) {
-                LOG.error("RangerScriptConditionEvaluator.init() failed with exception=", exp);
+                LOG.error("RangerScriptConditionEvaluator.init() failed", exp);
             }
         }
 

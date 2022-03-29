@@ -40,13 +40,14 @@ import org.apache.ranger.plugin.util.XMLUtils;
 import org.apache.ranger.usergroupsync.UserGroupSink;
 import org.apache.ranger.usergroupsync.UserGroupSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class UserGroupSyncConfig  {
 
 	public static final String CONFIG_FILE = "ranger-ugsync-site.xml";
-	private static final Logger LOG = Logger.getLogger(UserGroupSyncConfig.class);
+	private static final Logger LOG = LoggerFactory.getLogger(UserGroupSyncConfig.class);
 
 	public static final String DEFAULT_CONFIG_FILE = "ranger-ugsync-default.xml";
 
@@ -140,6 +141,7 @@ public class UserGroupSyncConfig  {
 	private static final String LGSYNC_USER_OBJECT_CLASS = "ranger.usersync.ldap.user.objectclass";
 	private static final String DEFAULT_USER_OBJECT_CLASS = "person";
 
+    private static final String LGSYNC_GROUPNAMES = "ranger.usersync.ldap.groupnames";
 	private static final String LGSYNC_USER_SEARCH_FILTER = "ranger.usersync.ldap.user.searchfilter";
 
 	private static final String LGSYNC_USER_NAME_ATTRIBUTE = "ranger.usersync.ldap.user.nameattribute";
@@ -233,6 +235,9 @@ public class UserGroupSyncConfig  {
 
 	private static final String SYNC_POLICY_MGR_USERNAME = "ranger.usersync.policymgr.username";
 
+	private static final String SYNC_POLICY_MGR_MAX_RETRY_ATTEMPTS = "ranger.usersync.policymgr.max.retry.attempts";
+	private static final String SYNC_POLICY_MGR_RETRY_INTERVAL_MS  = "ranger.usersync.policymgr.retry.interval.ms";
+
 	private static final String DEFAULT_POLICYMGR_USERNAME = "rangerusersync";
 
 	private static final String SYNC_SOURCE = "ranger.usersync.sync.source";
@@ -256,6 +261,9 @@ public class UserGroupSyncConfig  {
     private static final String USERNAME_GROUPNAME_ASSIGNMENT_LIST_DELIMITER = "ranger.usersync.username.groupname.assignment.list.delimiter";
 
     private static final String GROUP_BASED_ROLE_ASSIGNMENT_RULES = "ranger.usersync.group.based.role.assignment.rules";
+
+	private static final String WHITELIST_USER_ROLE_ASSIGNMENT_RULES = "ranger.usersync.whitelist.users.role.assignment.rules";
+	private static final String DEFAULT_WHITELIST_USER_ROLE_ASSIGNMENT_RULES = "&ROLE_SYS_ADMIN:u:admin,rangerusersync,rangertagsync&ROLE_KEY_ADMIN:u:keyadmin";
 
     private static final String USERSYNC_RANGER_COOKIE_ENABLED_PROP = "ranger.usersync.cookie.enabled";
 
@@ -672,6 +680,22 @@ public class UserGroupSyncConfig  {
 		return val;
 	}
 
+    public String getGroupNames() {
+        return prop.getProperty(LGSYNC_GROUPNAMES);
+    }
+
+    public Set<String> getGroupNameSet() {
+        String groupNames =  getGroupNames();
+		Set<String> groupNamegSet = new HashSet<String>();
+		if (StringUtils.isNotEmpty(groupNames)) {
+			StringTokenizer st = new StringTokenizer(groupNames, ";");
+			while (st.hasMoreTokens()) {
+				groupNamegSet.add(st.nextToken().trim().toLowerCase());
+			}
+		}
+        return groupNamegSet;
+    }
+
 	public Set<String> getUserGroupNameAttributeSet() {
 		String uga =  getUserGroupNameAttribute();
 		StringTokenizer st = new StringTokenizer(uga, ",");
@@ -955,6 +979,14 @@ public class UserGroupSyncConfig  {
 		return userName;
 	}
 
+	public int getPolicyMgrMaxRetryAttempts() {
+		return getIntProperty(prop, SYNC_POLICY_MGR_MAX_RETRY_ATTEMPTS, 0);
+	}
+
+	public int getPolicyMgrRetryIntervalMs() {
+		return getIntProperty(prop, SYNC_POLICY_MGR_RETRY_INTERVAL_MS, 1 * 1000);
+	}
+
 	public String getSyncSource() {
 		String syncSource=null;
 		if(prop!=null && prop.containsKey(SYNC_SOURCE)){
@@ -1022,12 +1054,23 @@ public class UserGroupSyncConfig  {
         if (prop != null && prop.containsKey(GROUP_BASED_ROLE_ASSIGNMENT_RULES)) {
             String GroupRoleRules = prop
                     .getProperty(GROUP_BASED_ROLE_ASSIGNMENT_RULES);
-            if (GroupRoleRules != null && !GroupRoleRules.isEmpty()) {
+            if (StringUtils.isNotBlank(GroupRoleRules)) {
                 return GroupRoleRules.trim();
             }
         }
         return null;
     }
+
+	public String getWhileListUserRoleRules() {
+		if (prop != null && prop.containsKey(WHITELIST_USER_ROLE_ASSIGNMENT_RULES)) {
+			String whiteListUserRoleRules = prop
+					.getProperty(WHITELIST_USER_ROLE_ASSIGNMENT_RULES);
+			if (StringUtils.isNotBlank(whiteListUserRoleRules) ) {
+				return whiteListUserRoleRules.trim();
+			}
+		}
+		return DEFAULT_WHITELIST_USER_ROLE_ASSIGNMENT_RULES;
+	}
 
     public String getUserGroupDelimiter() {
         if (prop != null
@@ -1175,6 +1218,11 @@ public class UserGroupSyncConfig  {
 		prop.setProperty(LGSYNC_GROUP_HIERARCHY_LEVELS, String.valueOf(groupHierarchyLevel));
 	}
 
+	/* Used only for unit testing */
+	public void setGroupnames(String groupnames) {
+		prop.setProperty(LGSYNC_GROUPNAMES, groupnames);
+	}
+
 	public String getUserSyncMetricsFileName() throws IOException {
 		String val = prop.getProperty(UGSYNC_METRICS_FILEPATH);
 		if (StringUtils.isBlank(val)) {
@@ -1282,5 +1330,21 @@ public class UserGroupSyncConfig  {
 			isUserSyncNameValidationEnabled  = Boolean.valueOf(val);
 		}
 		return isUserSyncNameValidationEnabled;
+	}
+
+
+	private int getIntProperty(Properties prop, String key, int defaultValue) {
+		int   ret  = defaultValue;
+		String val = prop.getProperty(key);
+
+		if (StringUtils.isNotBlank(val)) {
+			try {
+				ret = Integer.parseInt(val);
+			} catch (NumberFormatException excp) {
+				LOG.warn("Invalid value for property: " + key + "=" + val + ". Will use default value: " + defaultValue, excp);
+			}
+		}
+
+		return ret;
 	}
 }

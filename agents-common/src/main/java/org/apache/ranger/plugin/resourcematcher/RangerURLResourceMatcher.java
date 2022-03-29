@@ -24,9 +24,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ranger.plugin.util.ServiceDefUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 
 
 public class RangerURLResourceMatcher extends RangerDefaultResourceMatcher {
-    private static final Log LOG = LogFactory.getLog(RangerURLResourceMatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerURLResourceMatcher.class);
 
     public static final String OPTION_PATH_SEPARATOR       = "pathSeparatorChar";
     public static final char   DEFAULT_PATH_SEPARATOR_CHAR = org.apache.hadoop.fs.Path.SEPARATOR_CHAR;
@@ -110,7 +110,7 @@ public class RangerURLResourceMatcher extends RangerDefaultResourceMatcher {
 
         // To ensure that when policyValue is single '*', ResourceMatcher created here returns true for isMatchAny()
         if (optWildCard && WILDCARD_ASTERISK.equals(policyValue)) {
-            return new CaseInsensitiveStringMatcher("");
+            return new CaseInsensitiveStringMatcher("", getOptions());
         }
 
         boolean isWildcardPresent = false;
@@ -129,10 +129,10 @@ public class RangerURLResourceMatcher extends RangerDefaultResourceMatcher {
         final ResourceMatcher ret;
 
         if (isWildcardPresent) {
-            ret = optIgnoreCase ? new CaseInsensitiveURLRecursiveWildcardMatcher(policyValue, pathSeparatorChar)
-                    : new CaseSensitiveURLRecursiveWildcardMatcher(policyValue, pathSeparatorChar);
+            ret = optIgnoreCase ? new CaseInsensitiveURLRecursiveWildcardMatcher(policyValue, getOptions(), pathSeparatorChar)
+                    : new CaseSensitiveURLRecursiveWildcardMatcher(policyValue, getOptions(), pathSeparatorChar);
         } else {
-            ret = optIgnoreCase ? new CaseInsensitiveURLRecursiveMatcher(policyValue, pathSeparatorChar) : new CaseSensitiveURLRecursiveMatcher(policyValue, pathSeparatorChar);
+            ret = optIgnoreCase ? new CaseInsensitiveURLRecursiveMatcher(policyValue, getOptions(), pathSeparatorChar) : new CaseSensitiveURLRecursiveMatcher(policyValue, getOptions(), pathSeparatorChar);
         }
 
         if (optReplaceTokens) {
@@ -231,8 +231,8 @@ public class RangerURLResourceMatcher extends RangerDefaultResourceMatcher {
 
 final class CaseSensitiveURLRecursiveWildcardMatcher extends ResourceMatcher {
     private final char levelSeparatorChar;
-    CaseSensitiveURLRecursiveWildcardMatcher(String value, char levelSeparatorChar) {
-        super(value);
+    CaseSensitiveURLRecursiveWildcardMatcher(String value, Map<String, String> options, char levelSeparatorChar) {
+        super(value, options);
         this.levelSeparatorChar = levelSeparatorChar;
     }
 
@@ -245,8 +245,8 @@ final class CaseSensitiveURLRecursiveWildcardMatcher extends ResourceMatcher {
 
 final class CaseInsensitiveURLRecursiveWildcardMatcher extends ResourceMatcher {
     private final char levelSeparatorChar;
-    CaseInsensitiveURLRecursiveWildcardMatcher(String value, char levelSeparatorChar) {
-        super(value);
+    CaseInsensitiveURLRecursiveWildcardMatcher(String value, Map<String, String> options, char levelSeparatorChar) {
+        super(value, options);
         this.levelSeparatorChar = levelSeparatorChar;
     }
 
@@ -263,8 +263,8 @@ abstract class RecursiveMatcher extends ResourceMatcher {
     String valueWithoutSeparator;
     String valueWithSeparator;
 
-    RecursiveMatcher(String value, char levelSeparatorChar) {
-        super(value);
+    RecursiveMatcher(String value, Map<String, String> options, char levelSeparatorChar) {
+        super(value, options);
         this.levelSeparatorChar = levelSeparatorChar;
     }
 
@@ -278,8 +278,8 @@ abstract class RecursiveMatcher extends ResourceMatcher {
 }
 
 final class CaseSensitiveURLRecursiveMatcher extends RecursiveMatcher {
-    CaseSensitiveURLRecursiveMatcher(String value, char levelSeparatorChar) {
-        super(value, levelSeparatorChar);
+    CaseSensitiveURLRecursiveMatcher(String value, Map<String, String> options, char levelSeparatorChar) {
+        super(value, options, levelSeparatorChar);
     }
 
     @Override
@@ -310,8 +310,8 @@ final class CaseSensitiveURLRecursiveMatcher extends RecursiveMatcher {
 }
 
 final class CaseInsensitiveURLRecursiveMatcher extends RecursiveMatcher {
-    CaseInsensitiveURLRecursiveMatcher(String value, char levelSeparatorChar) {
-        super(value, levelSeparatorChar);
+    CaseInsensitiveURLRecursiveMatcher(String value, Map<String, String> options, char levelSeparatorChar) {
+        super(value, options, levelSeparatorChar);
     }
 
     @Override

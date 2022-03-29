@@ -29,23 +29,27 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 
-import org.apache.log4j.Logger;
 import org.apache.ranger.authentication.unix.jaas.RoleUserAuthorityGranter;
 import org.apache.ranger.authorization.hadoop.config.RangerAdminConfig;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.common.PropertiesUtil;
 import org.apache.ranger.util.Pbkdf2PasswordEncoderCust;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.ldap.core.support.DefaultTlsDirContextAuthenticationStrategy;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,6 +65,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.apache.ranger.biz.UserMgr;
+import org.apache.ranger.biz.SessionMgr;
 
 
 
@@ -72,13 +77,19 @@ public class RangerAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
 	UserMgr userMgr;
-	private static final Logger logger = Logger.getLogger(RangerAuthenticationProvider.class);
+
+	@Autowired
+	SessionMgr sessionMgr;
+
+	private static final Logger logger = LoggerFactory.getLogger(RangerAuthenticationProvider.class);
+
 	private String rangerAuthenticationMethod;
 
 	private LdapAuthenticator authenticator;
 
 	private boolean ssoEnabled = false;
 	private final boolean isFipsEnabled;
+	protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
 	public RangerAuthenticationProvider() {
 		this.isFipsEnabled = RangerAdminConfig.getInstance().isFipsEnabled();
@@ -136,6 +147,14 @@ public class RangerAuthenticationProvider implements AuthenticationProvider {
 					return authentication;
 				}
 			}
+
+			// Following are JDBC
+			if (sessionMgr.isLoginIdLocked(authentication.getName())) {
+				logger.debug("Failed to authenticate since user account is locked");
+
+				throw new LockedException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.locked", "User account is locked"));
+			}
+
 			if (this.isFipsEnabled) {
 				try {
 					authentication = getJDBCAuthentication(authentication,"");

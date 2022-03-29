@@ -52,6 +52,10 @@
             <version>${solr.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>jdk.tools</groupId>
                     <artifactId>jdk.tools</artifactId>
                 </exclusion>
@@ -87,6 +91,10 @@
                    <groupId>io.netty</groupId>
                    <artifactId>netty-common</artifactId>
                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

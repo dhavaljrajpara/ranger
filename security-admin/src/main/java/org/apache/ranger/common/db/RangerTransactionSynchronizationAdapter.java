@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,7 +48,7 @@ public class RangerTransactionSynchronizationAdapter extends TransactionSynchron
     @Qualifier(value = "transactionManager")
     PlatformTransactionManager txManager;
 
-    private static final Log LOG = LogFactory.getLog(RangerTransactionSynchronizationAdapter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RangerTransactionSynchronizationAdapter.class);
 
     private static final ThreadLocal<List<Runnable>> RUNNABLES = new ThreadLocal<List<Runnable>>();
     private static final ThreadLocal<List<Runnable>> RUNNABLES_AFTER_COMMIT = new ThreadLocal<List<Runnable>>();
@@ -123,13 +124,14 @@ public class RangerTransactionSynchronizationAdapter extends TransactionSynchron
         List<Runnable> runnablesAfterCommit = RUNNABLES_AFTER_COMMIT.get();
         RUNNABLES_AFTER_COMMIT.remove();
 
+        List<Runnable> runnables = RUNNABLES.get();
+        RUNNABLES.remove();
+
         if (isParentTransactionCommitted) {
             // Run tasks scheduled to run after transaction is successfully committed
             runRunnables(runnablesAfterCommit, true);
         }
 
-        List<Runnable> runnables = RUNNABLES.get();
-        RUNNABLES.remove();
         // Run other tasks scheduled to run after transaction completes
         runRunnables(runnables, false);
 
