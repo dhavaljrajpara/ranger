@@ -1,13 +1,18 @@
 import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge } from "react-bootstrap";
+import { Badge, Modal, Button } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
+import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const [showTableSyncDetails, setTableSyncdetails] = useState({
+    syncDteails: {},
+    showSyncDetails: false
+  });
 
   const fetchUserSyncInfo = useCallback(async ({ pageSize, pageIndex }) => {
     let logs = [];
@@ -34,11 +39,24 @@ function User_Sync() {
     }
   }, []);
 
+  const toggleTableSyncModal = (raw) => {
+    setTableSyncdetails({
+      syncDteails: raw,
+      showSyncDetails: true
+    });
+  };
+  const toggleTableSyncModalClose = () => {
+    setTableSyncdetails({
+      syncDteails: {},
+      showSyncDetails: false
+    });
+  };
+
   const columns = React.useMemo(
     () => [
       {
         Header: "User Name",
-        accessor: "userName" // accessor is the "key" in the data
+        accessor: "userName"
       },
       {
         Header: "Sync Source",
@@ -53,27 +71,46 @@ function User_Sync() {
       },
       {
         Header: "Users",
-        accessor: "noOfNewUsers" // accessor is the "key" in the data
+        accessor: "noOfNewUsers"
       },
       {
         Header: "Groups",
-        accessor: "noOfNewGroups" // accessor is the "key" in the data
+        accessor: "noOfNewGroups"
       },
       {
         Header: "Users",
-        accessor: "noOfModifiedUsers" // accessor is the "key" in the data
+        accessor: "noOfModifiedUsers"
       },
       {
         Header: "Groups",
-        accessor: "noOfModifiedGroups" // accessor is the "key" in the data
+        accessor: "noOfModifiedGroups"
       },
       {
         Header: "Event Time",
-        accessor: "eventTime" // accessor is the "key" in the data
+        accessor: "eventTime"
       },
       {
         Header: "Sync Details",
-        accessor: "syncSourceDetail" // accessor is the "key" in the data
+        accessor: "syncSourceInfo",
+        Cell: (rawValue, model) => {
+          if (rawValue.value) {
+            return (
+              <button
+                className="btn btn-outline-dark btn-sm"
+                data-id="syncDetailes"
+                title="Sync Details"
+                id={model.id}
+                onClick={() => {
+                  toggleTableSyncModal(rawValue.value);
+                }}
+              >
+                <i className="fa-fw fa fa-eye"> </i>
+              </button>
+            );
+          } else {
+            return " -- ";
+          }
+        }
       }
     ],
     []
@@ -81,12 +118,38 @@ function User_Sync() {
   return loader ? (
     <Loader />
   ) : (
-    <XATableLayout
-      data={userSyncListingData}
-      columns={columns}
-      fetchData={fetchUserSyncInfo}
-      pageCount={pageCount}
-    />
+    <>
+      <XATableLayout
+        data={userSyncListingData}
+        columns={columns}
+        fetchData={fetchUserSyncInfo}
+        pageCount={pageCount}
+      />
+      <Modal
+        show={showTableSyncDetails && showTableSyncDetails.showSyncDetails}
+        onHide={toggleTableSyncModalClose}
+        size="xl"
+      >
+        <Modal.Header>
+          <Modal.Title>Sync Source Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <SyncSourceDetails
+            syncDetails={showTableSyncDetails.syncDteails}
+          ></SyncSourceDetails>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={toggleTableSyncModalClose}
+          >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      ;
+    </>
   );
 }
 

@@ -5,17 +5,17 @@ import { FieldError } from "Components/CommonComponents";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { fetchApi } from "Utils/fetchAPI";
-import { ActivationStatus } from "Utils/XAEnums";
+import { ActivationStatus, RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 import { UserRoles, UserSource } from "Utils/XAEnums";
 import { getUserProfile } from "Utils/appState";
 import _ from "lodash";
+import { SyncSourceDetails } from "../SyncSourceDetails";
 
 class UserFormComp extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
   }
   handleSubmit = async (formData) => {
     let userFormData = { ...formData };
@@ -33,16 +33,15 @@ class UserFormComp extends Component {
     userFormData.status = ActivationStatus.ACT_STATUS_ACTIVE.value;
     if (this.props && this.props.isEditView) {
       userFormData = {
-        ...this.state.userInfo,
+        ...this.props.userInfo,
         ...userFormData
       };
       delete userFormData.password;
     }
     if (this.props && this.props.isEditView) {
       try {
-        const { fetchApi } = await import("Utils/fetchAPI");
         const userEdit = await fetchApi({
-          url: `xusers/secure/users/${this.state.userInfo.id}`,
+          url: `xusers/secure/users/${this.props.userInfo.id}`,
           method: "put",
           data: userFormData
         });
@@ -54,7 +53,6 @@ class UserFormComp extends Component {
       }
     } else {
       try {
-        const { fetchApi } = await import("Utils/fetchAPI");
         const userCreate = await fetchApi({
           url: "xusers/secure/users",
           method: "post",
@@ -70,7 +68,6 @@ class UserFormComp extends Component {
   };
   closeForm = () => {
     self.location.hash = "#/users/usertab";
-    // this.props.history.push("/users/grouptab");
   };
   groupNameList = ({ input, ...rest }) => {
     const loadOptions = async (inputValue, callback) => {
@@ -103,9 +100,8 @@ class UserFormComp extends Component {
         isMulti
         isDisabled={
           this.props.isEditView &&
-          this.state &&
-          this.state.userInfo &&
-          this.state.userInfo.userSource == UserSource.XA_USER.value
+          this.props.userInfo &&
+          this.props.userInfo.userSource == UserSource.XA_USER.value
             ? true
             : false
         }
@@ -115,12 +111,12 @@ class UserFormComp extends Component {
   disabledUserRoleField = () => {
     const userProps = getUserProfile();
     let disabledUserRolefield;
-    if (this.props.isEditView && this.state && this.state.userInfo) {
-      if (this.state.userInfo.userSource == UserSource.XA_USER.value) {
+    if (this.props.isEditView && this.props.userInfo) {
+      if (this.props.userInfo.userSource == UserSource.XA_USER.value) {
         disabledUserRolefield = true;
       }
       if (userProps.loginId != "admin") {
-        if (this.state.userInfo.name != "admin") {
+        if (this.props.userInfo.name != "admin") {
           if (
             userProps.userRoleList[0] == "ROLE_SYS_ADMIN" ||
             userProps.userRoleList[0] == "ROLE_KEY_ADMIN"
@@ -135,42 +131,19 @@ class UserFormComp extends Component {
       } else {
         disabledUserRolefield = false;
       }
-      if (this.state.userInfo.name == userProps.loginId) {
+      if (this.props.userInfo.name == userProps.loginId) {
         disabledUserRolefield = true;
       }
     }
     return disabledUserRolefield;
   };
-  fetchUserData = async (userID) => {
-    let userRespData;
-    try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-      userRespData = await fetchApi({
-        url: "xusers/secure/users/" + userID
-      });
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Zones or CSRF headers! ${error}`
-      );
-    }
-    this.setState({
-      userInfo: userRespData.data
-    });
-  };
-
   userRoleListData = () => {
     return getUserAccessRoleList();
   };
 
-  componentDidMount = () => {
-    if (this.props.isEditView) {
-      this.fetchUserData(this.props.userID);
-    }
-  };
-
   userData = () => {
-    if (this.state && this.state.userInfo) {
-      return this.state.userInfo;
+    if (this.props.userInfo) {
+      return this.props.userInfo;
     } else {
       return "";
     }
@@ -178,31 +151,30 @@ class UserFormComp extends Component {
 
   setUserFormData = () => {
     let formValueObj = {};
-    if (this.props.isEditView && this.state && this.state.userInfo) {
-      formValueObj.name = this.state.userInfo.name;
-      formValueObj.firstName = this.state.userInfo.firstName;
-      formValueObj.lastName = this.state.userInfo.lastName;
-      formValueObj.emailAddress = this.state.userInfo.emailAddress;
-      formValueObj.firstName = this.state.userInfo.firstName;
+    if (this.props.isEditView && this.props.userInfo) {
+      formValueObj.name = this.props.userInfo.name;
+      formValueObj.firstName = this.props.userInfo.firstName;
+      formValueObj.lastName = this.props.userInfo.lastName;
+      formValueObj.emailAddress = this.props.userInfo.emailAddress;
+      formValueObj.firstName = this.props.userInfo.firstName;
     }
-    if (this.state && this.state.userInfo && this.state.userInfo.userRoleList) {
+    if (this.props.userInfo && this.props.userInfo.userRoleList) {
       formValueObj.userRoleList = {
-        label: UserRoles[this.state.userInfo.userRoleList[0]].label,
-        value: this.state.userInfo.userRoleList[0]
+        label: UserRoles[this.props.userInfo.userRoleList[0]].label,
+        value: this.props.userInfo.userRoleList[0]
       };
       console.log(this.groupNameList);
     } else {
       formValueObj.userRoleList = this.userRoleListData()[0];
     }
     if (
-      this.state &&
-      this.state.userInfo &&
-      this.state.userInfo.groupIdList &&
-      this.state.userInfo.groupNameList
+      this.props.userInfo &&
+      this.props.userInfo.groupIdList &&
+      this.props.userInfo.groupNameList
     ) {
-      formValueObj.groupIdList = this.state.userInfo.groupNameList.map(
+      formValueObj.groupIdList = this.props.userInfo.groupNameList.map(
         (val, index) => {
-          return { label: val, value: this.state.userInfo.groupIdList[index] };
+          return { label: val, value: this.props.userInfo.groupIdList[index] };
         }
       );
     }
@@ -214,18 +186,58 @@ class UserFormComp extends Component {
     const errors = {};
     if (!values.name) {
       errors.name = "Required";
+    } else {
+      if (
+        !RegexValidation.NAME_VALIDATION.regexExpressionForName.test(
+          values.name
+        )
+      ) {
+        errors.name = RegexValidation.NAME_VALIDATION.nameValidationMessage;
+      }
     }
-    if (!values.password) {
+    if (!values.password && !this.props.isEditView) {
       errors.password = "Required";
     }
-    if (!values.passwordConfirm) {
+    if (!values.passwordConfirm && !this.props.isEditView) {
       errors.passwordConfirm = "Required";
     }
-    if (!values.firstName) {
-      errors.firstName = "Required";
+    if (this.props.isEditView) {
+      if (
+        !values.firstName &&
+        this.props.userInfo.userSource !== UserSource.XA_USER.value
+      ) {
+        errors.firstName = "Required";
+      }
+    } else {
+      if (!values.firstName) {
+        errors.firstName = "Required";
+      } else {
+        if (
+          !RegexValidation.NAME_VALIDATION.regexExpressionForName.test(
+            values.firstName
+          )
+        ) {
+          errors.firstName =
+            RegexValidation.NAME_VALIDATION.secondaryNameValidationMessage;
+        }
+      }
     }
-    if (values && _.has(values, "password") && values.password.length < 8) {
-      errors.password = "Invalid Password";
+
+    if (
+      values &&
+      _.has(values, "password") &&
+      !RegexValidation.PASSWORD.regexExpression.test(values.password)
+    ) {
+      errors.password = RegexValidation.PASSWORD.message;
+    }
+
+    if (
+      values &&
+      _.has(values, "password") &&
+      _.has(values, "passwordConfirm") &&
+      values.password !== values.passwordConfirm
+    ) {
+      errors.passwordConfirm = "Password must be match with new password";
     }
 
     return errors;
@@ -268,8 +280,8 @@ class UserFormComp extends Component {
                         placeholder="Enter New Password"
                         className="form-control"
                       />
+                      <FieldError name="password" />
                     </div>
-                    <FieldError name="password" />
                   </div>
                 )}
                 {!this.props.isEditView && (
@@ -285,8 +297,8 @@ class UserFormComp extends Component {
                         placeholder="Confirm New Password"
                         className="form-control"
                       />
+                      <FieldError name="passwordConfirm" />
                     </div>
-                    <FieldError name="passwordConfirm" />
                   </div>
                 )}
                 <div className="form-group row">
@@ -301,16 +313,15 @@ class UserFormComp extends Component {
                       className="form-control"
                       disabled={
                         this.props.isEditView &&
-                        this.state &&
-                        this.state.userInfo &&
-                        this.state.userInfo.userSource ==
+                        this.props.userInfo &&
+                        this.props.userInfo.userSource ==
                           UserSource.XA_USER.value
                           ? true
                           : false
                       }
                     />
+                    <FieldError name="firstName" />
                   </div>
-                  <FieldError name="firstName" />
                 </div>
                 <div className="form-group row">
                   <label className="col-sm-2 col-form-label">Last Name</label>
@@ -322,16 +333,15 @@ class UserFormComp extends Component {
                       className="form-control"
                       disabled={
                         this.props.isEditView &&
-                        this.state &&
-                        this.state.userInfo &&
-                        this.state.userInfo.userSource ==
+                        this.props.userInfo &&
+                        this.props.userInfo.userSource ==
                           UserSource.XA_USER.value
                           ? true
                           : false
                       }
                     />
+                    <FieldError name="lastName" />
                   </div>
-                  <FieldError name="lastName" />
                 </div>
                 <div className="form-group row">
                   <label className="col-sm-2 col-form-label">
@@ -346,9 +356,8 @@ class UserFormComp extends Component {
                       className="form-control"
                       disabled={
                         this.props.isEditView &&
-                        this.state &&
-                        this.state.userInfo &&
-                        this.state.userInfo.userSource ==
+                        this.props.userInfo &&
+                        this.props.userInfo.userSource ==
                           UserSource.XA_USER.value
                           ? true
                           : false
@@ -383,6 +392,21 @@ class UserFormComp extends Component {
                       component={this.groupNameList}
                       className="form-control"
                     ></Field>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-sm-12">
+                    <p className="form-header">Sync Details :</p>
+                    <div>
+                      <SyncSourceDetails
+                        syncDetails={
+                          this.props.userInfo &&
+                          this.props.userInfo.otherAttributes
+                            ? JSON.parse(this.props.userInfo.otherAttributes)
+                            : {}
+                        }
+                      ></SyncSourceDetails>
+                    </div>
                   </div>
                 </div>
                 <div className="row form-actions">

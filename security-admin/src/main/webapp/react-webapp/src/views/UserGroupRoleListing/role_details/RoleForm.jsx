@@ -7,6 +7,7 @@ import arrayMutators from "final-form-arrays";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import { findIndex } from "lodash";
+import { Loader } from "Components/CommonComponents";
 
 class GroupForm extends Component {
   constructor(props) {
@@ -14,7 +15,8 @@ class GroupForm extends Component {
     this.state = {
       selectedUser: [],
       selectedGroup: [],
-      selectedRole: []
+      selectedRole: [],
+      loader: true
     };
   }
   componentDidMount = () => {
@@ -25,10 +27,41 @@ class GroupForm extends Component {
       this.props.match.params.roleId
     ) {
       this.fetchRoleData(this.props.match.params.roleId);
+    } else {
+      this.setState({
+        loader: false
+      });
     }
   };
-  filterUsrOp = ({ data }) => {
-    return findIndex(this.state.selectedUser, data) === -1;
+  filterUsrOp = (data, formVal) => {
+    if (formVal && formVal.users) {
+      let userSelectedData = formVal.users.map((m) => {
+        return { label: m.name, value: m.name };
+      });
+      return findIndex(userSelectedData, data) === -1;
+    } else {
+      return findIndex(this.state.selectedUser, data) === -1;
+    }
+  };
+  filterGroupOp = (data, formVal) => {
+    if (formVal && formVal.groups) {
+      let groupSelectedData = formVal.groups.map((m) => {
+        return { label: m.name, value: m.name };
+      });
+      return findIndex(groupSelectedData, data) === -1;
+    } else {
+      return findIndex(this.state.selectedGroup, data) === -1;
+    }
+  };
+  filterRoleOp = (data, formVal) => {
+    if (formVal && formVal.roles) {
+      let roleSelectedData = formVal.roles.map((m) => {
+        return { label: m.name, value: m.name };
+      });
+      return findIndex(roleSelectedData, data) === -1;
+    } else {
+      return findIndex(this.state.selectedRole, data) === -1;
+    }
   };
   fetchRoleData = async (roleId) => {
     let roleRespData;
@@ -43,12 +76,12 @@ class GroupForm extends Component {
       );
     }
     this.setState({
-      roleInfo: roleRespData.data
+      roleInfo: roleRespData.data,
+      loader: false
     });
   };
 
   handleSubmit = async (formData) => {
-    console.log(formData);
     let roleFormData = {
       ...this.state.roleInfo,
       ...formData
@@ -67,7 +100,7 @@ class GroupForm extends Component {
           data: roleFormData
         });
         toast.success("Role updated successfully!!");
-        self.location.hash = "#/users/roletab";
+        this.props.history.push("/users/roletab");
       } catch (error) {
         console.error(`Error occurred while creating Role`);
         toast.error(error.msgDesc);
@@ -88,15 +121,6 @@ class GroupForm extends Component {
     }
   };
 
-  handleUserAdd = (push) => {
-    let usr = this.state.selectedUser.map(({ value }) => ({
-      name: value,
-      isAdmin: false
-    }));
-    usr.map((val) => {
-      push("users", val);
-    });
-  };
   fetchUserOp = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
@@ -116,14 +140,38 @@ class GroupForm extends Component {
       selectedUser: value
     });
   };
+  handleUserAdd = (push) => {
+    if (this.state.selectedUser.length == 0) {
+      toast.warning("Please select atleast one user!!");
+    } else {
+      let usr = this.state.selectedUser.map(({ value }) => ({
+        name: value,
+        isAdmin: false
+      }));
+      usr.map((val) => {
+        push("users", val);
+      });
+      this.setState({
+        selectedUser: []
+      });
+    }
+  };
+
   handleGroupAdd = (push) => {
-    let grp = this.state.selectedGroup.map(({ value }) => ({
-      name: value,
-      isAdmin: false
-    }));
-    grp.map((val) => {
-      push("groups", val);
-    });
+    if (this.state.selectedGroup.length == 0) {
+      toast.warning("Please select atleast one group!!");
+    } else {
+      let grp = this.state.selectedGroup.map(({ value }) => ({
+        name: value,
+        isAdmin: false
+      }));
+      grp.map((val) => {
+        push("groups", val);
+      });
+      this.setState({
+        selectedGroup: []
+      });
+    }
   };
   fetchGroupOp = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
@@ -145,13 +193,20 @@ class GroupForm extends Component {
     });
   };
   handleRoleAdd = (push) => {
-    let rol = this.state.selectedRole.map(({ value }) => ({
-      name: value,
-      isAdmin: false
-    }));
-    rol.map((val) => {
-      push("roles", val);
-    });
+    if (this.state.selectedRole.length == 0) {
+      toast.warning("Please select atleast one role!!");
+    } else {
+      let rol = this.state.selectedRole.map(({ value }) => ({
+        name: value,
+        isAdmin: false
+      }));
+      rol.map((val) => {
+        push("roles", val);
+      });
+      this.setState({
+        selectedRole: []
+      });
+    }
   };
   fetchRoleOp = async (inputValue) => {
     let params = { roleNamePartial: inputValue || "" };
@@ -195,13 +250,23 @@ class GroupForm extends Component {
     }
     return formValueObj;
   };
+  validateForm = (values) => {
+    const errors = {};
+    if (!values.name) {
+      errors.name = "Required";
+    }
+    return errors;
+  };
   render() {
-    return (
+    return this.state.loader ? (
+      <Loader />
+    ) : (
       <>
-        <h4 className="wrap-header bold">User Form</h4>
+        <h4 className="wrap-header bold">Role Form</h4>
         <Form
           onSubmit={this.handleSubmit}
           initialValues={this.setRoleFormData()}
+          validate={this.validateForm}
           mutators={{
             ...arrayMutators
           }}
@@ -226,8 +291,8 @@ class GroupForm extends Component {
                       placeholder="Role Name"
                       className="form-control"
                     />
+                    <FieldError name="name" />
                   </div>
-                  <FieldError name="name" />
                 </div>
                 <div className="form-group row">
                   <label className="col-sm-2 col-form-label">Description</label>
@@ -239,7 +304,6 @@ class GroupForm extends Component {
                       className="form-control"
                     />
                   </div>
-                  <FieldError name="description" />
                 </div>
                 <div>
                   <fieldset>
@@ -249,8 +313,8 @@ class GroupForm extends Component {
                     <Col sm="6">
                       <FieldArray name="users">
                         {({ fields }) => (
-                          <Table striped bordered>
-                            <thead>
+                          <Table bordered>
+                            <thead className="thead-light">
                               <tr>
                                 <td>User Name</td>
                                 <td>Is Role Admin</td>
@@ -258,54 +322,77 @@ class GroupForm extends Component {
                               </tr>
                             </thead>
                             <tbody>
-                              {fields.map((name, index) => (
+                              {fields.value == undefined ? (
                                 <tr>
-                                  <td>{fields.value[index].name}</td>
-                                  <td>
-                                    <Field
-                                      className="form-control"
-                                      name={`${name}.isAdmin`}
-                                      render={({ input, meta }) => (
-                                        <div>
-                                          <BForm.Group>
-                                            <BForm.Check
-                                              {...input}
-                                              type="checkbox"
-                                            />
-                                          </BForm.Group>
-                                        </div>
-                                      )}
-                                    />
-                                  </td>
-                                  <td>
-                                    <span
-                                      onClick={() => fields.remove(index)}
-                                      style={{ cursor: "pointer" }}
-                                    >
-                                      ❌
-                                    </span>
+                                  <td
+                                    className="text-center text-muted"
+                                    colSpan="3"
+                                  >
+                                    "No details available !!"
                                   </td>
                                 </tr>
-                              ))}
+                              ) : (
+                                fields.map((name, index) => (
+                                  <tr key={index}>
+                                    <td>{fields.value[index].name}</td>
+                                    <td className="text-center">
+                                      <Field
+                                        className="form-control"
+                                        name={`${name}.isAdmin`}
+                                        render={({ input, meta }) => (
+                                          <div>
+                                            <BForm.Group>
+                                              <BForm.Check
+                                                {...input}
+                                                checked={input.value}
+                                                type="checkbox"
+                                              />
+                                            </BForm.Group>
+                                          </div>
+                                        )}
+                                      />
+                                    </td>
+                                    <td>
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        title="Remove"
+                                        onClick={() => fields.remove(index)}
+                                      >
+                                        <i className="fa-fw fa fa-remove"></i>
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </Table>
                         )}
                       </FieldArray>
-                      <AsyncSelect
-                        value={this.state.selectedUser}
-                        filterOption={this.filterUsrOp}
-                        onChange={this.handleUserChange}
-                        loadOptions={this.fetchUserOp}
-                        defaultOptions
-                        isMulti
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => this.handleUserAdd(push)}
-                      >
-                        Add Users
-                      </button>
+                      <div className="form-group row">
+                        <div className="col-sm-10">
+                          <AsyncSelect
+                            value={this.state.selectedUser}
+                            filterOption={({ data }) =>
+                              this.filterUsrOp(data, values)
+                            }
+                            onChange={this.handleUserChange}
+                            loadOptions={this.fetchUserOp}
+                            defaultOptions
+                            isMulti
+                          />
+                        </div>
+                        <div className="col-sm-2">
+                          <Button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => this.handleUserAdd(push)}
+                            size="sm"
+                          >
+                            Add Users
+                          </Button>
+                        </div>
+                      </div>
                     </Col>
                   </div>
                 </div>
@@ -317,8 +404,8 @@ class GroupForm extends Component {
                     <Col sm="6">
                       <FieldArray name="groups">
                         {({ fields }) => (
-                          <Table striped bordered>
-                            <thead>
+                          <Table bordered>
+                            <thead className="thead-light">
                               <tr>
                                 <td>Group Name</td>
                                 <td>Is Role Admin</td>
@@ -326,53 +413,77 @@ class GroupForm extends Component {
                               </tr>
                             </thead>
                             <tbody>
-                              {fields.map((name, index) => (
+                              {fields.value == undefined ? (
                                 <tr>
-                                  <td>{fields.value[index].name}</td>
-                                  <td>
-                                    <Field
-                                      className="form-control"
-                                      name={`${name}.isAdmin`}
-                                      render={({ input, meta }) => (
-                                        <div>
-                                          <BForm.Group>
-                                            <BForm.Check
-                                              {...input}
-                                              type="checkbox"
-                                            />
-                                          </BForm.Group>
-                                        </div>
-                                      )}
-                                    />
-                                  </td>
-                                  <td>
-                                    <span
-                                      onClick={() => fields.remove(index)}
-                                      style={{ cursor: "pointer" }}
-                                    >
-                                      ❌
-                                    </span>
+                                  <td
+                                    className="text-center text-muted"
+                                    colSpan="3"
+                                  >
+                                    "No details available !!"
                                   </td>
                                 </tr>
-                              ))}
+                              ) : (
+                                fields.map((name, index) => (
+                                  <tr>
+                                    <td>{fields.value[index].name}</td>
+                                    <td className="text-center">
+                                      <Field
+                                        className="form-control"
+                                        name={`${name}.isAdmin`}
+                                        render={({ input, meta }) => (
+                                          <div>
+                                            <BForm.Group>
+                                              <BForm.Check
+                                                {...input}
+                                                checked={input.value}
+                                                type="checkbox"
+                                              />
+                                            </BForm.Group>
+                                          </div>
+                                        )}
+                                      />
+                                    </td>
+                                    <td>
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        title="Remove"
+                                        onClick={() => fields.remove(index)}
+                                      >
+                                        <i className="fa-fw fa fa-remove"></i>
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </Table>
                         )}
                       </FieldArray>
-                      <AsyncSelect
-                        value={this.state.selectedGroup}
-                        onChange={this.handleGroupChange}
-                        loadOptions={this.fetchGroupOp}
-                        defaultOptions
-                        isMulti
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => this.handleGroupAdd(push)}
-                      >
-                        Add Group
-                      </button>
+                      <div className="form-group row">
+                        <div className="col-sm-10">
+                          <AsyncSelect
+                            value={this.state.selectedGroup}
+                            filterOption={({ data }) =>
+                              this.filterGroupOp(data, values)
+                            }
+                            onChange={this.handleGroupChange}
+                            loadOptions={this.fetchGroupOp}
+                            defaultOptions
+                            isMulti
+                          />
+                        </div>
+                        <div className="col-sm-2">
+                          <Button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => this.handleGroupAdd(push)}
+                            size="sm"
+                          >
+                            Add Group
+                          </Button>
+                        </div>
+                      </div>
                     </Col>
                   </div>
                 </div>
@@ -384,8 +495,8 @@ class GroupForm extends Component {
                     <Col sm="6">
                       <FieldArray name="roles">
                         {({ fields }) => (
-                          <Table striped bordered>
-                            <thead>
+                          <Table bordered>
+                            <thead className="thead-light">
                               <tr>
                                 <td>Role Name</td>
                                 <td>Is Role Admin</td>
@@ -393,53 +504,77 @@ class GroupForm extends Component {
                               </tr>
                             </thead>
                             <tbody>
-                              {fields.map((name, index) => (
+                              {fields.value == undefined ? (
                                 <tr>
-                                  <td>{fields.value[index].name}</td>
-                                  <td>
-                                    <Field
-                                      className="form-control"
-                                      name={`${name}.isAdmin`}
-                                      render={({ input, meta }) => (
-                                        <div>
-                                          <BForm.Group>
-                                            <BForm.Check
-                                              {...input}
-                                              type="checkbox"
-                                            />
-                                          </BForm.Group>
-                                        </div>
-                                      )}
-                                    />
-                                  </td>
-                                  <td>
-                                    <span
-                                      onClick={() => fields.remove(index)}
-                                      style={{ cursor: "pointer" }}
-                                    >
-                                      ❌
-                                    </span>
+                                  <td
+                                    className="text-center text-muted"
+                                    colSpan="3"
+                                  >
+                                    "No details available !!"
                                   </td>
                                 </tr>
-                              ))}
+                              ) : (
+                                fields.map((name, index) => (
+                                  <tr>
+                                    <td>{fields.value[index].name}</td>
+                                    <td className="text-center">
+                                      <Field
+                                        className="form-control"
+                                        name={`${name}.isAdmin`}
+                                        render={({ input, meta }) => (
+                                          <div>
+                                            <BForm.Group>
+                                              <BForm.Check
+                                                {...input}
+                                                checked={input.value}
+                                                type="checkbox"
+                                              />
+                                            </BForm.Group>
+                                          </div>
+                                        )}
+                                      />
+                                    </td>
+                                    <td>
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        title="Remove"
+                                        onClick={() => fields.remove(index)}
+                                      >
+                                        <i className="fa-fw fa fa-remove"></i>
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </Table>
                         )}
                       </FieldArray>
-                      <AsyncSelect
-                        value={this.state.selectedRole}
-                        onChange={this.handleRoleChange}
-                        loadOptions={this.fetchRoleOp}
-                        defaultOptions
-                        isMulti
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => this.handleRoleAdd(push)}
-                      >
-                        Add Role
-                      </button>
+                      <div className="form-group row">
+                        <div className="col-sm-10">
+                          <AsyncSelect
+                            value={this.state.selectedRole}
+                            filterOption={({ data }) =>
+                              this.filterRoleOp(data, values)
+                            }
+                            onChange={this.handleRoleChange}
+                            loadOptions={this.fetchRoleOp}
+                            defaultOptions
+                            isMulti
+                          />
+                        </div>
+                        <div className="col-sm-2">
+                          <Button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => this.handleRoleAdd(push)}
+                            size="sm"
+                          >
+                            Add Role
+                          </Button>
+                        </div>
+                      </div>
                     </Col>
                   </div>
                 </div>

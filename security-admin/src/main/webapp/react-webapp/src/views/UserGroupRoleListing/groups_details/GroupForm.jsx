@@ -3,11 +3,13 @@ import { Button } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { FieldError } from "Components/CommonComponents";
 import { toast } from "react-toastify";
+import { SyncSourceDetails } from "../SyncSourceDetails";
+import { Loader } from "Components/CommonComponents";
 
 class GroupForm extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { loader: true };
   }
   componentDidMount = () => {
     if (
@@ -17,6 +19,10 @@ class GroupForm extends Component {
       this.props.match.params.groupId
     ) {
       this.fetchGroupData(this.props.match.params.groupId);
+    } else {
+      this.setState({
+        loader: false
+      });
     }
   };
   fetchGroupData = async (groupId) => {
@@ -32,7 +38,8 @@ class GroupForm extends Component {
       );
     }
     this.setState({
-      groupInfo: groupRespData.data
+      groupInfo: groupRespData.data,
+      loader: false
     });
   };
 
@@ -85,8 +92,6 @@ class GroupForm extends Component {
       this.props.match.params &&
       this.props.match.params.groupId
     ) {
-      console.log(this.props);
-
       if (this.state && this.state.groupInfo) {
         formValueObj.name = this.state.groupInfo.name;
         formValueObj.description = this.state.groupInfo.description;
@@ -106,7 +111,9 @@ class GroupForm extends Component {
     return errors;
   };
   render() {
-    return (
+    return this.state.loader ? (
+      <Loader />
+    ) : (
       <div>
         <h4 className="wrap-header bold">Group Form</h4>
         <Form
@@ -127,8 +134,8 @@ class GroupForm extends Component {
                       placeholder="Group Name"
                       className="form-control"
                     />
+                    <FieldError name="name" />
                   </div>
-                  <FieldError name="name" />
                 </div>
                 <div className="form-group row">
                   <label className="col-sm-2 col-form-label">Description</label>
@@ -140,8 +147,24 @@ class GroupForm extends Component {
                       className="form-control"
                     />
                   </div>
-                  <FieldError name="description" />
                 </div>
+                <div className="row">
+                  <div className="col-sm-12">
+                    <p className="form-header">Sync Details :</p>
+                    <div>
+                      <SyncSourceDetails
+                        syncDetails={
+                          this.state &&
+                          this.state.groupInfo &&
+                          this.state.groupInfo.otherAttributes
+                            ? JSON.parse(this.state.groupInfo.otherAttributes)
+                            : {}
+                        }
+                      ></SyncSourceDetails>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="row form-actions">
                   <div className="col-md-9 offset-md-3">
                     <Button

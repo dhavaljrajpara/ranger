@@ -22,6 +22,7 @@ import { useHistory, Link } from "react-router-dom";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
+import { SyncSourceDetails } from "../SyncSourceDetails";
 
 function Users() {
   let history = useHistory();
@@ -31,6 +32,10 @@ function Users() {
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
+  const [showUserSyncDetails, setUserSyncdetails] = useState({
+    syncDteails: {},
+    showSyncDetails: false
+  });
   const [updateTable, setUpdateTable] = useState(moment.now());
 
   const fetchUserInfo = useCallback(
@@ -145,7 +150,10 @@ function Users() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <Link to={"/user/" + rawValue.row.original.id}>
+              <Link
+                className="text-info"
+                to={"/user/" + rawValue.row.original.id}
+              >
                 {rawValue.value}
               </Link>
             );
@@ -218,10 +226,10 @@ function Users() {
         Header: "Groups",
         accessor: "groupNameList",
         Cell: (rawValue) => {
-          if (rawValue.value) {
+          if (rawValue.value.length > 0) {
             return rawValue.value.map((name, index) => {
               return (
-                <h6 key={index}>
+                <h6 className="d-inline mr-1" key={index}>
                   <Badge variant="info">{name}</Badge>
                 </h6>
               );
@@ -265,6 +273,9 @@ function Users() {
                 data-for="users"
                 title="Sync Details"
                 id={model.id}
+                onClick={() => {
+                  toggleUserSyncModal(rawValue.value);
+                }}
               >
                 <i className="fa-fw fa fa-eye"> </i>
               </button>
@@ -285,6 +296,18 @@ function Users() {
   };
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);
+  };
+  const toggleUserSyncModal = (raw) => {
+    setUserSyncdetails({
+      syncDteails: JSON.parse(raw),
+      showSyncDetails: true
+    });
+  };
+  const toggleUserSyncModalClose = () => {
+    setUserSyncdetails({
+      syncDteails: {},
+      showSyncDetails: false
+    });
   };
   const handleConfirmClick = () => {
     handleDeleteClick();
@@ -343,6 +366,29 @@ function Users() {
           </Button>
           <Button variant="primary" size="sm" onClick={handleConfirmClick}>
             Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={showUserSyncDetails && showUserSyncDetails.showSyncDetails}
+        onHide={toggleUserSyncModalClose}
+        size="xl"
+      >
+        <Modal.Header>
+          <Modal.Title>Sync Source Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <SyncSourceDetails
+            syncDetails={showUserSyncDetails.syncDteails}
+          ></SyncSourceDetails>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={toggleUserSyncModalClose}
+          >
+            OK
           </Button>
         </Modal.Footer>
       </Modal>

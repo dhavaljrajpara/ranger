@@ -5,27 +5,10 @@ import Button from "react-bootstrap/Button";
 import { Form, Field } from "react-final-form";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import UserFormComp from "Views/UserGroupRoleListing/users_details/UserFormComp";
-
-const updatePassword = async (values) => {
-  const userProps = getUserProfile();
-
-  let jsonData = {};
-  jsonData["emailAddress"] = "";
-  jsonData["loginId"] = userProps.loginId;
-  jsonData["oldPassword"] = values.oldPassword;
-  jsonData["updPassword"] = values.newPassword;
-
-  try {
-    const { fetchApi } = await import("Utils/fetchAPI");
-    const passwdResp = await fetchApi({
-      url: "users/" + userProps.id + "/passwordchange",
-      method: "post",
-      data: jsonData
-    });
-  } catch (error) {
-    console.error(`Error occurred while updating user password! ${error}`);
-  }
-};
+import { Loader } from "Components/CommonComponents";
+import { fetchApi } from "Utils/fetchAPI";
+import { UserTypes, RegexValidation } from "Utils/XAEnums";
+import { toast } from "react-toastify";
 
 const Error = ({ name }) => (
   <Field name={name}>
@@ -37,24 +20,80 @@ const Error = ({ name }) => (
 
 const validateForm = (values) => {
   const errors = {};
-  if (!values.oldPassword) {
-    errors.oldPassword = "Required";
-  }
   if (!values.newPassword) {
     errors.newPassword = "Required";
+  } else {
+    if (!RegexValidation.PASSWORD.regexExpression.test(values.newPassword)) {
+      errors.newPassword = RegexValidation.PASSWORD.message;
+    }
   }
   if (!values.reEnterPassword) {
     errors.reEnterPassword = "Required";
   } else if (values.newPassword !== values.reEnterPassword) {
-    errors.reEnterPassword = "Must match";
+    errors.reEnterPassword = "Password must be match with new password";
   }
   return errors;
 };
 
 class AddUserView extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { loader: true };
+  }
+  handleSubmit = async (values) => {
+    const userProps = getUserProfile();
+
+    let userDetails = {};
+    userDetails.password = values.newPassword;
+    userDetails = {
+      ...this.state.userInfo,
+      ...userDetails
+    };
+    try {
+      const passwdResp = await fetchApi({
+        url: `xusers/secure/users/${this.props.match.params.userID}`,
+        method: "PUT",
+        data: userDetails
+      });
+      toast.success("User password change successfully!!");
+      this.props.history.push("/users/usertab");
+    } catch (error) {
+      console.error(`Error occurred while updating user password! ${error}`);
+    }
+  };
+  fetchUserData = async (userID) => {
+    let userRespData;
+    try {
+      userRespData = await fetchApi({
+        url: "xusers/secure/users/" + userID
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Zones or CSRF headers! ${error}`
+      );
+    }
+    this.setState({
+      userInfo: userRespData.data,
+      loader: false
+    });
+  };
+  componentDidMount = () => {
+    this.fetchUserData(this.props.match.params.userID);
+  };
+  closeForm = () => {
+    this.props.history.push("/users/usertab");
+  };
   render() {
     const userProps = getUserProfile();
-    return (
+    return this.state.loader ? (
+      <Loader />
+    ) : this.state.userInfo.userSource == UserTypes.USER_EXTERNAL.value ? (
+      <UserFormComp
+        isEditView={true}
+        userID={this.props.match.params.userID}
+        userInfo={this.state.userInfo}
+      />
+    ) : (
       <>
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">
@@ -76,74 +115,84 @@ class AddUserView extends Component {
                   <UserFormComp
                     isEditView={true}
                     userID={this.props.match.params.userID}
+                    userInfo={this.state.userInfo}
                   />
                 </Tab.Pane>
               </Tab.Content>
               <Tab.Content>
                 <Tab.Pane eventKey="edit-password">
-                  <Form
-                    onSubmit={updatePassword}
-                    validate={validateForm}
-                    render={({
-                      handleSubmit,
-                      form,
-                      submitting,
-                      values,
-                      pristine
-                    }) => (
-                      <form onSubmit={handleSubmit}>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            New Password *
-                          </label>
-                          <div className="col-sm-6">
-                            <Field
-                              name="newPassword"
-                              component="input"
-                              type="password"
-                              placeholder="New Password"
-                              className="form-control"
-                            />
-                          </div>
-                          <Error name="newPassword" />
+                  <>
+                    <h4 className="wrap-header bold">User Password Change</h4>
+                    <Form
+                      onSubmit={this.handleSubmit}
+                      validate={validateForm}
+                      render={({
+                        handleSubmit,
+                        form,
+                        submitting,
+                        values,
+                        pristine
+                      }) => (
+                        <div className="wrap">
+                          <form onSubmit={handleSubmit}>
+                            <div className="form-group row">
+                              <label className="col-sm-2 col-form-label">
+                                New Password *
+                              </label>
+                              <div className="col-sm-6">
+                                <Field
+                                  name="newPassword"
+                                  component="input"
+                                  type="password"
+                                  placeholder="New Password"
+                                  className="form-control"
+                                />
+                                <Error name="newPassword" />
+                              </div>
+                            </div>
+                            <div className="form-group row">
+                              <label className="col-sm-2 col-form-label">
+                                Password Confirm *
+                              </label>
+                              <div className="col-sm-6">
+                                <Field
+                                  name="reEnterPassword"
+                                  component="input"
+                                  type="password"
+                                  placeholder="Re-enter New Password"
+                                  className="form-control"
+                                />
+                                <Error name="reEnterPassword" />
+                              </div>
+                            </div>
+                            <div className="row form-actions">
+                              <div className="col-md-9 offset-md-3">
+                                <Button
+                                  variant="primary"
+                                  type="submit"
+                                  disabled={submitting}
+                                  size="sm"
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  type="button"
+                                  onClick={() => {
+                                    form.reset;
+                                    this.closeForm();
+                                  }}
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          </form>
                         </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label">
-                            Password Confirm *
-                          </label>
-                          <div className="col-sm-6">
-                            <Field
-                              name="reEnterPassword"
-                              component="input"
-                              type="password"
-                              placeholder="Re-enter New Password"
-                              className="form-control"
-                            />
-                          </div>
-                          <Error name="reEnterPassword" />
-                        </div>
-                        <div className="row form-actions">
-                          <div className="col-md-9 offset-md-3">
-                            <Button
-                              variant="primary"
-                              type="submit"
-                              disabled={submitting}
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              type="button"
-                              onClick={form.reset}
-                              disabled={submitting || pristine}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      </form>
-                    )}
-                  />
+                      )}
+                    />
+                  </>
                 </Tab.Pane>
               </Tab.Content>
             </div>

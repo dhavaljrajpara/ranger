@@ -96,7 +96,10 @@ function Roles() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <Link to={"/role/" + rawValue.row.original.id}>
+              <Link
+                className="text-info"
+                to={"/role/" + rawValue.row.original.id}
+              >
                 {rawValue.value}
               </Link>
             );
@@ -111,7 +114,7 @@ function Roles() {
         accessor: (raw) => {
           if (!raw.users[0] == 0) {
             return (
-              <h6>
+              <h6 className="d-inline mr-1">
                 <Badge variant="info">{Object.values(raw.users[0].name)}</Badge>
               </h6>
             );
@@ -126,7 +129,7 @@ function Roles() {
         accessor: (raw) => {
           if (!raw.groups[0] == 0) {
             return (
-              <h6>
+              <h6 className="d-inline mr-1">
                 <Badge variant="info">{Object.values(raw.groups[0])}</Badge>
               </h6>
             );
@@ -141,7 +144,7 @@ function Roles() {
         accessor: (raw) => {
           if (raw.roles.length !== 0) {
             return (
-              <h6>
+              <h6 className="d-inline mr-1">
                 <Badge variant="info">{raw.roles[0].name}</Badge>
               </h6>
             );

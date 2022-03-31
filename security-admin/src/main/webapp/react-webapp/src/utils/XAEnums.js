@@ -511,3 +511,21 @@ export const enumValueToLabel = (myEnum, value) => {
   }
   return element;
 };
+
+export const RegexValidation = {
+  PASSWORD: {
+    regexExpression: /^.*(?=.{8,256})(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).*$/,
+    message:
+      "Password should be minimum 8 characters, atleast one uppercase letter, one lowercase letter and one numeric. For FIPS environment password should be minimum 14 characters with atleast one uppercase letter, one special characters, one lowercase letter and one numeric."
+  },
+  NAME_VALIDATION: {
+    regexExpressionForName:
+      /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-z0-9,._\-+/@= ]|[\u00C0-\u017F])+$/i,
+    regexExpressionForSecondaryName:
+      /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-zA-Z0-9\s_. -@]|[\u00C0-\u017F])+$/i,
+    nameValidationMessage:
+      "1. Name should be start with alphabet / numeric / underscore / non-us characters. 2. Allowed special character ,._-+/@= and space.3. Name length should be greater than one.",
+    secondaryNameValidationMessage:
+      "1. Name should be start with alphabet / numeric / underscore / non-us characters. 2. Allowed special character ._-@ and space. 3. Name length should be greater than one."
+  }
+};

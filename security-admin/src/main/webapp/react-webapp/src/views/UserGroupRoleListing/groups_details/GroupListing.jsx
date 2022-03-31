@@ -17,6 +17,8 @@ import { useHistory, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
+import { SyncSourceDetails } from "../SyncSourceDetails";
+import { GroupAssociateUserDetails } from "../GroupAssociateUserDetails";
 
 function Groups() {
   let history = useHistory();
@@ -27,6 +29,11 @@ function Groups() {
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
   const [updateTable, setUpdateTable] = useState(moment.now());
+  const [showGroupSyncDetails, setGroupSyncdetails] = useState({
+    syncDteails: {},
+    showSyncDetails: false
+  });
+  const [showAssociateUserModal, setAssociateUserModal] = useState(false);
 
   const fetchGroupInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -149,7 +156,10 @@ function Groups() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <Link to={"/group/" + rawValue.row.original.id}>
+              <Link
+                className="text-info"
+                to={"/group/" + rawValue.row.original.id}
+              >
                 {rawValue.value}
               </Link>
             );
@@ -166,7 +176,7 @@ function Groups() {
               return (
                 <h6>
                   <Badge variant="success">
-                    {GroupTypes.GROUP_INTERNAL.label}{" "}
+                    {GroupTypes.GROUP_INTERNAL.label}
                   </Badge>
                 </h6>
               );
@@ -221,14 +231,15 @@ function Groups() {
       {
         Header: "Users",
         accessor: "member",
-        Cell: (model) => {
+        Cell: (rawValue) => {
           return (
             <button
               className="btn btn-outline-dark btn-sm"
               title="View Users"
               data-js="showUserList"
-              data-name={model.name}
-              data-id={model.id}
+              onClick={() => {
+                showGroupAssociateUser(rawValue.row.original.id);
+              }}
             >
               <i className="fa-fw fa fa-group"> </i>
             </button>
@@ -244,9 +255,12 @@ function Groups() {
               <button
                 className="btn btn-outline-dark btn-sm"
                 data-id="syncDetailes"
-                data-for="users"
+                data-for="group"
                 title="Sync Details"
                 id={model.id}
+                onClick={() => {
+                  toggleGroupSyncModal(rawValue.value);
+                }}
               >
                 <i className="fa-fw fa fa-eye"> </i>
               </button>
@@ -262,10 +276,34 @@ function Groups() {
   const addGroup = () => {
     history.push("/groupCreate");
   };
+  const toggleGroupSyncModal = (raw) => {
+    setGroupSyncdetails({
+      syncDteails: JSON.parse(raw),
+      showSyncDetails: true
+    });
+  };
+  const toggleGroupSyncModalClose = () => {
+    setGroupSyncdetails({
+      syncDteails: {},
+      showSyncDetails: false
+    });
+  };
+  const showGroupAssociateUser = (raw) => {
+    setAssociateUserModal({
+      groupID: raw,
+      showAssociateUserDetails: true
+    });
+  };
+  const toggleAssociateUserClose = () => {
+    setAssociateUserModal({
+      groupID: "",
+      showAssociateUserDetails: false
+    });
+  };
   return loader ? (
     <Loader />
   ) : (
-    <div>
+    <>
       <h4 className="wrap-header font-weight-bold">Group List</h4>
       <Row className="mb-4 text-right">
         <Col md={7}></Col>
@@ -319,7 +357,56 @@ function Groups() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+      <Modal
+        show={showGroupSyncDetails && showGroupSyncDetails.showSyncDetails}
+        onHide={toggleGroupSyncModalClose}
+        size="xl"
+      >
+        <Modal.Header>
+          <Modal.Title>Sync Source Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <SyncSourceDetails
+            syncDetails={showGroupSyncDetails.syncDteails}
+          ></SyncSourceDetails>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={toggleGroupSyncModalClose}
+          >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={
+          showAssociateUserModal &&
+          showAssociateUserModal.showAssociateUserDetails
+        }
+        onHide={toggleAssociateUserClose}
+        size="lg"
+      >
+        <Modal.Header>
+          <Modal.Title>User's List: </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <GroupAssociateUserDetails
+            groupID={showAssociateUserModal.groupID}
+          ></GroupAssociateUserDetails>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={toggleAssociateUserClose}
+          >
+            Ok
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 

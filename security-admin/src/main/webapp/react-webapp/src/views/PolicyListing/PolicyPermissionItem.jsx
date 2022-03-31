@@ -117,8 +117,8 @@ export default function PolicyPermissionItem(props) {
   return (
     <div>
       <Col sm="12">
-        <Table striped bordered>
-          <thead>
+        <Table bordered>
+          <thead className="thead-light">
             <tr>{tableHeader()}</tr>
           </thead>
           <tbody>
