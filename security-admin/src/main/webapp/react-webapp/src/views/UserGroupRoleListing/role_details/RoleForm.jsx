@@ -102,8 +102,14 @@ class GroupForm extends Component {
         toast.success("Role updated successfully!!");
         this.props.history.push("/users/roletab");
       } catch (error) {
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(error.response.data.msgDesc);
+          this.props.history.push("/users/roletab");
+        }
         console.error(`Error occurred while creating Role`);
-        toast.error(error.msgDesc);
       }
     } else {
       try {
@@ -116,6 +122,13 @@ class GroupForm extends Component {
         toast.success("Role created successfully!!");
         this.props.history.push("/users/roletab");
       } catch (error) {
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(error.response.data.msgDesc);
+          this.props.history.push("/users/roletab");
+        }
         console.error(`Error occurred while updating role password! ${error}`);
       }
     }
@@ -370,7 +383,7 @@ class GroupForm extends Component {
                         )}
                       </FieldArray>
                       <div className="form-group row">
-                        <div className="col-sm-10">
+                        <div className="col-sm-9">
                           <AsyncSelect
                             value={this.state.selectedUser}
                             filterOption={({ data }) =>
@@ -382,7 +395,7 @@ class GroupForm extends Component {
                             isMulti
                           />
                         </div>
-                        <div className="col-sm-2">
+                        <div className="col-sm-3">
                           <Button
                             type="button"
                             className="btn btn-primary"
@@ -461,7 +474,7 @@ class GroupForm extends Component {
                         )}
                       </FieldArray>
                       <div className="form-group row">
-                        <div className="col-sm-10">
+                        <div className="col-sm-9">
                           <AsyncSelect
                             value={this.state.selectedGroup}
                             filterOption={({ data }) =>
@@ -473,7 +486,7 @@ class GroupForm extends Component {
                             isMulti
                           />
                         </div>
-                        <div className="col-sm-2">
+                        <div className="col-sm-3">
                           <Button
                             type="button"
                             className="btn btn-primary"
@@ -552,7 +565,7 @@ class GroupForm extends Component {
                         )}
                       </FieldArray>
                       <div className="form-group row">
-                        <div className="col-sm-10">
+                        <div className="col-sm-9">
                           <AsyncSelect
                             value={this.state.selectedRole}
                             filterOption={({ data }) =>
@@ -564,7 +577,7 @@ class GroupForm extends Component {
                             isMulti
                           />
                         </div>
-                        <div className="col-sm-2">
+                        <div className="col-sm-3">
                           <Button
                             type="button"
                             className="btn btn-primary"

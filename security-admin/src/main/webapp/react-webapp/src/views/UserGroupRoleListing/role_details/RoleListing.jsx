@@ -112,12 +112,15 @@ function Roles() {
         Header: "Users",
         accessor: "users",
         accessor: (raw) => {
-          if (!raw.users[0] == 0) {
-            return (
-              <h6 className="d-inline mr-1">
-                <Badge variant="info">{Object.values(raw.users[0].name)}</Badge>
-              </h6>
-            );
+          if (raw.users.length > 0) {
+            let usersList = _.map(raw.users, "name");
+            return usersList.map((u, index) => {
+              return (
+                <h6 className="d-inline mr-1" key={index}>
+                  <Badge variant="info">{u}</Badge>
+                </h6>
+              );
+            });
           } else {
             return "--";
           }
@@ -127,12 +130,15 @@ function Roles() {
         Header: "Groups",
         accessor: "groups",
         accessor: (raw) => {
-          if (!raw.groups[0] == 0) {
-            return (
-              <h6 className="d-inline mr-1">
-                <Badge variant="info">{Object.values(raw.groups[0])}</Badge>
-              </h6>
-            );
+          if (raw.groups.length > 0) {
+            let groupsList = _.map(raw.groups, "name");
+            return groupsList.map((g, index) => {
+              return (
+                <h6 className="d-inline mr-1" key={index}>
+                  <Badge variant="info">{g}</Badge>
+                </h6>
+              );
+            });
           } else {
             return "--";
           }
@@ -142,12 +148,15 @@ function Roles() {
         Header: "Roles",
         accessor: "roles",
         accessor: (raw) => {
-          if (raw.roles.length !== 0) {
-            return (
-              <h6 className="d-inline mr-1">
-                <Badge variant="info">{raw.roles[0].name}</Badge>
-              </h6>
-            );
+          if (raw.roles.length > 0) {
+            let rolesList = _.map(raw.roles, "name");
+            return rolesList.map((r, index) => {
+              return (
+                <h6 className="d-inline mr-1" key={index}>
+                  <Badge variant="info">{r}</Badge>
+                </h6>
+              );
+            });
           } else {
             return "--";
           }
@@ -197,7 +206,7 @@ function Roles() {
             Close
           </Button>
           <Button variant="primary" size="sm" onClick={handleConfirmClick}>
-            Ok
+            OK
           </Button>
         </Modal.Footer>
       </Modal>

@@ -79,7 +79,13 @@ class GroupForm extends Component {
         toast.success("Group created successfully!!");
         this.props.history.push("/users/grouptab");
       } catch (error) {
-        toast.error("Group created successfully!!");
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(`Group creation failed!! ${error.response.data.msgDesc}`);
+          this.props.history.push("/users/grouptab");
+        }
         console.error(`Error occurred while updating user password! ${error}`);
       }
     }

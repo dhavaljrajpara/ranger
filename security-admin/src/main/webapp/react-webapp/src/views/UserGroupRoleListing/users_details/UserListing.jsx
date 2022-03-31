@@ -365,7 +365,7 @@ function Users() {
             Close
           </Button>
           <Button variant="primary" size="sm" onClick={handleConfirmClick}>
-            Ok
+            OK
           </Button>
         </Modal.Footer>
       </Modal>

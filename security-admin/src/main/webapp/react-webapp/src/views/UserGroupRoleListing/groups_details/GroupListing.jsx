@@ -353,7 +353,7 @@ function Groups() {
             Close
           </Button>
           <Button variant="primary" size="sm" onClick={handleConfirmClick}>
-            Ok
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -402,7 +402,7 @@ function Groups() {
             size="sm"
             onClick={toggleAssociateUserClose}
           >
-            Ok
+            OK
           </Button>
         </Modal.Footer>
       </Modal>

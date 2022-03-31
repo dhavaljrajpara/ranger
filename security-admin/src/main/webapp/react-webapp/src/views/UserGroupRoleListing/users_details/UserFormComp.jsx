@@ -48,8 +48,14 @@ class UserFormComp extends Component {
         toast.success("User updated successfully!!");
         self.location.hash = "#/users/usertab";
       } catch (error) {
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(error.response.data.msgDesc);
+          self.location.hash = "#/users/usertab";
+        }
         console.error(`Error occurred while creating user`);
-        toast.error(error.msgDesc);
       }
     } else {
       try {
@@ -61,8 +67,14 @@ class UserFormComp extends Component {
         toast.success("User created successfully!!");
         self.location.hash = "#/users/usertab";
       } catch (error) {
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(error.response.data.msgDesc);
+          self.location.hash = "#/users/usertab";
+        }
         console.error(`Error occurred while creating user`);
-        toast.error(error.msgDesc);
       }
     }
   };
