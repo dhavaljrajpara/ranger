@@ -1,9 +1,10 @@
-import React, { Component, Fragment } from "react";
+import React, { Component } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Select from "react-select";
 import dateFormat from "dateformat";
-import { map, toString } from "lodash";
+import { has, map, toString } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
+import { toast } from "react-toastify";
 
 class ExportPolicy extends Component {
   constructor(props) {
@@ -87,9 +88,7 @@ class ExportPolicy extends Component {
     e.preventDefault();
 
     let exportResp;
-    let serviceNameList = _.toString(
-      _.map(this.state.selectedServices, "value")
-    );
+    let serviceNameList = toString(map(this.state.selectedServices, "value"));
 
     try {
       exportResp = await fetchApi({
@@ -101,20 +100,25 @@ class ExportPolicy extends Component {
         }
       });
 
-      this.downloadFile({
-        data: JSON.stringify(exportResp.data),
-        fileName:
-          "Ranger_Policies_" +
-          dateFormat(new Date(), "yyyymmdd_HHMMss") +
-          ".json",
-        fileType: "text/json"
-      });
+      if (exportResp.status === 200) {
+        this.downloadFile({
+          data: JSON.stringify(exportResp.data),
+          fileName:
+            "Ranger_Policies_" +
+            dateFormat(new Date(), "yyyymmdd_HHMMss") +
+            ".json",
+          fileType: "application/json"
+        });
+      } else {
+        toast.warning("No policies found to export");
+      }
       this.props.onHide();
     } catch (error) {
       this.props.onHide();
-      console.error(
-        `Error occurred while fetching Services or CSRF headers! ${error}`
-      );
+      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
+        toast.error(error.response.data.msgDesc);
+      }
+      console.error(`Error occurred while exporting policies ${error}`);
     }
   };
 
