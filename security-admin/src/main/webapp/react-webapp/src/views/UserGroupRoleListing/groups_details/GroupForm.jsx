@@ -39,6 +39,7 @@ class GroupForm extends Component {
     }
     this.setState({
       groupInfo: groupRespData.data,
+      groupType: groupRespData.data.groupType,
       loader: false
     });
   };
@@ -177,7 +178,7 @@ class GroupForm extends Component {
                       variant="primary"
                       type="submit"
                       size="sm"
-                      disabled={submitting}
+                      disabled={this.state.groupType === 1 ? true : submitting}
                     >
                       Save
                     </Button>

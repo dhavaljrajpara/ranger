@@ -341,7 +341,7 @@ class GroupForm extends Component {
                                     className="text-center text-muted"
                                     colSpan="3"
                                   >
-                                    "No details available !!"
+                                    No users found
                                   </td>
                                 </tr>
                               ) : (
@@ -432,7 +432,7 @@ class GroupForm extends Component {
                                     className="text-center text-muted"
                                     colSpan="3"
                                   >
-                                    "No details available !!"
+                                    No groups found
                                   </td>
                                 </tr>
                               ) : (
@@ -523,7 +523,7 @@ class GroupForm extends Component {
                                     className="text-center text-muted"
                                     colSpan="3"
                                   >
-                                    "No details available !!"
+                                    No roles found
                                   </td>
                                 </tr>
                               ) : (

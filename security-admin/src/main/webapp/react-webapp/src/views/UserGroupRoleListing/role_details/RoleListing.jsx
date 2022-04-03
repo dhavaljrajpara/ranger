@@ -200,7 +200,12 @@ function Roles() {
         />
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
-        <Modal.Body>{`Are you sure you want to delete ${selectedRows.current.length} role`}</Modal.Body>
+        <Modal.Body>
+          Are you sure you want to delete{" "}
+          {selectedRows.current.length === 1
+            ? selectedRows.current[0].original.name + " role"
+            : selectedRows.current.length + " roles"}
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
             Close

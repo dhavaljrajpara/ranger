@@ -352,14 +352,17 @@ function Users() {
           pageCount={pageCount}
           rowSelectOp={{ position: "first", selectedRows }}
           getRowProps={(row) => ({
-            style: {
-              background: row.values.isVisible == 0 ? "rgba(0,0,0,.1)" : "white"
-            }
+            className: row.values.isVisible == 0 && "row-inactive"
           })}
         />
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
-        <Modal.Body>{`Are you sure you want to delete ${selectedRows.current.length} users`}</Modal.Body>
+        <Modal.Body>
+          Are you sure you want to delete{" "}
+          {selectedRows.current.length === 1
+            ? selectedRows.current[0].original.name + " user"
+            : selectedRows.current.length + " users"}
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
             Close
