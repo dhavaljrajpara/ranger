@@ -23,6 +23,7 @@ import { useHistory, Link } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import { SyncSourceDetails } from "../SyncSourceDetails";
+import { isUser } from "Utils/XAUtils";
 
 function Users() {
   let history = useHistory();
