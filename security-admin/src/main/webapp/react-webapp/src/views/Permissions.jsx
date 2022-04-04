@@ -1,18 +1,15 @@
-import React, {
-  Component,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-} from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import XATableLayout from "Components/XATableLayout";
+import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import { MoreLess } from "Components/CommonComponents";
+import { reject } from "lodash";
 
 function Permissions() {
   const [permissionslistData, setPermissions] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [isAdminRole] = useState(isSystemAdmin() || isKeyAdmin());
   useEffect(() => {
     fetchPermissions();
   }, []);
@@ -31,8 +28,8 @@ function Permissions() {
           url: "xusers/permission",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         permissionsdata = permissionResp.data.vXModuleDef;
         totalCount = permissionResp.data.totalCount;
@@ -49,7 +46,7 @@ function Permissions() {
     () => [
       {
         Header: "Modules",
-        accessor: "module", // accessor is the "key" in the data
+        accessor: "module" // accessor is the "key" in the data
       },
       {
         Header: "Groups",
@@ -65,7 +62,7 @@ function Permissions() {
               </h6>
             </>
           );
-        },
+        }
       },
       {
         Header: "Users",
@@ -81,7 +78,7 @@ function Permissions() {
               </h6>
             </>
           );
-        },
+        }
       },
       {
         Header: "Action",
@@ -98,8 +95,8 @@ function Permissions() {
               </Link>
             </div>
           );
-        },
-      },
+        }
+      }
     ],
     []
   );
@@ -113,7 +110,9 @@ function Permissions() {
       <div className="wrap">
         <XATableLayout
           data={permissionslistData}
-          columns={columns}
+          columns={
+            isAdminRole ? columns : reject(columns, ["Header", "Action"])
+          }
           fetchData={fetchPermissions}
           pageCount={pageCount}
         />

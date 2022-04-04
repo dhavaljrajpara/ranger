@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { fetchApi } from "Utils/fetchAPI";
 import {
   Accordion,
   Card,
@@ -12,6 +11,8 @@ import {
   Modal
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { fetchApi } from "Utils/fetchAPI";
+import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 
 class ZoneDisplay extends Component {
   constructor(props) {
@@ -20,7 +21,8 @@ class ZoneDisplay extends Component {
       services: [],
       expand: true,
       show: true,
-      showDeleteModal: null
+      showDeleteModal: null,
+      isAdminRole: isSystemAdmin() || isKeyAdmin()
     };
     this.expandbtn = this.expandbtn.bind(this);
     this.showMoreLess = this.showMoreLess.bind(this);
@@ -81,46 +83,48 @@ class ZoneDisplay extends Component {
               </button>
               <span className="text-info h2 px-2">{this.props.zone.name}</span>
             </div>
-            <div className="float-right">
-              <Link
-                className="btn btn-sm btn-outline-primary m-r-5"
-                title="Edit"
-                to={`/zones/edit/${this.props.zone.id}`}
-              >
-                <i className="fa-fw fa fa-edit"></i> Edit
-              </Link>
-              <Button
-                variant="danger"
-                size="sm"
-                title="Yes"
-                onClick={() => this.deleteZoneModal(this.props.zone.id)}
-              >
-                <i className="fa-fw fa fa-trash"></i> Delete
-              </Button>
-              <Modal
-                show={this.state.showDeleteModal === this.props.zone.id}
-                onHide={this.closeZoneModal}
-                backdrop="static"
-                keyboard={false}
-              >
-                <Modal.Header
-                  closeButton
-                >{`Are you sure you want to delete ?`}</Modal.Header>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={this.closeZoneModal}>
-                    Close
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      this.props.deleteZone(this.props.zone.id);
-                    }}
-                  >
-                    OK
-                  </Button>
-                </Modal.Footer>
-              </Modal>
-            </div>
+            {this.state.isAdminRole && (
+              <div className="float-right">
+                <Link
+                  className="btn btn-sm btn-outline-primary m-r-5"
+                  title="Edit"
+                  to={`/zones/edit/${this.props.zone.id}`}
+                >
+                  <i className="fa-fw fa fa-edit"></i> Edit
+                </Link>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  title="Yes"
+                  onClick={() => this.deleteZoneModal(this.props.zone.id)}
+                >
+                  <i className="fa-fw fa fa-trash"></i> Delete
+                </Button>
+                <Modal
+                  show={this.state.showDeleteModal === this.props.zone.id}
+                  onHide={this.closeZoneModal}
+                  backdrop="static"
+                  keyboard={false}
+                >
+                  <Modal.Header
+                    closeButton
+                  >{`Are you sure you want to delete ?`}</Modal.Header>
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={this.closeZoneModal}>
+                      Close
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        this.props.deleteZone(this.props.zone.id);
+                      }}
+                    >
+                      OK
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+              </div>
+            )}
           </div>
           <br />
           <span className="h6">{this.props.zone.description}</span>

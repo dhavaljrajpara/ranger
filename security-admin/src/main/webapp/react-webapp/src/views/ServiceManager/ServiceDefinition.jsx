@@ -58,11 +58,11 @@ class ServiceDefinition extends Component {
     let serviceDefConfigs = serviceDef.configs.filter(
       (c) => c.name !== "ranger.plugin.audit.filters"
     );
-    serviceConfigs = _.omit(serviceConfigs, "ranger.plugin.audit.filters");
+    serviceConfigs = omit(serviceConfigs, "ranger.plugin.audit.filters");
 
-    let configKey = _.keys(serviceConfigs);
+    let configKey = keys(serviceConfigs);
     let defKey = serviceDefConfigs.map((c) => c.name);
-    let customConfigKey = _.difference(configKey, defKey);
+    let customConfigKey = difference(configKey, defKey);
 
     serviceDefConfigs.map((c) => (configs[c.name] = serviceConfigs[c.name]));
 
@@ -129,9 +129,9 @@ class ServiceDefinition extends Component {
 
   getAuditFilters = (serviceConfigs) => {
     let tableRow = [];
-    let auditFilters = _.pick(serviceConfigs, "ranger.plugin.audit.filters");
+    let auditFilters = pick(serviceConfigs, "ranger.plugin.audit.filters");
 
-    if (_.isEmpty(auditFilters)) {
+    if (isEmpty(auditFilters)) {
       return tableRow;
     }
 
@@ -241,43 +241,45 @@ class ServiceDefinition extends Component {
                       />
                       {serviceDef.name}
                     </span>
-                    <span className="float-right">
-                      <Link to={`/service/${serviceDef.id}/create`}>
-                        <i className="fa-fw fa fa-plus"></i>
-                      </Link>
-                      <a
-                        className="text-decoration"
-                        onClick={this.showImportModal}
-                      >
-                        <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
-                      </a>
-                      <a
-                        className="text-decoration"
-                        onClick={this.showExportModal}
-                      >
-                        <i className="fa-fw fa fa-external-link-square"></i>
-                      </a>
-                      {[serviceDef].length > 0 && showImportModal && (
-                        <ImportPolicy
-                          serviceDef={serviceDef}
-                          services={this.props.servicesData}
-                          zones={this.props.zones}
-                          isParentImport={false}
-                          show={showImportModal}
-                          onHide={this.hideImportModal}
-                        />
-                      )}
-                      {[serviceDef].length > 0 && showExportModal && (
-                        <ExportPolicy
-                          serviceDef={[serviceDef]}
-                          services={this.props.servicesData}
-                          zone={this.props.selectedZone}
-                          isParentExport={false}
-                          show={showExportModal}
-                          onHide={this.hideExportModal}
-                        />
-                      )}
-                    </span>
+                    {this.props.isAdminRole && (
+                      <span className="float-right">
+                        <Link to={`/service/${serviceDef.id}/create`}>
+                          <i className="fa-fw fa fa-plus"></i>
+                        </Link>
+                        <a
+                          className="text-decoration"
+                          onClick={this.showImportModal}
+                        >
+                          <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
+                        </a>
+                        <a
+                          className="text-decoration"
+                          onClick={this.showExportModal}
+                        >
+                          <i className="fa-fw fa fa-external-link-square"></i>
+                        </a>
+                        {[serviceDef].length > 0 && showImportModal && (
+                          <ImportPolicy
+                            serviceDef={serviceDef}
+                            services={this.props.servicesData}
+                            zones={this.props.zones}
+                            isParentImport={false}
+                            show={showImportModal}
+                            onHide={this.hideImportModal}
+                          />
+                        )}
+                        {[serviceDef].length > 0 && showExportModal && (
+                          <ExportPolicy
+                            serviceDef={[serviceDef]}
+                            services={this.props.servicesData}
+                            zone={this.props.selectedZone}
+                            isParentExport={false}
+                            show={showExportModal}
+                            onHide={this.hideExportModal}
+                          />
+                        )}
+                      </span>
+                    )}
                   </div>
                 </th>
               </tr>
@@ -296,17 +298,19 @@ class ServiceDefinition extends Component {
                         </Link>
                       </span>
                       <span className="float-right">
-                        <Button
-                          variant="outline-dark"
-                          size="sm"
-                          className="m-r-5"
-                          title="View"
-                          onClick={() => {
-                            this.showViewModal(s.id);
-                          }}
-                        >
-                          <i className="fa-fw fa fa-eye"></i>
-                        </Button>
+                        {!this.props.isUserRole && (
+                          <Button
+                            variant="outline-dark"
+                            size="sm"
+                            className="m-r-5"
+                            title="View"
+                            onClick={() => {
+                              this.showViewModal(s.id);
+                            }}
+                          >
+                            <i className="fa-fw fa fa-eye"></i>
+                          </Button>
+                        )}
                         <Modal
                           show={this.state.showView === s.id}
                           onHide={this.hideViewModal}
@@ -398,50 +402,56 @@ class ServiceDefinition extends Component {
                             </Button>
                           </Modal.Footer>
                         </Modal>
-                        <Link
-                          className="btn btn-outline-dark btn-sm m-r-5"
-                          title="Edit"
-                          to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
-                        >
-                          <i className="fa-fw fa fa-edit"></i>
-                        </Link>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          title="Delete"
-                          onClick={() => {
-                            this.showDeleteModal(s.id);
-                          }}
-                        >
-                          <i className="fa-fw fa fa-trash"></i>
-                        </Button>
-                        <Modal
-                          show={this.state.showDelete === s.id}
-                          onHide={this.hideDeleteModal}
-                        >
-                          <Modal.Header closeButton>
-                            <Modal.Title>Delete Service</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>Are you sure want to delete ?</Modal.Body>
-                          <Modal.Footer>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              title="Cancel"
-                              onClick={this.hideDeleteModal}
+                        {this.props.isAdminRole && (
+                          <React.Fragment>
+                            <Link
+                              className="btn btn-outline-dark btn-sm m-r-5"
+                              title="Edit"
+                              to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
                             >
-                              Cancel
-                            </Button>
+                              <i className="fa-fw fa fa-edit"></i>
+                            </Link>
                             <Button
-                              variant="primary"
+                              variant="danger"
                               size="sm"
-                              title="Yes"
-                              onClick={() => this.props.deleteService(s.id)}
+                              title="Delete"
+                              onClick={() => {
+                                this.showDeleteModal(s.id);
+                              }}
                             >
-                              Yes
+                              <i className="fa-fw fa fa-trash"></i>
                             </Button>
-                          </Modal.Footer>
-                        </Modal>
+                            <Modal
+                              show={this.state.showDelete === s.id}
+                              onHide={this.hideDeleteModal}
+                            >
+                              <Modal.Header closeButton>
+                                <Modal.Title>Delete Service</Modal.Title>
+                              </Modal.Header>
+                              <Modal.Body>
+                                Are you sure want to delete ?
+                              </Modal.Body>
+                              <Modal.Footer>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  title="Cancel"
+                                  onClick={this.hideDeleteModal}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  title="Yes"
+                                  onClick={() => this.props.deleteService(s.id)}
+                                >
+                                  Yes
+                                </Button>
+                              </Modal.Footer>
+                            </Modal>
+                          </React.Fragment>
+                        )}
                       </span>
                     </div>
                   </td>

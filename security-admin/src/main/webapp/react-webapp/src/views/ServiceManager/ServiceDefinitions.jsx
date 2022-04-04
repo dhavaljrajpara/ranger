@@ -5,6 +5,13 @@ import Select from "react-select";
 import { toast } from "react-toastify";
 import { filter, map, uniq } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
+import {
+  isSystemAdmin,
+  isKeyAdmin,
+  isAuditor,
+  isKMSAuditor,
+  isUser
+} from "Utils/XAUtils";
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
@@ -22,7 +29,10 @@ class ServiceDefinitions extends Component {
       isTagView: this.props.isTagView,
       showExportModal: false,
       showImportModal: false,
-      isDisabled: true
+      isDisabled: true,
+      isAdminRole: isSystemAdmin() || isKeyAdmin(),
+      isAuditorRole: isAuditor() || isKMSAuditor(),
+      isUserRole: isUser()
     };
   }
 
@@ -76,12 +86,12 @@ class ServiceDefinitions extends Component {
       });
 
       if (this.state.isTagView) {
-        tagServiceDef = _.filter(serviceDefsResp.data.serviceDefs, [
+        tagServiceDef = filter(serviceDefsResp.data.serviceDefs, [
           "name",
           "tag"
         ]);
       } else {
-        resourceServiceDef = _.filter(
+        resourceServiceDef = filter(
           serviceDefsResp.data.serviceDefs,
           (serviceDef) => serviceDef.name !== "tag"
         );
@@ -109,9 +119,9 @@ class ServiceDefinitions extends Component {
         url: "plugins/services"
       });
       if (this.state.isTagView) {
-        tagServices = _.filter(servicesResp.data.services, ["type", "tag"]);
+        tagServices = filter(servicesResp.data.services, ["type", "tag"]);
       } else {
-        resourceServices = _.filter(
+        resourceServices = filter(
           servicesResp.data.services,
           (service) => service.type !== "tag"
         );
@@ -143,7 +153,7 @@ class ServiceDefinitions extends Component {
             search: `?securityZone=${e.label}`
           });
 
-        let zoneServiceNames = _.map(zonesResp.data, "name");
+        let zoneServiceNames = map(zonesResp.data, "name");
 
         let zoneServices = zoneServiceNames.map((zoneService) => {
           return services.filter((service) => {
@@ -154,16 +164,16 @@ class ServiceDefinitions extends Component {
         zoneServices = zoneServices.flat();
 
         if (isTagView) {
-          zoneServices = _.filter(zoneServices, function (zoneService) {
+          zoneServices = filter(zoneServices, function (zoneService) {
             return zoneService.type === "tag";
           });
         } else {
-          zoneServices = _.filter(zoneServices, function (zoneService) {
+          zoneServices = filter(zoneServices, function (zoneService) {
             return zoneService.type !== "tag";
           });
         }
 
-        let zoneServiceDefTypes = _.uniq(_.map(zoneServices, "type"));
+        let zoneServiceDefTypes = uniq(map(zoneServices, "type"));
 
         let filterZoneServiceDef = zoneServiceDefTypes.map((obj) => {
           return serviceDefs.find((serviceDef) => {
@@ -229,13 +239,15 @@ class ServiceDefinitions extends Component {
       isDisabled,
       selectedZone,
       showExportModal,
-      showImportModal
+      showImportModal,
+      isAdminRole,
+      isUserRole
     } = this.state;
     return (
       <React.Fragment>
         <Row>
           <Col sm={2}>
-            <h3 className="wrap-header bold pull-left">Service Manager</h3>
+            <h3 className="wrap-header bold text-left">Service Manager</h3>
           </Col>
           <Col sm={5} className="text-right">
             <b className="bold"> Security Zone: </b>
@@ -260,15 +272,17 @@ class ServiceDefinitions extends Component {
             />
           </Col>
           <Col sm={2} className="text-right">
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="mr-2"
-              onClick={this.showImportModal}
-            >
-              <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
-              Import
-            </Button>
+            {isAdminRole && (
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="mr-2"
+                onClick={this.showImportModal}
+              >
+                <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
+                Import
+              </Button>
+            )}
             {filterServiceDefs.length > 0 && showImportModal && (
               <ImportPolicy
                 serviceDef={filterServiceDefs}
@@ -279,15 +293,17 @@ class ServiceDefinitions extends Component {
                 onHide={this.hideImportModal}
               />
             )}
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="pull-right"
-              onClick={this.showExportModal}
-            >
-              <i className="fa fa-fw fa-external-link-square" />
-              Export
-            </Button>
+            {isAdminRole && (
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="pull-right"
+                onClick={this.showExportModal}
+              >
+                <i className="fa fa-fw fa-external-link-square" />
+                Export
+              </Button>
+            )}
             {filterServiceDefs.length > 0 && showExportModal && (
               <ExportPolicy
                 serviceDef={filterServiceDefs}
@@ -312,6 +328,8 @@ class ServiceDefinitions extends Component {
                 deleteService={this.deleteService}
                 selectedZone={selectedZone}
                 zones={zones}
+                isAdminRole={isAdminRole}
+                isUserRole={isUserRole}
               ></ServiceDefinition>
             ))}
           </Row>

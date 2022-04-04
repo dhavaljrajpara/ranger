@@ -3,8 +3,9 @@ import noZoneImage from "Images/defult_zone.png";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
-import ZoneDisplay from "./ZoneDisplay";
+import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
+import ZoneDisplay from "./ZoneDisplay";
 
 class ZoneListing extends Component {
   constructor(props) {
@@ -15,7 +16,8 @@ class ZoneListing extends Component {
       expand: true,
       loader: false,
       searchText: "",
-      filterZone: []
+      filterZone: [],
+      isAdminRole: isSystemAdmin() || isKeyAdmin()
     };
     this.onChangeSearch = this.onChangeSearch.bind(this);
   }
@@ -118,14 +120,16 @@ class ZoneListing extends Component {
                   Security Zones
                 </h5>
               </div>
-              <div className="float-right ">
-                <Link
-                  to="/zones/create"
-                  className="btn btn-outline-secondary btn-sm"
-                >
-                  <i className="fa-fw fa fa-plus"></i>
-                </Link>
-              </div>
+              {this.state.isAdminRole && (
+                <div className="float-right ">
+                  <Link
+                    to="/zones/create"
+                    className="btn btn-outline-secondary btn-sm"
+                  >
+                    <i className="fa-fw fa fa-plus"></i>
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="row mt-3">
               <div className="col-sm-12">
