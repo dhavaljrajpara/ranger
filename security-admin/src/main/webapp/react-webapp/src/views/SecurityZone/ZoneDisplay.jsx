@@ -95,7 +95,7 @@ class ZoneDisplay extends Component {
                 <Button
                   variant="danger"
                   size="sm"
-                  title="Yes"
+                  title="Delete"
                   onClick={() => this.deleteZoneModal(this.props.zone.id)}
                 >
                   <i className="fa-fw fa fa-trash"></i> Delete
@@ -158,7 +158,7 @@ class ZoneDisplay extends Component {
                           {this.props.zone.adminUsers.length > 0 ? (
                             this.props.zone.adminUsers.map((obj, index) => {
                               return (
-                                <h6 key={index} className="mt-2">
+                                <h6 key={index} className="d-inline mr-1">
                                   <Badge variant="info">{obj}</Badge>
                                 </h6>
                               );
@@ -177,7 +177,7 @@ class ZoneDisplay extends Component {
                             this.props.zone.adminUserGroups.map(
                               (obj, index) => {
                                 return (
-                                  <h6 key={index} className="mt-2">
+                                  <h6 key={index} className="d-inline mr-1">
                                     <Badge variant="secondary">{obj}</Badge>
                                   </h6>
                                 );
@@ -196,7 +196,7 @@ class ZoneDisplay extends Component {
                           {this.props.zone.auditUsers.length > 0 ? (
                             this.props.zone.auditUsers.map((obj, index) => {
                               return (
-                                <h6 key={index} className="mt-2">
+                                <h6 key={index} className="d-inline mr-1">
                                   <Badge variant="info">{obj}</Badge>
                                 </h6>
                               );
@@ -215,7 +215,7 @@ class ZoneDisplay extends Component {
                             this.props.zone.auditUserGroups.map(
                               (obj, index) => {
                                 return (
-                                  <h6 key={index} className="mt-2">
+                                  <h6 key={index} className="d-inline mr-1">
                                     <Badge variant="secondary">{obj}</Badge>
                                   </h6>
                                 );
@@ -255,7 +255,7 @@ class ZoneDisplay extends Component {
                   <Card.Body>
                     {this.props.zone.tagServices.length !== 0 ? (
                       this.props.zone.tagServices.map((obj, index) => (
-                        <h6 key={index} className="mt-2">
+                        <h6 key={index} className="d-inline mr-1">
                           <Badge variant="info">{obj}</Badge>
                         </h6>
                       ))

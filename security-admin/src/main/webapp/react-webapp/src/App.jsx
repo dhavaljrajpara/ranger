@@ -13,7 +13,9 @@ const HomeComp = lazy(() => import("Views/Home"));
 const ServiceFormComp = lazy(() => import("Views/ServiceManager/ServiceForm"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
 const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
-const CreateZoneComp = lazy(() => import("Views/SecurityZone/CreateZone"));
+const SecurityZoneFormComp = lazy(() =>
+  import("Views/SecurityZone/SecurityZoneForm")
+);
 const UserListingComp = lazy(() =>
   import("Views/UserGroupRoleListing/UserGroupRoleListing")
 );
@@ -182,13 +184,13 @@ export default class App extends Component {
                     <AuthRoute
                       exact
                       path="/zones/create"
-                      component={CreateZoneComp}
+                      component={SecurityZoneFormComp}
                       {...defaultProps}
                     />
                     <AuthRoute
                       exact
                       path="/zones/edit/:id"
-                      component={CreateZoneComp}
+                      component={SecurityZoneFormComp}
                       {...defaultProps}
                     />
                     <AuthRoute

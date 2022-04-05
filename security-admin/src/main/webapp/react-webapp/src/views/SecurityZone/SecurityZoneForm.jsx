@@ -1,26 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Row, Col } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
-import { groupBy, findIndex, isEmpty, pickBy } from "lodash";
+import { groupBy, findIndex, isEmpty, pickBy, find, filter } from "lodash";
 import { Table } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
 import ModalResourceComp from "../Resources/ModalResourceComp";
+import { RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
+import { Loader } from "Components/CommonComponents";
+
 const noneOptions = {
   label: "None",
   value: "none"
 };
-const CreateZone = (props) => {
+const SecurityZoneForm = (props) => {
   const history = useHistory();
   const [service, SetService] = useState([]);
   const [resource, SetResource] = useState([]);
   const [servicedef, SetServiceDef] = useState([]);
   const [showmodal, SetShowModal] = useState(false);
   const [zones, SetZones] = useState([]);
+  const [loader, SetLoader] = useState(true);
 
   const [modelState, setModalstate] = useState({
     showModalResource: false,
@@ -30,28 +34,64 @@ const CreateZone = (props) => {
   });
 
   useEffect(() => {
-    if (props.match.params.id !== undefined) {
-      fetchZone();
-    }
-
-    fetchServiceDefs();
+    fetchInitalData();
   }, []);
 
-  const showModal = () => {
-    SetShowModal(true);
-  };
+  // const showModal = () => {
+  //   SetShowModal(true);
+  // };
 
-  const hideModal = () => {
-    SetShowModal(false);
-  };
+  // const hideModal = () => {
+  //   SetShowModal(false);
+  // };
 
-  const handleClose = () =>
+  const handleClose = () => {
     setModalstate({
       showModalResource: false,
       data: null,
-      inputval: null
+      inputval: null,
+      index: 0
     });
+  };
 
+  const fetchZones = async () => {
+    let zoneResp;
+    if (props.match.params.id !== undefined) {
+      let Id = props.match.params.id;
+
+      try {
+        zoneResp = await fetchApi({
+          url: `zones/zones/${Id}`
+        });
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching Zone or CSRF headers! ${error}`
+        );
+        toast.error(error.response.data.msgDesc);
+      }
+    }
+
+    SetZones(zoneResp);
+    SetLoader(false);
+  };
+  const fetchServiceDefs = async () => {
+    let servicetypeResp;
+
+    try {
+      servicetypeResp = await fetchApi({
+        url: `plugins/definitions`
+      });
+    } catch (error) {
+      console.error(`Error occurred while fetching Services! ${error}`);
+    }
+
+    SetServiceDef(servicetypeResp.data.serviceDefs);
+  };
+  const fetchInitalData = async () => {
+    await fetchResourceService();
+    await fetchServiceDefs();
+    await fetchZones();
+  };
   const renderResourcesModal = (input, serviceType) => {
     let filterdef = servicedef.find((obj) => obj.name == serviceType);
     for (const obj of filterdef.resources) {
@@ -61,16 +101,24 @@ const CreateZone = (props) => {
         obj.mandatory = false;
       }
     }
-    SetResource(filterdef);
     setModalstate({
       showModalResource: true,
       data: {},
       inputval: input,
       index: -1
     });
+    SetResource(filterdef);
   };
-  const editResourcesModal = (idx, input) => {
+  const editResourcesModal = (idx, input, serviceType) => {
     let editData = input.input.value[idx];
+    let filterdef = servicedef.find((obj) => obj.name == serviceType);
+    for (const obj of filterdef.resources) {
+      obj.recursiveSupported = false;
+      obj.excludesSupported = false;
+      if (obj.level !== 10) {
+        obj.mandatory = false;
+      }
+    }
 
     setModalstate({
       showModalResource: true,
@@ -78,19 +126,36 @@ const CreateZone = (props) => {
       inputval: input,
       index: idx
     });
+    SetResource(filterdef);
   };
   const onSubmit = async (values) => {
-    // if (!values.adminUserGroups) {
-    //   return { adminUserGroups: "Required" };
-    // }
+    let zoneId;
+    let apiMethod;
+    let apiUrl;
+    let apiSuccess;
+    let apiError;
+    let zoneData = {};
 
-    const zoneData = {};
+    if (props.match.params.id !== undefined) {
+      zoneId = props.match.params.id;
+      apiMethod = "put";
+      apiUrl = `/zones/zones/${zoneId}`;
+      apiSuccess = "updated";
+      zoneData["id"] = zoneId;
+      apiError = "Error occurred while updating a zone";
+    } else {
+      apiMethod = "post";
+      apiUrl = `/zones/zones`;
+      apiSuccess = "created";
+      apiError = "Error occurred while creating a zone!";
+    }
+
     zoneData.name = values.name;
     zoneData.description = values.description || "";
     zoneData.adminUsers = [];
     if (values.adminUsers) {
       for (var key of Object.keys(values.adminUsers)) {
-        zoneData.adminUsers.push(values.adminUsers[key].label);
+        zoneData.adminUsers.push(values.adminUsers[key].value);
       }
     }
     zoneData.adminUserGroups = [];
@@ -123,6 +188,7 @@ const CreateZone = (props) => {
         zoneData.tagServices.push(values.tagServices[key].label || "");
       }
     }
+
     zoneData.services = {};
 
     for (key of Object.keys(values.tableList)) {
@@ -133,12 +199,14 @@ const CreateZone = (props) => {
       resourcesName.map((obj) => {
         let serviceResourceData = {};
         pickBy(obj, (key, val) => {
-          if (val.includes("resourceName")) {
-            if (obj[`value-${key.level}`] !== undefined) {
-              serviceResourceData[key.name] =
-                obj[`value-${key.level}`] !== undefined
-                  ? obj[`value-${key.level}`].map((value) => value.value)
-                  : "";
+          if (
+            obj[`value-${key.level}`] &&
+            obj[`value-${key.level}`].length > 0
+          ) {
+            if (val.includes("resourceName")) {
+              serviceResourceData[key.name] = obj[`value-${key.level}`].map(
+                (value) => value.value
+              );
             }
           }
         });
@@ -146,46 +214,157 @@ const CreateZone = (props) => {
           serviceResourceData
         );
       });
-      if (zoneData.services[serviceName].resources.length == 0) {
-        showModal();
+      if (zoneData.services[serviceName].resources.length === 0) {
+        toast.error("Please add at least one resource for  service", {
+          toastId: "error1"
+        });
       }
     }
-
+    if (props.match.params.id) {
+      zoneData = {
+        ...zones.data,
+        ...zoneData
+      };
+    }
     try {
       await fetchApi({
-        url: "/zones/zones",
-        method: "post",
+        url: apiUrl,
+        method: apiMethod,
         data: zoneData
       });
-      toast.success(`Success! Key created succesfully`);
+      toast.success(`Success! Service zone ${apiSuccess} succesfully`);
       history.goBack();
     } catch (error) {
-      console.error(`Error occurred while creating Key`);
+      console.error(`Error occurred while ${apiError} Zone`);
+      if (
+        error.response !== undefined &&
+        _.has(error.response, "data.msgDesc")
+      ) {
+        toast.error(error.response.data.msgDesc);
+      }
     }
   };
+  const fetchResourceService = async (inputValue) => {
+    let params = {};
+    if (inputValue) {
+      params["name"] = inputValue || "";
+    }
+    const serviceDefnsResp = await fetchApi({
+      url: "plugins/services",
+      params: params
+    });
 
-  const fetchZone = async () => {
-    let zoneResp;
-    let Id = this.props.match.params.id;
-    try {
-      zoneResp = await fetchApi({
-        url: `zones/zones/${Id}`
+    const services = serviceDefnsResp.data.services.filter(
+      (obj) => obj.type !== "tag" && obj.type !== "kms"
+    );
+
+    SetService(services);
+
+    const service = groupBy(services, "type");
+
+    let resourceService = [];
+    for (var key of Object.keys(service)) {
+      resourceService.push({
+        label: <span className="font-weight-bold text-body h6">{key}</span>,
+        options: service[key].map((name) => {
+          return { label: name.name, value: name.name };
+        })
       });
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Service or CSRF headers! ${error}`
+    }
+
+    return resourceService;
+  };
+
+  const EditFormData = () => {
+    const zoneData = {};
+    zoneData.name = zones.data.name;
+    zoneData.description = zones.data.description;
+    zoneData.adminUserGroups = [];
+    if (zones.data.adminUserGroups) {
+      zones.data.adminUserGroups.map((name) =>
+        zoneData.adminUserGroups.push({ label: name, value: name })
+      );
+    }
+    zoneData.adminUsers = [];
+    if (zones.data.adminUsers) {
+      zones.data.adminUsers.map((name) =>
+        zoneData.adminUsers.push({ label: name, value: name })
+      );
+    }
+    zoneData.auditUserGroups = [];
+    if (zones.data.auditUserGroups) {
+      zones.data.auditUserGroups.map((name) =>
+        zoneData.auditUserGroups.push({ label: name, value: name })
+      );
+    }
+    zoneData.auditUsers = [];
+    if (zones.data.auditUsers) {
+      zones.data.auditUsers.map((name) =>
+        zoneData.auditUsers.push({ label: name, value: name })
       );
     }
 
-    SetZones(zoneResp);
+    zoneData.tagServices = [];
+    if (zones.data.tagServices) {
+      zones.data.tagServices.map((name) =>
+        zoneData.tagServices.push({ label: name, value: name })
+      );
+    }
+    zoneData.resourceservices = [];
+    if (zones.data.services) {
+      Object.keys(zones.data.services).map((name) =>
+        zoneData.resourceservices.push({ label: name, value: name })
+      );
+    }
 
-    const serviceJson = {};
-    serviceJson["name"] = zones.name;
-    serviceJson["description"] = zones.description;
+    zoneData.tableList = [];
+    for (let name of Object.keys(zones.data.services)) {
+      let tablevalues = {};
+      tablevalues["serviceName"] = name;
+      let serviceType = service.find((obj) => {
+        return obj.name == name;
+      });
+      tablevalues["serviceType"] = serviceType;
+
+      let filterdef = servicedef.find((def) => {
+        return def.name == serviceType.type;
+      });
+      for (const obj of filterdef.resources) {
+        obj.recursiveSupported = false;
+        obj.excludesSupported = false;
+        if (obj.level !== 10) {
+          obj.mandatory = false;
+        }
+      }
+      let serviceresource = {};
+      zones.data.services[name].resources.map((obj) => {
+        Object.entries(obj).map(([key, value]) => {
+          tablevalues["resources"] = [];
+          let setResources = find(filterdef.resources, ["name", key]);
+          serviceresource[`resourceName-${setResources.level}`] = setResources;
+          serviceresource[`value-${setResources.level}`] = value.map((m) => {
+            return { label: m, value: m };
+          });
+          if (setResources.excludesSupported) {
+            serviceresource[`isExcludesSupport-${setResources.level}`] =
+              value.isExcludes;
+          }
+          if (setResources.recursiveSupported) {
+            serviceresource[`recursiveSupported-${setResources.level}`] =
+              value.isRecursive;
+          }
+        });
+      });
+      tablevalues["resources"].push(serviceresource);
+      zoneData.tableList.push(tablevalues);
+    }
+
+    return zoneData;
   };
 
   const fetchUsers = async (inputValue) => {
-    let params = {};
+    let params = {},
+      op = [];
     if (inputValue) {
       params["name"] = inputValue || "";
     }
@@ -194,10 +373,15 @@ const CreateZone = (props) => {
       params: params
     });
 
-    return userResp.data.vXUsers.map(({ name, id }) => ({
-      label: name,
-      value: id
-    }));
+    if (userResp.data && userResp.data.vXUsers) {
+      op = userResp.data.vXUsers.map((obj) => {
+        return {
+          label: obj.name,
+          value: obj.name
+        };
+      });
+    }
+    return op;
   };
 
   const fetchGroups = async (inputValue) => {
@@ -209,9 +393,9 @@ const CreateZone = (props) => {
       url: "xusers/groups",
       params: params
     });
-    return groupResp.data.vXGroups.map(({ name, id }) => ({
+    return groupResp.data.vXGroups.map(({ name }) => ({
       label: name,
-      value: id
+      value: name
     }));
   };
 
@@ -228,52 +412,10 @@ const CreateZone = (props) => {
     const services = serviceResp.data.services.filter(
       (obj) => obj.type == "tag"
     );
-    return services.map(({ name, id }) => ({
+    return services.map(({ name }) => ({
       label: name,
-      value: id
+      value: name
     }));
-  };
-
-  const fetchResourceService = async (inputValue) => {
-    let params = {};
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-    const serviceDefnsResp = await fetchApi({
-      url: "plugins/services",
-      params: params
-    });
-
-    const services = serviceDefnsResp.data.services.filter(
-      (obj) => obj.type !== "tag" && obj.type !== "kms"
-    );
-    SetService(services);
-
-    const service = groupBy(services, "type");
-
-    let resourceService = [];
-    for (var key of Object.keys(service)) {
-      resourceService.push({
-        label: <span className="font-weight-bold text-body h6">{key}</span>,
-        options: service[key].map((name) => {
-          return { label: name.name, value: name.id };
-        })
-      });
-    }
-
-    return resourceService;
-  };
-
-  const fetchServiceDefs = async () => {
-    try {
-      const servicetypeResp = await fetchApi({
-        url: `plugins/definitions`
-      });
-
-      SetServiceDef(servicetypeResp.data.serviceDefs);
-    } catch (error) {
-      console.error(`Error occurred while fetching Services! ${error}`);
-    }
   };
 
   const resourceonChange = async (values, input, push, e, remove) => {
@@ -322,14 +464,23 @@ const CreateZone = (props) => {
     }
   };
 
-  const handleRemove = (i, input) => {
-    input.input.value.splice(i, 1);
+  const handleRemove = (idx, input) => {
+    input.input.value.splice(idx, 1);
     handleClose();
   };
 
-  const showResources = (value) => {
+  const showResources = (value, serviceType) => {
     let data = {};
-    const grpResources = groupBy(resource.resources || [], "level");
+    let filterdef = servicedef.find((obj) => obj.name == serviceType);
+    for (const obj of filterdef.resources) {
+      obj.recursiveSupported = false;
+      obj.excludesSupported = false;
+      if (obj.level !== 10) {
+        obj.mandatory = false;
+      }
+    }
+
+    const grpResources = groupBy(filterdef.resources || [], "level");
     let grpResourcesKeys = [];
     for (const resourceKey in grpResources) {
       grpResourcesKeys.push(+resourceKey);
@@ -353,10 +504,12 @@ const CreateZone = (props) => {
     }
     return Object.keys(data.resources).map((obj) => (
       <p>
-        {data.resources[obj].values.length > 0 ? (
+        {data.resources[obj].values.length !== 0 ? (
           <>
             <strong>{`${obj} : `}</strong>
-            <span>{data.resources[obj].values.join(", ")}</span>
+            <span>
+              {data.resources[obj].values.map((val) => val).join(", ")}
+            </span>
           </>
         ) : (
           ""
@@ -365,13 +518,18 @@ const CreateZone = (props) => {
     ));
   };
 
-  return (
+  return loader ? (
+    <Loader />
+  ) : (
     <div>
       <h4 className="wrap-header bold">
         {props.match.params.id !== undefined ? `Edit` : `Create`} Zone
       </h4>
       <Form
         onSubmit={onSubmit}
+        /* override the Initial Values */
+        keepDirtyOnReinitialize={true}
+        initialValues={props.match.params.id !== undefined && EditFormData()}
         mutators={{
           ...arrayMutators
         }}
@@ -382,6 +540,17 @@ const CreateZone = (props) => {
               required: true,
               text: "Required"
             };
+          } else {
+            if (
+              !RegexValidation.NAME_VALIDATION.regexforNameValidation.test(
+                values.name
+              )
+            ) {
+              errors.name = {
+                text: RegexValidation.NAME_VALIDATION
+                  .regexforNameValidationMessage
+              };
+            }
           }
 
           if (isEmpty(values.adminUsers) && isEmpty(values.adminUserGroups)) {
@@ -406,7 +575,7 @@ const CreateZone = (props) => {
             };
           }
 
-          if (!values.resourceservices) {
+          if (isEmpty(values.resourceservices)) {
             errors.resourceservices = {
               required: true,
               text: "Required"
@@ -420,6 +589,7 @@ const CreateZone = (props) => {
           form: {
             mutators: { push, remove }
           },
+
           form,
           values,
           submitting,
@@ -431,11 +601,13 @@ const CreateZone = (props) => {
               <p className="form-header">Zone Details:</p>
               <Field name="name">
                 {({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Zone Name *
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Zone Name *
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <input
                         {...input}
                         type="text"
@@ -448,20 +620,23 @@ const CreateZone = (props) => {
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error.text}</span>
                       )}
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               </Field>
+              <br />
               <Field name="description">
                 {({ input }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Zone Description
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Zone Description
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <textarea {...input} className="form-control" />
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               </Field>
               <br />
@@ -470,13 +645,16 @@ const CreateZone = (props) => {
               <Field
                 name="adminUsers"
                 render={({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Admin Users
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Admin Users
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <AsyncSelect
                         {...input}
+                        cacheOptions
                         className={
                           meta.error && meta.touched
                             ? "form-control border border-danger p-0"
@@ -485,27 +663,28 @@ const CreateZone = (props) => {
                         defaultOptions
                         loadOptions={fetchUsers}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select User"
                       />
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
+              <br />
               <Field
                 name="adminUserGroups"
                 render={({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Admin Usergroups
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Admin Usergroups
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <AsyncSelect
                         {...input}
                         className={
@@ -516,31 +695,32 @@ const CreateZone = (props) => {
                         defaultOptions
                         loadOptions={fetchGroups}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select Group"
                         required
                       />
                       {meta.touched && meta.error && (
                         <span className="invalid-field">{meta.error.text}</span>
                       )}
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
+              <br />
               <Field
                 name="auditUsers"
                 render={({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Auditor Users
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Auditor Users
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <AsyncSelect
                         {...input}
                         className={
@@ -551,28 +731,29 @@ const CreateZone = (props) => {
                         defaultOptions
                         loadOptions={fetchUsers}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select User"
                       />
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
+              <br />
               <Field
                 className="form-control"
                 name="auditUserGroups"
                 render={({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Auditor Usergroups
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Auditor Usergroups
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <AsyncSelect
                         {...input}
                         className={
@@ -583,20 +764,18 @@ const CreateZone = (props) => {
                         defaultOptions
                         loadOptions={fetchGroups}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select Group"
                       />
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error.text}</span>
                       )}
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
               <br />
@@ -605,40 +784,43 @@ const CreateZone = (props) => {
                 className="form-control"
                 name="tagServices"
                 render={({ input }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Select Tag Services
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      {" "}
+                      <label className="form-label pull-right">
+                        Select Tag Services
+                      </label>
+                    </Col>
+                    <Col xs={6}>
                       <AsyncSelect
                         {...input}
                         className="form-control p-0 border-0"
                         defaultOptions
                         loadOptions={fetchTagServices}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select Tag Services"
                       />
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
-
+              <br />
               <Field
                 className="form-control"
                 name="resourceservices"
                 render={({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label text-right">
-                      Select Resource Services*
-                    </label>
-                    <div className="col-sm-4">
+                  <Row>
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        Select Resource Services*
+                      </label>
+                    </Col>
+                    <Col xs={6}>
                       <AsyncSelect
                         {...input}
                         className="form-control p-0 border-0"
@@ -648,23 +830,22 @@ const CreateZone = (props) => {
                         }
                         loadOptions={fetchResourceService}
                         isMulti
-                        width="500px"
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
                         isClearable={false}
-                        menuPlacement="auto"
                         placeholder="Select Service Name"
                       />
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error.text}</span>
                       )}
-                    </div>
-                  </div>
+                    </Col>
+                  </Row>
                 )}
               />
               <br />
+
               <Table striped bordered>
                 <thead>
                   <tr>
@@ -682,7 +863,7 @@ const CreateZone = (props) => {
                 <tbody>
                   <FieldArray name="tableList">
                     {({ fields }) =>
-                      fields.value !== undefined && fields.value.length ? (
+                      fields.value && fields.value.length > 0 ? (
                         fields.map((name, index) => (
                           <tr className="bg-white" key={index}>
                             <td className="align-middle" width="20%">
@@ -707,45 +888,56 @@ const CreateZone = (props) => {
                                 name={`${name}.resources`}
                                 render={(input) => (
                                   <>
-                                    {input.input.value !== undefined
+                                    {input.input.value &&
+                                    input.input.value.length > 0
                                       ? input.input.value.map((obj, idx) => (
                                           <>
                                             <div className="resourceGrp">
-                                              <div className="row">
-                                                <div className="col-9">
-                                                  <div className="m-t-xs">
-                                                    {showResources(obj)}
-                                                  </div>
-                                                </div>
-                                                <div class="col-3">
+                                              <Row>
+                                                <Col xs={9}>
+                                                  <span className="m-t-xs">
+                                                    {showResources(
+                                                      obj,
+                                                      fields.value[index]
+                                                        .serviceType.type
+                                                    )}
+                                                  </span>
+                                                </Col>
+                                                <Col xs={3}>
                                                   <Button
                                                     title="edit"
                                                     className="btn btn-primary m-r-xs btn-mini m-r-5"
+                                                    size="sm"
                                                     onClick={() =>
                                                       editResourcesModal(
                                                         idx,
-                                                        input
+                                                        input,
+                                                        fields.value[index]
+                                                          .serviceType.type
                                                       )
                                                     }
                                                   >
                                                     <i className="fa-fw fa fa-edit"></i>
                                                   </Button>
                                                   <Button
+                                                    title="delete"
                                                     className="btn btn-danger active  btn-mini"
+                                                    size="sm"
                                                     onClick={() =>
                                                       handleRemove(idx, input)
                                                     }
                                                   >
-                                                    <i class="fa-fw fa fa-remove"></i>
+                                                    <i className="fa-fw fa fa-remove"></i>
                                                   </Button>
-                                                </div>
-                                              </div>
+                                                </Col>
+                                              </Row>
                                             </div>
                                           </>
                                         ))
                                       : ""}
                                     <div className="resource-list min-width-150">
                                       <Button
+                                        title="add"
                                         className="btn btn-mini pull-left"
                                         variant="outline-secondary"
                                         size="sm"
@@ -779,7 +971,6 @@ const CreateZone = (props) => {
                   </FieldArray>
                 </tbody>
               </Table>
-
               <div className="row form-actions">
                 <div className="col-md-9 offset-md-3">
                   <Button
@@ -803,7 +994,7 @@ const CreateZone = (props) => {
                 </div>
               </div>
             </form>
-            <Modal
+            {/* <Modal
               show={showmodal}
               onHide={hideModal}
               backdrop="static"
@@ -817,7 +1008,7 @@ const CreateZone = (props) => {
                   OK
                 </Button>
               </Modal.Footer>
-            </Modal>
+            </Modal> */}
             <ModalResourceComp
               serviceDetails={{}}
               serviceCompDetails={resource}
@@ -826,7 +1017,7 @@ const CreateZone = (props) => {
               modelState={modelState}
               handleSave={handleSave}
               handleClose={handleClose}
-              policyItem={false}
+              policyItem={true}
             />
           </div>
         )}
@@ -835,4 +1026,4 @@ const CreateZone = (props) => {
   );
 };
 
-export default CreateZone;
+export default SecurityZoneForm;

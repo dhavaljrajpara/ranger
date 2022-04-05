@@ -3,7 +3,7 @@ import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import rangerLogo from "Images/ranger_logo.png";
 import { Link } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
-import { UserRoles } from "Utils/XAEnums";
+import { isKeyAdmin } from "Utils/XAUtils";
 class Header extends Component {
   constructor(props) {
     super(props);
@@ -85,15 +85,17 @@ class Header extends Component {
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
             </Link>
-            <Link to="/zones/zone/list" className="nav-link" replace>
-              <span className="zone-icon fa-stack fa-lg">
-                <i className="fa fa-square-o fa-stack-2x"></i>
-                <i className="fa fa-bolt fa-stack-1x"></i>
-              </span>
-              {` Security Zone `}
-            </Link>
+            {!isKeyAdmin() && (
+              <Link to="/zones/zone/list" className="nav-link" replace>
+                <span className="zone-icon fa-stack fa-lg">
+                  <i className="fa fa-square-o fa-stack-2x"></i>
+                  <i className="fa fa-bolt fa-stack-1x"></i>
+                </span>
+                {` Security Zone `}
+              </Link>
+            )}
 
-            {userProps?.loginId == "keyadmin" && (
+            {isKeyAdmin() && (
               <NavDropdown title={encryption}>
                 <Link
                   to="/kms/keys/new/manage/service"

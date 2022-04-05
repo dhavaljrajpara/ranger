@@ -37,7 +37,7 @@ export default function ModalResourceComp(props) {
           initialValues={modelState.data}
           render={({ handleSubmit, form, submitting, pristine, values }) => (
             <form onSubmit={handleSubmit}>
-              <Modal.Header>
+              <Modal.Header closeButton>
                 <Modal.Title>Resource Details</Modal.Title>
               </Modal.Header>
               <Modal.Body>
@@ -58,7 +58,7 @@ export default function ModalResourceComp(props) {
               <Modal.Footer>
                 <Button
                   variant="secondary"
-                  disabled={submitting || pristine}
+                  // disabled={submitting || pristine}
                   onClick={handleClose}
                 >
                   Close

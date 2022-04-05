@@ -12,7 +12,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
     createDate,
     owner,
     action,
-    objectId
+    objectId,
   } = data;
 
   const policydelete = reportdata.filter((obj) => {
@@ -27,6 +27,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const policyConditionoldVal = policycondition.map(
     (obj) => obj.newValue && obj.action == "update"
   );
+  const importdeleteresources = reportdata.filter((c) => {
+    return c.attributeName == "Policy Resources" && c.action == "Import Delete";
+  });
   const policydetails = reportdata.filter((c) => {
     return (
       c.action == "create" &&
@@ -147,6 +150,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
       c.attributeName != "DenyPolicy Items" &&
       c.attributeName != "Allow Exceptions" &&
       c.attributeName != "Deny Exceptions" &&
+      c.attributeName != "Zone Name" &&
       c.attributeName != "Masked Policy Items" &&
       c.attributeName != "Row level filter Policy Items" &&
       c.attributeName != "Validity Schedules"
@@ -322,6 +326,68 @@ export const PolicyLogs = ({ data, reportdata }) => {
   );
   const rowmasknewval = rowmask.map((newval) => newval.newValue);
   const rowmaskoldval = rowmask.map((oldval) => oldval.previousValue);
+  /*IMPORT DELETE */
+  const importDeleteDetails = reportdata.filter((c) => {
+    return (
+      c.action == "Import Delete" &&
+      c.attributeName != "Policy Resources" &&
+      c.attributeName != "Policy Conditions" &&
+      c.attributeName != "Policy Items" &&
+      c.attributeName != "DenyPolicy Items" &&
+      c.attributeName != "Zone Name" &&
+      c.attributeName != "Allow Exceptions" &&
+      c.attributeName != "Deny Exceptions" &&
+      c.attributeName != "Masked Policy Items" &&
+      c.attributeName != "Row level filter Policy Items" &&
+      c.attributeName != "Validity Schedules"
+    );
+  });
+
+  const ImportDeleteDetails = (details, resources) => {
+    let tablerow = [];
+
+    details.map((o) => {
+      return tablerow.push(
+        <tr>
+          <td className="table-warning">{o.attributeName}</td>
+          <td className="table-warning">{o.previousValue}</td>
+        </tr>
+      );
+    });
+
+    let keynew = {};
+    resources.map((obj) => {
+      keynew = JSON.parse(obj.previousValue);
+    });
+
+    Object.keys(keynew).map((key, index) => {
+      return tablerow.push(
+        <>
+          <tr>
+            <td className="table-warning">{key}</td>
+            <td className="table-warning"> {keynew[key].values}</td>
+          </tr>
+          <tr>
+            <td className="table-warning">{key + " " + "exclude"}</td>
+            <td className="table-warning">
+              {keynew[key].isExcludes == false ? "false" : "true"}
+            </td>
+          </tr>
+          <tr>
+            <td className="table-warning">{key + " " + "recursive"}</td>
+            <td className="table-warning">
+              {keynew[key].isRecursive == false ? "false" : "true"}
+            </td>
+          </tr>
+        </>
+      );
+    });
+    return tablerow;
+  };
+
+  const importDeleteItems = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Items";
+  });
   return (
     <div>
       {/* CREATE  */}
@@ -2105,8 +2171,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     })}
                 </Table>
               )}
-
-            {action == "delete" &&
+            <br />
+            {action == "Import Delete" &&
               !isEmpty(policyexceptionoldval) &&
               !isUndefined(policyexceptionoldval) &&
               policyexceptionoldval != 0 && (
@@ -2114,7 +2180,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   Allow Exception PolicyItems:
                 </h5>
               )}
-            {action == "delete" &&
+            {action == "Import Delete" &&
               !isEmpty(policyexceptionoldval) &&
               !isUndefined(policyexceptionoldval) &&
               policyexceptionoldval != 0 && (
@@ -2442,36 +2508,17 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <th>Old Value</th>
                 </tr>
               </thead>
-              {reportdata
-                .filter(
-                  (c) =>
-                    c.attributeName != "Zone Name" &&
-                    c.attributeName != "Policy Conditions" &&
-                    c.attributeName != "Policy Items" &&
-                    c.attributeName != "DenyPolicy Items" &&
-                    c.attributeName != "Allow Exceptions" &&
-                    c.attributeName != "Deny Exceptions" &&
-                    c.attributeName != "Masked Policy Items" &&
-                    c.attributeName != "Row level filter Policy Items" &&
-                    c.attributeName != "Validity Schedules"
-                )
-                .map((obj) => {
-                  return (
-                    <tbody>
-                      <tr>
-                        <td className="table-warning">{obj.attributeName}</td>
-                        <td className="table-warning">
-                          {obj.previousValue || "--"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  );
-                })}
+              <tbody>
+                {ImportDeleteDetails(
+                  importDeleteDetails,
+                  importdeleteresources
+                )}
+              </tbody>
             </Table>
             <br />
             <h5 className="bold wrap-header m-t-sm"> Allow PolicyItems:</h5>
             <Table className="table table-striped table-bordered w-auto">
-              {policydelete.map((policyitem) =>
+              {importDeleteItems.map((policyitem) =>
                 JSON.parse(policyitem.previousValue).map((policy) => {
                   return (
                     <>

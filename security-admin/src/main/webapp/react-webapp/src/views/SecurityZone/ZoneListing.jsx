@@ -6,6 +6,8 @@ import { fetchApi } from "Utils/fetchAPI";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import ZoneDisplay from "./ZoneDisplay";
+import { Row, Col } from "react-bootstrap";
+import { sortBy } from "lodash";
 
 class ZoneListing extends Component {
   constructor(props) {
@@ -54,7 +56,7 @@ class ZoneListing extends Component {
       loader: false,
       selectedZone: selectedZone,
       zones: zoneList,
-      filterZone: zoneList
+      filterZone: sortBy(zoneList, ["name"])
     });
   };
 
@@ -72,7 +74,7 @@ class ZoneListing extends Component {
     let filterZone = this.state.zones.filter((obj) =>
       obj.name.includes(e.target.value)
     );
-    this.setState({ searchText: e.target.value, filterZone: filterZone });
+    this.setState({ filterZone: filterZone });
   };
 
   deleteZone = async (zoneId) => {
@@ -111,39 +113,40 @@ class ZoneListing extends Component {
     return this.state.loader ? (
       <Loader />
     ) : (
-      <div className="wrap policy-manager">
-        <div className="row">
-          <div className="col-sm-3 border-right">
-            <div className="clearfix">
-              <div className="float-left">
+      <div className="wrap">
+        <Row>
+          <Col md={3} className="border-right border-dark">
+            <Row>
+              <Col>
                 <h5 className="text-muted wrap-header bold pull-left">
                   Security Zones
                 </h5>
-              </div>
+              </Col>
+
               {this.state.isAdminRole && (
-                <div className="float-right ">
+                <Col>
                   <Link
                     to="/zones/create"
-                    className="btn btn-outline-secondary btn-sm"
+                    className="btn btn-outline-secondary btn-sm pull-right"
                   >
                     <i className="fa-fw fa fa-plus"></i>
                   </Link>
-                </div>
+                </Col>
               )}
-            </div>
-            <div className="row mt-3">
-              <div className="col-sm-12">
+            </Row>
+            <Row>
+              <Col>
                 <input
-                  className="form-control"
+                  className="form-control mt-2"
                   type="text"
                   value={this.state.searchText}
                   onChange={this.onChangeSearch}
                   placeholder="Search"
                 ></input>
-              </div>
-            </div>
-            <div className="row mt-3">
-              <div className="col-sm-12 ">
+              </Col>
+            </Row>
+            <Row>
+              <Col>
                 {this.state.filterZone.length !== 0 ? (
                   <ul className="list-group">
                     {this.state.filterZone.map((zone) => (
@@ -166,26 +169,31 @@ class ZoneListing extends Component {
                     </li>
                   </ul>
                 )}
-              </div>
-            </div>
-          </div>
+              </Col>
+            </Row>
+          </Col>
 
-          <div className="col-sm-9 ">
+          <Col>
             {this.state.selectedZone === null ? (
-              <div className="row justify-content-md-center">
-                <div className="col-md-auto text-center">
+              <Row className="justify-content-md-center">
+                <Col md="auto">
                   <img
                     alt="Avatar"
                     className="w-50 p-3 d-block mx-auto"
                     src={noZoneImage}
                   />
-
-                  <Link to="/zones/create">
-                    <i className="fa-fw fa fa-plus"></i>Click here to Create new
-                    Zone
-                  </Link>
-                </div>
-              </div>
+                  <br />
+                  <span className="pt-5 pr-5">
+                    <Link
+                      to="/zones/create"
+                      className="btn-add-security2 btn-lg"
+                    >
+                      <i className="fa-fw fa fa-plus"></i>Click here to Create
+                      new Zone
+                    </Link>
+                  </span>
+                </Col>
+              </Row>
             ) : (
               <ZoneDisplay
                 history={this.props.history}
@@ -194,8 +202,8 @@ class ZoneListing extends Component {
               />
             )}
             <div></div>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </div>
     );
   }
