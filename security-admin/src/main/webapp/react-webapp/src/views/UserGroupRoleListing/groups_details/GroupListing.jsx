@@ -19,6 +19,12 @@ import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import { GroupAssociateUserDetails } from "../GroupAssociateUserDetails";
+import {
+  isSystemAdmin,
+  isKeyAdmin,
+  isAuditor,
+  isKMSAuditor
+} from "Utils/XAUtils";
 
 function Groups() {
   let history = useHistory();
@@ -157,7 +163,11 @@ function Groups() {
           if (rawValue.value) {
             return (
               <Link
-                className="text-info"
+                className={`${
+                  isAuditor() || isKMSAuditor()
+                    ? "disabled-link text-secondary"
+                    : "text-info"
+                }`}
                 to={"/group/" + rawValue.row.original.id}
               >
                 {rawValue.value}
@@ -307,30 +317,32 @@ function Groups() {
       <h4 className="wrap-header font-weight-bold">Group List</h4>
       <Row className="mb-4 text-right">
         <Col md={7}></Col>
-        <Col md={5}>
-          <Button variant="primary" size="sm" onClick={addGroup}>
-            Add Group
-          </Button>
-          <DropdownButton
-            title="Set Visibility"
-            size="sm"
-            style={{ display: "inline-block" }}
-            className="ml-2"
-            onSelect={handleSetVisibility}
-          >
-            <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
-            <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
-          </DropdownButton>
-          <Button
-            variant="danger"
-            size="sm"
-            title="Delete"
-            className="ml-2"
-            onClick={handleDeleteBtnClick}
-          >
-            <i className="fa-fw fa fa-trash"></i>
-          </Button>
-        </Col>
+        {(isSystemAdmin() || isKeyAdmin()) && (
+          <Col md={5}>
+            <Button variant="primary" size="sm" onClick={addGroup}>
+              Add Group
+            </Button>
+            <DropdownButton
+              title="Set Visibility"
+              size="sm"
+              style={{ display: "inline-block" }}
+              className="ml-2"
+              onSelect={handleSetVisibility}
+            >
+              <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
+              <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
+            </DropdownButton>
+            <Button
+              variant="danger"
+              size="sm"
+              title="Delete"
+              className="ml-2"
+              onClick={handleDeleteBtnClick}
+            >
+              <i className="fa-fw fa fa-trash"></i>
+            </Button>
+          </Col>
+        )}
       </Row>
       <div>
         <XATableLayout
@@ -338,7 +350,12 @@ function Groups() {
           columns={columns}
           fetchData={fetchGroupInfo}
           pageCount={pageCount}
-          rowSelectOp={{ position: "first", selectedRows }}
+          rowSelectOp={
+            (isSystemAdmin() || isKeyAdmin()) && {
+              position: "first",
+              selectedRows
+            }
+          }
           getRowProps={(row) => ({
             className: row.values.isVisible == 0 && "row-inactive"
           })}

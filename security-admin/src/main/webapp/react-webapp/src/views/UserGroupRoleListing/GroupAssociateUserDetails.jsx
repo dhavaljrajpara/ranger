@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import { fetchApi } from "Utils/fetchAPI";
 import { Button, Row, Col } from "react-bootstrap";
 import { Loader } from "Components/CommonComponents";
-import { indexOf } from "lodash";
+import { isAuditor, isKMSAuditor } from "Utils/XAUtils";
+import { toast } from "react-toastify";
 
 export function GroupAssociateUserDetails(props) {
   const { groupID } = props;
@@ -44,17 +45,27 @@ export function GroupAssociateUserDetails(props) {
     });
     setFilterUserDataList(userList);
   };
-
-  //   const showUserDetails = () => {
-  //     console.log("sdsdd");
-  //   };
+  const copyText = (e) => {
+    let userCopytext = "";
+    userCopytext = filterUserListData
+      .map((val) => {
+        return val.value;
+      })
+      .join(" | ");
+    if (userCopytext.length == 0) {
+      toast.warning("No user list find for copy");
+    } else {
+      toast.success("User list copied succesfully!!");
+    }
+    return userCopytext;
+  };
 
   return loader ? (
     <Loader />
   ) : (
     <>
       <Row>
-        <Col className="col-sm-12">
+        <Col className="col-sm-11">
           <input
             className="form-control"
             type="text"
@@ -62,6 +73,16 @@ export function GroupAssociateUserDetails(props) {
             onChange={onChangeSearch}
             placeholder="Search"
           ></input>
+        </Col>
+        <Col className="col-sm-1">
+          <Button
+            className="mr-2 rounded-pill border"
+            size="sm"
+            variant="link"
+            onClick={() => navigator.clipboard.writeText(copyText())}
+          >
+            <i className="fa-fw fa fa-copy"> </i>
+          </Button>
         </Col>
       </Row>
       <br />
@@ -73,9 +94,12 @@ export function GroupAssociateUserDetails(props) {
                 variant="link"
                 href={`#/user/${val.id}`}
                 size="sm"
-                className="mr-2 rounded-pill border"
+                className={`mr-2 rounded-pill border ${
+                  isAuditor() || isKMSAuditor()
+                    ? "disabled-link text-secondary"
+                    : ""
+                }`}
                 key={index}
-                // onClick={showUserDetails}
               >
                 {val.value}
               </Button>

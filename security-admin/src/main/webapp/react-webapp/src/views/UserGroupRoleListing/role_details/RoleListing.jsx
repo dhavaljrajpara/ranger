@@ -6,6 +6,13 @@ import { useHistory, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
+import {
+  isUser,
+  isSystemAdmin,
+  isKeyAdmin,
+  isAuditor,
+  isKMSAuditor
+} from "Utils/XAUtils";
 
 function Roles() {
   let history = useHistory();
@@ -97,7 +104,11 @@ function Roles() {
           if (rawValue.value) {
             return (
               <Link
-                className="text-info"
+                className={`${
+                  isAuditor() || isKMSAuditor()
+                    ? "disabled-link text-secondary"
+                    : "text-info"
+                }`}
                 to={"/role/" + rawValue.row.original.id}
               >
                 {rawValue.value}
@@ -112,7 +123,7 @@ function Roles() {
         Header: "Users",
         accessor: "users",
         accessor: (raw) => {
-          if (raw.users.length > 0) {
+          if (raw.users && raw.users.length > 0) {
             let usersList = _.map(raw.users, "name");
             return usersList.map((u, index) => {
               return (
@@ -130,7 +141,7 @@ function Roles() {
         Header: "Groups",
         accessor: "groups",
         accessor: (raw) => {
-          if (raw.groups.length > 0) {
+          if (raw.groups && raw.groups.length > 0) {
             let groupsList = _.map(raw.groups, "name");
             return groupsList.map((g, index) => {
               return (
@@ -148,7 +159,7 @@ function Roles() {
         Header: "Roles",
         accessor: "roles",
         accessor: (raw) => {
-          if (raw.roles.length > 0) {
+          if (raw.roles && raw.roles.length > 0) {
             let rolesList = _.map(raw.roles, "name");
             return rolesList.map((r, index) => {
               return (
@@ -175,20 +186,22 @@ function Roles() {
       <h4 className="wrap-header font-weight-bold">Role List</h4>
       <Row className="mb-4">
         <Col md={7}></Col>
-        <Col md={5} className="text-right">
-          <Button variant="primary" size="sm" onClick={addRole}>
-            Add Role
-          </Button>
-          <Button
-            className="ml-2"
-            variant="danger"
-            size="sm"
-            title="Delete"
-            onClick={handleDeleteBtnClick}
-          >
-            <i className="fa-fw fa fa-trash"></i>
-          </Button>
-        </Col>
+        {(isSystemAdmin() || isKeyAdmin()) && (
+          <Col md={5} className="text-right">
+            <Button variant="primary" size="sm" onClick={addRole}>
+              Add Role
+            </Button>
+            <Button
+              className="ml-2"
+              variant="danger"
+              size="sm"
+              title="Delete"
+              onClick={handleDeleteBtnClick}
+            >
+              <i className="fa-fw fa fa-trash"></i>
+            </Button>
+          </Col>
+        )}
       </Row>
       <div>
         <XATableLayout
@@ -196,7 +209,12 @@ function Roles() {
           columns={columns}
           fetchData={fetchRoleInfo}
           pageCount={pageCount}
-          rowSelectOp={{ position: "first", selectedRows }}
+          rowSelectOp={
+            (isSystemAdmin() || isKeyAdmin()) && {
+              position: "first",
+              selectedRows
+            }
+          }
         />
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>

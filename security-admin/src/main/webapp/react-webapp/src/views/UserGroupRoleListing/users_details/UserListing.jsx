@@ -19,11 +19,19 @@ import {
 } from "Utils/XAEnums";
 import { Loader } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
+import qs from "qs";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import { SyncSourceDetails } from "../SyncSourceDetails";
-import { isUser } from "Utils/XAUtils";
+import {
+  isUser,
+  isSystemAdmin,
+  isKeyAdmin,
+  isAuditor,
+  isKMSAuditor
+} from "Utils/XAUtils";
+import { getUserAccessRoleList } from "Utils/XAUtils";
 
 function Users() {
   let history = useHistory();
@@ -44,13 +52,20 @@ function Users() {
       let userData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      const userRoleListData = getUserAccessRoleList().map((m) => {
+        return m.value;
+      });
       if (fetchId === fetchIdRef.current) {
         try {
           const userResp = await fetchApi({
             url: "xusers/users",
             params: {
               pageSize: pageSize,
-              startIndex: pageIndex * pageSize
+              startIndex: pageIndex * pageSize,
+              userRoleList: userRoleListData
+            },
+            paramsSerializer: function (params) {
+              return qs.stringify(params, { arrayFormat: "repeat" });
             }
           });
           userData = userResp.data.vXUsers;
@@ -152,7 +167,11 @@ function Users() {
           if (rawValue.value) {
             return (
               <Link
-                className="text-info"
+                className={`${
+                  isAuditor() || isKMSAuditor()
+                    ? "disabled-link text-secondary"
+                    : "text-info"
+                }`}
                 to={"/user/" + rawValue.row.original.id}
               >
                 {rawValue.value}
@@ -227,7 +246,7 @@ function Users() {
         Header: "Groups",
         accessor: "groupNameList",
         Cell: (rawValue) => {
-          if (rawValue.value.length > 0) {
+          if (rawValue.value && rawValue.value.length > 0) {
             return rawValue.value.map((name, index) => {
               return (
                 <h6 className="d-inline mr-1" key={index}>
@@ -320,30 +339,32 @@ function Users() {
       <h4 className="wrap-header font-weight-bold">User List</h4>
       <Row className="mb-4 text-right">
         <Col md={7}></Col>
-        <Col md={5}>
-          <Button variant="primary" size="sm" onClick={addUser}>
-            Add User
-          </Button>
-          <DropdownButton
-            title="Set Visibility"
-            size="sm"
-            style={{ display: "inline-block" }}
-            className="ml-2"
-            onSelect={handleSetVisibility}
-          >
-            <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
-            <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
-          </DropdownButton>
-          <Button
-            variant="danger"
-            size="sm"
-            title="Delete"
-            onClick={handleDeleteBtnClick}
-            className="ml-2"
-          >
-            <i className="fa-fw fa fa-trash"></i>
-          </Button>
-        </Col>
+        {(isSystemAdmin() || isKeyAdmin()) && (
+          <Col md={5}>
+            <Button variant="primary" size="sm" onClick={addUser}>
+              Add User
+            </Button>
+            <DropdownButton
+              title="Set Visibility"
+              size="sm"
+              style={{ display: "inline-block" }}
+              className="ml-2"
+              onSelect={handleSetVisibility}
+            >
+              <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
+              <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
+            </DropdownButton>
+            <Button
+              variant="danger"
+              size="sm"
+              title="Delete"
+              onClick={handleDeleteBtnClick}
+              className="ml-2"
+            >
+              <i className="fa-fw fa fa-trash"></i>
+            </Button>
+          </Col>
+        )}
       </Row>
       <div>
         <XATableLayout
@@ -351,7 +372,12 @@ function Users() {
           columns={columns}
           fetchData={fetchUserInfo}
           pageCount={pageCount}
-          rowSelectOp={{ position: "first", selectedRows }}
+          rowSelectOp={
+            (isSystemAdmin() || isKeyAdmin()) && {
+              position: "first",
+              selectedRows
+            }
+          }
           getRowProps={(row) => ({
             className: row.values.isVisible == 0 && "row-inactive"
           })}
