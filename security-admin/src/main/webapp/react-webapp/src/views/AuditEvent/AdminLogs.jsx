@@ -250,6 +250,7 @@ function Admin() {
           columns={columns}
           fetchData={fetchAdminLogsInfo}
           pageCount={pageCount}
+          loading={loader}
           getRowProps={(row) => ({
             onClick: () => rowModal(row)
           })}
@@ -264,7 +265,6 @@ function Admin() {
         <OperationAdminModal
           show={showrowmodal}
           data={rowdata}
-          loading={loader}
           onHide={handleClosed}
         ></OperationAdminModal>
       }

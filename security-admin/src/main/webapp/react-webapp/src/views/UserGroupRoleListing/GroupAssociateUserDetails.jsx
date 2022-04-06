@@ -64,49 +64,59 @@ export function GroupAssociateUserDetails(props) {
     <Loader />
   ) : (
     <>
-      <Row>
-        <Col className="col-sm-11">
-          <input
-            className="form-control"
-            type="text"
-            // value={this.state.searchText}
-            onChange={onChangeSearch}
-            placeholder="Search"
-          ></input>
-        </Col>
-        <Col className="col-sm-1">
-          <Button
-            className="mr-2 rounded-pill border"
-            size="sm"
-            variant="link"
-            onClick={() => navigator.clipboard.writeText(copyText())}
-          >
-            <i className="fa-fw fa fa-copy"> </i>
-          </Button>
-        </Col>
-      </Row>
-      <br />
-      <Row>
-        <Col>
-          {filterUserListData.map((val, index) => {
-            return (
+      {userListData && userListData.length > 0 ? (
+        <>
+          <Row>
+            <Col className="col-sm-11">
+              <input
+                className="form-control"
+                type="text"
+                // value={this.state.searchText}
+                onChange={onChangeSearch}
+                placeholder="Search"
+              ></input>
+            </Col>
+            <Col className="col-sm-1">
               <Button
-                variant="link"
-                href={`#/user/${val.id}`}
+                className="mr-2 rounded-pill border"
                 size="sm"
-                className={`mr-2 rounded-pill border ${
-                  isAuditor() || isKMSAuditor()
-                    ? "disabled-link text-secondary"
-                    : ""
-                }`}
-                key={index}
+                variant="link"
+                onClick={() => navigator.clipboard.writeText(copyText())}
               >
-                {val.value}
+                <i className="fa-fw fa fa-copy"> </i>
               </Button>
-            );
-          })}
-        </Col>
-      </Row>
+            </Col>
+          </Row>
+          <br />
+          <Row>
+            <Col>
+              {filterUserListData.map((val, index) => {
+                return (
+                  <Button
+                    variant="link"
+                    href={`#/user/${val.id}`}
+                    size="sm"
+                    className={`mr-2 rounded-pill border ${
+                      isAuditor() || isKMSAuditor()
+                        ? "disabled-link text-secondary"
+                        : ""
+                    }`}
+                    key={index}
+                  >
+                    {val.value}
+                  </Button>
+                );
+              })}
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <>
+          <center className="text-muted">
+            No user associate with this group.!!
+          </center>
+        </>
+      )}
     </>
   );
 }
