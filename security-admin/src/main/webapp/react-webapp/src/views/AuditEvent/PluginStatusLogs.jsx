@@ -4,7 +4,7 @@ import { Loader } from "Components/CommonComponents";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
 
@@ -19,8 +19,8 @@ function Plugin_Status() {
           url: "plugins/plugins/info",
           params: {
             pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-          },
+            startIndex: pageIndex * pageSize
+          }
         });
         logs = logsResp.data.pluginInfoList;
         totalCount = logsResp.data.totalCount;
@@ -39,57 +39,56 @@ function Plugin_Status() {
     () => [
       {
         Header: "Export Date ( India Standard Time )",
-        accessor: "serviceName", // accessor is the "key" in the data
+        accessor: "serviceName" // accessor is the "key" in the data
       },
       {
         Header: "Service Name",
-        accessor: "serviceType", // accessor is the "key" in the data
+        accessor: "serviceType" // accessor is the "key" in the data
       },
       {
         Header: "Plugin ID",
-        accessor: "appType", // accessor is the "key" in the data
+        accessor: "appType" // accessor is the "key" in the data
       },
       {
         Header: "Plugin IP",
-        accessor: "hostName", // accessor is the "key" in the data
+        accessor: "hostName" // accessor is the "key" in the data
       },
       {
         Header: "Cluster Name",
-        accessor: "ipAddress", // accessor is the "key" in the data
+        accessor: "ipAddress" // accessor is the "key" in the data
       },
       {
         Header: "Policy Last Update",
-        accessor: "lastPolicyUpdateTime", // accessor is the "key" in the data
+        accessor: "lastPolicyUpdateTime" // accessor is the "key" in the data
       },
       {
         Header: "Policy Download",
-        accessor: "policyDownloaded", // accessor is the "key" in the data
+        accessor: "policyDownloaded" // accessor is the "key" in the data
       },
       {
         Header: "Policy Active",
-        accessor: "policyActive", // accessor is the "key" in the data
+        accessor: "policyActive" // accessor is the "key" in the data
       },
       {
         Header: "Tag Last Update",
-        accessor: "lastTagUpdateTime", // accessor is the "key" in the data
+        accessor: "lastTagUpdateTime" // accessor is the "key" in the data
       },
       {
         Header: "Tag Download",
-        accessor: "tagDownloaded", // accessor is the "key" in the data
+        accessor: "tagDownloaded" // accessor is the "key" in the data
       },
       {
         Header: "Tag Active",
-        accessor: "tagActive", // accessor is the "key" in the data
-      },
+        accessor: "tagActive" // accessor is the "key" in the data
+      }
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <XATableLayout
       data={pluginStatusListingData}
       columns={columns}
+      loading={loader}
       fetchData={fetchPluginStatusInfo}
       pageCount={pageCount}
     />

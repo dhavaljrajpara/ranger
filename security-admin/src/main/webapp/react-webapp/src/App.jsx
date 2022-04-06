@@ -6,7 +6,6 @@ import { Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
-import { isKeyAdmin } from "Utils/XAUtils";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
@@ -22,7 +21,15 @@ const UserListingComp = lazy(() =>
 const GroupListingComp = lazy(() =>
   import("Views/UserGroupRoleListing/UserGroupRoleListing")
 );
+const RoleListingComp = lazy(() =>
+  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+);
 const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const AdminLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const LoginSessionsLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const PluginsLog = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const PluginStatusLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const UserSyncLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
 const UserForm = lazy(() =>
   import("Views/UserGroupRoleListing/users_details/AddUserView")
 );
@@ -232,7 +239,7 @@ export default class App extends Component {
                     <AuthRoute
                       exact
                       path="/users/roletab"
-                      component={UserListingComp}
+                      component={RoleListingComp}
                       {...defaultProps}
                     />
                     <AuthRoute
@@ -255,12 +262,6 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/bigData"
-                      component={AuditLayout}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
                       path="/kms/keys/:kmsManagePage/manage/:kmsServiceName"
                       component={EncryptionComp}
                       {...defaultProps}
@@ -275,6 +276,42 @@ export default class App extends Component {
                       exact
                       path="/permissions/:permissionId/edit"
                       component={EditPermissionComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/bigData"
+                      component={AuditLayout}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/admin"
+                      component={AdminLogs}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/loginSession"
+                      component={LoginSessionsLogs}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/agent"
+                      component={PluginsLog}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/pluginStatus"
+                      component={PluginStatusLogs}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/userSync"
+                      component={UserSyncLogs}
                       {...defaultProps}
                     />
                     <Redirect from="/" to="/policymanager/resource" />

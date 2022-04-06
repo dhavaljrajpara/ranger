@@ -1,12 +1,11 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge, Modal, Button } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const [showTableSyncDetails, setTableSyncdetails] = useState({
@@ -115,13 +114,12 @@ function User_Sync() {
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <>
       <XATableLayout
         data={userSyncListingData}
         columns={columns}
+        loading={loader}
         fetchData={fetchUserSyncInfo}
         pageCount={pageCount}
       />

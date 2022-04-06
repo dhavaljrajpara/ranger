@@ -29,7 +29,7 @@ import {
 function Groups() {
   let history = useHistory();
   const [groupListingData, setGroupData] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
@@ -310,9 +310,7 @@ function Groups() {
       showAssociateUserDetails: false
     });
   };
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <>
       <h4 className="wrap-header font-weight-bold">Group List</h4>
       <Row className="mb-4 text-right">
@@ -350,6 +348,7 @@ function Groups() {
           columns={columns}
           fetchData={fetchGroupInfo}
           pageCount={pageCount}
+          loading={loader}
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {
               position: "first",

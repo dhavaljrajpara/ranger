@@ -1,12 +1,11 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 import dateFormat from "dateformat";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
 
@@ -155,13 +154,12 @@ function Access() {
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <XATableLayout
       data={accessListingData}
       columns={columns}
       fetchData={fetchAccessLogsInfo}
+      loading={loader}
       pageCount={pageCount}
     />
   );

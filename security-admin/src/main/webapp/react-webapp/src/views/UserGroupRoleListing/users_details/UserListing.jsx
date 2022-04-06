@@ -35,8 +35,8 @@ import { getUserAccessRoleList } from "Utils/XAUtils";
 
 function Users() {
   let history = useHistory();
+  const [loader, setLoader] = useState(true);
   const [userListingData, setUserData] = useState([]);
-  const [loader, setLoader] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
@@ -332,9 +332,7 @@ function Users() {
   const handleConfirmClick = () => {
     handleDeleteClick();
   };
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <>
       <h4 className="wrap-header font-weight-bold">User List</h4>
       <Row className="mb-4 text-right">
@@ -372,6 +370,7 @@ function Users() {
           columns={columns}
           fetchData={fetchUserInfo}
           pageCount={pageCount}
+          loading={loader}
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {
               position: "first",

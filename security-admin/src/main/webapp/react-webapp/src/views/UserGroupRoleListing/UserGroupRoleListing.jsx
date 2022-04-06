@@ -5,15 +5,15 @@ import Groups from "./groups_details/GroupListing";
 import Roles from "./role_details/RoleListing";
 
 class UserGroupRoleListing extends Component {
-  state = {
-    activeKey: "usertab"
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeKey: this.activeTab()
+    };
+  }
   tabChange = (tabName) => {
     this.props.history.replace({
       pathname: `/users/${tabName}`
-    });
-    this.setState({
-      activeKey: tabName
     });
   };
   activeTab = () => {
@@ -35,20 +35,19 @@ class UserGroupRoleListing extends Component {
         <h4 className="wrap-header bold">Users/Groups/Roles</h4>
         <div className="wrap">
           <Tabs
-            // defaultActiveKey="userTab"
             id="userGroupRoleListing"
             className="mb-3"
-            activeKey={this.activeTab()}
-            onSelect={(k) => this.tabChange(k)}
+            activeKey={this.state.activeKey}
+            onSelect={(tabKey) => this.tabChange(tabKey)}
           >
             <Tab eventKey="usertab" title="Users">
-              <Users />
+              {this.state.activeKey == "usertab" && <Users />}
             </Tab>
             <Tab eventKey="grouptab" title="Groups">
-              <Groups />
+              {this.state.activeKey == "grouptab" && <Groups />}
             </Tab>
             <Tab eventKey="roletab" title="Roles">
-              <Roles />
+              {this.state.activeKey == "roletab" && <Roles />}
             </Tab>
           </Tabs>
         </div>

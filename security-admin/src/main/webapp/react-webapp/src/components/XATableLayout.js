@@ -155,8 +155,8 @@ function XATableLayout({
                           return (
                             <td {...cell.getCellProps()}>
                               {
+                                cell.render("Cell")
                                 // Render the cell contents
-                                loading ? <Loader /> : cell.render("Cell")
                               }
                             </td>
                           );
@@ -166,6 +166,21 @@ function XATableLayout({
                   );
                 })
               }
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length + 1}>
+                    <center>
+                      {loading ? (
+                        <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                      ) : (
+                        <span className="text-muted" data-cy="tbleDataMsg">
+                          "No data to show!!"
+                        </span>
+                      )}
+                    </center>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </div>

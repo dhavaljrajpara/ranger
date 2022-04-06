@@ -1,11 +1,10 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 
 function Plugins() {
   const [pluginsListingData, setPluginsLogs] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
 
@@ -74,12 +73,11 @@ function Plugins() {
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <XATableLayout
       data={pluginsListingData}
       columns={columns}
+      loading={loader}
       fetchData={fetchPluginsInfo}
       pageCount={pageCount}
     />

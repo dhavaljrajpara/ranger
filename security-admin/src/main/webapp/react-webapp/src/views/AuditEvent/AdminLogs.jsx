@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import { ClassTypes, enumValueToLabel } from "../../utils/XAEnums";
 import dateFormat from "dateformat";
@@ -12,8 +11,7 @@ function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
 
   const [sessionId, setSessionId] = useState([]);
-  // const [authSession, setAuthSession] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = useState(0);
   const [showmodal, setShowModal] = useState(false);
   const [showrowmodal, setShowRowModal] = useState(false);
@@ -244,9 +242,7 @@ function Admin() {
     []
   );
 
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <div>
       <div>
         <XATableLayout
@@ -268,6 +264,7 @@ function Admin() {
         <OperationAdminModal
           show={showrowmodal}
           data={rowdata}
+          loading={loader}
           onHide={handleClosed}
         ></OperationAdminModal>
       }

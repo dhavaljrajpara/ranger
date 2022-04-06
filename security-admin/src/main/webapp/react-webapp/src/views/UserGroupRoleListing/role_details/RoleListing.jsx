@@ -17,7 +17,7 @@ import {
 function Roles() {
   let history = useHistory();
   const [roleListingData, setRoleData] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
@@ -179,9 +179,7 @@ function Roles() {
   const addRole = () => {
     history.push("/roleCreate");
   };
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <div>
       <h4 className="wrap-header font-weight-bold">Role List</h4>
       <Row className="mb-4">
@@ -209,6 +207,7 @@ function Roles() {
           columns={columns}
           fetchData={fetchRoleInfo}
           pageCount={pageCount}
+          loading={loader}
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {
               position: "first",

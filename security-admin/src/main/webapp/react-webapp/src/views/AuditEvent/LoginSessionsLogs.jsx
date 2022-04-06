@@ -1,15 +1,15 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 import { AuthStatus } from "../../utils/XAEnums";
 import { AuthType } from "../../utils/XAEnums";
 import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
+import { truncate } from "lodash";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [sessionId, setSessionId] = useState([]);
   const [showmodal, setShowModal] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
@@ -156,14 +156,13 @@ function Login_Sessions() {
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <div>
       <XATableLayout
         data={loginSessionListingData}
         columns={columns}
         fetchData={fetchLoginSessionLogsInfo}
+        loading={loader}
         pageCount={pageCount}
       />
       <AdminModal
