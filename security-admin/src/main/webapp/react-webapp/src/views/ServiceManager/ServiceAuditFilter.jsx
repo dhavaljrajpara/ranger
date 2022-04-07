@@ -1,46 +1,110 @@
-import React, { useEffect, useReducer, useState } from "react";
-import Modal from "react-bootstrap/Modal";
-import { Form, Field } from "react-final-form";
-import { FieldError } from "Components/CommonComponents";
+import React, { useState } from "react";
+import { Button, Table } from "react-bootstrap";
+import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
-import { Table, Button } from "react-bootstrap";
-import { Col } from "react-bootstrap";
-import ResourceComp from "../Resources/ResourceComp";
-import Editable from "Components/Editable";
+import Select from "react-select";
 import AsyncSelect from "react-select/async";
+import CreatableSelect from "react-select/creatable";
+import Editable from "Components/Editable";
 import ModalResourceComp from "../Resources/ModalResourceComp";
+import { uniq, map, join, isEmpty } from "lodash";
 
 export default function ServiceAuditFilter(props) {
   const {
     serviceDetails,
-    serviceCompDetails,
+    serviceDefDetails,
     fetchUsersData,
     fetchGroupsData,
     fetchRolesData,
     addAuditFilter,
-    formValue
+    formValues
   } = props;
+
   const [modelState, setModalstate] = useState({
     showModalResource: false,
-    data: {}
+    resourceInput: null,
+    data: {},
+    index: 0
   });
+
   const handleClose = () =>
     setModalstate({
       showModalResource: false,
-      data: {}
+      resourceInput: null,
+      data: {},
+      index: 0
     });
+
+  const renderResourcesModal = (input) => {
+    setModalstate({
+      showModalResource: true,
+      resourceInput: input,
+      data: {},
+      index: -1
+    });
+  };
+
+  const handleSave = () => {
+    if (modelState.index === -1) {
+      let add;
+      add = modelState.data;
+      modelState.resourceInput.onChange(add);
+      handleClose();
+    } else {
+      let edit = modelState.resourceInput.value;
+      edit = modelState.data;
+      modelState.resourceInput.onChange(edit);
+      handleClose();
+    }
+  };
+
+  const getResourceData = (resourceData) => {
+    let dataStructure = [];
+
+    let level = uniq(map(serviceDefDetails.resources, "level"));
+
+    dataStructure = level.map((l, index) => {
+      if (
+        resourceData[`resourceName-${l}`] !== undefined &&
+        resourceData[`value-${l}`] !== undefined
+      ) {
+        return (
+          <div className="clearfix text-left" key={index}>
+            <p className="pull-left">
+              <span className="bold mr-1">
+                {resourceData[`resourceName-${l}`].name}
+              </span>
+              :
+              <span className="ml-1">
+                {join(map(resourceData[`value-${l}`], "value"), ", ")}
+              </span>
+            </p>
+            <p className="pull-right"></p>
+          </div>
+        );
+      }
+    });
+
+    return dataStructure;
+  };
+
+  const getResourceIcon = (resourceData) => {
+    let iconClass = !isEmpty(resourceData)
+      ? "fa fa-fw fa-pencil"
+      : "fa fa-fw fa-plus";
+
+    return iconClass;
+  };
+
   const getAccessTypeOptions = () => {
     let srcOp = [];
-    console.log(this);
-    srcOp = serviceCompDetails.accessTypes;
+    srcOp = serviceDefDetails.accessTypes;
     return srcOp.map(({ label, name: value }) => ({
       label,
       value
     }));
   };
-  const SelectField = ({ input, ...rest }) => (
-    <Select {...input} {...rest} searchable />
-  );
+
   const permList = [
     "Is Audited",
     "Access Result",
@@ -51,24 +115,26 @@ export default function ServiceAuditFilter(props) {
     "Groups",
     "Roles"
   ];
+
   const tableHeader = () => {
     return permList.map((data) => {
       return <th key={data}>{data}</th>;
     });
   };
-  const renderResourcesModal = (input) => {
-    setModalstate({
-      showModalResource: true,
-      resourceInput: input
-    });
-  };
+
   return (
     <React.Fragment>
-      <Table bordered size="sm" className="no-bg-color mt-3">
+      <Table bordered size="sm" className="mt-3 table-audit-filter text-center">
         <thead>
           <tr>{tableHeader()}</tr>
         </thead>
         <tbody>
+          {formValues.auditFilters !== undefined &&
+            formValues.auditFilters.length === 0 && (
+              <tr className="text-center">
+                <td colSpan={permList.length}>No Audit Filter Data Found !!</td>
+              </tr>
+            )}
           <FieldArray name="auditFilters">
             {({ fields }) =>
               fields.map((name, index) => (
@@ -76,7 +142,7 @@ export default function ServiceAuditFilter(props) {
                   {permList.map((colName) => {
                     if (colName == "Is Audited") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.isAudited`}>
                           <Field
                             className="form-control"
                             name={`${name}.isAudited`}
@@ -90,50 +156,58 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Access Result") {
                       return (
-                        <td key={colName}>
+                        <td key={colName} style={{ width: 200 }}>
                           <Field
                             className="form-control"
                             name={`${name}.accessResult`}
-                            component="select"
                           >
-                            <option />
-                            <option value="DENIED">DENIED</option>
-                            <option value="ALLOWED">ALLOWED</option>
-                            <option value="NOT_DETERMINED">
-                              NOT_DETERMINED
-                            </option>
+                            {({ input, meta }) => (
+                              <Select
+                                {...input}
+                                isClearable={false}
+                                options={[
+                                  { value: "DENIED", label: "DENIED" },
+                                  { value: "ALLOWED", label: "ALLOWED" },
+                                  {
+                                    value: "NOT_DETERMINED",
+                                    label: "NOT_DETERMINED"
+                                  }
+                                ]}
+                                menuPlacement="auto"
+                                placeholder="Select Value"
+                              />
+                            )}
                           </Field>
                         </td>
                       );
                     }
                     if (colName == "Resources") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.resources`} style={{ width: 170 }}>
                           <Field
                             name={`${name}.resources`}
-                            render={(input) => (
-                              <div>
+                            render={({ input }) => (
+                              <React.Fragment>
                                 <div className="resource-list min-width-150">
-                                  <div className="js-formInput">
-                                    <div className="resourceGrp text-center">
-                                      {input.value}
-                                    </div>
+                                  <div className="resource-group text-center">
+                                    {getResourceData(input.value)}
                                   </div>
+
                                   <Button
-                                    variant="outline-secondary"
+                                    className="mr-1"
+                                    variant="primary"
                                     size="sm"
                                     onClick={() => renderResourcesModal(input)}
                                   >
-                                    <i className="fa-fw fa fa-plus"></i>
+                                    <i
+                                      className={getResourceIcon(input.value)}
+                                    ></i>
                                   </Button>
-                                  <a
-                                    className="btn btn-danger btn-sm"
-                                    data-action="deleteResources"
-                                  >
+                                  <a className="btn btn-danger btn-sm">
                                     <i className="fa-fw fa fa-remove"></i>
                                   </a>
                                 </div>
-                              </div>
+                              </React.Fragment>
                             )}
                           />
                         </td>
@@ -141,18 +215,30 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Operations") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.actions`} style={{ width: 180 }}>
                           <Field
-                            name={`${name}.actions`}
-                            component="input"
                             className="form-control"
-                          />
+                            name={`${name}.actions`}
+                          >
+                            {({ input, meta }) => (
+                              <CreatableSelect
+                                {...input}
+                                components={{
+                                  DropdownIndicator: () => null
+                                }}
+                                menuIsOpen={false}
+                                isClearable={false}
+                                isMulti
+                                placeholder="Type Action Name"
+                              />
+                            )}
+                          </Field>
                         </td>
                       );
                     }
                     if (colName == "Permissions") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.accessTypes`} style={{ width: 120 }}>
                           <Field
                             className="form-control"
                             name={`${name}.accessTypes`}
@@ -174,7 +260,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Roles") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.roles`} style={{ width: 200 }}>
                           <Field
                             className="form-control"
                             name={`${name}.roles`}
@@ -182,7 +268,12 @@ export default function ServiceAuditFilter(props) {
                               <div>
                                 <AsyncSelect
                                   {...input}
+                                  components={{
+                                    IndicatorSeparator: () => null
+                                  }}
                                   loadOptions={fetchRolesData}
+                                  isClearable={false}
+                                  menuPlacement="auto"
                                   defaultOptions
                                   cacheOptions
                                   isMulti
@@ -195,7 +286,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Groups") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.groups`} style={{ width: 200 }}>
                           <Field
                             className="form-control"
                             name={`${name}.groups`}
@@ -203,7 +294,12 @@ export default function ServiceAuditFilter(props) {
                               <div>
                                 <AsyncSelect
                                   {...input}
+                                  components={{
+                                    IndicatorSeparator: () => null
+                                  }}
                                   loadOptions={fetchGroupsData}
+                                  isClearable={false}
+                                  menuPlacement="auto"
                                   defaultOptions
                                   cacheOptions
                                   isMulti
@@ -216,7 +312,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Users") {
                       return (
-                        <td key={colName}>
+                        <td key={`${name}.users`} style={{ width: 200 }}>
                           <Field
                             className="form-control"
                             name={`${name}.users`}
@@ -224,7 +320,12 @@ export default function ServiceAuditFilter(props) {
                               <div>
                                 <AsyncSelect
                                   {...input}
+                                  components={{
+                                    IndicatorSeparator: () => null
+                                  }}
                                   loadOptions={fetchUsersData}
+                                  isClearable={false}
+                                  menuPlacement="auto"
                                   defaultOptions
                                   cacheOptions
                                   isMulti
@@ -238,7 +339,7 @@ export default function ServiceAuditFilter(props) {
 
                     return <td key={colName}>{colName}</td>;
                   })}
-                  <td>
+                  <td key={`${index}.remove`}>
                     <Button
                       variant="danger"
                       size="sm"
@@ -266,12 +367,13 @@ export default function ServiceAuditFilter(props) {
 
       <ModalResourceComp
         serviceDetails={serviceDetails}
-        serviceCompDetails={serviceCompDetails}
+        serviceCompDetails={serviceDefDetails}
         cancelButtonText="Cancel"
         actionButtonText="Submit"
-        formValues={formValue}
+        handleSave={handleSave}
         modelState={modelState}
         handleClose={handleClose}
+        policyItem={false}
       />
     </React.Fragment>
   );

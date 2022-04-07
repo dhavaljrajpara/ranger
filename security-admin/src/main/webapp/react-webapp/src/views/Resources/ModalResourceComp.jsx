@@ -1,7 +1,6 @@
 import React, { useEffect, useReducer, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import { Form, Field } from "react-final-form";
-import { FieldError } from "Components/CommonComponents";
 import { Button } from "react-bootstrap";
 import ResourceComp from "./ResourceComp";
 
@@ -11,7 +10,7 @@ export default function ModalResourceComp(props) {
     serviceCompDetails,
     modelState,
     handleClose,
-    handleSave,
+    handleSave
   } = props;
 
   const saveResourceVal = (values) => {
@@ -56,11 +55,7 @@ export default function ModalResourceComp(props) {
                 </Field>
               </Modal.Body>
               <Modal.Footer>
-                <Button
-                  variant="secondary"
-                  // disabled={submitting || pristine}
-                  onClick={handleClose}
-                >
+                <Button variant="secondary" onClick={handleClose}>
                   Close
                 </Button>
 

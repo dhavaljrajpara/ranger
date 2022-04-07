@@ -595,7 +595,7 @@ header {
 }
 
 /* Security Zone Service Table Resorces */
-.resourceGrp {
+.resource-group {
   display: block;
   padding: 5px;
   background-color: #f4f4f4;
@@ -703,4 +703,23 @@ header {
 
 .disabled-link {
   pointer-events: none;
+}
+
+/* Audit Filters */
+
+.table-audit-filter thead {
+  background-color: #eeeeee;
+}
+
+.table-audit-filter th {
+  padding: 7px 5px;
+  text-align: center;
+}
+
+.table-audit-filter td:first-child {
+  width: 100px;
+}
+
+.table-audit-filter td:last-child {
+  width: 40px;
 }

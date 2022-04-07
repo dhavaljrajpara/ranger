@@ -8,40 +8,24 @@ import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
-import { fetchApi, fetchCSRFConf } from "Utils/fetchAPI";
-import Editable from "Components/Editable";
-import ModalResourceComp from "../Resources/ModalResourceComp";
+import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
-import { difference, keys, map, find } from "lodash";
+import { difference, keys, map, find, reject } from "lodash";
 
 class ServiceForm extends Component {
   constructor(props) {
     super(props);
+    this.configsJson = {};
     this.state = {
-      showDelete: false,
-      showModalResource: false,
       serviceDef: {},
       service: {},
       tagService: [],
-      createInitialValues: {
-        isEnabled: "true",
-        configs: {
-          hadoop_security_authorization: "true",
-          hadoop_security_authentication: "simple",
-          hadoop_rpc_protection: "authentication",
-          hbase_security_authentication: "simple",
-          nifi_authentication: "NONE",
-          nifi_ssl_use_default_context: "true",
-          nifi_registry_authentication: "NONE",
-          nifi_registry_ssl_use_default_context: "true",
-          schema_registry_authentication: "KERBEROS"
-        },
-        customConfigs: [undefined]
-      },
       editInitialValues: {},
       usersDataRef: null,
-      grpDataRef: null,
-      rolesDataRef: null
+      groupsDataRef: null,
+      rolesDataRef: null,
+      showDelete: false,
+      loader: true
     };
   }
 
@@ -56,9 +40,9 @@ class ServiceForm extends Component {
   componentDidMount() {
     this.fetchServiceDef();
     this.fetchTagService();
-    this.loadUsers();
-    this.loadGroups();
-    this.loadRoles();
+    this.fetchUsers();
+    this.fetchGroups();
+    this.fetchRoles();
   }
 
   onSubmit = async (values) => {
@@ -93,8 +77,8 @@ class ServiceForm extends Component {
 
     serviceJson["configs"] = {};
     for (const x in values.configs) {
-      for (const y in this.configJson) {
-        if (x === this.configJson[y]) {
+      for (const y in this.configsJson) {
+        if (x === this.configsJson[y]) {
           serviceJson["configs"][y] = values.configs[x];
         }
       }
@@ -120,11 +104,8 @@ class ServiceForm extends Component {
           : "/policymanager/resource"
       );
     } catch (error) {
-      if (
-        error.response !== undefined &&
-        _.has(error.response, "data.msgDesc")
-      ) {
-        toast.error(error.response.data.msgDesc);
+      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
+        toast.error(apiError + " : " + error.response.data.msgDesc);
         this.props.history.push(
           this.state.serviceDef.name === "tag"
             ? "/policymanager/tag"
@@ -135,8 +116,25 @@ class ServiceForm extends Component {
   };
 
   fetchServiceDef = async () => {
+    const serviceJson = {
+      isEnabled: "true",
+      configs: {
+        hadoop_security_authorization: "true",
+        hadoop_security_authentication: "simple",
+        hadoop_rpc_protection: "authentication",
+        hbase_security_authentication: "simple",
+        nifi_authentication: "NONE",
+        nifi_ssl_use_default_context: "true",
+        nifi_registry_authentication: "NONE",
+        nifi_registry_ssl_use_default_context: "true",
+        schema_registry_authentication: "KERBEROS"
+      },
+      customConfigs: [undefined],
+      auditFilters: []
+    };
     let serviceDefResp;
     let serviceDefId = this.props.match.params.serviceDefId;
+
     try {
       serviceDefResp = await fetchApi({
         url: `plugins/definitions/${serviceDefId}`
@@ -146,24 +144,119 @@ class ServiceForm extends Component {
         `Error occurred while fetching Service Definition or CSRF headers! ${error}`
       );
     }
-    this.setState({
-      serviceDef: serviceDefResp.data
-    });
-    console.log(
-      "PRINT initial values from state",
-      this.state.createInitialValues
-    );
-    let getAuditFilters = _.find(this.state.serviceDef.configs, {
+
+    let getAuditFilters = find(serviceDefResp.data.configs, {
       name: "ranger.plugin.audit.filters"
     });
 
-    if (getAuditFilters && getAuditFilters !== undefined) {
+    console.log(
+      "PRINT getAuditFilters from response during create : ",
+      getAuditFilters
+    );
+
+    if (
+      getAuditFilters &&
+      getAuditFilters !== undefined &&
+      this.props.match.params.serviceId === undefined
+    ) {
       getAuditFilters = JSON.parse(
         getAuditFilters.defaultValue.replace(/'/g, '"')
       );
+      console.log(
+        "PRINT getAuditFilters after parsing during create : ",
+        getAuditFilters
+      );
+      serviceJson["isAuditFilter"] = ["true"];
+      serviceJson["auditFilters"] = [];
+
+      console.log("PRINT serviceDefResp during create : ", serviceDefResp.data);
+
+      getAuditFilters.map((item) => {
+        let obj = {};
+        Object.entries(item).map(([key, value]) => {
+          if (key === "isAudited") {
+            obj.isAudited = JSON.stringify(value);
+          }
+
+          if (key === "accessResult") {
+            obj.accessResult = { value: value, label: value };
+          }
+
+          if (key === "resources") {
+            obj.resources = {};
+
+            let resourceKey = keys(item.resources);
+            resourceKey.map((rk) => {
+              let resourceObj = find(serviceDefResp.data.resources, [
+                "name",
+                rk
+              ]);
+              let resourceLevel = resourceObj.level;
+              return (obj.resources[`resourceName-${resourceLevel}`] =
+                resourceObj);
+            });
+
+            resourceKey.map((rk) => {
+              let resourceObj = find(serviceDefResp.data.resources, [
+                "name",
+                rk
+              ]);
+              let resourceLevel = resourceObj.level;
+              let resourceValue = item.resources[rk].values;
+              return (obj.resources[`value-${resourceLevel}`] =
+                resourceValue.map((rv) => {
+                  return { value: rv, label: rv };
+                }));
+            });
+          }
+
+          if (key === "actions") {
+            obj.actions = value.map((a) => {
+              return { value: a, label: a };
+            });
+          }
+
+          if (key === "accessTypes") {
+            obj.accessTypes = value.map((a) => {
+              return { value: a, label: a };
+            });
+          }
+
+          if (key === "users") {
+            obj.users = value.map((u) => {
+              return { value: u, label: u };
+            });
+          }
+
+          if (key === "groups") {
+            obj.users = value.map((g) => {
+              return { value: g, label: g };
+            });
+          }
+
+          if (key === "roles") {
+            obj.users = value.map((r) => {
+              return { value: r, label: r };
+            });
+          }
+        });
+
+        serviceJson["auditFilters"].push(obj);
+      });
+
+      console.log("PRINT final serviceJson during create : ", serviceJson);
     }
 
+    this.setState({
+      serviceDef: serviceDefResp.data,
+      createInitialValues: serviceJson,
+      loader: false
+    });
+
     if (this.props.match.params.serviceId !== undefined) {
+      this.setState({
+        loader: true
+      });
       this.fetchService();
     }
   };
@@ -181,10 +274,6 @@ class ServiceForm extends Component {
       );
     }
 
-    this.setState({
-      service: serviceResp.data
-    });
-
     const serviceJson = {};
     serviceJson["name"] = serviceResp.data.name;
     serviceJson["displayName"] = serviceResp.data.displayName;
@@ -201,8 +290,8 @@ class ServiceForm extends Component {
 
     serviceJson["configs"] = {};
 
-    let configs = _.map(this.state.serviceDef.configs, "name");
-    let customConfigs = _.difference(_.keys(serviceResp.data.configs), configs);
+    let configs = map(this.state.serviceDef.configs, "name");
+    let customConfigs = difference(keys(serviceResp.data.configs), configs);
 
     configs.map((c) => {
       serviceJson["configs"][c.replaceAll(".", "_").replaceAll("-", "_")] =
@@ -216,8 +305,107 @@ class ServiceForm extends Component {
     serviceJson["customConfigs"] =
       editCustomConfigs.length == 0 ? [undefined] : editCustomConfigs;
 
+    let getEditAuditFilters =
+      serviceResp.data.configs["ranger.plugin.audit.filters"];
+
+    if (
+      getEditAuditFilters &&
+      getEditAuditFilters !== undefined &&
+      this.props.match.params.serviceId !== undefined
+    ) {
+      getEditAuditFilters = JSON.parse(getEditAuditFilters.replace(/'/g, '"'));
+      console.log(
+        "PRINT getEditAuditFilters after parsing during edit : ",
+        getEditAuditFilters
+      );
+      serviceJson["isAuditFilter"] = ["true"];
+      serviceJson["auditFilters"] = [];
+
+      console.log(
+        "PRINT serviceDef from state during edit : ",
+        this.state.serviceDef
+      );
+
+      getEditAuditFilters.map((item) => {
+        let obj = {};
+        Object.entries(item).map(([key, value]) => {
+          if (key === "isAudited") {
+            obj.isAudited = JSON.stringify(value);
+          }
+
+          if (key === "accessResult") {
+            obj.accessResult = { value: value, label: value };
+          }
+
+          if (key === "resources") {
+            obj.resources = {};
+
+            let resourceKey = keys(item.resources);
+            resourceKey.map((rk) => {
+              let resourceObj = find(this.state.serviceDef.resources, [
+                "name",
+                rk
+              ]);
+              let resourceLevel = resourceObj.level;
+              return (obj.resources[`resourceName-${resourceLevel}`] =
+                resourceObj);
+            });
+
+            resourceKey.map((rk) => {
+              let resourceObj = find(this.state.serviceDef.resources, [
+                "name",
+                rk
+              ]);
+              let resourceLevel = resourceObj.level;
+              let resourceValue = item.resources[rk].values;
+              return (obj.resources[`value-${resourceLevel}`] =
+                resourceValue.map((rv) => {
+                  return { value: rv, label: rv };
+                }));
+            });
+          }
+
+          if (key === "actions") {
+            obj.actions = value.map((a) => {
+              return { value: a, label: a };
+            });
+          }
+
+          if (key === "accessTypes") {
+            obj.accessTypes = value.map((a) => {
+              return { value: a, label: a };
+            });
+          }
+
+          if (key === "users") {
+            obj.users = value.map((u) => {
+              return { value: u, label: u };
+            });
+          }
+
+          if (key === "groups") {
+            obj.users = value.map((g) => {
+              return { value: g, label: g };
+            });
+          }
+
+          if (key === "roles") {
+            obj.users = value.map((r) => {
+              return { value: r, label: r };
+            });
+          }
+        });
+
+        serviceJson["auditFilters"].push(obj);
+      });
+
+      console.log("PRINT final serviceJson during edit : ", serviceJson);
+    }
+
     this.setState({
-      editInitialValues: serviceJson
+      service: serviceResp.data,
+      editInitialValues: serviceJson,
+      loader: false
     });
   };
 
@@ -253,15 +441,14 @@ class ServiceForm extends Component {
     }
   };
 
-  serviceConfigs(serviceDef) {
+  serviceConfigs = (serviceDef) => {
     if (serviceDef.configs !== undefined) {
-      const finalConfigs = serviceDef.configs.filter(
-        (e) => e.name !== "ranger.plugin.audit.filters"
-      );
-      this.configJson = {};
       let formField = [];
-      finalConfigs.map((configParam) => {
-        this.configJson[configParam.name] = configParam.name
+      const filterServiceConfigs = reject(serviceDef.configs, {
+        name: "ranger.plugin.audit.filters"
+      });
+      filterServiceConfigs.map((configParam) => {
+        this.configsJson[configParam.name] = configParam.name
           .replaceAll(".", "_")
           .replaceAll("-", "_");
         switch (configParam.type) {
@@ -269,7 +456,7 @@ class ServiceForm extends Component {
           case "int":
             formField.push(
               <Field
-                name={"configs." + this.configJson[configParam.name]}
+                name={"configs." + this.configsJson[configParam.name]}
                 key={configParam.itemId}
                 validate={this.validateRequired(configParam.mandatory)}
               >
@@ -298,7 +485,7 @@ class ServiceForm extends Component {
             );
             formField.push(
               <Field
-                name={"configs." + this.configJson[configParam.name]}
+                name={"configs." + this.configsJson[configParam.name]}
                 key={configParam.itemId}
                 validate={this.validateRequired(configParam.mandatory)}
               >
@@ -326,7 +513,7 @@ class ServiceForm extends Component {
           case "bool":
             formField.push(
               <Field
-                name={"configs." + this.configJson[configParam.name]}
+                name={"configs." + this.configsJson[configParam.name]}
                 key={configParam.itemId}
                 validate={this.validateRequired(configParam.mandatory)}
               >
@@ -354,7 +541,7 @@ class ServiceForm extends Component {
           case "password":
             formField.push(
               <Field
-                name={"configs." + this.configJson[configParam.name]}
+                name={"configs." + this.configsJson[configParam.name]}
                 key={configParam.itemId}
                 validate={this.validateRequired(configParam.mandatory)}
               >
@@ -385,9 +572,9 @@ class ServiceForm extends Component {
       });
       return formField;
     }
-  }
+  };
 
-  enumOptions(paramEnum) {
+  enumOptions = (paramEnum) => {
     let optionField = [];
     paramEnum.elements.map((e) => {
       optionField.push(
@@ -397,9 +584,9 @@ class ServiceForm extends Component {
       );
     });
     return optionField;
-  }
+  };
 
-  booleanOptions(paramBool) {
+  booleanOptions = (paramBool) => {
     let optionField = [];
     let b = paramBool.split(":");
     b = [b[0].substr(0, b[0].length - 4), b[1].substr(0, b[1].length - 5)];
@@ -411,7 +598,7 @@ class ServiceForm extends Component {
       );
     });
     return optionField;
-  }
+  };
 
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
@@ -424,7 +611,7 @@ class ServiceForm extends Component {
     <AsyncSelect {...input} {...rest} cacheOptions isMulti />
   );
 
-  loadUsers = async (inputValue, callback) => {
+  fetchUsers = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
     if (this.state.usersDataRef === null || inputValue) {
@@ -446,20 +633,20 @@ class ServiceForm extends Component {
     }));
   };
 
-  loadGroups = async (inputValue, callback) => {
+  fetchGroups = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
-    if (this.state.grpDataRef === null || inputValue) {
+    if (this.state.groupsDataRef === null || inputValue) {
       const userResp = await fetchApi({
         url: "xusers/lookup/groups",
         params: params
       });
       op = userResp.data.vXStrings;
       if (!inputValue) {
-        this.state.grpDataRef = op;
+        this.state.groupsDataRef = op;
       }
     } else {
-      op = this.state.grpDataRef;
+      op = this.state.groupsDataRef;
     }
 
     return op.map((obj) => ({
@@ -468,7 +655,7 @@ class ServiceForm extends Component {
     }));
   };
 
-  loadRoles = async (inputValue, callback) => {
+  fetchRoles = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
     if (this.state.rolesDataRef === null || inputValue) {
@@ -490,12 +677,6 @@ class ServiceForm extends Component {
     }));
   };
 
-  renderResourcesModal = (val) => {
-    this.setState({
-      showModalResource: val
-    });
-  };
-
   render() {
     return (
       <div>
@@ -507,7 +688,7 @@ class ServiceForm extends Component {
             Service
           </h4>
         </div>
-        <div className="wrap policy-manager">
+        <div className="wrap">
           <div className="row">
             <div className="col-sm-12">
               <Form
@@ -524,7 +705,6 @@ class ServiceForm extends Component {
                   handleSubmit,
                   form,
                   submitting,
-                  pristine,
                   values,
                   form: {
                     mutators: { push: addItem, pop: removeItem }
@@ -707,25 +887,34 @@ class ServiceForm extends Component {
                             </Button>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-sm-12">
+                        <div className="form-group row form-header p-0">
+                          <label className="col-sm-2 col-form-label form-check-label">
+                            Audit Filter :
+                          </label>
+                          <div className="col-sm-10 mt-2">
+                            <Field
+                              name="isAuditFilter"
+                              component="input"
+                              type="checkbox"
+                              className="form-check-input"
+                              value="true"
+                            />
+                          </div>
+                        </div>
                         <div className="row">
                           <div className="col-sm-12">
-                            <div className="form-header">
-                              Audit Filter :
-                              <div className="form-check form-check-inline align-middle ml-1">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                />
-                              </div>
-                            </div>
                             <ServiceAuditFilter
                               serviceDetails={this.state.service}
-                              serviceCompDetails={this.state.serviceDef}
-                              fetchUsersData={this.loadUsers}
-                              fetchGroupsData={this.loadGroups}
-                              fetchRolesData={this.loadRoles}
+                              serviceDefDetails={this.state.serviceDef}
+                              fetchUsersData={this.fetchUsers}
+                              fetchGroupsData={this.fetchGroups}
+                              fetchRolesData={this.fetchRoles}
                               addAuditFilter={addItem}
-                              formValue={values}
+                              formValues={values}
                             />
                           </div>
                         </div>
@@ -738,6 +927,7 @@ class ServiceForm extends Component {
                         </div>
                       </div>
                     </div>
+
                     <div className="row form-actions">
                       <div className="col-md-9 offset-md-3">
                         <Button
