@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import rangerLogo from "Images/ranger_logo.png";
-import { Link } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { isKeyAdmin } from "Utils/XAUtils";
 class Header extends Component {
@@ -59,75 +58,102 @@ class Header extends Component {
         className="ranger-navbar"
         collapseOnSelect
       >
-        <Link to="/policymanager/resource" className="navbar-brand logo">
+        <Navbar.Brand
+          href="#/policymanager/resource"
+          className="navbar-brand logo"
+        >
           <img src={rangerLogo} alt="Ranger logo" />
-        </Link>
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mr-auto">
             <NavDropdown title={accessManager}>
-              <Link
-                to="/policymanager/resource"
+              <NavDropdown.Item
+                href="#/policymanager/resource"
                 className="dropdown-item"
                 replace
               >
                 <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
                 Policies
-              </Link>
-              <Link to="/policymanager/tag" className="dropdown-item" replace>
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                href="#/policymanager/tag"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based Policies
-              </Link>
-              <Link to="/reports" className="dropdown-item" replace>
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                href="#/reports"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
-              </Link>
+              </NavDropdown.Item>
             </NavDropdown>
-            <Link to="/reports/audit/bigData" className="nav-link" replace>
+            <Nav.Link
+              href="#/reports/audit/bigData"
+              className="nav-link"
+              replace
+            >
               <i className="fa fa-fw fa-file-o"></i>
               {` Audit `}
-            </Link>
+            </Nav.Link>
             {!isKeyAdmin() && (
-              <Link to="/zones/zone/list" className="nav-link" replace>
+              <Nav.Link href="#/zones/zone/list" className="nav-link" replace>
                 <span className="zone-icon fa-stack fa-lg">
                   <i className="fa fa-square-o fa-stack-2x"></i>
                   <i className="fa fa-bolt fa-stack-1x"></i>
                 </span>
                 {` Security Zone `}
-              </Link>
+              </Nav.Link>
             )}
 
             {isKeyAdmin() && (
               <NavDropdown title={encryption}>
-                <Link
-                  to="/kms/keys/new/manage/service"
+                <NavDropdown.Item
+                  href="#/kms/keys/new/manage/service"
                   className="dropdown-item"
                   replace
                 >
                   <i class="fa fa-fw fa-key m-r-xs"></i> Key Manager
-                </Link>
+                </NavDropdown.Item>
               </NavDropdown>
             )}
             <NavDropdown title={settings}>
-              <Link to="/users/usertab" className="dropdown-item" replace>
+              <NavDropdown.Item
+                href="#/users/usertab"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa-fw fa fa-group m-r-xs"></i> Users/Groups/Roles
-              </Link>
-              <Link to="/permissions" className="dropdown-item" replace>
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                href="#/permissions"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa-fw fa fa-file-o m-r-xs"></i> Permissions
-              </Link>
+              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
           <Nav>
             <NavDropdown title={loginId} id="user-dropdown" alignRight>
-              <Link to="/userprofile" className="dropdown-item" replace>
+              <NavDropdown.Item
+                href="#/userprofile"
+                className="dropdown-item"
+                replace
+              >
                 <i className="fa fa-user"></i> Profile
-              </Link>
-              <Link
-                to="/logout"
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                href="#/logout"
                 onClick={this.handleLogout}
                 className="dropdown-item"
                 replace
               >
                 <i className="fa fa-power-off"></i> Logout
-              </Link>
+              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
