@@ -28,7 +28,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
     setLoader(true);
     try {
       const authResp = await fetchApi({
-        url: `assets/report/${transactionId}`,
+        url: `assets/report/${transactionId}`
       });
       let authlogs = authResp.data.vXTrxLogs;
       setShowview(objectId);
@@ -47,7 +47,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
         <Modal.Title>Operation :{action || ""}</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body>
+      <Modal.Body className="overflow-auto p-3 mb-3 mb-md-0 mr-md-3">
         <div>
           {/* SERVICE */}
 
