@@ -329,7 +329,10 @@ class ZoneDisplay extends Component {
                                 >
                                   {this.props.zone.services[key].resources.map(
                                     (resource, index) => (
-                                      <div className="resourceGrp" key={index}>
+                                      <div
+                                        className="resource-group"
+                                        key={index}
+                                      >
                                         {Object.keys(resource).map(
                                           (resourceKey, index) => (
                                             <p key={index}>

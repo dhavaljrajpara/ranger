@@ -2,7 +2,7 @@ import React from "react";
 import { Table, Badge } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
-import { isEmpty, isUndefined } from "lodash";
+import { create, isEmpty, isUndefined, uniqBy } from "lodash";
 
 export const PolicyLogs = ({ data, reportdata }) => {
   const {
@@ -15,29 +15,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
     objectId
   } = data;
 
-  const policydelete = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Items";
-  });
-  const policyConditionCreate = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Conditions" && obj.action == "create";
-  });
-  const policyConditionCreatenew = policyConditionCreate.map(
-    (obj) => obj.newValue
-  );
-
-  const policycondition = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Conditions" && obj.action == "update";
-  });
-  const policyConditionnewVal = policycondition.map(
-    (obj) => obj.previousValue && obj.action == "update"
-  );
-  const policyConditionoldVal = policycondition.map(
-    (obj) => obj.newValue && obj.action == "update"
-  );
-  const importdeleteresources = reportdata.filter((c) => {
-    return c.attributeName == "Policy Resources" && c.action == "Import Delete";
-  });
-  const policydetails = reportdata.filter((c) => {
+  /* CREATE LOGS VARIABLES */
+  const createPolicyDetails = reportdata.filter((c) => {
     return (
       c.action == "create" &&
       c.attributeName != "Policy Resources" &&
@@ -51,9 +30,13 @@ export const PolicyLogs = ({ data, reportdata }) => {
       c.attributeName != "Validity Schedules"
     );
   });
-  const policyresources = reportdata.filter((c) => {
+
+  const createPolicyResources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "create";
   });
+  const createPolicyItems = reportdata.filter(
+    (obj) => obj.attributeName == "Policy Items" && obj.action == "create"
+  );
   const policyDetails = (details, resources) => {
     let tablerow = [];
 
@@ -95,8 +78,48 @@ export const PolicyLogs = ({ data, reportdata }) => {
     });
     return tablerow;
   };
+  const createValidity = reportdata.filter(
+    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "create"
+  );
+  const createValidityNew = createValidity.map((obj) =>
+    obj.newValue != "" ? JSON.parse(obj.newValue) : []
+  );
+  const createCondition = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Conditions" && obj.action == "create";
+  });
+  const createConditionNew = createCondition.map((obj) => obj.newValue);
+  const createRowMask = reportdata.filter(
+    (obj) =>
+      obj.attributeName == "Row level filter Policy Items" &&
+      obj.action == "create"
+  );
+  const createRowMaskNew = createRowMask.map((newval) => newval.newValue);
 
-  const policydetailsUpdate = reportdata.filter((c) => {
+  const createException = reportdata.filter(
+    (obj) => obj.attributeName == "Allow Exceptions" && obj.action == "create"
+  );
+  const createExceptionNew = createException.map((newval) => newval.newValue);
+  const createDenyPolicy = reportdata.filter(
+    (obj) => obj.attributeName == "DenyPolicy Items" && obj.action == "create"
+  );
+  const createDenyPolicyNew = createDenyPolicy.map((newval) => newval.newValue);
+
+  const cerateDenyException = reportdata.filter(
+    (obj) => obj.attributeName == "Deny Exceptions" && obj.action == "create"
+  );
+  const createDenyExceptionNew = cerateDenyException.map(
+    (newval) => newval.newValue
+  );
+  const createMaskPolicy = reportdata.filter(
+    (obj) => obj.attributeName == "Masked Policy Items"
+  );
+  const createMaskPolicyNew = createMaskPolicy.map((newval) => newval.newValue);
+
+  /* CREATE END */
+
+  /* UPDATE LOGS VARIABLES */
+
+  const updatePolicyDetails = reportdata.filter((c) => {
     return (
       c.action == "update" &&
       c.attributeName != "Policy Resources" &&
@@ -105,17 +128,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       c.attributeName != "DenyPolicy Items" &&
       c.attributeName != "Allow Exceptions" &&
       c.attributeName != "Deny Exceptions" &&
-      c.attributeName != "Deny Exception" &&
       c.attributeName != "Masked Policy Items" &&
       c.attributeName != "Row level filter Policy Items" &&
       c.attributeName != "Validity Schedules"
     );
   });
-
-  const policyresourcesUpdate = reportdata.filter((c) => {
+  const updatePolicyResources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "update";
   });
-
   const policyDetailsUpdate = (details, resources) => {
     let tablerow = [];
     details.map((o) => {
@@ -127,28 +147,263 @@ export const PolicyLogs = ({ data, reportdata }) => {
         </tr>
       );
     });
-    let keyname = {};
+    let keyOld = {};
     let keynew = {};
     resources.map((obj) => {
-      keyname = JSON.parse(obj.previousValue);
+      keyOld = JSON.parse(obj.previousValue);
       keynew = JSON.parse(obj.newValue);
     });
-
-    Object.keys(keyname).map((key) => {
+    // let keydiff = uniqBy(Object.keys(keyOld), Object.keys(keynew));
+    // console.log(keydiff);
+    Object.keys(keyOld).map((key) => {
       return tablerow.push(
         <>
           <tr>
             <td className="table-warning">{key}</td>
-            <td className="table-warning"> {keyname[key].values}</td>
-            <td className="table-warning">{keynew[key].values}</td>
+            {keyOld[key].values.length > 0 && (
+              <td className="table-warning">{keyOld[key].values.join(", ")}</td>
+            )}
+            {keynew[key] && keynew[key].values.length > 0 && (
+              <td className="table-warning">{keynew[key].values.join(", ")}</td>
+            )}
           </tr>
         </>
       );
     });
     return tablerow;
   };
+  const updateValidity = reportdata.filter(
+    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
+  );
+  const updateMaskPolicy = reportdata.filter(
+    (obj) =>
+      obj.attributeName == "Masked Policy Items" && obj.action == "update"
+  );
+  const updateRowMask = reportdata.filter(
+    (obj) =>
+      obj.attributeName == "Row level filter Policy Items" &&
+      obj.action == "update"
+  );
 
-  const policydetailsDelete = reportdata.filter((c) => {
+  // const updateValidityOld = updateValidity.map((obj) => obj.newValue);
+  // const updateValidityNew = updateValidity.map((obj) => obj.previousValue);
+  const updatePolicyItems = reportdata.filter(
+    (obj) => obj.attributeName == "Policy Items" && obj.action == "update"
+  );
+  const updateException = reportdata.filter(
+    (obj) => obj.attributeName == "Allow Exceptions" && obj.action == "update"
+  );
+  const updateDenyPolicy = reportdata.filter(
+    (obj) => obj.attributeName == "DenyPolicy Items" && obj.action == "update"
+  );
+  const updateDenyException = reportdata.filter(
+    (obj) => obj.attributeName == "Deny Exceptions" && obj.action == "update"
+  );
+  const updatePolicyCondition = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Conditions" && obj.action == "update";
+  });
+
+  const updatePolicyConditionOld = updatePolicyCondition.map(
+    (obj) => obj.previousValue
+  );
+  const updatePolicyConditionNew = updatePolicyCondition.map(
+    (obj) => obj.previousValue
+  );
+  const updatePolicyOldNew = (policy) => {
+    let tablerow = [];
+    let oldval = {};
+    let newval = {};
+
+    policy.previousValue &&
+      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
+    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
+    let filteredval = Object.keys(oldval).concat(Object.keys(newval));
+    filteredval = filteredval.filter((item, index) => {
+      return filteredval.indexOf(item) == index;
+    });
+    let b = [];
+    let c = [];
+    const getfilteredoldval = (val, oldval) => {
+      b = oldval[0];
+      c = b[val];
+
+      if (val == "accesses") {
+        return (
+          <>
+            {objectName == "rowlevel" ? (
+              <i>{`Accesses`} </i>
+            ) : (
+              <i>{`Permissions`}</i>
+            )}
+            {`: ${c.map((obj) => obj.type).join(", ")}`}
+          </>
+        );
+      }
+
+      if (val == "groups") {
+        return (
+          <>
+            <i>{`Groups`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+      if (val == "roles") {
+        return (
+          <>
+            <i>{`Roles`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+      if (val == "users") {
+        return (
+          <>
+            <i>{`Users`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+      if (val == "conditions") {
+        return (
+          <>
+            <i>{`Conditions`}</i>
+            {`: ${
+              c.length > 0
+                ? c.map((type) => `${type.type} : ${type.values}`).join(", ")
+                : "<empty>"
+            }`}
+          </>
+        );
+      }
+      if (val == "rowFilterInfo") {
+        return (
+          <>
+            <i>{`Row Level Filter`} </i>
+
+            {`: ${c.length > 0 ? c.filterExpr : "<empty>"}`}
+          </>
+        );
+      }
+
+      if (val == "delegateAdmin") {
+        return (
+          <>
+            <i>{`Delegate Admin`}</i>
+            {`: ${c == false ? "disabled" : "enabled"}`}
+          </>
+        );
+      }
+
+      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+        c.length > 0 ? c : "<empty>"
+      }`;
+    };
+
+    const getfilterednewval = (val, newval) => {
+      let b = newval[0];
+      let c = b[val];
+
+      if (val == "accesses") {
+        return (
+          <>
+            {objectName == "rowlevel" ? (
+              <i>{`Accesses`} </i>
+            ) : (
+              <i>{`Permissions`}</i>
+            )}
+            {`: ${c.map((obj) => obj.type).join(", ")}`}
+          </>
+        );
+      }
+      if (val == "groups") {
+        return (
+          <>
+            <i>{`Groups`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+
+      if (val == "roles") {
+        return (
+          <>
+            <i>{`Roles`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+      if (val == "users") {
+        return (
+          <>
+            <i>{`Users`}</i>
+            {`: ${c.length == 0 ? "<empty>" : c.join(", ")}`}
+          </>
+        );
+      }
+      if (val == "conditions") {
+        return (
+          <>
+            <i>{`Conditions`}</i>
+            {`: ${
+              c.length > 0
+                ? c.map((type) => `${type.type} : ${type.values}`).join(", ")
+                : "<empty>"
+            }`}
+          </>
+        );
+      }
+      if (val == "rowFilterInfo") {
+        return (
+          <>
+            <i>{`Row Level Filter`} </i>
+
+            {`: ${c && c ? c.filterExpr : "<empty>"}`}
+          </>
+        );
+      }
+      if (val == "delegateAdmin") {
+        return (
+          <>
+            <i>{`Delegate Admin`}</i>
+            {`: ${c == false ? "disabled" : "enabled"}`}
+          </>
+        );
+      }
+
+      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+        c.length > 0 ? c : "<empty>"
+      }`;
+    };
+
+    filteredval.map((val) => {
+      return tablerow.push(
+        <>
+          <tr>
+            {(policy.previousValue && (
+              <td className="table-warning">
+                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
+              </td>
+            )) || <span>empty</span>}
+
+            {(policy.newValue && (
+              <td className="table-warning">
+                {getfilterednewval(val, JSON.parse(policy.newValue))}
+              </td>
+            )) || <span>empty</span>}
+          </tr>
+        </>
+      );
+    });
+
+    return tablerow;
+  };
+
+  /*UPDATE END */
+
+  /* DELETE POLICY VARIABLES */
+
+  const deletePolicyDetails = reportdata.filter((c) => {
     return (
       c.action == "delete" &&
       c.attributeName != "Policy Resources" &&
@@ -163,10 +418,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
       c.attributeName != "Validity Schedules"
     );
   });
-  const policyresourcesDelete = reportdata.filter((c) => {
+  const deletePolicyResources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "delete";
   });
-  const policyDetailsDelete = (details, resources) => {
+  const deleteDetails = (details, resources) => {
     let tablerow = [];
 
     details.map((o) => {
@@ -208,134 +463,59 @@ export const PolicyLogs = ({ data, reportdata }) => {
     return tablerow;
   };
 
-  const policyItems = reportdata.filter(
-    (obj) => obj.attributeName == "Policy Items"
+  const deleteRowMask = reportdata.filter(
+    (obj) =>
+      obj.attributeName == "Row level filter Policy Items" &&
+      obj.action == "delete"
   );
 
-  const allowpolicyUpdate = (policy) => {
-    let tablerow = [];
-    let oldval = {};
-    let newval = {};
-
-    policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
-    let filteredval = Object.keys(oldval).concat(Object.keys(newval));
-    filteredval = filteredval.filter((item, index) => {
-      return filteredval.indexOf(item) == index;
-    });
-
-    const diffold = (c) => {};
-
-    const getfilteredoldval = (val, oldval) => {
-      let b = oldval[0];
-      let c = b[val];
-      if (val == "accesses") {
-        return (
-          <>
-            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-          </>
-        );
-      }
-      if (val == "delegateAdmin") {
-        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-          c == false ? "disabled" : "enabled"
-        }`;
-      }
-
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        c.length > 0 ? c : "<empty>"
-      }`;
-    };
-
-    const getfilterednewval = (val, newval) => {
-      let b = newval[0];
-      let c = b[val];
-      if (val == "accesses") {
-        return (
-          <>
-            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-          </>
-        );
-      }
-      if (val == "delegateAdmin") {
-        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-          c == false ? "disabled" : "enabled"
-        }`;
-      }
-
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        c.length > 0 ? c : "<empty>"
-      }`;
-    };
-
-    filteredval.map((val) => {
-      return tablerow.push(
-        <>
-          <tr>
-            {(policy.previousValue && (
-              <td className="table-warning">
-                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
-              </td>
-            )) || <span>empty</span>}
-
-            {(policy.newValue && (
-              <td className="table-warning">
-                {getfilterednewval(val, JSON.parse(policy.newValue))}
-              </td>
-            )) || <span>empty</span>}
-          </tr>
-        </>
-      );
-    });
-
-    return tablerow;
-  };
-
-  const policyitems = reportdata.filter(
-    (obj) => obj.attributeName == "Policy Items"
+  const deleteRowMaskOld = deleteRowMask.map((obj) => obj.previousValue);
+  const deleteValidity = reportdata.filter(
+    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "delete"
   );
 
-  const policyitemoldVal = policyitems.map((obj) => obj.previousValue);
+  const deleteValidityOld = deleteValidity.map((obj) => obj.previousValue);
 
-  const policyexception = reportdata.filter(
-    (obj) => obj.attributeName == "Allow Exceptions"
-  );
-  const policyexceptionoldval = policyexception.map((obj) => obj.previousValue);
+  const deleteCondition = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Conditions" && obj.action == "delete";
+  });
 
-  const denyexceptions = reportdata.filter(
-    (obj) => obj.attributeName == "Deny Exceptions"
+  const deleteConditionOld = deleteCondition.map((obj) =>
+    obj.previousValue != "" ? JSON.parse(obj.previousValue) : []
   );
-
-  const denyPolicyItem = reportdata.filter(
-    (obj) => obj.attributeName == "DenyPolicy Items"
+  const deleteMaskPolicy = reportdata.filter(
+    (obj) =>
+      obj.attributeName == "Masked Policy Items" && obj.action == "delete"
   );
-  const denyPolicyItemoldval = denyPolicyItem.map((obj) => obj.previousValue);
-
-  const maskPolicyItem = reportdata.filter(
-    (obj) => obj.attributeName == "Masked Policy Items"
-  );
-  const maskpolicyoldVal = maskPolicyItem.map((obj) => obj.previousValue);
-
-  const validityschedules = reportdata.filter(
-    (obj) => obj.attributeName == "Validity Schedules"
-  );
-  const validityupdate = reportdata.filter(
-    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
+  const deletemaskPolicyOld = deleteMaskPolicy.map((obj) => obj.previousValue);
+  const deletePolicyItems = reportdata.filter(
+    (obj) => obj.attributeName == "Policy Items" && obj.action == "delete"
   );
 
-  const validitynewVal = validityschedules.map((obj) => obj.newValue);
-  const validityoldVal = validityschedules.map((obj) => obj.previousValue);
-  const exportJson = reportdata.filter((obj) => obj.action == "EXPORT JSON");
-  const importJson = reportdata.filter((obj) => obj.action == "IMPORT END");
-
-  const rowmask = reportdata.filter(
-    (obj) => obj.attributeName == "Row level filter Policy Items"
+  const deletePolicyItemsOld = deletePolicyItems.map(
+    (obj) => obj.previousValue
   );
-  const rowmasknewval = rowmask.map((newval) => newval.newValue);
-  const rowmaskoldval = rowmask.map((oldval) => oldval.previousValue);
 
-  /*IMPORT DELETE */
+  const deleteException = reportdata.filter(
+    (obj) => obj.attributeName == "Allow Exceptions" && obj.action == "delete"
+  );
+  const deleteExceptionOld = deleteException.map((obj) => obj.previousValue);
+
+  const deleteDenyPolicy = reportdata.filter(
+    (obj) => obj.attributeName == "DenyPolicy Items" && obj.action == "delete"
+  );
+  const deleteDenyPolicyOld = deleteDenyPolicy.map((obj) => obj.previousValue);
+
+  const deleteDenyException = reportdata.filter(
+    (obj) => obj.attributeName == "Deny Exceptions" && obj.action == "delete"
+  );
+  const deleteDenyExceptionOld = deleteDenyException.map(
+    (obj) => obj.previousValue
+  );
+
+  /*DELETE END */
+
+  /* IMPORT DELETE LOGS VARIABLES */
 
   const importDeleteDetails = reportdata.filter((c) => {
     return (
@@ -449,9 +629,158 @@ export const PolicyLogs = ({ data, reportdata }) => {
     (obj) => obj.previousValue
   );
 
+  /*IMPORT DELETE END*/
+
+  /* IMPORT END LOGS*/
+
+  const importEnd = reportdata.filter((obj) => obj.action == "IMPORT END");
+
+  /* EXPORT JSON LOGS */
+
+  const exportJson = reportdata.filter((obj) => obj.action == "EXPORT JSON");
+
+  const rowmask = reportdata.filter(
+    (obj) => obj.attributeName == "Row level filter Policy Items"
+  );
+
+  const policydelete = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Items";
+  });
+
+  const policycondition = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Conditions" && obj.action == "update";
+  });
+  const policyConditionnewVal = policycondition.map(
+    (obj) => obj.previousValue && obj.action == "update"
+  );
+  const policyConditionoldVal = policycondition.map(
+    (obj) => obj.newValue && obj.action == "update"
+  );
+  const importdeleteresources = reportdata.filter((c) => {
+    return c.attributeName == "Policy Resources" && c.action == "Import Delete";
+  });
+
+  const policyItems = reportdata.filter(
+    (obj) => obj.attributeName == "Policy Items"
+  );
+
+  const allowpolicyUpdate = (policy) => {
+    let tablerow = [];
+    let oldval = {};
+    let newval = {};
+
+    policy.previousValue &&
+      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
+    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
+    let filteredval = Object.keys(oldval).concat(Object.keys(newval));
+    filteredval = filteredval.filter((item, index) => {
+      return filteredval.indexOf(item) == index;
+    });
+
+    const getfilteredoldval = (val, oldval) => {
+      let b = oldval[0];
+      let c = b[val];
+      if (val == "accesses") {
+        return (
+          <>
+            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
+          </>
+        );
+      }
+      if (val == "delegateAdmin") {
+        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
+          c == false ? "disabled" : "enabled"
+        }`;
+      }
+
+      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+        c.length > 0 ? c : "<empty>"
+      }`;
+    };
+
+    const getfilterednewval = (val, newval) => {
+      let b = newval[0];
+      let c = b[val];
+      if (val == "accesses") {
+        return (
+          <>
+            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
+          </>
+        );
+      }
+      if (val == "delegateAdmin") {
+        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
+          c == false ? "disabled" : "enabled"
+        }`;
+      }
+
+      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+        c.length > 0 ? c : "<empty>"
+      }`;
+    };
+
+    filteredval.map((val) => {
+      return tablerow.push(
+        <>
+          <tr>
+            {(policy.previousValue && (
+              <td className="table-warning">
+                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
+              </td>
+            )) || <span>empty</span>}
+
+            {(policy.newValue && (
+              <td className="table-warning">
+                {getfilterednewval(val, JSON.parse(policy.newValue))}
+              </td>
+            )) || <span>empty</span>}
+          </tr>
+        </>
+      );
+    });
+
+    return tablerow;
+  };
+
+  const policyitems = reportdata.filter(
+    (obj) => obj.attributeName == "Policy Items"
+  );
+
+  const policyitemoldVal = policyitems.map((obj) => obj.previousValue);
+
+  const policyexception = reportdata.filter(
+    (obj) => obj.attributeName == "Allow Exceptions"
+  );
+  const policyexceptionoldval = policyexception.map((obj) => obj.previousValue);
+
+  const denyexceptions = reportdata.filter(
+    (obj) => obj.attributeName == "Deny Exceptions"
+  );
+
+  const denyPolicyItem = reportdata.filter(
+    (obj) => obj.attributeName == "DenyPolicy Items"
+  );
+  const denyPolicyItemoldval = denyPolicyItem.map((obj) => obj.previousValue);
+
+  const maskPolicyItem = reportdata.filter(
+    (obj) => obj.attributeName == "Masked Policy Items"
+  );
+  const maskpolicyoldVal = maskPolicyItem.map((obj) => obj.previousValue);
+
+  const validityschedules = reportdata.filter(
+    (obj) => obj.attributeName == "Validity Schedules"
+  );
+  const validityupdate = reportdata.filter(
+    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
+  );
+
+  const validitynewVal = validityschedules.map((obj) => obj.newValue);
+  const validityoldVal = validityschedules.map((obj) => obj.previousValue);
+
   return (
     <div>
-      {/* CREATE  */}
+      {/* CREATE LOGS */}
+
       {action == "create" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
@@ -475,13 +804,65 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <th>New Value</th>
                 </tr>
               </thead>
-              <tbody>{policyDetails(policydetails, policyresources)}</tbody>
+              <tbody>
+                {policyDetails(createPolicyDetails, createPolicyResources)}
+              </tbody>
             </Table>
+            <br />
+            {action == "create" &&
+              !isEmpty(createValidityNew) &&
+              !isUndefined(createValidityNew) &&
+              createValidityNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+                    {createValidityNew.map((policyitem) => {
+                      return policyitem.map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              {`Start Date: ${
+                                policy.startTime.length == 0
+                                  ? "<empty>"
+                                  : policy.startTime
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              {`End Date: ${
+                                policy.endTime.length == 0
+                                  ? "<empty>"
+                                  : policy.endTime
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              {`Time Zone: ${
+                                policy.timeZone.length == 0
+                                  ? "<empty>"
+                                  : policy.timeZone
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
 
             {action == "create" &&
-              !isEmpty(policyConditionCreatenew) &&
-              !isUndefined(policyConditionCreatenew) &&
-              policyConditionCreatenew != 0 && (
+              !isEmpty(createConditionNew) &&
+              !isUndefined(createConditionNew) &&
+              createConditionNew != 0 && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">
                     Policy Conditions:
@@ -493,7 +874,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </tr>
                     </thead>
 
-                    {policyConditionCreatenew.map((policyitem) => {
+                    {createConditionNew.map((policyitem) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
@@ -507,212 +888,162 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 </>
               )}
 
-            {action == "create" && policyItems.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Allow PolicyItems:</h5>
-            )}
-            {action == "create" && policyItems.length > 0 && (
-              <Table className="table table-striped  table-bordered  table-responsive w-auto">
-                {policyItems.length > 0 && (
-                  <thead>
-                    <tr>
-                      <th>New Value</th>
-                    </tr>
-                  </thead>
-                )}
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Policy Items" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles: ${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups: ${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users: ${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Permissions: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
-                        <tr>
-                          {policy.conditions.length > 0 && (
-                            <td className="table-warning">
-                              {`Conditions: ${policy.conditions.map(
-                                (type) => `${type.type} : ${type.values}`
-                              )} `}
-                            </td>
-                          )}
-                        </tr>
-                        <tr>
-                          <td className="table-warning">{`Delegate Admin: ${
-                            policy.delegateAdmin == true
-                              ? "enabled"
-                              : "disabled"
-                          }`}</td>
-                        </tr>
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
-
             {action == "create" &&
-              validitynewVal !== undefined &&
-              validitynewVal.length > 0 &&
-              validitynewVal != "[]" && (
-                <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
-              )}
+              !isEmpty(createPolicyItems) &&
+              !isUndefined(createPolicyItems) &&
+              createPolicyItems != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Allow PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-            {action == "create" &&
-              validitynewVal !== undefined &&
-              validitynewVal.length > 0 &&
-              validitynewVal != "[]" && (
-                <Table className="table table-striped  table-bordered   w-auto">
-                  <thead>
-                    <tr>
-                      <th>New Value</th>
-                    </tr>
-                  </thead>
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Validity Schedules" &&
-                        obj.action == "create"
-                    )
-                    .map((policyitem) => {
+                    {createPolicyItems.map((policyitem) => {
                       return JSON.parse(policyitem.newValue).map((policy) => (
                         <tbody>
                           <tr>
                             <td className="table-warning">
-                              {`Start Date:${
-                                policy.startTime.length == 0
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
                                   ? "<empty>"
-                                  : policy.startTime
-                              } `}
+                                  : policy.roles.join(", ")
+                              }`}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
-                              {`End Date:${
-                                policy.endTime.length == 0
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
                                   ? "<empty>"
-                                  : policy.endTime
-                              } `}
+                                  : policy.groups.join(", ")
+                              }`}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
-                              {`Time Zone:${
-                                policy.timeZone.length == 0
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
                                   ? "<empty>"
-                                  : policy.timeZone
-                              } `}
+                                  : policy.users.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) => `${type.type} : ${type.values}`
+                                )}`}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
+                                policy.delegateAdmin == true
+                                  ? "enabled"
+                                  : "disabled"
+                              }`}
                             </td>
                           </tr>
                         </tbody>
                       ));
                     })}
-                </Table>
+                  </Table>
+                  <br />
+                </>
               )}
 
-            {action == "create" && rowmasknewval.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Row Level Filter Policy Items:
-              </h5>
-            )}
-            {action == "create" && rowmasknewval.length > 0 && (
-              <Table className="table table-striped  table-bordered  table-responsive w-auto">
-                {policyItems.length > 0 && (
-                  <thead>
-                    <tr>
-                      <th>New Value</th>
-                    </tr>
-                  </thead>
-                )}
+            {action == "create" &&
+              !isEmpty(createRowMaskNew) &&
+              !isUndefined(createRowMaskNew) &&
+              createRowMaskNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Row Level Filter Policy Items:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  table-responsive w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Row level filter Policy Items" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles:${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups:${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users:${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Accesses: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
+                    {createRowMaskNew.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Accesses`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
 
-                        <tr>
-                          <td className="table-warning">{`Row Level Filter: ${policy.rowFilterInfo.filterExpr}`}</td>
-                        </tr>
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Row Level Filter`}</i>
+                              {`: ${policy.rowFilterInfo.filterExpr}`}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
 
-            {action == "update" && policyexception.length > 0 && (
+            {/* {action == "update" && policyexception.length > 0 && (
               <h5 className="bold wrap-header m-t-sm">
                 Allow Exception PolicyItems:
               </h5>
@@ -736,323 +1067,346 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     return <tbody>{allowpolicyUpdate(policy)}</tbody>;
                   })}
               </Table>
-            )}
+            )} */}
 
-            {action == "create" && policyexception.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Allow Exception PolicyItems:
-              </h5>
-            )}
-            {action == "create" && policyexception.length > 0 && (
-              <Table className="table table-striped  table-bordered   w-auto">
-                <thead>
-                  <tr>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
+            {action == "create" &&
+              !isEmpty(createExceptionNew) &&
+              !isUndefined(createExceptionNew) &&
+              createExceptionNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Allow Exceptions:</h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Allow Exceptions" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles:${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups:${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users:${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Permissions: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
-                        <tr>
-                          {policy.conditions.length > 0 && (
+                    {createExceptionNew.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
                             <td className="table-warning">
-                              {`Conditions:${policy.conditions.map(
-                                (type) => `${type.type} : ${type.values}`
-                              )} `}
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              }`}
                             </td>
-                          )}
-                        </tr>
-                        <tr>
-                          <td className="table-warning">{`Delegate Admin: ${
-                            policy.delegateAdmin == true
-                              ? "enabled"
-                              : "disabled"
-                          }`}</td>
-                        </tr>
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
-
-            {action == "create" && denyPolicyItem.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
-            )}
-            {action == "create" && denyPolicyItem.length > 0 && (
-              <Table className="table table-striped  table-bordered   w-auto">
-                {denyPolicyItem.length > 0 && (
-                  <thead>
-                    <tr>
-                      <th>New Value</th>
-                    </tr>
-                  </thead>
-                )}
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "DenyPolicy Items" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles:${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups:${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users:${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Permissions: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
-                        <tr>
-                          {policy.conditions.length > 0 && (
+                          </tr>
+                          <tr>
                             <td className="table-warning">
-                              {`Conditions:${policy.conditions.map(
-                                (type) => `${type.type} : ${type.values}`
-                              )} `}
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              }`}
                             </td>
-                          )}
-                        </tr>
-                        <tr>
-                          <td className="table-warning">{`Delegate Admin: ${
-                            policy.delegateAdmin == true
-                              ? "enabled"
-                              : "disabled"
-                          }`}</td>
-                        </tr>
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
-
-            {action == "create" && denyexceptions.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Deny Exception PolicyItems:
-              </h5>
-            )}
-            {action == "create" && denyexceptions.length > 0 && (
-              <Table className="table table-striped  table-bordered table-responsive  w-auto">
-                {denyPolicyItem.length > 0 && (
-                  <thead>
-                    <tr>
-                      <th>New Value</th>
-                    </tr>
-                  </thead>
-                )}
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Deny Exceptions" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles:${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups:${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users:${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Permissions: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
-                        <tr>
-                          {policy.conditions.length > 0 && (
+                          </tr>
+                          <tr>
                             <td className="table-warning">
-                              {`Conditions:${policy.conditions.map(
-                                (type) => `${type.type} : ${type.values}`
-                              )} `}
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              }`}
                             </td>
-                          )}
-                        </tr>
-                        <tr>
-                          <td className="table-warning">{`Delegate Admin: ${
-                            policy.delegateAdmin == true
-                              ? "enabled"
-                              : "disabled"
-                          }`}</td>
-                        </tr>
-                        <br />
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions
+                                  .map(
+                                    (type) => `${type.type} : ${type.values}`
+                                  )
+                                  .join(", ")}`}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
+                                policy.delegateAdmin == true
+                                  ? "enabled"
+                                  : "disabled"
+                              }`}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
 
-            {action == "create" && maskPolicyItem.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Masking Policy Items:</h5>
-            )}
-            {action == "create" && maskPolicyItem.length > 0 && (
-              <Table className="table table-striped  table-bordered   w-auto">
-                <thead>
-                  <tr>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
+            {action == "create" &&
+              !isEmpty(createDenyPolicyNew) &&
+              !isUndefined(createDenyPolicyNew) &&
+              createDenyPolicyNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
+                  <Table className="table table-striped  table-bordered  w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Masked Policy Items" &&
-                      obj.action == "create"
-                  )
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {`Roles:${
-                              policy.roles.length == 0
-                                ? "<empty>"
-                                : policy.roles
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Groups:${
-                              policy.groups.length == 0
-                                ? "<empty>"
-                                : policy.groups
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Users:${
-                              policy.users.length == 0
-                                ? "<empty>"
-                                : policy.users
-                            } `}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="table-warning">
-                            {`Accesses:: ${policy.accesses.map(
-                              (obj) => obj.type
-                            )}`}
-                          </td>
-                        </tr>
+                    {createDenyPolicyNew.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions
+                                  .map((type) => `${type.type}: ${type.values}`)
+                                  .join(", ")}`}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
+                                policy.delegateAdmin == true
+                                  ? "enabled"
+                                  : "disabled"
+                              }`}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
 
-                        <tr>
-                          {policy.delegateAdmin == true && (
-                            <td className="table-warning">{`Delegate Admin: ${
-                              policy.delegateAdmin == true
-                                ? "enabled"
-                                : "disabled"
-                            }`}</td>
-                          )}
-                        </tr>
-                        <tr>
-                          {policy.DataMasklabel.length > 0 && (
-                            <td className="table-warning">{`Data Mask Types: ${policy.DataMasklabel}`}</td>
-                          )}
-                        </tr>
-                        <br />
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
+            {action == "create" &&
+              !isEmpty(createDenyExceptionNew) &&
+              !isUndefined(createDenyExceptionNew) &&
+              createDenyExceptionNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Deny Exception PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {createDenyExceptionNew.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) => `${type.type} : ${type.values}`
+                                )}`}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
+                                policy.delegateAdmin == true
+                                  ? "enabled"
+                                  : "disabled"
+                              }`}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "create" &&
+              !isEmpty(createMaskPolicyNew) &&
+              !isUndefined(createMaskPolicyNew) &&
+              createMaskPolicyNew != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Masking Policy Items:
+                  </h5>{" "}
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {createMaskPolicyNew.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              }`}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Accesses`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")}`}
+                            </td>
+                          </tr>
+
+                          <tr>
+                            {policy.delegateAdmin == true && (
+                              <td className="table-warning">
+                                <i>{`Delegate Admin`}</i>
+                                {`: ${
+                                  policy.delegateAdmin == true
+                                    ? "enabled"
+                                    : "disabled"
+                                }`}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            {policy.DataMasklabel.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Data Mask Types`}</i>
+                                {`: ${policy.DataMasklabel}`}
+                              </td>
+                            )}
+                          </tr>
+                          <br />
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                </>
+              )}
           </div>
         )}
-      {/* UPDATE */}
+
+      {/* UPDATE Policy Logs*/}
 
       {action == "update" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
@@ -1060,16 +1414,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
             <div className="row">
               <div className="col-md-6">
                 <div className="font-weight-bolder">
-                  Policy ID: <Badge variant="info">{objectId}</Badge>
+                  Policy ID : <Badge variant="info">{objectId}</Badge>
                 </div>
                 <div className="font-weight-bolder">
-                  Policy Name : {objectName}
+                  Policy Name: {objectName}
                 </div>
                 <div className="font-weight-bolder">
-                  Service Name : {parentObjectName}
+                  Service Name: {parentObjectName}
                 </div>
                 <div className="font-weight-bolder">
-                  Updated Date:
+                  Updated Date:{" "}
                   {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
                   Standard Time
                 </div>
@@ -1081,27 +1435,27 @@ export const PolicyLogs = ({ data, reportdata }) => {
               </div>
             </div>
             <br />
-            {(policydetailsUpdate.length > 0 ||
-              policyresourcesUpdate.length > 0) && (
-              <h5 className="bold wrap-header m-t-sm">Policy details</h5>
-            )}
-            {(policydetailsUpdate.length > 0 ||
-              policyresourcesUpdate.length > 0) && (
-              <Table className="table table-striped table-bordered w-auto">
-                <thead>
-                  <tr>
-                    <th>Fields</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {policyDetailsUpdate(
-                    policydetailsUpdate,
-                    policyresourcesUpdate
-                  )}
-                </tbody>
-              </Table>
+
+            {(updatePolicyDetails.length > 0 ||
+              updatePolicyResources.length > 0) && (
+              <>
+                <h5 className="bold wrap-header m-t-sm">Policy details</h5>
+                <Table className="table table-striped table-bordered w-auto">
+                  <thead>
+                    <tr>
+                      <th>Fields</th>
+                      <th>Old Value</th>
+                      <th>New Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {policyDetailsUpdate(
+                      updatePolicyDetails,
+                      updatePolicyResources
+                    )}
+                  </tbody>
+                </Table>
+              </>
             )}
 
             {action == "update" &&
@@ -1123,7 +1477,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </tr>
                   </thead>
 
-                  {validityupdate.map((policyitem) => {
+                  {updateValidity.map((policyitem) => {
                     return (
                       <tbody>
                         <tr>
@@ -1173,676 +1527,199 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 </Table>
               )}
 
-            {action == "update" && rowmask.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Row Level Filter Policy Items:
-              </h5>
-            )}
+            {action == "update" &&
+              !isEmpty(updateRowMask) &&
+              !isUndefined(updateRowMask) &&
+              updateRowMask != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Row Level Filter Policy Items:
+                  </h5>
+                  <Table className="table table-striped  table-bordered w-auto">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-            {action == "update" && rowmask.length > 0 && (
-              <Table className="table table-striped  table-bordered table-responsive">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
+                    {updateRowMask.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
 
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Row level filter Policy Items" &&
-                      obj.action == "update"
-                  )
-                  .map((policy) => {
-                    return <tbody>{allowpolicyUpdate(policy)}</tbody>;
-                  })}
-              </Table>
-            )}
+            {action == "update" &&
+              !isEmpty(updatePolicyConditionOld) &&
+              !isEmpty(updatePolicyConditionNew) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Policy Conditions:
+                  </h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-            {(action == "update" &&
-              !isEmpty(policyConditionnewVal) &&
-              !isUndefined(policyConditionnewVal) &&
-              policyConditionnewVal != 0) ||
-              (!isEmpty(policyConditionoldVal) &&
-                !isUndefined(policyConditionoldVal) &&
-                policyConditionoldVal != 0 && (
-                  <div>
-                    <h5 className="bold wrap-header m-t-sm">
-                      Policy Conditions:
-                    </h5>
-                    {
-                      <Table className="table table-striped  table-bordered   w-50">
-                        <thead>
-                          <tr>
-                            <th>Old Value</th>
-                            <th>New Value</th>
-                          </tr>
-                        </thead>
-
-                        {policycondition.map((policyitem) => {
-                          return (
-                            <tbody>
-                              <tr>
-                                {policyitem.previousValue.length != 0 ? (
-                                  JSON.parse(policyitem.previousValue).map(
-                                    (policy) => (
-                                      <td className="table-warning">{`${policy.type}:${policy.values}`}</td>
-                                    )
-                                  )
-                                ) : (
-                                  <td className="text-center">
-                                    <strong>{"<empty>"}</strong>
-                                  </td>
-                                )}
-                                {policyitem.newValue.length != 0 ? (
-                                  JSON.parse(policyitem.newValue).map(
-                                    (policy) => (
-                                      <td className="table-warning">{`${policy.type}:${policy.values}`}</td>
-                                    )
-                                  )
-                                ) : (
-                                  <td className="text-center">
-                                    <strong>{"<empty>"}</strong>
-                                  </td>
-                                )}
-                              </tr>
-                            </tbody>
-                          );
-                        })}
-                      </Table>
-                    }
-                  </div>
-                ))}
-            {action == "update" && maskPolicyItem.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Mask Policy Items:</h5>
-            )}
-
-            {action == "update" && maskPolicyItem.length > 0 && (
-              <Table className="table table-striped  table-bordered table-responsive">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Masked Policy Items" &&
-                      obj.action == "update"
-                  )
-                  .map((policy) => {
-                    return (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">
-                            {policy.previousValue.length == 0 ? (
-                              <span className="text-center align-middle">
-                                <strong>{"<empty>"}</strong>
-                              </span>
-                            ) : (
-                              JSON.parse(policy.previousValue).map((policy) => (
-                                <tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      {
-                                        <>
-                                          Roles:
-                                          {policy.roles.length == 0 ? (
-                                            "<empty>"
-                                          ) : (
-                                            <span className="delete-text">
-                                              {policy.roles}
-                                            </span>
-                                          )}
-                                        </>
-                                      }
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Groups:
-                                      {policy.groups.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="delete-text">
-                                          {policy.groups}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Users:
-                                      {policy.users.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="delete-text">
-                                          {policy.users}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning overflow-auto text-nowrap">
-                                      Permissions:
-                                      {policy.accesses.map((obj) => (
-                                        <span className="delete-text">
-                                          {obj.type}
-                                        </span>
-                                      ))}
-                                    </td>
-                                  </tr>
-
-                                  <tr>
-                                    <td className="table-warning">
-                                      Delegate Admin:{" "}
-                                      {policy.delegateAdmin == true
-                                        ? " enabled"
-                                        : "disabled"}
-                                    </td>
-                                  </tr>
-                                </tr>
-                              ))
-                            )}
-                          </td>
-                          {policy.newValue.length == 0 ? (
-                            <td className="text-center align-middle">
-                              <strong>{"<empty>"}</strong>
-                            </td>
-                          ) : (
-                            JSON.parse(policy.newValue).map((policy) => (
-                              <tbody>
-                                <tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      {
-                                        <>
-                                          Roles:
-                                          {policy.roles.length == 0 ? (
-                                            "<empty>"
-                                          ) : (
-                                            <span className="add-text">
-                                              {policy.roles}
-                                            </span>
-                                          )}
-                                        </>
-                                      }
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Groups:
-                                      {policy.groups.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.groups}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Users:
-                                      {policy.users.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.users}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Permissions:
-                                      {policy.accesses.map((obj) => (
-                                        <span className="add-text">
-                                          {obj.type}
-                                        </span>
-                                      ))}
-                                    </td>
-                                  </tr>
-
-                                  <tr>
-                                    <td className="table-warning">
-                                      Delegate Admin:{" "}
-                                      {policy.delegateAdmin == true
-                                        ? " enabled"
-                                        : "disabled"}
-                                    </td>
-                                  </tr>
-                                </tr>
-                              </tbody>
-                            ))
-                          )}
-                        </tr>
-                      </tbody>
-                    );
-                  })}
-              </Table>
-            )}
-            {action == "update" && policyItems.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Allow PolicyItems:</h5>
-            )}
-
-            {action == "update" && policyItems.length > 0 && (
-              <Table className="table table-striped  table-bordered table-responsive">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Policy Items" &&
-                      obj.action == "update"
-                  )
-                  .map((policy) => {
-                    return <tbody>{allowpolicyUpdate(policy)}</tbody>;
-                  })}
-              </Table>
-            )}
-
-            {action == "update" && policyexception.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Allow Exception PolicyItems:
-              </h5>
-            )}
-
-            {action == "update" && policyexception.length > 0 && (
-              <Table className="table table-striped  table-bordered  w-auto ">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Allow Exceptions" &&
-                      obj.action == "update"
-                  )
-                  .map((policy) => {
-                    return <tbody>{allowpolicyUpdate(policy)}</tbody>;
-                  })}
-              </Table>
-            )}
-
-            {action == "update" && denyPolicyItem.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
-            )}
-
-            {action == "update" && denyPolicyItem.length > 0 && (
-              <Table className="table table-striped  table-bordered  w-auto ">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "DenyPolicy Items" &&
-                        obj.action == "update"
-                    )
-                    .map((policy) => {
+                    {updatePolicyCondition.map((policyitem) => {
                       return (
-                        <tr>
-                          <td>
-                            {policy.previousValue.length == 0 ? (
-                              <span className="text-center align-middle">
-                                <strong>{"<empty>"}</strong>
-                              </span>
+                        <tbody>
+                          <tr>
+                            {policyitem.previousValue.length != 0 ? (
+                              JSON.parse(policyitem.previousValue).map(
+                                (policy) => (
+                                  <td className="table-warning">{`${
+                                    policy.type
+                                  }: ${policy.values.join(",")}`}</td>
+                                )
+                              )
                             ) : (
-                              JSON.parse(policy.previousValue).map((policy) => (
-                                <tbody>
-                                  <tr>
-                                    <tr>
-                                      <td className="table-warning">
-                                        Roles:
-                                        {policy.roles.length == 0 ? (
-                                          "<empty>"
-                                        ) : (
-                                          <span className="delete-text">
-                                            {policy.roles}
-                                          </span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td className="table-warning">
-                                        Groups:
-                                        {policy.groups.length == 0 ? (
-                                          "<empty>"
-                                        ) : (
-                                          <span className="delete-text">
-                                            {policy.groups}
-                                          </span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td className="table-warning">
-                                        Users:
-                                        {policy.users.length == 0 ? (
-                                          "<empty>"
-                                        ) : (
-                                          <span className="delete-text">
-                                            {policy.users}
-                                          </span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <td className="table-warning">
-                                        Permissions:
-                                        {policy.accesses.map((obj) => (
-                                          <span className="delete-text">
-                                            {obj.type}
-                                          </span>
-                                        ))}
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      {policy.conditions.length > 0 && (
-                                        <td className="table-warning">
-                                          {`Conditions:${policy.conditions.map(
-                                            (type) =>
-                                              `${type.type} : ${type.values}`
-                                          )} `}
-                                        </td>
-                                      )}
-                                    </tr>
-                                    <tr>
-                                      <td className="table-warning">
-                                        Delegate Admin:
-                                        {policy.delegateAdmin == true
-                                          ? "enabled"
-                                          : "disabled"}
-                                      </td>
-                                    </tr>
-                                  </tr>
-                                </tbody>
-                              ))
+                              <td className="text-center">
+                                <strong>{"<empty>"}</strong>
+                              </td>
                             )}
-                          </td>
-
-                          {policy.newValue.length == 0 ? (
-                            <span className="text-center align-middle">
-                              <strong>{"<empty>"}</strong>
-                            </span>
-                          ) : (
-                            JSON.parse(policy.newValue).map((policy) => (
-                              <tbody>
-                                <tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Roles:
-                                      {policy.roles.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.roles}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Groups:
-                                      {policy.groups.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.groups}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Users:
-                                      {policy.users.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.users}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Permissions:
-                                      {policy.accesses.map((obj) => (
-                                        <span className="add-text">
-                                          {obj.type}
-                                        </span>
-                                      ))}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    {policy.conditions.length > 0 && (
-                                      <td className="table-warning">
-                                        {`Conditions:${policy.conditions.map(
-                                          (type) =>
-                                            `${type.type} : ${type.values}`
-                                        )} `}
-                                      </td>
-                                    )}
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Delegate Admin:{" "}
-                                      {policy.delegateAdmin == true
-                                        ? "enabled"
-                                        : "disabled"}
-                                    </td>
-                                  </tr>
-                                </tr>
-                              </tbody>
-                            ))
-                          )}
-                        </tr>
+                            {policyitem.newValue.length != 0 ? (
+                              JSON.parse(policyitem.newValue).map((policy) => (
+                                <td className="table-warning">{`${
+                                  policy.type
+                                }: ${policy.values.join(", ")}`}</td>
+                              ))
+                            ) : (
+                              <td className="text-center">
+                                <strong>{"<empty>"}</strong>
+                              </td>
+                            )}
+                          </tr>
+                        </tbody>
                       );
                     })}
-                </tbody>
-              </Table>
-            )}
+                  </Table>
+                </>
+              )}
 
-            {action == "update" && denyexceptions.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Deny Exception PolicyItems:
-              </h5>
-            )}
-
-            {action == "update" && denyexceptions.length > 0 && (
-              <Table className="table table-striped  table-bordered  w-auto ">
-                <thead>
-                  <tr>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {denyexceptions.map((policy) => {
-                    return (
+            {action == "update" &&
+              !isEmpty(updateMaskPolicy) &&
+              !isUndefined(updateMaskPolicy) &&
+              updateMaskPolicy != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Mask Policy Items:
+                  </h5>
+                  <Table className="table table-striped  table-bordered w-auto">
+                    <thead>
                       <tr>
-                        <td>
-                          {policy.previousValue.length == 0 ? (
-                            <span className="text-center">
-                              <strong>{"<empty>"}</strong>
-                            </span>
-                          ) : (
-                            JSON.parse(policy.previousValue).map((policy) => (
-                              <tbody>
-                                <tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Roles:
-                                      {policy.roles.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.roles}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Groups:
-                                      {policy.groups.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.groups}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Users:
-                                      {policy.users.length == 0 ? (
-                                        "<empty>"
-                                      ) : (
-                                        <span className="add-text">
-                                          {policy.users}
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Permissions:
-                                      {policy.accesses.map((obj) => (
-                                        <span className="add-text">
-                                          {obj.type}
-                                        </span>
-                                      ))}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    {policy.conditions.length > 0 && (
-                                      <td className="table-warning">
-                                        {`Conditions:${policy.conditions.map(
-                                          (type) =>
-                                            `${type.type} : ${type.values}`
-                                        )} `}
-                                      </td>
-                                    )}
-                                  </tr>
-                                  <tr>
-                                    <td className="table-warning">
-                                      Delegate Admin:{" "}
-                                      {policy.delegateAdmin == true
-                                        ? "enabled"
-                                        : "disabled"}
-                                    </td>
-                                  </tr>
-                                </tr>
-                              </tbody>
-                            ))
-                          )}
-                        </td>
-
-                        {policy.newValue.length == 0 ? (
-                          <span className="text-center">
-                            <strong>{"<empty>"}</strong>
-                          </span>
-                        ) : (
-                          JSON.parse(policy.newValue).map((policy) => (
-                            <tbody>
-                              <tr>
-                                <tr>
-                                  <td className="table-warning">
-                                    Roles:
-                                    {policy.roles.length == 0 ? (
-                                      "<empty>"
-                                    ) : (
-                                      <span className="add-text">
-                                        {policy.roles}
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="table-warning">
-                                    Groups:
-                                    {policy.groups.length == 0 ? (
-                                      "<empty>"
-                                    ) : (
-                                      <span className="add-text">
-                                        {policy.groups}
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="table-warning">
-                                    Users:
-                                    {policy.users.length == 0
-                                      ? "<empty>"
-                                      : policy.users
-                                          .map((u) => {
-                                            return u;
-                                          })
-                                          .join(",")}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td className="table-warning">
-                                    Permissions:
-                                    {policy.accesses.map((obj) => (
-                                      <span className="add-text">
-                                        {obj.type}
-                                      </span>
-                                    ))}
-                                  </td>
-                                </tr>
-                                <tr>
-                                  {policy.conditions.length > 0 && (
-                                    <td className="table-warning">
-                                      {`Conditions:${policy.conditions.map(
-                                        (type) =>
-                                          `${type.type} : ${type.values}`
-                                      )} `}
-                                    </td>
-                                  )}
-                                </tr>
-                                <tr>
-                                  <td className="table-warning">
-                                    Delegate Admin:{" "}
-                                    {policy.delegateAdmin == true
-                                      ? "enabled"
-                                      : "disabled"}
-                                  </td>
-                                </tr>
-                              </tr>
-                            </tbody>
-                          ))
-                        )}
+                        <th>Old Value</th>
+                        <th>New Value</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            )}
+                    </thead>
+
+                    {updateMaskPolicy.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "update" &&
+              !isEmpty(updatePolicyItems) &&
+              !isUndefined(updatePolicyItems) &&
+              updatePolicyItems != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Allow PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered w-auto">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {updatePolicyItems.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "update" &&
+              !isEmpty(updateException) &&
+              !isUndefined(updateException) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Allow Exception PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  w-auto ">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {updateException.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "update" &&
+              !isEmpty(updateDenyPolicy) &&
+              !isUndefined(updateDenyPolicy) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
+                  <Table className="table table-striped  table-bordered  w-auto ">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {updateDenyPolicy.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "update" &&
+              !isEmpty(updateDenyException) &&
+              !isUndefined(updateDenyException) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Deny Exception PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  w-auto ">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+
+                    {updateDenyException.map((policy) => {
+                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
+                    })}
+                  </Table>
+                </>
+              )}
           </div>
         )}
-      {/* DELETE  */}
+
+      {/* DELETE POLICY LOGS  */}
+
       {action == "delete" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
@@ -1851,14 +1728,15 @@ export const PolicyLogs = ({ data, reportdata }) => {
             </div>
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">
-              Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
-              Standard Time
+              Service Name: {parentObjectName}
             </div>
-            <div className="font-weight-bolder">Created By: {owner} </div>
+            <div className="font-weight-bolder">
+              Deleted Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
+              India Standard Time
+            </div>
             <div className="font-weight-bolder">Deleted By: {owner} </div>
-
+            <br />
             <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
-
             {/* {maskPolicyItem.length > 0 && (
               <h5 className="bold wrap-header m-t-sm">Masking Policy Items:</h5>
             )} */}
@@ -1867,192 +1745,173 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <tr>
                   <th>Fields</th>
 
-                  <th>New Value</th>
+                  <th>Old Value</th>
                 </tr>
               </thead>
               <tbody>
-                {policyDetailsDelete(
-                  policydetailsDelete,
-                  policyresourcesDelete
-                )}
+                {deleteDetails(deletePolicyDetails, deletePolicyResources)}
               </tbody>
             </Table>
-
-            {action == "create" && policycondition.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Policy Conditions:</h5>
-            )}
-            {action == "create" && policycondition.length > 0 && (
-              <Table className="table table-striped  table-bordered   w-25">
-                <thead>
-                  <tr>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-
-                {reportdata
-                  .filter((obj) => {
-                    return (
-                      obj.attributeName == "Policy Conditions" &&
-                      obj.action == "create"
-                    );
-                  })
-                  .map((policyitem) => {
-                    return JSON.parse(policyitem.newValue).map((policy) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">{`${policy.type}:${policy.values}`}</td>
-                        </tr>
-                      </tbody>
-                    ));
-                  })}
-              </Table>
-            )}
-
+            <br />
             {action == "delete" &&
-              !isEmpty(validityoldVal) &&
-              !isUndefined(validityoldVal) &&
-              validityoldVal != "[]" &&
-              validityoldVal.length > 0 && (
-                <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
-              )}
-
-            {action == "delete" &&
-              !isEmpty(validityoldVal) &&
-              !isUndefined(validityoldVal) &&
-              validityoldVal != "[]" &&
-              validityoldVal.length > 0 && (
-                <Table className="table table-striped  table-bordered   w-auto">
-                  <thead>
-                    <tr>
-                      <th>old Value</th>
-                    </tr>
-                  </thead>
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Validity Schedules" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
-                              <td className="table-warning">
-                                {`Start Date:${
-                                  policy.startTime.length == 0
-                                    ? "<empty>"
-                                    : policy.startTime
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`End Date:${
-                                  policy.endTime.length == 0
-                                    ? "<empty>"
-                                    : policy.endTime
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Time Zone:${
-                                  policy.timeZone.length == 0
-                                    ? "<empty>"
-                                    : policy.timeZone
-                                } `}
-                              </td>
-                            </tr>
-                          </tbody>
-                        )
-                      );
+              !isEmpty(deleteValidityOld) &&
+              !isUndefined(deleteValidityOld) &&
+              deleteValidityOld != "[]" &&
+              deleteValidityOld.length > 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>old Value</th>
+                      </tr>
+                    </thead>
+                    {deleteValidityOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Start Date`}</i>
+                              {`: ${
+                                policy.startTime.length == 0
+                                  ? "<empty>"
+                                  : policy.startTime
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`End Date`}</i>
+                              {`: ${
+                                policy.endTime.length == 0
+                                  ? "<empty>"
+                                  : policy.endTime
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Time Zone`}</i>
+                              {`: ${
+                                policy.timeZone.length == 0
+                                  ? "<empty>"
+                                  : policy.timeZone
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
                     })}
-                </Table>
-              )}
-
-            {action == "delete" &&
-              !isEmpty(rowmaskoldval) &&
-              !isUndefined(rowmaskoldval) &&
-              rowmaskoldval != 0 &&
-              rowmaskoldval.length > 0 && (
-                <h5 className="bold wrap-header m-t-sm">
-                  Row Level Filter Policy Items:
-                </h5>
+                  </Table>
+                  <br />
+                </>
               )}
             {action == "delete" &&
-              !isEmpty(rowmaskoldval) &&
-              !isUndefined(rowmaskoldval) &&
-              rowmaskoldval != 0 &&
-              rowmaskoldval.length > 0 && (
-                <Table className="table table-striped  table-bordered  table-responsive w-auto">
-                  {policyItems.length > 0 && (
+              !isEmpty(deleteConditionOld) &&
+              !isUndefined(deleteConditionOld) &&
+              deleteConditionOld != "[]" &&
+              deleteConditionOld != "" && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Policy Conditions:
+                  </h5>
+                  <Table className="table table-striped  table-bordered   w-25">
                     <thead>
                       <tr>
                         <th>Old Value</th>
                       </tr>
                     </thead>
-                  )}
 
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Row level filter Policy Items" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
-                              <td className="table-warning">
-                                {`Roles:${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Groups:${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Users:${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Accesses: ${policy.accesses.map(
-                                  (obj) => obj.type
-                                )}`}
-                              </td>
-                            </tr>
-
-                            <tr>
-                              <td className="table-warning">{`Row Level Filter: ${policy.rowFilterInfo.filterExpr}`}</td>
-                            </tr>
-                          </tbody>
-                        )
-                      );
+                    {deleteConditionOld.map((policyitem) => {
+                      return policyitem.map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              {`${policy.type}: ${policy.values.join(", ")}`}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
                     })}
-                </Table>
+                  </Table>
+                  <br />
+                </>
               )}
-
             {action == "delete" &&
-              !isEmpty(maskpolicyoldVal) &&
-              !isUndefined(maskpolicyoldVal) &&
-              maskpolicyoldVal != 0 && (
+              !isEmpty(deleteRowMaskOld) &&
+              !isUndefined(deleteRowMaskOld) &&
+              deleteRowMaskOld != 0 &&
+              deleteRowMaskOld.length > 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Row Level Filter Policy Items:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  table-responsive w-auto">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                      </tr>
+                    </thead>
+
+                    {deleteRowMaskOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Accesses`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Row Level Filter`}</i>
+                              {`: ${policy.rowFilterInfo.filterExpr} `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                    <br />
+                  </Table>
+                </>
+              )}
+            {action == "delete" &&
+              !isEmpty(deletemaskPolicyOld) &&
+              !isUndefined(deletemaskPolicyOld) &&
+              deletemaskPolicyOld != 0 && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">
                     Masking Policy Items:
@@ -2064,56 +1923,66 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </tr>
                     </thead>
 
-                    {maskpolicyoldVal.map((policyitem) => {
+                    {deletemaskPolicyOld.map((policyitem) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
                             <td className="table-warning">
-                              {`Roles:${
+                              <i>{`Roles`}</i>
+                              {`: ${
                                 policy.roles.length == 0
                                   ? "<empty>"
-                                  : policy.roles
+                                  : policy.roles.join(", ")
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
-                              {`Groups:${
+                              <i>{`Groups`}</i>
+                              {`: ${
                                 policy.groups.length == 0
                                   ? "<empty>"
-                                  : policy.groups
+                                  : policy.groups.join(", ")
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
-                              {`Users:${
+                              <i>{`Users`}</i>
+                              {`: ${
                                 policy.users.length == 0
                                   ? "<empty>"
-                                  : policy.users
+                                  : policy.users.join(", ")
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
-                              {`Accesses:: ${policy.accesses.map(
-                                (obj) => obj.type
-                              )}`}
+                              <i>{`Accesses`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
                             </td>
                           </tr>
 
                           <tr>
                             {policy.delegateAdmin == true && (
-                              <td className="table-warning">{`Delegate Admin: ${
-                                policy.delegateAdmin == true
-                                  ? "enabled"
-                                  : "disabled"
-                              }`}</td>
+                              <td className="table-warning">
+                                <i>{`Delegate Admin`}</i>
+                                {`: ${
+                                  policy.delegateAdmin == true
+                                    ? "enabled"
+                                    : "disabled"
+                                } `}
+                              </td>
                             )}
                           </tr>
                           <tr>
                             {policy.DataMasklabel.length > 0 && (
-                              <td className="table-warning">{`Data Mask Types: ${policy.DataMasklabel}`}</td>
+                              <td className="table-warning">
+                                <i>{`Data Mask Types`}</i>
+                                {`: ${policy.DataMasklabel} `}
+                              </td>
                             )}
                           </tr>
                           <br />
@@ -2123,352 +1992,340 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   </Table>
                 </>
               )}
-
             {action == "delete" &&
-              !isEmpty(policyitemoldVal) &&
-              !isUndefined(policyitemoldVal) &&
-              policyitemoldVal != 0 && (
-                <h5 className="bold wrap-header m-t-sm">Allow PolicyItems:</h5>
-              )}
-            {action == "delete" &&
-              !isEmpty(policyitemoldVal) &&
-              !isUndefined(policyitemoldVal) &&
-              policyitemoldVal != 0 && (
-                <Table className="table table-striped  table-bordered  table-responsive w-auto">
-                  {policyItems.length > 0 && (
+              !isEmpty(deletePolicyItemsOld) &&
+              !isUndefined(deletePolicyItemsOld) &&
+              deletePolicyItemsOld != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Allow PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered  w-auto">
                     <thead>
                       <tr>
                         <th>Old Value</th>
                       </tr>
                     </thead>
-                  )}
 
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Policy Items" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
+                    {deletePolicyItemsOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
                               <td className="table-warning">
-                                {`Roles:${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles
-                                } `}
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) =>
+                                    `${type.type} : ${type.values.join(", ")}`
+                                )} `}
                               </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Groups:${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Users:${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Permissions: ${policy.accesses.map(
-                                  (obj) => obj.type
-                                )}`}
-                              </td>
-                            </tr>
-                            <tr>
-                              {policy.conditions.length > 0 && (
-                                <td className="table-warning">
-                                  {`Conditions:${policy.conditions.map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )} `}
-                                </td>
-                              )}
-                            </tr>
-                            <tr>
-                              <td className="table-warning">{`Delegate Admin: ${
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
                                 policy.delegateAdmin == true
                                   ? "enabled"
                                   : "disabled"
-                              }`}</td>
-                            </tr>
-                          </tbody>
-                        )
-                      );
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
                     })}
-                </Table>
-              )}
-            <br />
-            {action == "delete" &&
-              !isEmpty(policyexceptionoldval) &&
-              !isUndefined(policyexceptionoldval) &&
-              policyexceptionoldval != 0 && (
-                <h5 className="bold wrap-header m-t-sm">
-                  Allow Exception PolicyItems:
-                </h5>
+                  </Table>
+                  <br />
+                </>
               )}
             {action == "delete" &&
-              !isEmpty(policyexceptionoldval) &&
-              !isUndefined(policyexceptionoldval) &&
-              policyexceptionoldval != 0 && (
-                <Table className="table table-striped  table-bordered   w-auto">
-                  <thead>
-                    <tr>
-                      <th>Old Value</th>
-                    </tr>
-                  </thead>
-
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Allow Exceptions" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
-                              <td className="table-warning">
-                                {`Roles:${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Groups:${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Users:${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Permissions: ${policy.accesses.map(
-                                  (obj) => obj.type
-                                )}`}
-                              </td>
-                            </tr>
-                            <tr>
-                              {policy.conditions.length > 0 && (
-                                <td className="table-warning">
-                                  {`Conditions:${policy.conditions.map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )} `}
-                                </td>
-                              )}
-                            </tr>
-                            <tr>
-                              <td className="table-warning">{`Delegate Admin: ${
-                                policy.delegateAdmin == true
-                                  ? "enabled"
-                                  : "disabled"
-                              }`}</td>
-                            </tr>
-                          </tbody>
-                        )
-                      );
-                    })}
-                </Table>
-              )}
-
-            {action == "delete" &&
-              !isEmpty(denyPolicyItemoldval) &&
-              !isUndefined(denyPolicyItemoldval) &&
-              denyPolicyItemoldval != 0 && (
-                <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
-              )}
-            {action == "delete" &&
-              !isEmpty(denyPolicyItemoldval) &&
-              !isUndefined(denyPolicyItemoldval) &&
-              denyPolicyItemoldval != 0 && (
-                <Table className="table table-striped  table-bordered   w-auto">
-                  {denyPolicyItem.length > 0 && (
+              !isEmpty(deleteExceptionOld) &&
+              !isUndefined(deleteExceptionOld) &&
+              deleteExceptionOld != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Allow Exception PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
                     <thead>
                       <tr>
                         <th>Old Value</th>
                       </tr>
                     </thead>
-                  )}
 
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "DenyPolicy Items" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
+                    {deleteExceptionOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
                               <td className="table-warning">
-                                {`Roles:${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles
-                                } `}
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) =>
+                                    `${type.type} : ${type.values.join(", ")}`
+                                )} `}
                               </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Groups:${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Users:${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Permissions: ${policy.accesses.map(
-                                  (obj) => obj.type
-                                )}`}
-                              </td>
-                            </tr>
-                            <tr>
-                              {policy.conditions.length > 0 && (
-                                <td className="table-warning">
-                                  {`Conditions:${policy.conditions.map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )} `}
-                                </td>
-                              )}
-                            </tr>
-                            <tr>
-                              <td className="table-warning">{`Delegate Admin: ${
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
                                 policy.delegateAdmin == true
                                   ? "enabled"
                                   : "disabled"
-                              }`}</td>
-                            </tr>
-                          </tbody>
-                        )
-                      );
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
                     })}
-                </Table>
-              )}
-
-            {action == "delete" &&
-              !isEmpty(denyPolicyItemoldval) &&
-              !isUndefined(denyPolicyItemoldval) &&
-              denyPolicyItemoldval != 0 && (
-                <h5 className="bold wrap-header m-t-sm">
-                  Deny Exception PolicyItems:
-                </h5>
+                  </Table>
+                  <br />
+                </>
               )}
             {action == "delete" &&
-              !isEmpty(denyPolicyItemoldval) &&
-              !isUndefined(denyPolicyItemoldval) &&
-              denyPolicyItemoldval != 0 && (
-                <Table className="table table-striped  table-bordered   w-auto">
-                  {denyPolicyItem.length > 0 && (
+              !isEmpty(deleteDenyPolicyOld) &&
+              !isUndefined(deleteDenyPolicyOld) &&
+              deleteDenyPolicyOld != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
                     <thead>
                       <tr>
                         <th>Old Value</th>
                       </tr>
                     </thead>
-                  )}
 
-                  {reportdata
-                    .filter(
-                      (obj) =>
-                        obj.attributeName == "Deny Exceptions" &&
-                        obj.action == "delete"
-                    )
-                    .map((policyitem) => {
-                      return JSON.parse(policyitem.previousValue).map(
-                        (policy) => (
-                          <tbody>
-                            <tr>
+                    {deleteDenyPolicyOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
                               <td className="table-warning">
-                                {`Roles:${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles
-                                } `}
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) =>
+                                    `${type.type} : ${type.values.join(", ")}`
+                                )} `}
                               </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Groups:${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Users:${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users
-                                } `}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="table-warning">
-                                {`Permissions: ${policy.accesses.map(
-                                  (obj) => obj.type
-                                )}`}
-                              </td>
-                            </tr>
-                            <tr>
-                              {policy.conditions.length > 0 && (
-                                <td className="table-warning">
-                                  {`Conditions:${policy.conditions.map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )} `}
-                                </td>
-                              )}
-                            </tr>
-                            <tr>
-                              <td className="table-warning">{`Delegate Admin: ${
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
                                 policy.delegateAdmin == true
                                   ? "enabled"
                                   : "disabled"
-                              }`}</td>
-                            </tr>
-                            <br />
-                          </tbody>
-                        )
-                      );
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
                     })}
-                </Table>
+                  </Table>
+                  <br />
+                </>
+              )}
+
+            {action == "delete" &&
+              !isEmpty(deleteDenyExceptionOld) &&
+              !isUndefined(deleteDenyExceptionOld) &&
+              deleteDenyExceptionOld != 0 && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Deny Exception PolicyItems:
+                  </h5>
+                  <Table className="table table-striped  table-bordered   w-auto">
+                    <thead>
+                      <tr>
+                        <th>Old Value</th>
+                      </tr>
+                    </thead>
+
+                    {deleteDenyExceptionOld.map((policyitem) => {
+                      return JSON.parse(policyitem).map((policy) => (
+                        <tbody>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Roles`}</i>
+                              {`: ${
+                                policy.roles.length == 0
+                                  ? "<empty>"
+                                  : policy.roles.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Groups`}</i>
+                              {`: ${
+                                policy.groups.length == 0
+                                  ? "<empty>"
+                                  : policy.groups.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Users`}</i>
+                              {`: ${
+                                policy.users.length == 0
+                                  ? "<empty>"
+                                  : policy.users.join(", ")
+                              } `}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Permissions`}</i>
+                              {`: ${policy.accesses
+                                .map((obj) => obj.type)
+                                .join(", ")} `}
+                            </td>
+                          </tr>
+                          <tr>
+                            {policy.conditions.length > 0 && (
+                              <td className="table-warning">
+                                <i>{`Conditions`}</i>
+                                {`: ${policy.conditions.map(
+                                  (type) =>
+                                    `${type.type} : ${type.values.join(", ")}`
+                                )} `}
+                              </td>
+                            )}
+                          </tr>
+                          <tr>
+                            <td className="table-warning">
+                              <i>{`Delegate Admin`}</i>
+                              {`: ${
+                                policy.delegateAdmin == true
+                                  ? "enabled"
+                                  : "disabled"
+                              } `}
+                            </td>
+                          </tr>
+                        </tbody>
+                      ));
+                    })}
+                  </Table>
+                  <br />
+                </>
               )}
           </div>
         )}
@@ -2479,7 +2336,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <div>
             <h5 className="bold wrap-header m-t-sm">Details:</h5>
             <Table className="table table-striped table-bordered w-50">
-              {importJson.map((c) =>
+              {importEnd.map((c) =>
                 Object.keys(JSON.parse(c.previousValue)).map((s, index) => (
                   <tbody key={index}>
                     <tr>
@@ -2525,6 +2382,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
             </Table>
           </>
         )}
+
+      {/* Import Delete */}
+
       {action == "Import Delete" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>

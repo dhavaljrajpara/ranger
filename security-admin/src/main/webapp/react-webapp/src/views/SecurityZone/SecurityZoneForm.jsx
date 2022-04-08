@@ -892,7 +892,7 @@ const SecurityZoneForm = (props) => {
                                     input.input.value.length > 0
                                       ? input.input.value.map((obj, idx) => (
                                           <>
-                                            <div className="resourceGrp">
+                                            <div className="resource-group">
                                               <Row>
                                                 <Col xs={9}>
                                                   <span className="m-t-xs">
