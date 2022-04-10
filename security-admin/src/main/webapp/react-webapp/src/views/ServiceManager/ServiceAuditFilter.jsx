@@ -7,7 +7,7 @@ import AsyncSelect from "react-select/async";
 import CreatableSelect from "react-select/creatable";
 import Editable from "Components/Editable";
 import ModalResourceComp from "../Resources/ModalResourceComp";
-import { uniq, map, join, isEmpty } from "lodash";
+import { uniq, map, join, isEmpty, forEach } from "lodash";
 
 export default function ServiceAuditFilter(props) {
   const {
@@ -23,63 +23,75 @@ export default function ServiceAuditFilter(props) {
   const [modelState, setModalstate] = useState({
     showModalResource: false,
     resourceInput: null,
-    data: {},
-    index: 0
+    data: {}
   });
 
   const handleClose = () =>
     setModalstate({
       showModalResource: false,
       resourceInput: null,
-      data: {},
-      index: 0
+      data: {}
     });
 
   const renderResourcesModal = (input) => {
     setModalstate({
       showModalResource: true,
       resourceInput: input,
-      data: {},
-      index: -1
+      data: isEmpty(input.value) ? {} : input.value
     });
   };
 
   const handleSave = () => {
-    if (modelState.index === -1) {
-      let add;
-      add = modelState.data;
-      modelState.resourceInput.onChange(add);
-      handleClose();
-    } else {
-      let edit = modelState.resourceInput.value;
-      edit = modelState.data;
-      modelState.resourceInput.onChange(edit);
-      handleClose();
-    }
+    let inputData;
+    inputData = modelState.data;
+    modelState.resourceInput.onChange(inputData);
+    handleClose();
+  };
+
+  const handleRemove = (input) => {
+    forEach(input.value, function (value, key) {
+      delete input.value[key];
+    });
+    setModalstate({
+      showModalResource: false,
+      resourceInput: null,
+      data: {}
+    });
   };
 
   const getResourceData = (resourceData) => {
     let dataStructure = [];
 
-    let level = uniq(map(serviceDefDetails.resources, "level"));
+    let levels = uniq(map(serviceDefDetails.resources, "level"));
 
-    dataStructure = level.map((l, index) => {
+    dataStructure = levels.map((level, index) => {
       if (
-        resourceData[`resourceName-${l}`] !== undefined &&
-        resourceData[`value-${l}`] !== undefined
+        resourceData[`resourceName-${level}`] !== undefined &&
+        resourceData[`value-${level}`] !== undefined
       ) {
         return (
           <div className="clearfix text-left" key={index}>
             <p className="pull-left">
               <span className="bold mr-1">
-                {resourceData[`resourceName-${l}`].name}
+                {resourceData[`resourceName-${level}`].name}
               </span>
               :
               <span className="ml-1">
-                {join(map(resourceData[`value-${l}`], "value"), ", ")}
+                {join(map(resourceData[`value-${level}`], "value"), ", ")}
               </span>
             </p>
-            <p className="pull-right"></p>
+            <p className="pull-right">
+              {resourceData[`isRecursiveSupport-${level}`] !== undefined ? (
+                <span className="badge badge-secondary">Recursive</span>
+              ) : (
+                ""
+              )}
+              {resourceData[`isExcludesSupport-${level}`] !== undefined ? (
+                <span className="badge badge-secondary">Exclude</span>
+              ) : (
+                ""
+              )}
+            </p>
           </div>
         );
       }
@@ -144,7 +156,7 @@ export default function ServiceAuditFilter(props) {
                       return (
                         <td key={`${name}.isAudited`}>
                           <Field
-                            className="form-control"
+                            className="form-control audit-filter-select"
                             name={`${name}.isAudited`}
                             component="select"
                           >
@@ -203,9 +215,14 @@ export default function ServiceAuditFilter(props) {
                                       className={getResourceIcon(input.value)}
                                     ></i>
                                   </Button>
-                                  <a className="btn btn-danger btn-sm">
+                                  <Button
+                                    className="mr-1"
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => handleRemove(input)}
+                                  >
                                     <i className="fa-fw fa fa-remove"></i>
-                                  </a>
+                                  </Button>
                                 </div>
                               </React.Fragment>
                             )}

@@ -723,3 +723,7 @@ header {
 .table-audit-filter td:last-child {
   width: 40px;
 }
+
+.form-control.audit-filter-select {
+  font-size: 12px;
+}

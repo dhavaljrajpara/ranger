@@ -10,7 +10,16 @@ import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
-import { difference, keys, map, find, reject } from "lodash";
+import {
+  difference,
+  head,
+  keys,
+  map,
+  find,
+  reject,
+  uniq,
+  isEmpty
+} from "lodash";
 
 class ServiceForm extends Component {
   constructor(props) {
@@ -76,20 +85,25 @@ class ServiceForm extends Component {
     serviceJson["isEnabled"] = values.isEnabled === "true";
 
     serviceJson["configs"] = {};
-    for (const x in values.configs) {
-      for (const y in this.configsJson) {
-        if (x === this.configsJson[y]) {
-          serviceJson["configs"][y] = values.configs[x];
+    for (const config in values.configs) {
+      for (const jsonConfig in this.configsJson) {
+        if (config === this.configsJson[jsonConfig]) {
+          serviceJson["configs"][jsonConfig] = values.configs[config];
         }
       }
     }
 
-    values.customConfigs.map((c) => {
-      c !== undefined && (serviceJson["configs"][c.name] = c.value);
+    values.customConfigs.map((config) => {
+      config !== undefined &&
+        (serviceJson["configs"][config.name] = config.value);
     });
 
-    // TODO to update ranger.plugin.audit.filters
-    serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
+    if (head(values.isAuditFilter) === "true") {
+      serviceJson["configs"]["ranger.plugin.audit.filters"] =
+        this.getAuditFiltersToSave(values.auditFilters);
+    } else {
+      serviceJson["configs"]["ranger.plugin.audit.filters"] = "";
+    }
 
     try {
       await fetchApi({
@@ -113,6 +127,77 @@ class ServiceForm extends Component {
         );
       }
     }
+  };
+
+  getAuditFiltersToSave = (auditFilters) => {
+    let auditFiltersArray = [];
+
+    auditFilters.map((item) => {
+      let obj = {};
+
+      Object.entries(item).map(([key, value]) => {
+        if (key === "isAudited") {
+          obj.isAudited = value === "true";
+        } else {
+          obj.isAudited = true;
+        }
+
+        if (key === "accessResult") {
+          obj.accessResult = value.value;
+        }
+
+        if (key === "resources" && !isEmpty(value)) {
+          obj.resources = {};
+
+          let levels = uniq(map(this.state.serviceDef.resources, "level"));
+
+          levels.map((level) => {
+            if (
+              value[`resourceName-${level}`] !== undefined &&
+              value[`value-${level}`] !== undefined
+            ) {
+              obj.resources[value[`resourceName-${level}`].name] = {
+                values: map(value[`value-${level}`], "value")
+              };
+            }
+            if (value[`isRecursiveSupport-${level}`] !== undefined) {
+              obj.resources[value[`resourceName-${level}`].name].isRecursive =
+                value[`isRecursiveSupport-${level}`];
+            }
+
+            if (value[`isExcludesSupport-${level}`] !== undefined) {
+              obj.resources[value[`resourceName-${level}`].name].isExcludes =
+                value[`isExcludesSupport-${level}`];
+            }
+          });
+        }
+
+        if (key === "actions") {
+          obj.actions = map(value, "value");
+        }
+
+        if (key === "accessTypes") {
+          obj.accessTypes = map(value, "value");
+        }
+
+        if (key === "users") {
+          obj.users = map(value, "value");
+        }
+
+        if (key === "groups") {
+          obj.groups = map(value, "value");
+        }
+
+        if (key === "roles") {
+          obj.roles = map(value, "value");
+        }
+      });
+
+      auditFiltersArray.push(obj);
+    });
+
+    console.log("PRINT save auditFiltersArray : ", auditFiltersArray);
+    return JSON.stringify(auditFiltersArray).replace(/"/g, "'");
   };
 
   fetchServiceDef = async () => {
@@ -149,6 +234,8 @@ class ServiceForm extends Component {
       name: "ranger.plugin.audit.filters"
     });
 
+    serviceJson["auditFilters"] = [];
+
     console.log(
       "PRINT getAuditFilters from response during create : ",
       getAuditFilters
@@ -166,8 +253,7 @@ class ServiceForm extends Component {
         "PRINT getAuditFilters after parsing during create : ",
         getAuditFilters
       );
-      serviceJson["isAuditFilter"] = ["true"];
-      serviceJson["auditFilters"] = [];
+      serviceJson["isAuditFilter"] = getAuditFilters.length > 0 ? ["true"] : [];
 
       console.log("PRINT serviceDefResp during create : ", serviceDefResp.data);
 
@@ -185,58 +271,80 @@ class ServiceForm extends Component {
           if (key === "resources") {
             obj.resources = {};
 
-            let resourceKey = keys(item.resources);
-            resourceKey.map((rk) => {
+            let resourceKeys = keys(item.resources);
+            resourceKeys.map((resourceKey) => {
               let resourceObj = find(serviceDefResp.data.resources, [
                 "name",
-                rk
+                resourceKey
               ]);
               let resourceLevel = resourceObj.level;
               return (obj.resources[`resourceName-${resourceLevel}`] =
                 resourceObj);
             });
 
-            resourceKey.map((rk) => {
+            resourceKeys.map((resourceKey) => {
               let resourceObj = find(serviceDefResp.data.resources, [
                 "name",
-                rk
+                resourceKey
               ]);
               let resourceLevel = resourceObj.level;
-              let resourceValue = item.resources[rk].values;
+              let resourceValues = item.resources[resourceKey].values;
               return (obj.resources[`value-${resourceLevel}`] =
-                resourceValue.map((rv) => {
-                  return { value: rv, label: rv };
+                resourceValues.map((resourceValue) => {
+                  return { value: resourceValue, label: resourceValue };
                 }));
+            });
+
+            resourceKeys.map((resourceKey) => {
+              let resourceObj = find(this.state.serviceDef.resources, [
+                "name",
+                resourceKey
+              ]);
+              let resourceLevel = resourceObj.level;
+              let resourceIsRecursive = item.resources[resourceKey].isRecursive;
+              let resourceIsExcludes = item.resources[resourceKey].isExcludes;
+              if (resourceIsRecursive !== undefined) {
+                return (obj.resources[`isRecursiveSupport-${resourceLevel}`] =
+                  resourceIsRecursive);
+              }
+              if (resourceIsExcludes !== undefined) {
+                return (obj.resources[`isExcludesSupport-${resourceLevel}`] =
+                  resourceIsExcludes);
+              }
             });
           }
 
           if (key === "actions") {
-            obj.actions = value.map((a) => {
-              return { value: a, label: a };
+            obj.actions = value.map((action) => {
+              return { value: action, label: action };
             });
           }
 
           if (key === "accessTypes") {
-            obj.accessTypes = value.map((a) => {
-              return { value: a, label: a };
+            obj.accessTypes = value.map((accessType) => {
+              let accessTypeObj = find(serviceDefResp.data.accessTypes, [
+                "name",
+                accessType
+              ]);
+              return { value: accessType, label: accessTypeObj.label };
             });
           }
 
           if (key === "users") {
-            obj.users = value.map((u) => {
-              return { value: u, label: u };
+            obj.users = value.map((user) => {
+              return { value: user, label: user };
             });
           }
 
           if (key === "groups") {
-            obj.users = value.map((g) => {
-              return { value: g, label: g };
+            obj.users = value.map((group) => {
+              return { value: group, label: group };
             });
           }
 
           if (key === "roles") {
-            obj.users = value.map((r) => {
-              return { value: r, label: r };
+            obj.users = value.map((role) => {
+              return { value: role, label: role };
             });
           }
         });
@@ -293,13 +401,13 @@ class ServiceForm extends Component {
     let configs = map(this.state.serviceDef.configs, "name");
     let customConfigs = difference(keys(serviceResp.data.configs), configs);
 
-    configs.map((c) => {
-      serviceJson["configs"][c.replaceAll(".", "_").replaceAll("-", "_")] =
-        serviceResp.data.configs[c];
+    configs.map((config) => {
+      serviceJson["configs"][config.replaceAll(".", "_").replaceAll("-", "_")] =
+        serviceResp.data.configs[config];
     });
 
-    let editCustomConfigs = customConfigs.map((c) => {
-      return { name: c, value: serviceResp.data.configs[c] };
+    let editCustomConfigs = customConfigs.map((config) => {
+      return { name: config, value: serviceResp.data.configs[config] };
     });
 
     serviceJson["customConfigs"] =
@@ -307,6 +415,8 @@ class ServiceForm extends Component {
 
     let getEditAuditFilters =
       serviceResp.data.configs["ranger.plugin.audit.filters"];
+
+    serviceJson["auditFilters"] = [];
 
     if (
       getEditAuditFilters &&
@@ -318,8 +428,8 @@ class ServiceForm extends Component {
         "PRINT getEditAuditFilters after parsing during edit : ",
         getEditAuditFilters
       );
-      serviceJson["isAuditFilter"] = ["true"];
-      serviceJson["auditFilters"] = [];
+      serviceJson["isAuditFilter"] =
+        getEditAuditFilters.length > 0 ? ["true"] : [];
 
       console.log(
         "PRINT serviceDef from state during edit : ",
@@ -328,6 +438,7 @@ class ServiceForm extends Component {
 
       getEditAuditFilters.map((item) => {
         let obj = {};
+
         Object.entries(item).map(([key, value]) => {
           if (key === "isAudited") {
             obj.isAudited = JSON.stringify(value);
@@ -340,58 +451,80 @@ class ServiceForm extends Component {
           if (key === "resources") {
             obj.resources = {};
 
-            let resourceKey = keys(item.resources);
-            resourceKey.map((rk) => {
+            let resourceKeys = keys(item.resources);
+            resourceKeys.map((resourceKey) => {
               let resourceObj = find(this.state.serviceDef.resources, [
                 "name",
-                rk
+                resourceKey
               ]);
               let resourceLevel = resourceObj.level;
               return (obj.resources[`resourceName-${resourceLevel}`] =
                 resourceObj);
             });
 
-            resourceKey.map((rk) => {
+            resourceKeys.map((resourceKey) => {
               let resourceObj = find(this.state.serviceDef.resources, [
                 "name",
-                rk
+                resourceKey
               ]);
               let resourceLevel = resourceObj.level;
-              let resourceValue = item.resources[rk].values;
+              let resourceValues = item.resources[resourceKey].values;
               return (obj.resources[`value-${resourceLevel}`] =
-                resourceValue.map((rv) => {
-                  return { value: rv, label: rv };
+                resourceValues.map((resourceValue) => {
+                  return { value: resourceValue, label: resourceValue };
                 }));
+            });
+
+            resourceKeys.map((resourceKey) => {
+              let resourceObj = find(this.state.serviceDef.resources, [
+                "name",
+                resourceKey
+              ]);
+              let resourceLevel = resourceObj.level;
+              let resourceIsRecursive = item.resources[resourceKey].isRecursive;
+              let resourceIsExcludes = item.resources[resourceKey].isExcludes;
+              if (resourceIsRecursive !== undefined) {
+                return (obj.resources[`isRecursiveSupport-${resourceLevel}`] =
+                  resourceIsRecursive);
+              }
+              if (resourceIsExcludes !== undefined) {
+                return (obj.resources[`isExcludesSupport-${resourceLevel}`] =
+                  resourceIsExcludes);
+              }
             });
           }
 
           if (key === "actions") {
-            obj.actions = value.map((a) => {
-              return { value: a, label: a };
+            obj.actions = value.map((action) => {
+              return { value: action, label: action };
             });
           }
 
           if (key === "accessTypes") {
-            obj.accessTypes = value.map((a) => {
-              return { value: a, label: a };
+            obj.accessTypes = value.map((accessType) => {
+              let accessTypeObj = find(this.state.serviceDef.accessTypes, [
+                "name",
+                accessType
+              ]);
+              return { value: accessType, label: accessTypeObj.label };
             });
           }
 
           if (key === "users") {
-            obj.users = value.map((u) => {
-              return { value: u, label: u };
+            obj.users = value.map((user) => {
+              return { value: user, label: user };
             });
           }
 
           if (key === "groups") {
-            obj.users = value.map((g) => {
-              return { value: g, label: g };
+            obj.users = value.map((group) => {
+              return { value: group, label: group };
             });
           }
 
           if (key === "roles") {
-            obj.users = value.map((r) => {
-              return { value: r, label: r };
+            obj.users = value.map((role) => {
+              return { value: role, label: role };
             });
           }
         });
