@@ -296,7 +296,7 @@ class ServiceForm extends Component {
             });
 
             resourceKeys.map((resourceKey) => {
-              let resourceObj = find(this.state.serviceDef.resources, [
+              let resourceObj = find(serviceDefResp.data.resources, [
                 "name",
                 resourceKey
               ]);
