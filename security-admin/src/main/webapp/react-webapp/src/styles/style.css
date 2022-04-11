@@ -727,3 +727,7 @@ header {
 .form-control.audit-filter-select {
   font-size: 12px;
 }
+
+.connection-error {
+  font-family: monospace;
+}
