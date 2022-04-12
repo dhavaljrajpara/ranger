@@ -51,28 +51,35 @@ export default function ResourceComp(props) {
   const fetchResourceLookup = async (
     inputValue,
     resourceObj,
-    selectedValues
+    selectedValues,
+    callback
   ) => {
     let resourceName = resourceObj.name;
     let data = {
       resourceName,
       resources: {
-        [resourceName]: selectedValues?.map(({ value }) => value) || []
+        [resourceName]: selectedValues?.map?.(({ value }) => value) || []
       }
     };
     if (inputValue) {
       data["userInput"] = inputValue || "";
     }
-    const resourceResp = await fetchApi({
-      url: `plugins/services/lookupResource`,
-      method: "POST",
-      data
-    });
 
-    return resourceResp.data.map((name) => ({
-      label: name,
-      value: name
-    }));
+    let op = [];
+    if (resourceObj.lookupSupported) {
+      const resourceResp = await fetchApi({
+        url: `plugins/services/lookupResource/${serviceDetails.name}`,
+        method: "POST",
+        data
+      });
+      op =
+        resourceResp.data?.map?.((name) => ({
+          label: name,
+          value: name
+        })) || [];
+    }
+
+    callback(op);
   };
 
   const getResourceLabelOp = (levelKey, index) => {
@@ -232,11 +239,14 @@ export default function ResourceComp(props) {
                     noneOptions.value
                   }
                   loadOptions={(inputValue) =>
-                    fetchResourceLookup(
-                      inputValue,
-                      formValues[`resourceName-${levelKey}`],
-                      input.value
-                    )
+                    new Promise((resolve, reject) => {
+                      fetchResourceLookup(
+                        inputValue,
+                        formValues[`resourceName-${levelKey}`],
+                        input.value,
+                        resolve
+                      );
+                    })
                   }
                 />
               )}
