@@ -229,6 +229,7 @@ class ServiceForm extends Component {
       auditFilters: []
     };
     let serviceDefResp;
+    let serviceDef;
     let serviceDefId = this.props.match.params.serviceDefId;
 
     try {
@@ -241,7 +242,21 @@ class ServiceForm extends Component {
       );
     }
 
-    let auditFilters = find(serviceDefResp.data.configs, {
+    serviceDef = serviceDefResp.data;
+
+    if (serviceDef.resources !== undefined) {
+      for (const obj of serviceDef.resources) {
+        if (
+          obj.lookupSupported !== undefined &&
+          this.props.match.params.serviceId === undefined &&
+          obj.lookupSupported
+        ) {
+          obj.lookupSupported = false;
+        }
+      }
+    }
+
+    let auditFilters = find(serviceDef.configs, {
       name: "ranger.plugin.audit.filters"
     });
 
@@ -264,18 +279,18 @@ class ServiceForm extends Component {
       );
       serviceJson["isAuditFilter"] = auditFilters.length > 0 ? ["true"] : [];
 
-      console.log("PRINT serviceDefResp during create : ", serviceDefResp.data);
+      console.log("PRINT serviceDef during create : ", serviceDef);
 
       serviceJson["auditFilters"] = this.getAuditFilters(
         auditFilters,
-        serviceDefResp.data
+        serviceDef
       );
 
       console.log("PRINT final serviceJson during create : ", serviceJson);
     }
 
     this.setState({
-      serviceDef: serviceDefResp.data,
+      serviceDef: serviceDef,
       createInitialValues: serviceJson,
       loader: false
     });
