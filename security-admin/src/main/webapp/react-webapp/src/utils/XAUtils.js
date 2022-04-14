@@ -1,6 +1,7 @@
 import { getUserProfile, setUserProfile } from "Utils/appState";
-import { UserRoles } from "Utils/XAEnums";
-import { filter } from "lodash";
+import { UserRoles, PathAssociateWithModule } from "Utils/XAEnums";
+import _, { filter, flatMap, forEach, uniq } from "lodash";
+// import { includes, map, union, forEach } from "lodash";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
@@ -81,4 +82,30 @@ export const isObject = (value) => {
 
 export const getUserDataParams = () => {
   let userRoleList = [];
+};
+
+export const hasAccessToTab = (tabName) => {
+  const userProfile = getUserProfile();
+  let userModules = _.map(userProfile.userPermList, "moduleName");
+  let groupModules = _.map(userProfile.groupPermissions, "moduleName");
+  let moduleNames = _.union(userModules, groupModules);
+  let returnFlag = _.includes(moduleNames, tabName);
+  return returnFlag;
+};
+
+export const hasAccessToPath = (pathName) => {
+  let allowPath = [];
+  const userProfile = getUserProfile();
+  let userModules = _.map(userProfile.userPermList, "moduleName");
+  let groupModules = _.map(userProfile.groupPermissions, "moduleName");
+  let moduleNames = _.union(userModules, groupModules);
+  if (isSystemAdmin() || isAuditor()) {
+    moduleNames.push("Permission");
+  }
+  forEach(moduleNames, function (key) {
+    allowPath.push(PathAssociateWithModule[key]);
+  });
+  allowPath = uniq(flatMap(allowPath));
+  let returnFlag = _.includes(allowPath, pathName);
+  return !returnFlag;
 };

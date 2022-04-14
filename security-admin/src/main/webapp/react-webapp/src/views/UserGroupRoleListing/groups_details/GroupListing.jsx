@@ -12,13 +12,12 @@ import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
-import { Loader } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import { SyncSourceDetails } from "../SyncSourceDetails";
-import { GroupAssociateUserDetails } from "../GroupAssociateUserDetails";
+import GroupAssociateUserDetails from "../GroupAssociateUserDetails";
 import {
   isSystemAdmin,
   isKeyAdmin,
@@ -284,7 +283,7 @@ function Groups() {
     []
   );
   const addGroup = () => {
-    history.push("/groupCreate");
+    history.push("/group/create");
   };
   const toggleGroupSyncModal = (raw) => {
     setGroupSyncdetails({

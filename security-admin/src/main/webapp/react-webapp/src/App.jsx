@@ -2,10 +2,12 @@ import React, { Suspense, lazy, Component } from "react";
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ErrorBoundary from "Views/ErrorBoundary";
+import ErrorPage from "./views/ErrorPage";
 import { Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
+import { hasAccessToPath } from "Utils/XAUtils";
 
 const HeaderComp = lazy(() => import("Views/Header"));
 const HomeComp = lazy(() => import("Views/Home"));
@@ -62,7 +64,13 @@ function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
     <Route
       {...rest}
       exact
-      render={(routeProps) => <Comp {...routeProps} {...compProps} />}
+      render={(routeProps) => {
+        return hasAccessToPath(path) ? (
+          <ErrorPage {...routeProps} {...compProps} errorCode="401"></ErrorPage>
+        ) : (
+          <Comp {...routeProps} {...compProps} />
+        );
+      }}
     />
   );
 }
@@ -102,7 +110,7 @@ export default class App extends Component {
     const userProfile = getUserProfile();
     const defaultProps = { userProfile };
     return (
-      <ErrorBoundary>
+      <ErrorBoundary history={history}>
         <Router history={history}>
           <Suspense fallback={<Loader />}>
             {!this.state.loader && <HeaderComp />}
@@ -226,7 +234,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/groupCreate"
+                      path="/group/create"
                       component={GroupForm}
                       {...defaultProps}
                     />
@@ -244,7 +252,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/roleCreate"
+                      path="/roles/create"
                       component={RoleForm}
                       {...defaultProps}
                     />
@@ -256,7 +264,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/permissions"
+                      path="/permissions/models"
                       component={PermissionsComp}
                       {...defaultProps}
                     />
@@ -314,7 +322,18 @@ export default class App extends Component {
                       component={UserSyncLogs}
                       {...defaultProps}
                     />
-                    <Redirect from="/" to="/policymanager/resource" />
+                    <AuthRoute
+                      exact
+                      path="/*"
+                      history
+                      errorCode="404"
+                      component={ErrorPage}
+                      {...defaultProps}
+                    />
+
+                    {/* <Redirect from="/" to="/policymanager/resource">
+                      <ErrorPage history errorCode="404"></ErrorPage>
+                    </Redirect> */}
                   </Switch>
                 )}
               </div>

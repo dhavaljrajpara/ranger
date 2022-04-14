@@ -177,7 +177,7 @@ function Roles() {
     []
   );
   const addRole = () => {
-    history.push("/roleCreate");
+    history.push("/roles/create");
   };
   return (
     <div>

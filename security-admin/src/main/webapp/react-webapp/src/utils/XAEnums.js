@@ -421,15 +421,6 @@ export const AuthType = {
   }
 };
 
-// export const enumValueToLabel = (myEnum, value) => {
-//   var element =
-//     (myEnum,
-//     function (element) {
-//       return element.value == value;
-//     });
-//   return typeof element === "undefined" ? "--" : element.label;
-// };
-
 export const ActivationStatus = {
   ACT_STATUS_DISABLED: {
     value: 0,
@@ -531,4 +522,54 @@ export const RegexValidation = {
     secondaryNameValidationMessage:
       "1. Name should be start with alphabet / numeric / underscore / non-us characters. 2. Allowed special character ._-@ and space. 3. Name length should be greater than one."
   }
+};
+
+export const PathAssociateWithModule = {
+  "Resource Based Policies": [
+    "/policymanager/resource",
+    "/service/:serviceDefId/create",
+    "/service/:serviceDefId/edit/:serviceId",
+    "/service/:serviceId/policies/:policyType",
+    "/service/:serviceId/policies/create/:policyType",
+    "/service/:serviceId/policies/:policyId/edit"
+  ],
+  "Tag Based Policies": [
+    "/policymanager/tag",
+    "/service/:serviceDefId/create",
+    "/service/:serviceDefId/edit/:serviceId",
+    "/service/:serviceId/policies/:policyType",
+    "/service/:serviceId/policies/create/:policyType",
+    "/service/:serviceId/policies/:policyId/edit"
+  ],
+  Reports: [],
+  Audit: [
+    "/reports/audit/bigData",
+    "/reports/audit/admin",
+    "/reports/audit/loginSession",
+    "/reports/audit/agent",
+    "/reports/audit/pluginStatus",
+    "/reports/audit/userSync"
+  ],
+  "Security Zone": [
+    "/zones/zone/list",
+    "/zones/zone/:id",
+    "/zones/create",
+    "/zones/edit/:id"
+  ],
+  "Key Manager": [
+    "/kms/keys/:kmsManagePage/manage/:kmsServiceName",
+    "/kms/keys/:serviceName/create"
+  ],
+  "Users/Groups": [
+    "/users/usertab",
+    "/user/create",
+    "/user/:userID",
+    "/users/grouptab",
+    "/group/create",
+    "/group/:groupId",
+    "/users/roletab",
+    "/roles/create",
+    "/role/:roleId"
+  ],
+  Permission: ["/permissions/models", "/permissions/:permissionId/edit"]
 };

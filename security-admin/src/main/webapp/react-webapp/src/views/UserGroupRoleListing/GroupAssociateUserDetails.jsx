@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchApi } from "Utils/fetchAPI";
 import { Button, Row, Col } from "react-bootstrap";
 import { Loader } from "Components/CommonComponents";
 import { isAuditor, isKMSAuditor } from "Utils/XAUtils";
 import { toast } from "react-toastify";
 
-export function GroupAssociateUserDetails(props) {
+function GroupAssociateUserDetails(props) {
   const { groupID } = props;
   const [userListData, setUserDataList] = useState([]);
   const [filterUserListData, setFilterUserDataList] = useState([]);

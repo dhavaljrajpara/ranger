@@ -49,6 +49,7 @@ function Users() {
 
   const fetchUserInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
+      // setLoader(true);
       let userData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;

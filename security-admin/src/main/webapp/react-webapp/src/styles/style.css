@@ -732,11 +732,45 @@ header {
   font-family: monospace;
 }
 
-.spinner-border, .spinner-grow {
+.spinner-border,
+.spinner-grow {
   width: 3rem;
   height: 3rem;
 }
 
 .text-color-red {
   color: #b85355;
+}
+
+.new-error-page {
+  height: calc(100vh - 200px);
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  /*align-items: center;*/
+  margin-top: 6%;
+}
+
+.new-error-box {
+  display: table;
+  max-width: 40%;
+  min-width: 450px;
+}
+
+.error-white-bg {
+  background-color: white;
+}
+
+.new-icon-box,
+.new-description-box {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 20px;
+  color: #888;
+}
+
+.new-icon-box {
+  width: 60px;
+  text-align: center;
+  border-right: 1px solid #ddd;
 }
