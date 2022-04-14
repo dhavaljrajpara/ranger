@@ -66,17 +66,21 @@ export default function ResourceComp(props) {
     }
 
     let op = [];
-    if (resourceObj.lookupSupported) {
-      const resourceResp = await fetchApi({
-        url: `plugins/services/lookupResource/${serviceDetails.name}`,
-        method: "POST",
-        data
-      });
-      op =
-        resourceResp.data?.map?.((name) => ({
-          label: name,
-          value: name
-        })) || [];
+    try {
+      if (resourceObj.lookupSupported) {
+        const resourceResp = await fetchApi({
+          url: `plugins/services/lookupResource/${serviceDetails.name}`,
+          method: "POST",
+          data
+        });
+        op =
+          resourceResp.data?.map?.((name) => ({
+            label: name,
+            value: name
+          })) || [];
+      }
+    } catch (error) {
+      op.push({ label: data.userInput, value: data.userInput });
     }
 
     callback(op);
