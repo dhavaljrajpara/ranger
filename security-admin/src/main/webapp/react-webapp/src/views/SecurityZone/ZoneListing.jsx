@@ -145,7 +145,7 @@ class ZoneListing extends Component {
                 ></input>
               </Col>
             </Row>
-            <Row>
+            <Row className="mt-2">
               <Col>
                 {this.state.filterZone.length !== 0 ? (
                   <ul className="list-group">

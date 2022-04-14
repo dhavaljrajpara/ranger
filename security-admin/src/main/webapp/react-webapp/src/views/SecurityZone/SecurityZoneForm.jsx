@@ -100,6 +100,9 @@ const SecurityZoneForm = (props) => {
       if (obj.level !== 10) {
         obj.mandatory = false;
       }
+      if (obj.lookupSupported !== undefined && obj.lookupSupported) {
+        obj.lookupSupported = false;
+      }
     }
     setModalstate({
       showModalResource: true,
