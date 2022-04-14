@@ -52,37 +52,33 @@ export const ServiceLogs = ({ data, reportdata }) => {
             </div>
             <div className="font-weight-bolder">Created By: {owner}</div>
             <br />
-            {action == "create" &&
-              !isEmpty(serviceCreate) &&
-              !isUndefined(serviceCreate) && (
-                <>
-                  <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
-                  <Table className="table  table-bordered  w-50">
-                    <thead>
-                      <tr>
-                        <th>Fields</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
-                    {serviceCreate.map((obj, index) => {
-                      return (
-                        <tbody>
-                          <tr key={index}>
-                            <td className="table-warning">
-                              {obj.attributeName}
-                            </td>
+            {action == "create" && (
+              <>
+                <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
+                <Table className="table  table-bordered  w-50">
+                  <thead>
+                    <tr>
+                      <th>Fields</th>
+                      <th>New Value</th>
+                    </tr>
+                  </thead>
+                  {serviceCreate.map((obj, index) => {
+                    return (
+                      <tbody>
+                        <tr key={index}>
+                          <td className="table-warning">{obj.attributeName}</td>
 
-                            <td className="table-warning">
-                              {!isEmpty(obj.newValue) ? obj.newValue : "--"}
-                            </td>
-                          </tr>
-                        </tbody>
-                      );
-                    })}
-                  </Table>
-                  <br />
-                </>
-              )}
+                          <td className="table-warning">
+                            {!isEmpty(obj.newValue) ? obj.newValue : "--"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    );
+                  })}
+                </Table>
+                <br />
+              </>
+            )}
 
             {action == "create" &&
               !isEmpty(connectionCreate) &&
@@ -92,7 +88,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered w-auto">
-                    {connectionCreate.map((obj) => {
+                    {connectionCreate.map((config) => {
                       return (
                         <>
                           <thead>
@@ -101,9 +97,9 @@ export const ServiceLogs = ({ data, reportdata }) => {
                               <th>New Value</th>
                             </tr>
                           </thead>
-                          {obj &&
-                            obj.newValue &&
-                            Object.keys(JSON.parse(obj.newValue)).map(
+                          {config &&
+                            config.newValue &&
+                            Object.keys(JSON.parse(config.newValue)).map(
                               (obj, index) => (
                                 <tbody>
                                   <tr key={index}>
@@ -111,10 +107,10 @@ export const ServiceLogs = ({ data, reportdata }) => {
                                       {obj}
                                     </td>
                                     <td className="overflow-auto text-nowrap table-warning ">
-                                      {obj &&
-                                      obj.newValue &&
-                                      !isEmpty(JSON.parse(obj.newValue))
-                                        ? JSON.parse(obj.newValue)[obj]
+                                      {config &&
+                                      config.newValue &&
+                                      !isEmpty(JSON.parse(config.newValue))
+                                        ? JSON.parse(config.newValue)[obj]
                                         : "--"}
                                     </td>
                                   </tr>
@@ -354,11 +350,13 @@ export const ServiceLogs = ({ data, reportdata }) => {
                               (obj, index) => (
                                 <tbody>
                                   <tr key={index}>
-                                    <td className="overflow-auto text-nowrap table-warning">
-                                      {obj}
-                                    </td>
-                                    <td className="overflow-auto text-nowrap table-warning ">
-                                      {JSON.parse(config.previousValue)[obj]}
+                                    <td className="table-warning">{obj}</td>
+                                    <td className="table-warning text-nowrap">
+                                      {config &&
+                                      config.previousValue &&
+                                      !isEmpty(JSON.parse(config.previousValue))
+                                        ? JSON.parse(config.previousValue)[obj]
+                                        : "--"}
                                     </td>
                                   </tr>
                                 </tbody>
