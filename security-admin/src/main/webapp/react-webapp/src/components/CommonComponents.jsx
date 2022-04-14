@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Badge, ThemeProvider } from "react-bootstrap";
+import { Alert, Badge } from "react-bootstrap";
 import { Field } from "react-final-form";
 
 const Loader = () => {
@@ -82,5 +82,19 @@ export class MoreLess extends Component {
     );
   }
 }
+
+export const Condition = ({ when, is, children }) => (
+  <Field name={when} subscription={{ value: true }}>
+    {({ input: { value } }) =>
+      value === is ? (
+        children
+      ) : (
+        <Alert variant="warning" className="text-center">
+          Select "Audit Filter" to save/add audit filter !!
+        </Alert>
+      )
+    }
+  </Field>
+);
 
 export { Loader };

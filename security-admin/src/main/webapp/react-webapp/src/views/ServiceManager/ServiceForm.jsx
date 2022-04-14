@@ -11,15 +11,16 @@ import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
+import { Condition } from "../../components/CommonComponents";
 import {
   difference,
-  head,
   keys,
   map,
   find,
   reject,
   uniq,
-  isEmpty
+  isEmpty,
+  isUndefined
 } from "lodash";
 
 class ServiceForm extends Component {
@@ -130,7 +131,7 @@ class ServiceForm extends Component {
       });
     }
 
-    if (head(values.isAuditFilter) === "true") {
+    if (values.isAuditFilter) {
       serviceJson["configs"]["ranger.plugin.audit.filters"] =
         this.getAuditFiltersToSave(values.auditFilters);
     } else {
@@ -146,65 +147,66 @@ class ServiceForm extends Component {
     auditFilters.map((item) => {
       let obj = {};
 
-      Object.entries(item).map(([key, value]) => {
-        if (key === "isAudited") {
-          obj.isAudited = value === "true";
-        } else {
-          obj.isAudited = true;
-        }
+      if (!isUndefined(item) && !isEmpty(item)) {
+        Object.entries(item).map(([key, value]) => {
+          if (key === "isAudited") {
+            obj.isAudited = value === "true";
+          } else {
+            obj.isAudited = true;
+          }
 
-        if (key === "accessResult") {
-          obj.accessResult = value.value;
-        }
+          if (key === "accessResult") {
+            obj.accessResult = value.value;
+          }
 
-        if (key === "resources" && !isEmpty(value)) {
-          obj.resources = {};
+          if (key === "resources" && !isEmpty(value)) {
+            obj.resources = {};
 
-          let levels = uniq(map(this.state.serviceDef.resources, "level"));
+            let levels = uniq(map(this.state.serviceDef.resources, "level"));
 
-          levels.map((level) => {
-            if (
-              value[`resourceName-${level}`] !== undefined &&
-              value[`value-${level}`] !== undefined
-            ) {
-              obj.resources[value[`resourceName-${level}`].name] = {
-                values: map(value[`value-${level}`], "value")
-              };
-            }
-            if (value[`isRecursiveSupport-${level}`] !== undefined) {
-              obj.resources[value[`resourceName-${level}`].name].isRecursive =
-                value[`isRecursiveSupport-${level}`];
-            }
+            levels.map((level) => {
+              if (
+                value[`resourceName-${level}`] !== undefined &&
+                value[`value-${level}`] !== undefined
+              ) {
+                obj.resources[value[`resourceName-${level}`].name] = {
+                  values: map(value[`value-${level}`], "value")
+                };
+              }
+              if (value[`isRecursiveSupport-${level}`] !== undefined) {
+                obj.resources[value[`resourceName-${level}`].name].isRecursive =
+                  value[`isRecursiveSupport-${level}`];
+              }
 
-            if (value[`isExcludesSupport-${level}`] !== undefined) {
-              obj.resources[value[`resourceName-${level}`].name].isExcludes =
-                value[`isExcludesSupport-${level}`];
-            }
-          });
-        }
+              if (value[`isExcludesSupport-${level}`] !== undefined) {
+                obj.resources[value[`resourceName-${level}`].name].isExcludes =
+                  value[`isExcludesSupport-${level}`];
+              }
+            });
+          }
 
-        if (key === "actions") {
-          obj.actions = map(value, "value");
-        }
+          if (key === "actions") {
+            obj.actions = map(value, "value");
+          }
 
-        if (key === "accessTypes") {
-          obj.accessTypes = map(value, "value");
-        }
+          if (key === "accessTypes") {
+            obj.accessTypes = map(value, "value");
+          }
 
-        if (key === "users") {
-          obj.users = map(value, "value");
-        }
+          if (key === "users") {
+            obj.users = map(value, "value");
+          }
 
-        if (key === "groups") {
-          obj.groups = map(value, "value");
-        }
+          if (key === "groups") {
+            obj.groups = map(value, "value");
+          }
 
-        if (key === "roles") {
-          obj.roles = map(value, "value");
-        }
-      });
-
-      auditFiltersArray.push(obj);
+          if (key === "roles") {
+            obj.roles = map(value, "value");
+          }
+        });
+        auditFiltersArray.push(obj);
+      }
     });
 
     console.log("PRINT save auditFiltersArray : ", auditFiltersArray);
@@ -277,7 +279,7 @@ class ServiceForm extends Component {
         "PRINT getAuditFilters after parsing during create : ",
         auditFilters
       );
-      serviceJson["isAuditFilter"] = auditFilters.length > 0 ? ["true"] : [];
+      serviceJson["isAuditFilter"] = auditFilters.length > 0 ? true : false;
 
       console.log("PRINT serviceDef during create : ", serviceDef);
 
@@ -292,13 +294,10 @@ class ServiceForm extends Component {
     this.setState({
       serviceDef: serviceDef,
       createInitialValues: serviceJson,
-      loader: false
+      loader: this.props.match.params.serviceId !== undefined ? true : false
     });
 
     if (this.props.match.params.serviceId !== undefined) {
-      this.setState({
-        loader: true
-      });
       this.fetchService();
     }
   };
@@ -362,8 +361,7 @@ class ServiceForm extends Component {
         "PRINT getEditAuditFilters after parsing during edit : ",
         editAuditFilters
       );
-      serviceJson["isAuditFilter"] =
-        editAuditFilters.length > 0 ? ["true"] : [];
+      serviceJson["isAuditFilter"] = editAuditFilters.length > 0 ? true : false;
 
       console.log(
         "PRINT serviceDef from state during edit : ",
@@ -747,7 +745,7 @@ class ServiceForm extends Component {
 
   render() {
     return (
-      <div>
+      <React.Fragment>
         <div className="clearfix">
           <h4 className="wrap-header bold">
             {this.props.match.params.serviceId !== undefined
@@ -757,325 +755,354 @@ class ServiceForm extends Component {
           </h4>
         </div>
         <div className="wrap">
-          <div className="row">
-            <div className="col-sm-12">
-              <Form
-                onSubmit={this.onSubmit}
-                mutators={{
-                  ...arrayMutators
-                }}
-                initialValues={
-                  this.props.match.params.serviceId !== undefined
-                    ? this.state.editInitialValues
-                    : this.state.createInitialValues
-                }
-                render={({
-                  handleSubmit,
-                  form,
-                  submitting,
-                  values,
-                  form: {
-                    mutators: { push: addItem, pop: removeItem }
+          {this.state.loader ? (
+            <div className="row">
+              <div className="col-sm-12 text-center">
+                <div className="spinner-border mr-2" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+                <div className="spinner-grow" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="row">
+              <div className="col-sm-12">
+                <Form
+                  onSubmit={this.onSubmit}
+                  mutators={{
+                    ...arrayMutators
+                  }}
+                  initialValues={
+                    this.props.match.params.serviceId !== undefined
+                      ? this.state.editInitialValues
+                      : this.state.createInitialValues
                   }
-                }) => (
-                  <form onSubmit={handleSubmit}>
-                    <div className="row">
-                      <div className="col-sm-12">
-                        <p className="form-header">Service Details :</p>
-                        <Field
-                          name="name"
-                          validate={this.validateRequired(true)}
-                        >
-                          {({ input, meta }) => (
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Service Name *
-                              </label>
-                              <div className="col-sm-6">
-                                <input
-                                  {...input}
-                                  type="text"
-                                  className="form-control"
-                                />
+                  render={({
+                    handleSubmit,
+                    form,
+                    submitting,
+                    values,
+                    form: {
+                      mutators: { push: addItem, pop: removeItem }
+                    }
+                  }) => (
+                    <form onSubmit={handleSubmit}>
+                      <div className="row">
+                        <div className="col-sm-12">
+                          <p className="form-header">Service Details :</p>
+                          <Field
+                            name="name"
+                            validate={this.validateRequired(true)}
+                          >
+                            {({ input, meta }) => (
+                              <div className="form-group row">
+                                <label className="col-sm-3 col-form-label">
+                                  Service Name *
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    {...input}
+                                    type="text"
+                                    className="form-control"
+                                  />
+                                </div>
+                                {meta.error && meta.touched && (
+                                  <span className="invalid-field">
+                                    {meta.error}
+                                  </span>
+                                )}
                               </div>
-                              {meta.error && meta.touched && (
-                                <span className="invalid-field">
-                                  {meta.error}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </Field>
-                        <Field name="displayName">
-                          {({ input, meta }) => (
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Display Name
-                              </label>
-                              <div className="col-sm-6">
-                                <input
-                                  {...input}
-                                  type="text"
-                                  className="form-control"
-                                />
+                            )}
+                          </Field>
+                          <Field name="displayName">
+                            {({ input, meta }) => (
+                              <div className="form-group row">
+                                <label className="col-sm-3 col-form-label">
+                                  Display Name
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    {...input}
+                                    type="text"
+                                    className="form-control"
+                                  />
+                                </div>
+                                {meta.error && meta.touched && (
+                                  <span className="invalid-field">
+                                    {meta.error}
+                                  </span>
+                                )}
                               </div>
-                              {meta.error && meta.touched && (
-                                <span className="invalid-field">
-                                  {meta.error}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </Field>
-                        <Field name="description">
-                          {({ input, meta }) => (
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Description
-                              </label>
-                              <div className="col-sm-6">
-                                <textarea {...input} className="form-control" />
+                            )}
+                          </Field>
+                          <Field name="description">
+                            {({ input, meta }) => (
+                              <div className="form-group row">
+                                <label className="col-sm-3 col-form-label">
+                                  Description
+                                </label>
+                                <div className="col-sm-6">
+                                  <textarea
+                                    {...input}
+                                    className="form-control"
+                                  />
+                                </div>
+                                {meta.error && meta.touched && (
+                                  <span className="invalid-field">
+                                    {meta.error}
+                                  </span>
+                                )}
                               </div>
-                              {meta.error && meta.touched && (
-                                <span className="invalid-field">
-                                  {meta.error}
-                                </span>
-                              )}
+                            )}
+                          </Field>
+                          <div className="form-group row">
+                            <label className="col-sm-3 col-form-label">
+                              Active Status
+                            </label>
+                            <div className="col-sm-3 form-check form-check-inline">
+                              <Field
+                                name="isEnabled"
+                                component="input"
+                                type="radio"
+                                value="true"
+                                className="form-control"
+                              />
+                              <label className="form-check-label">
+                                Enabled
+                              </label>
+                              <Field
+                                name="isEnabled"
+                                component="input"
+                                type="radio"
+                                value="false"
+                                className="form-control"
+                              />
+                              <label className="form-check-label">
+                                Disabled
+                              </label>
                             </div>
-                          )}
-                        </Field>
-                        <div className="form-group row">
-                          <label className="col-sm-3 col-form-label">
-                            Active Status
-                          </label>
-                          <div className="col-sm-3 form-check form-check-inline">
-                            <Field
-                              name="isEnabled"
-                              component="input"
-                              type="radio"
-                              value="true"
-                              className="form-control"
-                            />
-                            <label className="form-check-label">Enabled</label>
-                            <Field
-                              name="isEnabled"
-                              component="input"
-                              type="radio"
-                              value="false"
-                              className="form-control"
-                            />
-                            <label className="form-check-label">Disabled</label>
                           </div>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-3 col-form-label">
-                            Select Tag Service
-                          </label>
-                          <div className="col-sm-6">
-                            <Field
-                              name="tagService"
-                              component={this.SelectField}
-                              options={this.state.tagService.map((s) => {
-                                return {
-                                  value: s.name,
-                                  label: s.name
-                                };
-                              })}
-                              placeholder="Select Tag Service"
-                            />
+                          <div className="form-group row">
+                            <label className="col-sm-3 col-form-label">
+                              Select Tag Service
+                            </label>
+                            <div className="col-sm-6">
+                              <Field
+                                name="tagService"
+                                component={this.SelectField}
+                                options={this.state.tagService.map((s) => {
+                                  return {
+                                    value: s.name,
+                                    label: s.name
+                                  };
+                                })}
+                                placeholder="Select Tag Service"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-12">
-                        <p className="form-header">Config Properties :</p>
-                        {this.serviceConfigs(this.state.serviceDef)}
-                        <div className="form-group row">
-                          <label className="col-sm-3 col-form-label">
-                            Add New Configurations
-                          </label>
-                          <div className="col-sm-6">
-                            <Table bordered size="sm" className="no-bg-color">
-                              <thead>
-                                <tr>
-                                  <th className="text-center">Name</th>
-                                  <th className="text-center" colSpan="2">
-                                    Value
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <FieldArray name="customConfigs">
-                                  {({ fields }) =>
-                                    fields.map((name, index) => (
-                                      <tr key={name}>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.name`}
-                                            component="input"
-                                            className="form-control"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Field
-                                            name={`${name}.value`}
-                                            component="input"
-                                            className="form-control"
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <Button
-                                            variant="danger"
-                                            size="sm"
-                                            title="Remove"
-                                            onClick={() => fields.remove(index)}
-                                          >
-                                            <i className="fa-fw fa fa-remove"></i>
-                                          </Button>
-                                        </td>
-                                      </tr>
-                                    ))
+                      <div className="row">
+                        <div className="col-sm-12">
+                          <p className="form-header">Config Properties :</p>
+                          {this.serviceConfigs(this.state.serviceDef)}
+                          <div className="form-group row">
+                            <label className="col-sm-3 col-form-label">
+                              Add New Configurations
+                            </label>
+                            <div className="col-sm-6">
+                              <Table bordered size="sm" className="no-bg-color">
+                                <thead>
+                                  <tr>
+                                    <th className="text-center">Name</th>
+                                    <th className="text-center" colSpan="2">
+                                      Value
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <FieldArray name="customConfigs">
+                                    {({ fields }) =>
+                                      fields.map((name, index) => (
+                                        <tr key={name}>
+                                          <td className="text-center">
+                                            <Field
+                                              name={`${name}.name`}
+                                              component="input"
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="text-center">
+                                            <Field
+                                              name={`${name}.value`}
+                                              component="input"
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="text-center">
+                                            <Button
+                                              variant="danger"
+                                              size="sm"
+                                              title="Remove"
+                                              onClick={() =>
+                                                fields.remove(index)
+                                              }
+                                            >
+                                              <i className="fa-fw fa fa-remove"></i>
+                                            </Button>
+                                          </td>
+                                        </tr>
+                                      ))
+                                    }
+                                  </FieldArray>
+                                </tbody>
+                              </Table>
+                            </div>
+                          </div>
+                          <div className="form-group row">
+                            <div className="col-sm-4 offset-sm-3">
+                              <Button
+                                variant="outline-dark"
+                                size="sm"
+                                onClick={() =>
+                                  addItem("customConfigs", undefined)
+                                }
+                              >
+                                <i className="fa-fw fa fa-plus"></i>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col-sm-12">
+                          <div className="form-group row form-header p-0">
+                            <label className="col-sm-2 col-form-label form-check-label">
+                              Audit Filter :
+                            </label>
+                            <div className="col-sm-10 mt-2">
+                              <Field
+                                name="isAuditFilter"
+                                component="input"
+                                type="checkbox"
+                                className="form-check-input"
+                              />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="col-sm-12">
+                              <Condition when="isAuditFilter" is={true}>
+                                <ServiceAuditFilter
+                                  serviceDetails={this.state.service}
+                                  serviceDefDetails={this.state.serviceDef}
+                                  fetchUsersData={this.fetchUsers}
+                                  fetchGroupsData={this.fetchGroups}
+                                  fetchRolesData={this.fetchRoles}
+                                  addAuditFilter={addItem}
+                                  formValues={values}
+                                />
+                              </Condition>
+                            </div>
+                          </div>
+                          <div className="form-group row mt-2 text-right">
+                            <div className="col-sm-3 col-form-label">
+                              {!isEmpty(this.state.serviceDef) && (
+                                <TestConnection
+                                  getTestConnConfigs={
+                                    this.getServiceConfigsToSave
                                   }
-                                </FieldArray>
-                              </tbody>
-                            </Table>
-                          </div>
-                        </div>
-                        <div className="form-group row">
-                          <div className="col-sm-4 offset-sm-3">
-                            <Button
-                              variant="outline-dark"
-                              size="sm"
-                              onClick={() =>
-                                addItem("customConfigs", undefined)
-                              }
-                            >
-                              <i className="fa-fw fa fa-plus"></i>
-                            </Button>
+                                  formValues={values}
+                                />
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-12">
-                        <div className="form-group row form-header p-0">
-                          <label className="col-sm-2 col-form-label form-check-label">
-                            Audit Filter :
-                          </label>
-                          <div className="col-sm-10 mt-2">
-                            <Field
-                              name="isAuditFilter"
-                              component="input"
-                              type="checkbox"
-                              className="form-check-input"
-                              value="true"
-                            />
-                          </div>
-                        </div>
-                        <div className="row">
-                          <div className="col-sm-12">
-                            <ServiceAuditFilter
-                              serviceDetails={this.state.service}
-                              serviceDefDetails={this.state.serviceDef}
-                              fetchUsersData={this.fetchUsers}
-                              fetchGroupsData={this.fetchGroups}
-                              fetchRolesData={this.fetchRoles}
-                              addAuditFilter={addItem}
-                              formValues={values}
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row mt-2 text-right">
-                          <div className="col-sm-3 col-form-label">
-                            <TestConnection
-                              testConfigs={this.getServiceConfigsToSave(values)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="row form-actions">
-                      <div className="col-md-9 offset-md-3">
-                        <Button
-                          variant="primary"
-                          type="submit"
-                          size="sm"
-                          disabled={submitting}
-                        >
-                          {this.props.match.params.serviceId !== undefined
-                            ? `Save`
-                            : `Add`}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          type="button"
-                          size="sm"
-                          onClick={() =>
-                            this.props.history.push(
-                              this.state.serviceDef.name === "tag"
-                                ? "/policymanager/tag"
-                                : "/policymanager/resource"
-                            )
-                          }
-                        >
-                          Cancel
-                        </Button>
-                        {this.props.match.params.serviceId !== undefined && (
+                      <div className="row form-actions">
+                        <div className="col-md-9 offset-md-3">
                           <Button
-                            variant="danger"
+                            variant="primary"
+                            type="submit"
+                            size="sm"
+                            disabled={submitting}
+                          >
+                            {this.props.match.params.serviceId !== undefined
+                              ? `Save`
+                              : `Add`}
+                          </Button>
+                          <Button
+                            variant="secondary"
                             type="button"
                             size="sm"
-                            onClick={() => {
-                              this.showDeleteModal();
-                            }}
+                            onClick={() =>
+                              this.props.history.push(
+                                this.state.serviceDef.name === "tag"
+                                  ? "/policymanager/tag"
+                                  : "/policymanager/resource"
+                              )
+                            }
                           >
-                            Delete
+                            Cancel
                           </Button>
+                          {this.props.match.params.serviceId !== undefined && (
+                            <Button
+                              variant="danger"
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                this.showDeleteModal();
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                        {this.props.match.params.serviceId !== undefined && (
+                          <Modal
+                            show={this.state.showDelete}
+                            onHide={this.hideDeleteModal}
+                          >
+                            <Modal.Header closeButton>
+                              <Modal.Title>Delete Service</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                              Are you sure want to delete ?
+                            </Modal.Body>
+                            <Modal.Footer>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                title="Cancel"
+                                onClick={this.hideDeleteModal}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                title="Yes"
+                                onClick={() =>
+                                  this.deleteService(
+                                    this.props.match.params.serviceId
+                                  )
+                                }
+                              >
+                                Yes
+                              </Button>
+                            </Modal.Footer>
+                          </Modal>
                         )}
                       </div>
-                      {this.props.match.params.serviceId !== undefined && (
-                        <Modal
-                          show={this.state.showDelete}
-                          onHide={this.hideDeleteModal}
-                        >
-                          <Modal.Header closeButton>
-                            <Modal.Title>Delete Service</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>Are you sure want to delete ?</Modal.Body>
-                          <Modal.Footer>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              title="Cancel"
-                              onClick={this.hideDeleteModal}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              title="Yes"
-                              onClick={() =>
-                                this.deleteService(
-                                  this.props.match.params.serviceId
-                                )
-                              }
-                            >
-                              Yes
-                            </Button>
-                          </Modal.Footer>
-                        </Modal>
-                      )}
-                    </div>
-                  </form>
-                )}
-              />
+                    </form>
+                  )}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }

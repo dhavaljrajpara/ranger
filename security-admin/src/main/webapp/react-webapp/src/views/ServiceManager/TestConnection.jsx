@@ -4,7 +4,7 @@ import { fetchApi } from "Utils/fetchAPI";
 import { isEmpty } from "lodash";
 
 function TestConnection(props) {
-  const { testConfigs } = props;
+  const { formValues, getTestConnConfigs } = props;
 
   const [modelState, setModalState] = useState({
     showTestConnModal: false,
@@ -36,7 +36,7 @@ function TestConnection(props) {
       testConnResp = await fetchApi({
         url: "plugins/services/validateConfig",
         method: "post",
-        data: testConfigs
+        data: getTestConnConfigs(formValues)
       });
 
       let respMsg = testConnResp.data.msgDesc;

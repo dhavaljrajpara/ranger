@@ -144,9 +144,13 @@ export default function ServiceAuditFilter(props) {
           {formValues.auditFilters !== undefined &&
             formValues.auditFilters.length === 0 && (
               <tr className="text-center">
-                <td colSpan={permList.length}>No Audit Filter Data Found !!</td>
+                <td colSpan={permList.length}>
+                  Click on below <i className="fa-fw fa fa-plus"></i>
+                  button to add audit filter !!
+                </td>
               </tr>
             )}
+
           <FieldArray name="auditFilters">
             {({ fields }) =>
               fields.map((name, index) => (

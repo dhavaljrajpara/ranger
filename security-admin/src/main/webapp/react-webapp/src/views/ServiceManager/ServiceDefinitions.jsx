@@ -32,7 +32,8 @@ class ServiceDefinitions extends Component {
       isDisabled: true,
       isAdminRole: isSystemAdmin() || isKeyAdmin(),
       isAuditorRole: isAuditor() || isKMSAuditor(),
-      isUserRole: isUser()
+      isUserRole: isUser(),
+      loader: true
     };
   }
 
@@ -133,7 +134,8 @@ class ServiceDefinitions extends Component {
     }
     this.setState({
       services: this.state.isTagView ? tagServices : resourceServices,
-      filterServices: this.state.isTagView ? tagServices : resourceServices
+      filterServices: this.state.isTagView ? tagServices : resourceServices,
+      loader: false
     });
   };
 
@@ -317,22 +319,35 @@ class ServiceDefinitions extends Component {
           </Col>
         </Row>
         <div className="wrap policy-manager mt-3">
-          <Row className="row">
-            {filterServiceDefs.map((serviceDef) => (
-              <ServiceDefinition
-                key={serviceDef.id}
-                serviceDefData={serviceDef}
-                servicesData={filterServices.filter(
-                  (service) => service.type === serviceDef.name
-                )}
-                deleteService={this.deleteService}
-                selectedZone={selectedZone}
-                zones={zones}
-                isAdminRole={isAdminRole}
-                isUserRole={isUserRole}
-              ></ServiceDefinition>
-            ))}
-          </Row>
+          {this.state.loader ? (
+            <Row className="row">
+              <Col sm={12} className="text-center">
+                <div className="spinner-border mr-2" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+                <div className="spinner-grow" role="status">
+                  <span className="sr-only">Loading...</span>
+                </div>
+              </Col>
+            </Row>
+          ) : (
+            <Row className="row">
+              {filterServiceDefs.map((serviceDef) => (
+                <ServiceDefinition
+                  key={serviceDef.id}
+                  serviceDefData={serviceDef}
+                  servicesData={filterServices.filter(
+                    (service) => service.type === serviceDef.name
+                  )}
+                  deleteService={this.deleteService}
+                  selectedZone={selectedZone}
+                  zones={zones}
+                  isAdminRole={isAdminRole}
+                  isUserRole={isUserRole}
+                ></ServiceDefinition>
+              ))}
+            </Row>
+          )}
         </div>
       </React.Fragment>
     );
