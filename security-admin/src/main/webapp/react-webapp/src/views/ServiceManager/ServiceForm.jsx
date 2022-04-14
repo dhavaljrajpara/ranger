@@ -489,13 +489,13 @@ class ServiceForm extends Component {
         }
 
         if (key === "groups") {
-          obj.users = value.map((group) => {
+          obj.groups = value.map((group) => {
             return { value: group, label: group };
           });
         }
 
         if (key === "roles") {
-          obj.users = value.map((role) => {
+          obj.roles = value.map((role) => {
             return { value: role, label: role };
           });
         }

@@ -290,6 +290,12 @@ class ServiceDefinition extends Component {
                   <td>
                     <div className="clearfix">
                       <span className="float-left">
+                        {!s.isEnabled && (
+                          <i
+                            className="fa-fw fa fa-ban text-color-red fa-lg"
+                            title="Disable"
+                          ></i>
+                        )}
                         <Link
                           to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
                           className="service-name text-info"
