@@ -388,7 +388,7 @@ const EditPermission = (props) => {
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">
-                                  <strong class="text-danger font-italic">
+                                  <strong className="text-danger font-italic">
                                     No Selected Groups
                                   </strong>
                                 </td>
@@ -410,7 +410,7 @@ const EditPermission = (props) => {
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">
-                                  <strong class="text-danger font-italic">
+                                  <strong className="text-danger font-italic">
                                     No Selected Users
                                   </strong>
                                 </td>

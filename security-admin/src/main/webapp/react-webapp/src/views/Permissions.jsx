@@ -89,7 +89,7 @@ function Permissions() {
               <Link
                 className="btn btn-outline-dark btn-sm m-r-5"
                 title="Edit"
-                to={`permissions/${rawValue.row.original.id}/edit`}
+                to={`/permissions/${rawValue.row.original.id}/edit`}
               >
                 <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
               </Link>

@@ -68,7 +68,7 @@ function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
         return hasAccessToPath(path) ? (
           <ErrorPage {...routeProps} {...compProps} errorCode="401"></ErrorPage>
         ) : (
-          <Comp {...routeProps} {...compProps} />
+          <Comp {...routeProps} {...compProps} {...rest} />
         );
       }}
     />
@@ -322,18 +322,19 @@ export default class App extends Component {
                       component={UserSyncLogs}
                       {...defaultProps}
                     />
+                    <Redirect
+                      exact
+                      from="/"
+                      to="/policymanager/resource"
+                    ></Redirect>
                     <AuthRoute
                       exact
-                      path="/*"
-                      history
+                      path="*"
+                      history={history}
                       errorCode="404"
                       component={ErrorPage}
                       {...defaultProps}
                     />
-
-                    {/* <Redirect from="/" to="/policymanager/resource">
-                      <ErrorPage history errorCode="404"></ErrorPage>
-                    </Redirect> */}
                   </Switch>
                 )}
               </div>

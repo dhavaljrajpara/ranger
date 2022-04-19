@@ -46,7 +46,7 @@ class Header extends Component {
     );
     const encryption = (
       <span>
-        <i class="fa fa-fw fa-lock"></i> Encryption
+        <i className="fa fa-fw fa-lock"></i> Encryption
       </span>
     );
     const settings = (
@@ -149,16 +149,15 @@ class Header extends Component {
                         className="dropdown-item"
                         replace
                       >
-                        <i class="fa fa-fw fa-key m-r-xs"></i> Key Manager
+                        <i className="fa fa-fw fa-key m-r-xs"></i> Key Manager
                       </NavDropdown.Item>
                     </NavDropdown>
                   )}
                 </>
               )}
-
-              {hasAccessToTab("Users/Groups") && (
-                <>
-                  <NavDropdown title={settings}>
+              <>
+                <NavDropdown title={settings}>
+                  {hasAccessToTab("Users/Groups") && (
                     <NavDropdown.Item
                       href="#/users/usertab"
                       className="dropdown-item"
@@ -167,21 +166,21 @@ class Header extends Component {
                       <i className="fa-fw fa fa-group m-r-xs"></i>
                       Users/Groups/Roles
                     </NavDropdown.Item>
-                    {(isAuditor() || isSystemAdmin()) && (
-                      <>
-                        <NavDropdown.Item
-                          href="#/permissions/models"
-                          className="dropdown-item"
-                          replace
-                        >
-                          <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
-                          Permissions
-                        </NavDropdown.Item>
-                      </>
-                    )}
-                  </NavDropdown>
-                </>
-              )}
+                  )}
+                  {(isAuditor() || isSystemAdmin()) && (
+                    <>
+                      <NavDropdown.Item
+                        href="#/permissions/models"
+                        className="dropdown-item"
+                        replace
+                      >
+                        <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
+                        Permissions
+                      </NavDropdown.Item>
+                    </>
+                  )}
+                </NavDropdown>
+              </>
             </Nav>
             <Nav>
               <NavDropdown title={loginId} id="user-dropdown" alignRight>
