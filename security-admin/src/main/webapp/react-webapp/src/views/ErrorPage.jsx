@@ -21,6 +21,12 @@ class ErrorPage extends Component {
         errorInfo: "Sorry, this page isn't here or has moved."
       });
     }
+    if (this.props.errorCode == "204") {
+      this.setState({
+        errorCode: "Content not found (204).",
+        errorInfo: "Sorry, Please sync-up the users with your source directory."
+      });
+    }
   };
 
   onGoBack = (e) => {

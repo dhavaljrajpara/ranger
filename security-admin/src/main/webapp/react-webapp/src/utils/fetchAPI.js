@@ -1,11 +1,13 @@
 import axios from "axios";
 import history from "./history";
+import ErrorPage from "../views/ErrorPage";
 import {
   RANGER_REST_CSRF_ENABLED,
   RANGER_REST_CSRF_CUSTOM_HEADER,
   RANGER_REST_CSRF_IGNORE_METHODS,
   CSRFToken
 } from "./appConstants";
+import { toast } from "react-toastify";
 
 // Global axios defaults
 axios.defaults.baseURL = "/service/";
@@ -94,6 +96,15 @@ const fetchCSRFConf = async () => {
     respData && handleCSRFHeaders(respData);
   } catch (error) {
     throw Error(error);
+    if (error?.response?.status) {
+      if (error.response.status == "419") {
+        toast.warning("Session Time Out !!");
+        history.push("/login.jsp");
+      }
+      if (error.response.status == "204") {
+        return <ErrorPage errorCode="204" history={history}></ErrorPage>;
+      }
+    }
   }
   return respData;
 };
