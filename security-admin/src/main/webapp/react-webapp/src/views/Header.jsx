@@ -156,33 +156,34 @@ class Header extends Component {
                 </>
               )}
               <>
-                {hasAccessToTab("Users/Groups") ||
-                  ((isAuditor() || isSystemAdmin()) && (
-                    <NavDropdown title={settings}>
-                      {hasAccessToTab("Users/Groups") && (
+                {(hasAccessToTab("Users/Groups") ||
+                  isAuditor() ||
+                  isSystemAdmin()) && (
+                  <NavDropdown title={settings}>
+                    {hasAccessToTab("Users/Groups") && (
+                      <NavDropdown.Item
+                        href="#/users/usertab"
+                        className="dropdown-item"
+                        replace
+                      >
+                        <i className="fa-fw fa fa-group m-r-xs"></i>
+                        Users/Groups/Roles
+                      </NavDropdown.Item>
+                    )}
+                    {(isAuditor() || isSystemAdmin()) && (
+                      <>
                         <NavDropdown.Item
-                          href="#/users/usertab"
+                          href="#/permissions/models"
                           className="dropdown-item"
                           replace
                         >
-                          <i className="fa-fw fa fa-group m-r-xs"></i>
-                          Users/Groups/Roles
+                          <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
+                          Permissions
                         </NavDropdown.Item>
-                      )}
-                      {(isAuditor() || isSystemAdmin()) && (
-                        <>
-                          <NavDropdown.Item
-                            href="#/permissions/models"
-                            className="dropdown-item"
-                            replace
-                          >
-                            <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
-                            Permissions
-                          </NavDropdown.Item>
-                        </>
-                      )}
-                    </NavDropdown>
-                  ))}
+                      </>
+                    )}
+                  </NavDropdown>
+                )}
               </>
             </Nav>
             <Nav>
