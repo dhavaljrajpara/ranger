@@ -2,25 +2,33 @@ import React from "react";
 import { Badge, Table } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
-import { isEmpty, isUndefined } from "lodash";
+import { isEmpty, isUndefined, sortBy } from "lodash";
 
 export const ServiceLogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
-  const serviceCreate = reportdata.filter((obj) => {
-    return (
-      obj.attributeName != "Connection Configurations" && obj.action == "create"
-    );
-  });
+  const serviceCreate = sortBy(
+    reportdata.filter((obj) => {
+      return (
+        obj.attributeName != "Connection Configurations" &&
+        obj.action == "create"
+      );
+    }),
+    ["id"]
+  );
   const serviceUpdate = reportdata.filter((obj) => {
     return (
       obj.attributeName != "Connection Configurations" && obj.action == "update"
     );
   });
-  const serviceDelete = reportdata.filter((obj) => {
-    return (
-      obj.attributeName != "Connection Configurations" && obj.action == "delete"
-    );
-  });
+  const serviceDelete = sortBy(
+    reportdata.filter((obj) => {
+      return (
+        obj.attributeName != "Connection Configurations" &&
+        obj.action == "delete"
+      );
+    }),
+    ["id"]
+  );
 
   const connectionCreate = reportdata.filter((obj) => {
     return (
@@ -37,6 +45,84 @@ export const ServiceLogs = ({ data, reportdata }) => {
       obj.attributeName == "Connection Configurations" && obj.action == "delete"
     );
   });
+  const serviceDetails = (val, newValue) => {
+    if (val == "Service Status") {
+      return newValue == "false" ? "Disabled" : "Enabled";
+    }
+    return newValue;
+  };
+  const updatePolicyOldNew = (service) => {
+    var tablerow = [];
+
+    const getfilteredoldval = (val, oldvals) => {
+      if (val == "Service Status") {
+        return <>{oldvals == "false" ? "Disabled" : "Enabled"}</>;
+      }
+
+      return !isEmpty(oldvals) ? oldvals : "--";
+    };
+
+    const getfilterednewval = (val, newvals) => {
+      if (val == "Service Status") {
+        return <>{newvals == "false" ? "Disabled" : "Enabled"}</>;
+      }
+
+      return !isEmpty(newvals) ? newvals : "--";
+    };
+
+    service.map((val) => {
+      return tablerow.push(
+        <>
+          <tr key={val.id}>
+            <td className="table-warning">{val.attributeName}</td>
+            {val && val.previousValue && !isEmpty(val.previousValue) ? (
+              <td className="table-warning text-nowrap">
+                {val && val.previousValue && !isEmpty(val.previousValue) ? (
+                  isEmpty(val.newValue) ? (
+                    <h6>
+                      <Badge className="d-inline mr-1" variant="danger">
+                        {getfilteredoldval(
+                          val.attributeName,
+                          val.previousValue
+                        )}
+                      </Badge>
+                    </h6>
+                  ) : (
+                    getfilteredoldval(val.attributeName, val.previousValue)
+                  )
+                ) : (
+                  "--"
+                )}
+              </td>
+            ) : (
+              <td>{"--"}</td>
+            )}
+            {val && val.newValue && !isEmpty(val.newValue) ? (
+              <td className="table-warning text-nowrap">
+                {val && val.newValue && !isEmpty(val.newValue) ? (
+                  isEmpty(val.previousValue) ? (
+                    <h6>
+                      <Badge className="d-inline mr-1" variant="success">
+                        {getfilterednewval(val.attributeName, val.newValue)}
+                      </Badge>
+                    </h6>
+                  ) : (
+                    getfilterednewval(val.attributeName, val.newValue)
+                  )
+                ) : (
+                  "--"
+                )}
+              </td>
+            ) : (
+              <td>{"--"}</td>
+            )}
+          </tr>
+        </>
+      );
+    });
+
+    return tablerow;
+  };
 
   return (
     <div>
@@ -55,21 +141,23 @@ export const ServiceLogs = ({ data, reportdata }) => {
             {action == "create" && (
               <>
                 <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
-                <Table className="table  table-bordered  w-50">
+                <Table className="table  table-bordered table-striped w-50">
                   <thead>
                     <tr>
                       <th>Fields</th>
                       <th>New Value</th>
                     </tr>
                   </thead>
-                  {serviceCreate.map((obj, index) => {
+                  {serviceCreate.map((obj) => {
                     return (
                       <tbody>
-                        <tr key={index}>
+                        <tr key={obj.id}>
                           <td className="table-warning">{obj.attributeName}</td>
 
                           <td className="table-warning">
-                            {!isEmpty(obj.newValue) ? obj.newValue : "--"}
+                            {obj && obj.newValue && !isEmpty(obj.newValue)
+                              ? serviceDetails(obj.attributeName, obj.newValue)
+                              : "--"}
                           </td>
                         </tr>
                       </tbody>
@@ -88,38 +176,37 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered w-auto">
-                    {connectionCreate.map((config) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Fields</th>
-                              <th>New Value</th>
-                            </tr>
-                          </thead>
-                          {config &&
+                    <>
+                      <thead>
+                        <tr>
+                          <th>Fields</th>
+                          <th>New Value</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {connectionCreate.map((config) => {
+                          return (
+                            config &&
                             config.newValue &&
                             Object.keys(JSON.parse(config.newValue)).map(
-                              (obj, index) => (
-                                <tbody>
-                                  <tr key={index}>
-                                    <td className="overflow-auto text-nowrap table-warning">
-                                      {obj}
-                                    </td>
-                                    <td className="overflow-auto text-nowrap table-warning ">
-                                      {config &&
-                                      config.newValue &&
-                                      !isEmpty(JSON.parse(config.newValue))
-                                        ? JSON.parse(config.newValue)[obj]
-                                        : "--"}
-                                    </td>
-                                  </tr>
-                                </tbody>
+                              (obj, key) => (
+                                <tr key={key}>
+                                  <td className="table-warning">{obj}</td>
+                                  <td className="table-warning text-nowrap">
+                                    {config &&
+                                    config.newValue &&
+                                    !isEmpty(JSON.parse(config.newValue))
+                                      ? JSON.parse(config.newValue)[obj]
+                                      : "--"}
+                                  </td>
+                                </tr>
                               )
-                            )}
-                        </>
-                      );
-                    })}
+                            )
+                          );
+                        })}
+                      </tbody>
+                    </>
                   </Table>
                 </>
               )}
@@ -151,47 +238,15 @@ export const ServiceLogs = ({ data, reportdata }) => {
               !isUndefined(serviceUpdate) && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
-                  <Table className="table  table-bordered  table-striped  w-auto">
-                    <tbody>
+                  <Table className="table  table-bordered  table-striped  w-50">
+                    <thead>
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>
                         <th>New Value</th>
                       </tr>
-                      {serviceUpdate.map((obj, index) => {
-                        return (
-                          <tr key={index}>
-                            <td className="table-warning">
-                              {obj.attributeName}
-                            </td>
-                            <td className="table-warning">
-                              {!isEmpty(obj.previousValue) ? (
-                                <Badge
-                                  className="d-inline mr-1"
-                                  variant="danger"
-                                >
-                                  {obj.previousValue}
-                                </Badge>
-                              ) : (
-                                "--"
-                              )}
-                            </td>
-                            <td className="table-warning">
-                              {!isEmpty(obj.newValue) ? (
-                                <Badge
-                                  className="d-inline mr-1"
-                                  variant="success"
-                                >
-                                  {obj.newValue}
-                                </Badge>
-                              ) : (
-                                "--"
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
+                    </thead>
+                    <tbody>{updatePolicyOldNew(serviceUpdate)}</tbody>
                   </Table>
                   <br />
                 </>
@@ -205,76 +260,78 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered  table-striped  w-auto">
-                    {connectionUpdate.map((config) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Fields</th>
-                              <th>Old Value</th>
-                              <th>New Value</th>
-                            </tr>
-                          </thead>
-                          {config &&
-                            config.newValue &&
-                            Object.keys(JSON.parse(config.newValue)).map(
-                              (obj, index) => (
-                                <tbody>
-                                  <tr key={index}>
-                                    <td className="table-warning">{obj}</td>
-                                    <td className="table-warning text-nowrap">
-                                      {config &&
-                                      config.previousValue &&
-                                      !isEmpty(
-                                        JSON.parse(config.previousValue)
-                                      ) ? (
-                                        isEmpty(
-                                          JSON.parse(config.newValue)[obj]
-                                        ) ? (
-                                          <Badge
-                                            className="d-inline mr-1"
-                                            variant="success"
-                                          >
-                                            {
-                                              JSON.parse(config.previousValue)[
-                                                obj
-                                              ]
-                                            }
-                                          </Badge>
-                                        ) : (
-                                          JSON.parse(config.previousValue)[obj]
-                                        )
-                                      ) : (
-                                        "--"
-                                      )}
-                                    </td>
-                                    <td className="table-warning text-nowrap">
-                                      {config &&
-                                      config.newValue &&
-                                      !isEmpty(JSON.parse(config.newValue)) ? (
-                                        isEmpty(
-                                          JSON.parse(config.previousValue)[obj]
-                                        ) ? (
-                                          <Badge
-                                            className="d-inline mr-1"
-                                            variant="success"
-                                          >
-                                            {JSON.parse(config.newValue)[obj]}
-                                          </Badge>
-                                        ) : (
-                                          JSON.parse(config.newValue)[obj]
-                                        )
-                                      ) : (
-                                        "--"
-                                      )}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              )
-                            )}
-                        </>
-                      );
-                    })}
+                    <thead>
+                      <tr>
+                        <th>Fields</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {connectionUpdate.map((config) => {
+                        return (
+                          config &&
+                          config.newValue &&
+                          Object.keys(JSON.parse(config.newValue)).map(
+                            (obj, key) => (
+                              <tr key={key}>
+                                <td className="table-warning">{obj}</td>
+                                <td className="table-warning text-nowrap">
+                                  {config &&
+                                  config.previousValue &&
+                                  !isEmpty(JSON.parse(config.previousValue)) ? (
+                                    isEmpty(
+                                      JSON.parse(config.newValue)[obj]
+                                    ) ? (
+                                      <h6>
+                                        {" "}
+                                        <Badge
+                                          className="d-inline mr-1"
+                                          variant="danger"
+                                        >
+                                          {
+                                            JSON.parse(config.previousValue)[
+                                              obj
+                                            ]
+                                          }
+                                        </Badge>
+                                      </h6>
+                                    ) : (
+                                      JSON.parse(config.previousValue)[obj]
+                                    )
+                                  ) : (
+                                    "--"
+                                  )}
+                                </td>
+                                <td className="table-warning text-nowrap">
+                                  {config &&
+                                  config.newValue &&
+                                  !isEmpty(JSON.parse(config.newValue)) ? (
+                                    isEmpty(
+                                      JSON.parse(config.previousValue)[obj]
+                                    ) ? (
+                                      <h6>
+                                        {" "}
+                                        <Badge
+                                          className="d-inline mr-1"
+                                          variant="success"
+                                        >
+                                          {JSON.parse(config.newValue)[obj]}
+                                        </Badge>
+                                      </h6>
+                                    ) : (
+                                      JSON.parse(config.newValue)[obj]
+                                    )
+                                  ) : (
+                                    "--"
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          )
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </>
               )}
@@ -298,30 +355,35 @@ export const ServiceLogs = ({ data, reportdata }) => {
               !isUndefined(serviceDelete) && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
-                  <Table className="table  table-bordered table-striped  w-auto">
+                  <Table className="table  table-bordered table-striped  w-50">
                     <thead>
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>
                       </tr>
                     </thead>
-                    {serviceDelete.map((obj) => {
-                      return (
-                        <tbody>
-                          <tr key={obj.id}>
+
+                    <tbody>
+                      {serviceDelete.map((obj) => {
+                        return (
+                          <tr key={obj}>
                             <td className="table-warning">
                               {obj.attributeName}
                             </td>
-
                             <td className="table-warning">
-                              {!isEmpty(obj.previousValue)
-                                ? obj.previousValue
+                              {obj &&
+                              obj.previousValue &&
+                              !isEmpty(obj.previousValue)
+                                ? serviceDetails(
+                                    obj.attributeName,
+                                    obj.previousValue
+                                  )
                                 : "--"}
                             </td>
                           </tr>
-                        </tbody>
-                      );
-                    })}
+                        );
+                      })}
+                    </tbody>
                   </Table>
                   <br />
                 </>
@@ -335,36 +397,35 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered table-striped w-auto">
-                    {connectionDelete.map((config) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Fields</th>
-                              <th>Old Value</th>
-                            </tr>
-                          </thead>
-                          {config &&
-                            config.previousValue &&
-                            Object.keys(JSON.parse(config.previousValue)).map(
-                              (obj, index) => (
-                                <tbody>
-                                  <tr key={index}>
-                                    <td className="table-warning">{obj}</td>
-                                    <td className="table-warning text-nowrap">
-                                      {config &&
-                                      config.previousValue &&
-                                      !isEmpty(JSON.parse(config.previousValue))
-                                        ? JSON.parse(config.previousValue)[obj]
-                                        : "--"}
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              )
-                            )}
-                        </>
-                      );
-                    })}
+                    <thead>
+                      <tr>
+                        <th>Fields</th>
+                        <th>Old Value</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {connectionDelete.map((config) => {
+                        return (
+                          config &&
+                          config.previousValue &&
+                          Object.keys(JSON.parse(config.previousValue)).map(
+                            (obj, key) => (
+                              <tr key={key}>
+                                <td className="table-warning">{obj}</td>
+                                <td className="table-warning text-nowrap">
+                                  {config &&
+                                  config.previousValue &&
+                                  !isEmpty(JSON.parse(config.previousValue))
+                                    ? JSON.parse(config.previousValue)[obj]
+                                    : "--"}
+                                </td>
+                              </tr>
+                            )
+                          )
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </>
               )}

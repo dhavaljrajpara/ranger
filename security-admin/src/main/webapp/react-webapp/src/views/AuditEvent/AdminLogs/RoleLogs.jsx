@@ -1,7 +1,8 @@
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, Badge } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
+import _, { isEmpty } from "lodash";
 
 export const RoleLogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
@@ -47,13 +48,13 @@ export const RoleLogs = ({ data, reportdata }) => {
       {action == "create" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_ROLE.value && (
           <div>
-            <div className="font-weight-bolder">Name : {objectName}</div>
+            <div className="font-weight-bolder">Name: {objectName}</div>
             <div className="font-weight-bolder">
               Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
               Standard Time
             </div>
             <div className="font-weight-bolder">Created By: {owner} </div>
-
+            <br />
             <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
 
             <Table className="table table-bordered table-striped w-50">
@@ -63,17 +64,17 @@ export const RoleLogs = ({ data, reportdata }) => {
                   <th>New Value</th>
                 </tr>
               </thead>
-              {Roledetail.map((u, index) => {
-                return (
-                  <tbody>
+              <tbody>
+                {Roledetail.map((role, index) => {
+                  return (
                     <tr key={index}>
-                      <td className="table-warning">{u.attributeName}</td>
+                      <td className="table-warning">{role.attributeName}</td>
 
-                      <td className="table-warning">{u.newValue || "--"}</td>
+                      <td className="table-warning">{role.newValue || "--"}</td>
                     </tr>
-                  </tbody>
-                );
-              })}
+                  );
+                })}
+              </tbody>
             </Table>
             <br />
             <h5 className="bold wrap-header m-t-sm">Users:</h5>
@@ -86,100 +87,80 @@ export const RoleLogs = ({ data, reportdata }) => {
                     <th> Role Admin</th>
                   </tr>
                 </thead>
-                {Userscreate.map((u) => {
-                  return (
-                    <>
-                      {JSON.parse(u.newValue).map((obj, index) => (
-                        <tbody>
-                          <tr key={index}>
+                <tbody>
+                  {Userscreate.map((usr) => {
+                    return (
+                      <>
+                        {JSON.parse(usr.newValue).map((obj, idx) => (
+                          <tr key={idx}>
+                            <td className="table-warning">{obj.name}</td>
                             <td className="table-warning">
-                              {Object.values(obj.name)}
-                            </td>
-                            <td className="table-warning">
-                              {Object.values(obj.isAdmin) == false
-                                ? "false"
-                                : "true"}
+                              {obj.isAdmin === false ? "false" : "true"}
                             </td>
                           </tr>
-                        </tbody>
-                      ))}
-                    </>
-                  );
-                })}
+                        ))}
+                      </>
+                    );
+                  })}
+                </tbody>
               </>
             </Table>
             <br />
 
             <h5 className="bold wrap-header m-t-sm">Groups:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <>
-                <thead>
-                  <tr>
-                    <th>Name</th>
+              <thead>
+                <tr>
+                  <th>Name</th>
 
-                    <th> Role Admin</th>
-                  </tr>
-                </thead>
-                {Groupscreate.map((u) => {
+                  <th> Role Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Groupscreate.map((grp) => {
                   return (
                     <>
-                      {JSON.parse(u.newValue).map((obj, index) => (
-                        <tbody>
-                          <tr key={index}>
-                            <td className="table-warning">
-                              {Object.values(obj.name)}
-                            </td>
+                      {JSON.parse(grp.newValue).map((obj, index) => (
+                        <tr key={index}>
+                          <td className="table-warning">{obj.name}</td>
 
-                            <td className="table-warning">
-                              {JSON.parse(u.newValue).map((obj) =>
-                                Object.values(obj.isAdmin) == false
-                                  ? "false"
-                                  : "true"
-                              )}
-                            </td>
-                          </tr>
-                        </tbody>
+                          <td className="table-warning">
+                            {obj.isAdmin === false ? "false" : "true"}
+                          </td>
+                        </tr>
                       ))}
                     </>
                   );
                 })}
-              </>
+              </tbody>
             </Table>
             <br />
             <h5 className="bold wrap-header m-t-sm">Roles:</h5>
             <Table className="table  table-bordered  table-striped w-50">
-              <>
-                <thead>
-                  <tr>
-                    <th>Name</th>
+              <thead>
+                <tr>
+                  <th>Name</th>
 
-                    <th> Role Admin</th>
-                  </tr>
-                </thead>
-                {Rolescreate.map((u) => {
+                  <th> Role Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Rolescreate.map((roles) => {
                   return (
                     <>
-                      {JSON.parse(u.newValue).map((obj, index) => (
-                        <tbody>
-                          <tr key={index}>
-                            <td className="table-warning">
-                              {Object.values(obj.name)}
-                            </td>
+                      {JSON.parse(roles.newValue).map((obj, index) => (
+                        <tr key={index}>
+                          <td className="table-warning">{obj.name}</td>
 
-                            <td className="table-warning">
-                              {JSON.parse(u.newValue).map((obj) =>
-                                Object.values(obj.isAdmin) == false
-                                  ? "false"
-                                  : "true"
-                              )}
-                            </td>
-                          </tr>
-                        </tbody>
+                          <td className="table-warning">
+                            {obj.isAdmin === false ? "false" : "true"}
+                          </td>
+                        </tr>
                       ))}
                     </>
                   );
                 })}
-              </>
+              </tbody>
             </Table>
           </div>
         )}
@@ -191,7 +172,7 @@ export const RoleLogs = ({ data, reportdata }) => {
           <div>
             <div className="row">
               <div className="col-md-6">
-                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">Name: {objectName}</div>
                 <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
@@ -199,42 +180,75 @@ export const RoleLogs = ({ data, reportdata }) => {
                 <div className="font-weight-bolder">Updated By: {owner}</div>
               </div>
               <div className="col-md-6 text-right">
-                <div className="add-text legend"></div> {" Added "}
-                <div className="delete-text legend"></div> {" Deleted "}
+                <div className="bg-success legend"></div> {" Added "}
+                <div className="bg-danger legend"></div> {" Deleted "}
               </div>
             </div>
 
             <br />
-            {Roledetail.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
+
+            {action == "update" && !isEmpty(Roledetail) && (
+              <>
+                <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
+                <Table className="table table-bordered table-striped w-75">
+                  <tbody>
+                    <tr>
+                      <th>Fields</th>
+                      <th>Old Value</th>
+                      <th>New Value</th>
+                    </tr>
+                    {Roledetail.map((role, index) => {
+                      return (
+                        <tr key={index}>
+                          <td className="table-warning">
+                            {role.attributeName}
+                          </td>
+                          <td className="table-warning text-nowrap">
+                            {!isEmpty(role.previousValue) ? (
+                              isEmpty(role.newValue) ? (
+                                <h6>
+                                  <Badge
+                                    className="d-inline mr-1"
+                                    variant="danger"
+                                  >
+                                    {role.previousValue}
+                                  </Badge>
+                                </h6>
+                              ) : (
+                                role.previousValue
+                              )
+                            ) : (
+                              "--"
+                            )}
+                          </td>
+                          <td className="table-warning text-nowrap">
+                            {!isEmpty(role.newValue) ? (
+                              isEmpty(role.previousValue) ? (
+                                <h6>
+                                  <Badge
+                                    className="d-inline mr-1"
+                                    variant="success"
+                                  >
+                                    {role.newValue}
+                                  </Badge>
+                                </h6>
+                              ) : (
+                                role.newValue
+                              )
+                            ) : (
+                              "--"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+                <br />
+              </>
             )}
 
-            {Roledetail.length > 0 && (
-              <Table className="table table-bordered table-striped w-75">
-                <tbody>
-                  <tr>
-                    <th>Fields</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
-                  </tr>
-                  {Roledetail.map((u, index) => {
-                    return (
-                      <tr key={index}>
-                        <td className="table-warning">{u.attributeName}</td>
-                        <td className="table-warning">
-                          {u.previousValue || "--"}
-                        </td>
-                        <td className="table-warning">
-                          <span className="add-text">{u.newValue || "--"}</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            )}
-            <br />
-            {Usersupdate.length > 0 && (
+            {action == "update" && !isEmpty(Usersupdate) && (
               <div className="row">
                 <div className="col">
                   <h5 className="bold wrap-header m-t-sm">
@@ -242,89 +256,75 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    {Usersupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
 
-                              <th> Role Admin</th>
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Usersupdate.map((usr) => {
+                        return !isEmpty(usr.previousValue) ? (
+                          JSON.parse(usr.previousValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="oldvalbg">{obj.name}</td>
+                              <td className="oldvalbg">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.previousValue.length > 0 ? (
-                            JSON.parse(u.previousValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="oldvalbg">{obj.name}</td>
-                                  <td className="oldvalbg">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="oldvalbg">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="oldvalbg">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </div>
                 <div className="col">
                   <h5 className="bold wrap-header m-t-sm">
                     New Users Details:
                   </h5>
-                  <Table className="table  table-bordered table-striped w-100">
-                    {Usersupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
 
-                              <th> Role Admin</th>
+                  <Table className="table  table-bordered table-striped w-100">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Usersupdate.map((usr) => {
+                        return !isEmpty(usr.newValue) ? (
+                          JSON.parse(usr.newValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="table-warning">{obj.name}</td>
+                              <td className="table-warning">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.newValue.length > 0 ? (
-                            JSON.parse(u.newValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="table-warning">{obj.name}</td>
-                                  <td className="table-warning">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="oldvalbg">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="table-warning">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
+                  <br />
                 </div>
               </div>
             )}
-            <br />
-            {Groupsupdate.length > 0 && (
+
+            {action == "update" && !isEmpty(Groupsupdate) && (
               <div className="row">
                 <div className="col">
                   <h5 className="bold wrap-header m-t-sm">
@@ -332,41 +332,33 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    {Groupsupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
 
-                              <th> Role Admin</th>
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Groupsupdate.map((grp) => {
+                        return !isEmpty(grp.previousValue) ? (
+                          JSON.parse(grp.previousValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="oldvalbg">{obj.name}</td>
+                              <td className="oldvalbg">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.previousValue.length > 0 ? (
-                            JSON.parse(u.previousValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="oldvalbg">{obj.name}</td>
-                                  <td className="oldvalbg">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="oldvalbg">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="oldvalbg">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </div>
                 <div className="col">
@@ -375,47 +367,39 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    {Groupsupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
 
-                              <th> Role Admin</th>
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Groupsupdate.map((grp) => {
+                        return !isEmpty(grp.newValue) ? (
+                          JSON.parse(grp.newValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="table-warning">{obj.name}</td>
+                              <td className="table-warning">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.newValue.length > 0 ? (
-                            JSON.parse(u.newValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="table-warning">{obj.name}</td>
-                                  <td className="table-warning">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="table-warning">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="table-warning">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </div>
               </div>
             )}
             <br />
-            {Rolesupdate.length > 0 && (
+            {action == "update" && !isEmpty(Rolesupdate) && (
               <div className="row">
                 <div className="col">
                   <h5 className="bold wrap-header m-t-sm">
@@ -423,41 +407,33 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    {Rolesupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
 
-                              <th> Role Admin</th>
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Rolesupdate.map((roles) => {
+                        return !isEmpty(roles.previousValue) ? (
+                          JSON.parse(roles.previousValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="oldvalbg">{obj.name}</td>
+                              <td className="oldvalbg">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.previousValue.length > 0 ? (
-                            JSON.parse(u.previousValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="oldvalbg">{obj.name}</td>
-                                  <td className="oldvalbg">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="oldvalbg">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="oldvalbg">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </div>
                 <div className="col">
@@ -466,41 +442,33 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    {Rolesupdate.map((u) => {
-                      return (
-                        <>
-                          <thead>
-                            <tr>
-                              <th>Name</th>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
 
-                              <th> Role Admin</th>
+                        <th> Role Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Rolesupdate.map((roles) => {
+                        return !isEmpty(roles.newValue) ? (
+                          JSON.parse(roles.newValue).map((obj, index) => (
+                            <tr key={index}>
+                              <td className="table-warning">{obj.name}</td>
+                              <td className="table-warning">
+                                {obj.isAdmin === false ? "false" : "true"}
+                              </td>
                             </tr>
-                          </thead>
-                          {u.newValue.length > 0 ? (
-                            JSON.parse(u.newValue).map((obj) => (
-                              <tbody>
-                                <tr>
-                                  <td className="table-warning">{obj.name}</td>
-                                  <td className="table-warning">
-                                    {Object.values(obj.isAdmin) == false
-                                      ? "false"
-                                      : "true"}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            ))
-                          ) : (
-                            <tbody>
-                              <tr>
-                                <td colSpan={2} className="table-warning">
-                                  Empty
-                                </td>
-                              </tr>
-                            </tbody>
-                          )}
-                        </>
-                      );
-                    })}
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={2} className="table-warning">
+                              Empty
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </Table>
                 </div>
               </div>
@@ -513,7 +481,7 @@ export const RoleLogs = ({ data, reportdata }) => {
       {action == "delete" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_ROLE.value && (
           <div>
-            <div className="font-weight-bolder">Name : {objectName}</div>
+            <div className="font-weight-bolder">Name: {objectName}</div>
             <div className="font-weight-bolder">
               Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")} India
               Standard Time
@@ -532,127 +500,104 @@ export const RoleLogs = ({ data, reportdata }) => {
                     <th>New Value</th>
                   </tr>
                 </thead>
-                {reportdata
-
-                  .filter((c) => {
-                    return (
-                      c.attributeName != "Users" &&
-                      c.attributeName != "Groups" &&
-                      c.attributeName != "Roles"
-                    );
-                  })
-                  .map((u) => {
-                    return (
-                      <tbody>
-                        <tr key={u.id}>
-                          <td className="table-warning">{u.attributeName}</td>
+                <tbody>
+                  {reportdata
+                    .filter((val) => {
+                      return (
+                        val.attributeName != "Users" &&
+                        val.attributeName != "Groups" &&
+                        val.attributeName != "Roles"
+                      );
+                    })
+                    .map((role, index) => {
+                      return (
+                        <tr key={index}>
+                          <td className="table-warning">
+                            {role.attributeName}
+                          </td>
 
                           <td className="table-warning">
-                            {u.previousValue || "--"}
+                            {!isEmpty(role.previousValue)
+                              ? role.previousValue
+                              : "--"}
                           </td>
                         </tr>
-                      </tbody>
-                    );
-                  })}
+                      );
+                    })}
+                </tbody>
               </>
             </Table>
             <br />
             <h5 className="bold wrap-header m-t-sm">Users:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              {Users.map((u) => {
-                return (
-                  <>
-                    <thead>
-                      <tr>
-                        <th>Name</th>
+              <thead>
+                <tr>
+                  <th>Name</th>
 
-                        <th> Role Admin</th>
-                      </tr>
-                    </thead>
-                    {JSON.parse(u.previousValue).map((obj) => (
-                      <tbody>
-                        <tr>
-                          <td className="table-warning">{obj.name}</td>
-                          <td className="table-warning">
-                            {Object.values(obj.isAdmin) == false
-                              ? "false"
-                              : "true"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    ))}
-                  </>
-                );
-              })}
+                  <th> Role Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Users.map((usr) => {
+                  return JSON.parse(usr.previousValue).map((obj, index) => (
+                    <tr key={index}>
+                      <td className="table-warning">{obj.name}</td>
+                      <td className="table-warning">
+                        {obj.isAdmin === false ? "false" : "true"}
+                      </td>
+                    </tr>
+                  ));
+                })}
+              </tbody>
             </Table>
             <br />
 
             <h5 className="bold wrap-header m-t-sm">Groups:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <>
+              <thead>
+                <tr>
+                  <th>Name</th>
+
+                  <th> Role Admin</th>
+                </tr>
+              </thead>
+
+              <tbody>
                 {Groups.map((u) => {
-                  return (
-                    <>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-
-                          <th> Role Admin</th>
-                        </tr>
-                      </thead>
-
-                      {JSON.parse(u.previousValue).map((obj) => (
-                        <tbody>
-                          <tr>
-                            <td className="table-warning">
-                              {Object.values(obj.name)}
-                            </td>
-                            <td className="table-warning">
-                              {Object.values(obj.isAdmin) == false
-                                ? "false"
-                                : "true"}
-                            </td>
-                          </tr>
-                        </tbody>
-                      ))}
-                    </>
-                  );
+                  return JSON.parse(u.previousValue).map((obj, index) => (
+                    <tr key={index}>
+                      <td className="table-warning">{obj.name}</td>
+                      <td className="table-warning">
+                        {obj.isAdmin === false ? "false" : "true"}
+                      </td>
+                    </tr>
+                  ));
                 })}
-              </>
+              </tbody>
             </Table>
             <br />
             <h5 className="bold wrap-header m-t-sm">Roles:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <>
-                {Roles.map((u) => {
-                  return (
-                    <>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
+              <thead>
+                <tr>
+                  <th>Name</th>
 
-                          <th> Role Admin</th>
-                        </tr>
-                      </thead>
+                  <th> Role Admin</th>
+                </tr>
+              </thead>
 
-                      {JSON.parse(u.previousValue).map((obj) => (
-                        <tbody>
-                          <tr>
-                            <td className="table-warning">
-                              {Object.values(obj.name)}
-                            </td>
-                            <td className="table-warning">
-                              {Object.values(obj.isAdmin) == false
-                                ? "false"
-                                : "true"}
-                            </td>
-                          </tr>
-                        </tbody>
-                      ))}
-                    </>
-                  );
+              <tbody>
+                {Roles.map((roles) => {
+                  return JSON.parse(roles.previousValue).map((obj, index) => (
+                    <tr key={index}>
+                      <td className="table-warning">{obj.name}</td>
+                      <td className="table-warning">
+                        {obj.isAdmin === false ? "false" : "true"}
+                      </td>
+                    </tr>
+                  ));
                 })}
-              </>
+              </tbody>
             </Table>
           </div>
         )}

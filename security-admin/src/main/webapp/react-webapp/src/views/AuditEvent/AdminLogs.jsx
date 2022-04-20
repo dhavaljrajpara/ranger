@@ -180,11 +180,13 @@ function Admin() {
             );
           } else if (rawValue.value == "delete") {
             operation = (
-              <Badge variant="danger">
-                {" "}
-                {rawValue.value.charAt(0).toUpperCase() +
-                  rawValue.value.slice(1)}{" "}
-              </Badge>
+              <h6>
+                <Badge variant="danger">
+                  {" "}
+                  {rawValue.value.charAt(0).toUpperCase() +
+                    rawValue.value.slice(1)}{" "}
+                </Badge>
+              </h6>
             );
           } else if (rawValue.value == "IMPORT START") {
             operation = (

@@ -1,8 +1,17 @@
 import React from "react";
-import { Table, Badge } from "react-bootstrap";
+import { Table, Badge, Row, Col } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
-import _, { isEmpty, isEqual, isUndefined } from "lodash";
+import _, {
+  isEmpty,
+  startCase,
+  isEqual,
+  isUndefined,
+  unionBy,
+  difference,
+  differenceWith,
+  without
+} from "lodash";
 
 export const PolicyLogs = ({ data, reportdata }) => {
   const {
@@ -16,23 +25,26 @@ export const PolicyLogs = ({ data, reportdata }) => {
   } = data;
 
   /* CREATE LOGS VARIABLES */
-  const createPolicyDetails = reportdata.filter((c) => {
+  const createPolicyDetails = reportdata.filter((policy) => {
     return (
-      c.action == "create" &&
-      c.attributeName != "Policy Resources" &&
-      c.attributeName != "Policy Conditions" &&
-      c.attributeName != "Policy Items" &&
-      c.attributeName != "DenyPolicy Items" &&
-      c.attributeName != "Allow Exceptions" &&
-      c.attributeName != "Deny Exceptions" &&
-      c.attributeName != "Masked Policy Items" &&
-      c.attributeName != "Row level filter Policy Items" &&
-      c.attributeName != "Validity Schedules"
+      policy.action == "create" &&
+      policy.attributeName != "Policy Resources" &&
+      policy.attributeName != "Policy Conditions" &&
+      policy.attributeName != "Policy Items" &&
+      policy.attributeName != "DenyPolicy Items" &&
+      policy.attributeName != "Allow Exceptions" &&
+      policy.attributeName != "Deny Exceptions" &&
+      policy.attributeName != "Masked Policy Items" &&
+      policy.attributeName != "Row level filter Policy Items" &&
+      policy.attributeName != "Validity Schedules"
     );
   });
 
-  const createPolicyResources = reportdata.filter((c) => {
-    return c.attributeName == "Policy Resources" && c.action == "create";
+  const createPolicyResources = reportdata.filter((resources) => {
+    return (
+      resources.attributeName == "Policy Resources" &&
+      resources.action == "create"
+    );
   });
   const createPolicyItems = reportdata.filter(
     (obj) => obj.attributeName == "Policy Items" && obj.action == "create"
@@ -49,28 +61,28 @@ export const PolicyLogs = ({ data, reportdata }) => {
       );
     });
 
-    let keynew = {};
+    let newVal = {};
     resources.map((obj) => {
-      keynew = JSON.parse(obj.newValue);
+      newVal = JSON.parse(obj.newValue);
     });
 
-    Object.keys(keynew).map((key, index) => {
+    Object.keys(newVal).map((key, index) => {
       return tablerow.push(
         <>
-          <tr>
+          <tr key={index}>
             <td className="table-warning">{key}</td>
-            <td className="table-warning"> {keynew[key].values}</td>
+            <td className="table-warning"> {newVal[key].values}</td>
           </tr>
           <tr>
             <td className="table-warning">{key + " " + "exclude"}</td>
             <td className="table-warning">
-              {keynew[key].isExcludes == false ? "false" : "true"}
+              {newVal[key].isExcludes == false ? "false" : "true"}
             </td>
           </tr>
           <tr>
             <td className="table-warning">{key + " " + "recursive"}</td>
             <td className="table-warning">
-              {keynew[key].isRecursive == false ? "false" : "true"}
+              {newVal[key].isRecursive == false ? "false" : "true"}
             </td>
           </tr>
         </>
@@ -119,28 +131,28 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   /* UPDATE LOGS VARIABLES */
 
-  const updatePolicyDetails = reportdata.filter((c) => {
+  const updatePolicyDetails = reportdata.filter((policy) => {
     return (
-      c.action == "update" &&
-      c.attributeName != "Policy Resources" &&
-      c.attributeName != "Policy Conditions" &&
-      c.attributeName != "Policy Items" &&
-      c.attributeName != "DenyPolicy Items" &&
-      c.attributeName != "Allow Exceptions" &&
-      c.attributeName != "Deny Exceptions" &&
-      c.attributeName != "Masked Policy Items" &&
-      c.attributeName != "Row level filter Policy Items" &&
-      c.attributeName != "Validity Schedules"
+      policy.action == "update" &&
+      policy.attributeName != "Policy Resources" &&
+      policy.attributeName != "Policy Conditions" &&
+      policy.attributeName != "Policy Items" &&
+      policy.attributeName != "DenyPolicy Items" &&
+      policy.attributeName != "Allow Exceptions" &&
+      policy.attributeName != "Deny Exceptions" &&
+      policy.attributeName != "Masked Policy Items" &&
+      policy.attributeName != "Row level filter Policy Items" &&
+      policy.attributeName != "Validity Schedules"
     );
   });
-  const updatePolicyResources = reportdata.filter((c) => {
-    return c.attributeName == "Policy Resources" && c.action == "update";
+  const updatePolicyResources = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Resources" && obj.action == "update";
   });
   const policyDetailsUpdate = (details, resources) => {
     let tablerow = [];
-    details.map((o) => {
+    details.map((o, index) => {
       return tablerow.push(
-        <tr>
+        <tr key={index}>
           <td className="table-warning">{o.attributeName}</td>
           <td className="table-warning">
             {!isEmpty(o.previousValue)
@@ -160,11 +172,11 @@ export const PolicyLogs = ({ data, reportdata }) => {
       );
     });
 
-    let keyOld = {};
-    let keynew = {};
+    let oldVal = {};
+    let newVal = {};
     resources.map((obj) => {
-      keyOld = JSON.parse(obj.previousValue);
-      keynew = JSON.parse(obj.newValue);
+      oldVal = JSON.parse(obj.previousValue);
+      newVal = JSON.parse(obj.newValue);
     });
 
     const diffVal = (obj1, obj2) => {
@@ -172,7 +184,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (!isEmpty(obj1)) {
         _.forEach(obj2, function (value, key) {
           if (obj1[key] !== undefined) {
-            diff[key] = _.differenceWith(
+            diff[key] = differenceWith(
               value.values,
               obj1[key].values,
               _.isEqual
@@ -184,58 +196,54 @@ export const PolicyLogs = ({ data, reportdata }) => {
       }
       return diff;
     };
-    var removedUsers = diffVal(keynew, keyOld);
-    var addUsers = diffVal(keyOld, keynew);
+    var removedUsers = diffVal(newVal, oldVal);
+    var addUsers = diffVal(oldVal, newVal);
 
     const getfilteredoldval = (val, oldvals) => {
-      let c = oldvals;
       let filterdiff = null;
       !isEmpty(removedUsers[val])
-        ? (filterdiff = _.difference(c.values, removedUsers[val]))
-        : (filterdiff = c.values);
+        ? (filterdiff = difference(oldvals.values, removedUsers[val]))
+        : (filterdiff = oldvals.values);
       return (
         <>
-          {!isEqual(c, keynew[val])
+          {!isEqual(oldvals, newVal[val])
             ? !isEmpty(removedUsers[val])
-              ? _.unionBy(
-                  filterdiff.map((obj) => {
-                    return (
-                      <>
-                        <span>{obj}</span>
-                        {`, `}
-                      </>
-                    );
-                  }),
-                  removedUsers[val].map((obj) => {
-                    return (
-                      <>
-                        <Badge className="d-inline mr-1" variant="danger">
-                          {obj}
-                        </Badge>
-                      </>
-                    );
-                  })
-                )
+              ? (filterdiff.map((obj) => {
+                  return (
+                    <>
+                      <span>{obj}</span>
+                      {`, `}
+                    </>
+                  );
+                }),
+                removedUsers[val].map((obj) => {
+                  return (
+                    <>
+                      <Badge className="d-inline mr-1" variant="danger">
+                        {obj}
+                      </Badge>
+                    </>
+                  );
+                }))
               : !isEmpty(filterdiff)
               ? filterdiff.map((obj) => obj).join(", ")
               : "<empty>"
-            : !isEmpty(c)
-            ? c.values.map((obj) => obj).join(", ")
+            : !isEmpty(oldvals)
+            ? oldvals.values.map((obj) => obj).join(", ")
             : "<empty>"}
         </>
       );
     };
     const getfilterednewval = (val, newvals) => {
-      let c = newvals;
       let filterdiff = null;
       !isEmpty(addUsers[val])
-        ? (filterdiff = _.difference(c.values, addUsers[val]))
-        : (filterdiff = c.values);
+        ? (filterdiff = difference(newvals.values, addUsers[val]))
+        : (filterdiff = newvals.values);
       return (
         <>
-          {!isEqual(c, keyOld[val])
+          {!isEqual(newvals, oldVal[val])
             ? !isEmpty(addUsers[val])
-              ? _.unionBy(
+              ? unionBy(
                   filterdiff.map((obj) => {
                     return (
                       <>
@@ -257,25 +265,25 @@ export const PolicyLogs = ({ data, reportdata }) => {
               : !isEmpty(filterdiff)
               ? filterdiff.map((obj) => obj).join(", ")
               : "<empty>"
-            : !isEmpty(c)
-            ? c.values.map((obj) => obj).join(", ")
+            : !isEmpty(newvals)
+            ? newvals.values.map((obj) => obj).join(", ")
             : "<empty>"}
         </>
       );
     };
-    Object.keys(keyOld).map((key) => {
+    Object.keys(oldVal).map((key, index) => {
       return tablerow.push(
         <>
-          <tr>
+          <tr key={index}>
             <td className="table-warning">{key}</td>
-            {keyOld[key].values.length > 0 && (
+            {oldVal[key] && !isEmpty(oldVal[key].values) && (
               <td className="table-warning">
-                {getfilteredoldval(key, keyOld[key])}
+                {getfilteredoldval(key, oldVal[key])}
               </td>
             )}
-            {keynew[key] && keynew[key].values.length > 0 && (
+            {newVal[key] && !isEmpty(newVal[key].values) && (
               <td className="table-warning">
-                {getfilterednewval(key, keynew[key])}
+                {getfilterednewval(key, newVal[key])}
               </td>
             )}
           </tr>
@@ -289,6 +297,128 @@ export const PolicyLogs = ({ data, reportdata }) => {
   );
   const updateValidityOld = updateValidity.map((obj) => obj.previousValue);
   const updateValidityNew = updateValidity.map((obj) => obj.newValue);
+
+  const updateValidityOldNew = (policy) => {
+    var tablerow = [];
+    let oldVal = {};
+    let newVal = {};
+
+    policy.previousValue &&
+      JSON.parse(policy.previousValue).map((obj) => (oldVal = obj));
+    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newVal = obj));
+
+    let filteredval = Object.keys(oldVal).concat(Object.keys(newVal));
+    filteredval = filteredval.filter((item, index) => {
+      return filteredval.indexOf(item) == index;
+    });
+
+    const diffVal = (obj1, obj2) => {
+      let diff = null;
+      if (!isEmpty(obj1)) {
+        diff = difference(obj1, obj2);
+      } else {
+        return (diff = obj2);
+      }
+      return diff;
+    };
+
+    var removedUsers = diffVal(
+      JSON.parse(policy.previousValue),
+      JSON.parse(policy.newValue)
+    );
+    var addUsers = diffVal(
+      JSON.parse(policy.newValue),
+      JSON.parse(policy.previousValue)
+    );
+
+    let filterPolicys = without(filteredval, "recurrences");
+    const getfilteredoldval = (val, oldvals) => {
+      let oldValues = oldvals[0];
+      let filteredOldVal = oldValues[val];
+      let filterdiff = null;
+      !isEmpty(removedUsers[val])
+        ? (filterdiff = difference(filteredOldVal, removedUsers[val]))
+        : (filterdiff = filteredOldVal);
+      return (
+        <>
+          <i>{startCase(val)}</i>:{" "}
+          {!isEqual(filteredOldVal, newVal[val]) ? (
+            !isEmpty(removedUsers[0][val]) ? (
+              <Badge className="d-inline mr-1" variant="danger">
+                {removedUsers[0][val]}
+              </Badge>
+            ) : !isEmpty(filterdiff) ? (
+              filterdiff
+            ) : (
+              "--"
+            )
+          ) : !isEmpty(filteredOldVal) ? (
+            filteredOldVal
+          ) : (
+            "--"
+          )}
+        </>
+      );
+    };
+    const getfilterednewval = (val, newvals) => {
+      let newValues = newvals[0];
+      let filteredNewVal = newValues[val];
+      let filterdiff = null;
+      !isEmpty(addUsers[val])
+        ? (filterdiff = difference(filteredNewVal, addUsers[val]))
+        : (filterdiff = filteredNewVal);
+      return (
+        <>
+          <i>{startCase(val)}</i>:{" "}
+          {!isEqual(filteredNewVal, oldVal[val]) ? (
+            !isEmpty(addUsers[0][val]) ? (
+              <Badge className="d-inline mr-1" variant="success">
+                {addUsers[0][val]}
+              </Badge>
+            ) : !isEmpty(filterdiff) ? (
+              filterdiff
+            ) : (
+              "--"
+            )
+          ) : !isEmpty(filteredNewVal) ? (
+            filteredNewVal
+          ) : (
+            "--"
+          )}
+        </>
+      );
+    };
+
+    filterPolicys.map((val, index) => {
+      return tablerow.push(
+        <>
+          <tr key={index}>
+            {policy &&
+            policy.previousValue &&
+            !isEmpty(JSON.parse(policy.previousValue)) ? (
+              <td className="table-warning text-nowrap">
+                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
+              </td>
+            ) : (
+              <td>{"<empty>"}</td>
+            )}
+
+            {policy &&
+            policy.newValue &&
+            !isEmpty(JSON.parse(policy.newValue)) ? (
+              <td className="table-warning text-nowrap">
+                {getfilterednewval(val, JSON.parse(policy.newValue))}
+              </td>
+            ) : (
+              <td>{"<empty>"}</td>
+            )}
+          </tr>
+        </>
+      );
+    });
+    return tablerow;
+  };
+
   const updateMaskPolicy = reportdata.filter(
     (obj) =>
       obj.attributeName == "Masked Policy Items" && obj.action == "update"
@@ -298,8 +428,12 @@ export const PolicyLogs = ({ data, reportdata }) => {
       obj.attributeName == "Row level filter Policy Items" &&
       obj.action == "update"
   );
-  const updateRowMaskOld = updateRowMask.map((obj) => obj.previousValue);
-  const updateRowMaskNew = updateRowMask.map((obj) => obj.newValue);
+  const updateRowMaskOld = updateRowMask.map(
+    (obj) => obj.previousValue && obj.action == "update"
+  );
+  const updateRowMaskNew = updateRowMask.map(
+    (obj) => obj.newValue && obj.action == "update"
+  );
   const updatePolicyItems = reportdata.filter(
     (obj) => obj.attributeName == "Policy Items" && obj.action == "update"
   );
@@ -324,59 +458,98 @@ export const PolicyLogs = ({ data, reportdata }) => {
   );
   const updateConditionOldNew = (policy) => {
     var tablerow = [];
-    let oldval = {};
-    let newval = {};
+    let oldVal = [];
+    let newVal = [];
 
-    policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
+    oldVal =
+      policy.previousValue &&
+      JSON.parse(policy.previousValue).map(
+        (obj) => `${obj.type}:${obj.values}`
+      );
 
-    let policyConditions = _.difference(
-      !isEmpty(policy.previousValue) && JSON.parse(policy.previousValue),
-      !isEmpty(policy.newValue) && JSON.parse(policy.newValue)
-    );
-    policyConditions.map((obj) =>
-      tablerow.push(
-        <tr>
-          {policy &&
-          policy.previousValue &&
-          !isEmpty(JSON.parse(policy.previousValue)) ? (
-            <td className="table-warning text-nowrap">
-              {`${obj.type}: ${obj.values}`}
-            </td>
-          ) : (
-            <td>
-              <strong>{"<empty>"}</strong>
-            </td>
-          )}
+    newVal =
+      policy.newValue &&
+      JSON.parse(policy.newValue).map((obj) => `${obj.type}:${obj.values}`);
+    tablerow.push(
+      <Row>
+        <Col xs={6}>
+          <Table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Old Value</th>
+              </tr>
+            </thead>
 
-          {policy &&
-          policy.newValue &&
-          !isEmpty(JSON.parse(policy.newValue)) ? (
-            <td className="table-warning text-nowrap">
-              {`${obj.type}: ${obj.values}`}
-            </td>
-          ) : (
-            <td>
-              <strong>{"<empty>"}</strong>
-            </td>
-          )}
-        </tr>
-      )
+            <tbody>
+              {!isEmpty(oldVal) ? (
+                oldVal.map((val) => {
+                  return (
+                    <tr key={val.id}>
+                      {policy &&
+                      policy.previousValue &&
+                      !isEmpty(JSON.parse(policy.previousValue)) ? (
+                        <td className="table-warning text-nowrap">{val}</td>
+                      ) : (
+                        <td>
+                          <strong>--</strong>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
+              ) : (
+                <td className="table-warning text-center">
+                  <strong>{"<empty>"} </strong>
+                </td>
+              )}
+            </tbody>
+          </Table>
+        </Col>
+        <Col xs={6}>
+          <Table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>New Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!isEmpty(newVal) ? (
+                newVal.map((val) => {
+                  return policy &&
+                    policy.newValue &&
+                    !isEmpty(JSON.parse(policy.newValue)) ? (
+                    <tr key={val.id}>
+                      <td className="table-warning">{val}</td>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <td>--</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <td className="table-warning  text-center">
+                  <strong>{"<empty>"} </strong>
+                </td>
+              )}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
     );
     return tablerow;
   };
 
   const updatePolicyOldNew = (policy) => {
     var tablerow = [];
-    let oldval = {};
-    let newval = {};
+    let oldVal = {};
+    let newVal = {};
 
     policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
+      JSON.parse(policy.previousValue).map((obj) => (oldVal = obj));
+    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newVal = obj));
 
-    let filteredval = Object.keys(oldval).concat(Object.keys(newval));
+    let filteredval = Object.keys(oldVal).concat(Object.keys(newVal));
     filteredval = filteredval.filter((item, index) => {
       return filteredval.indexOf(item) == index;
     });
@@ -384,14 +557,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
     let filterPolicys =
       policy.attributeName == "Masked Policy Items" ||
       policy.attributeName == "Row level filter Policy Items"
-        ? _.without(filteredval, "conditions", "dataMaskInfo", "delegateAdmin")
+        ? without(filteredval, "conditions", "dataMaskInfo", "delegateAdmin")
         : filteredval;
     const diffVal = (obj1, obj2) => {
       let diff = {};
       if (!isEmpty(obj1)) {
         _.forEach(obj2, function (value, key) {
           if (obj1[key] !== undefined) {
-            diff[key] = _.differenceWith(value, obj1[key], _.isEqual);
+            diff[key] = differenceWith(value, obj1[key], _.isEqual);
           }
         });
       } else {
@@ -399,22 +572,23 @@ export const PolicyLogs = ({ data, reportdata }) => {
       }
       return diff;
     };
-    var removedUsers = diffVal(newval, oldval);
-    var addUsers = diffVal(oldval, newval);
-
-    let b = [];
-    let c = [];
+    var removedUsers = diffVal(newVal, oldVal);
+    var addUsers = diffVal(oldVal, newVal);
 
     const getfilteredoldval = (val, oldvals) => {
-      b = oldvals[0];
-      c = b[val];
+      let oldValues = oldvals[0];
+      let filterOldVal = oldValues[val];
       /* Permissions */
 
       if (val == "accesses") {
         let filterdiff = null;
         !isEmpty(removedUsers[val])
-          ? (filterdiff = _.differenceWith(c, removedUsers[val], isEqual))
-          : (filterdiff = c);
+          ? (filterdiff = differenceWith(
+              filterOldVal,
+              removedUsers[val],
+              isEqual
+            ))
+          : (filterdiff = filterOldVal);
         return (
           <>
             {objectName == "rowlevel" ||
@@ -425,9 +599,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
               <i>{`Permissions: `}</i>
             )}
 
-            {!isEqual(c, newval[val])
+            {!isEqual(filterOldVal, newVal[val])
               ? !isEmpty(removedUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -449,8 +623,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj.type).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj.type).join(", ")
+              : !isEmpty(filterOldVal)
+              ? filterOldVal.map((obj) => obj.type).join(", ")
               : "<empty>"}
           </>
         );
@@ -461,14 +635,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "groups") {
         let filterdiff = null;
         !isEmpty(removedUsers[val])
-          ? (filterdiff = _.difference(c, removedUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
+          : (filterdiff = filterOldVal);
         return (
           <>
             <i>{`Groups`}</i>:{" "}
-            {!isEqual(c, newval[val])
+            {!isEqual(filterOldVal, newVal[val])
               ? !isEmpty(removedUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -490,8 +664,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterOldVal)
+              ? filterOldVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -502,14 +676,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "roles") {
         let filterdiff = null;
         !isEmpty(removedUsers[val])
-          ? (filterdiff = _.difference(c, removedUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
+          : (filterdiff = filterOldVal);
         return (
           <>
             <i>{`Roles`}</i>:{" "}
-            {!isEqual(c, newval[val])
+            {!isEqual(filterOldVal, newVal[val])
               ? !isEmpty(removedUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -531,8 +705,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterOldVal)
+              ? filterOldVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -543,14 +717,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "users") {
         let filterdiff = null;
         !isEmpty(removedUsers[val])
-          ? (filterdiff = _.difference(c, removedUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
+          : (filterdiff = filterOldVal);
         return (
           <>
             <i>{`Users`}</i>:{" "}
-            {!isEqual(c, newval[val])
+            {!isEqual(filterOldVal, newVal[val])
               ? !isEmpty(removedUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -572,8 +746,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterOldVal)
+              ? filterOldVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -581,14 +755,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "conditions") {
         let filterdiff = null;
         !isEmpty(removedUsers[val])
-          ? (filterdiff = _.difference(c, removedUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
+          : (filterdiff = filterOldVal);
         return (
           <>
             <i>{`Conditions`}</i>:{" "}
-            {!isEqual(c, newval[val])
+            {!isEqual(filterOldVal, newVal[val])
               ? !isEmpty(removedUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -611,8 +785,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     `${obj.type}: ${obj.values}`;
                   })
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => {
+              : !isEmpty(filterOldVal)
+              ? filterOldVal.map((obj) => {
                   `${obj.type}: ${obj.values}`;
                 })
               : "<empty>"}
@@ -624,7 +798,11 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <>
             <i>{`Row Level Filter`}</i>
             {`: `}
-            {!isEmpty(c.filterExpr) ? <span>{c.filterExpr}</span> : "empty"}
+            {!isEmpty(filterOldVal.filterExpr) ? (
+              <span>{filterOldVal.filterExpr}</span>
+            ) : (
+              "empty"
+            )}
           </>
         );
       }
@@ -632,7 +810,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         return (
           <>
             <i>{`Data Mask Types`}</i>
-            {`: ${!isEmpty(c) ? c : "<empty>"}`}
+            {`: ${!isEmpty(filterOldVal) ? filterOldVal : "<empty>"}`}
           </>
         );
       }
@@ -641,26 +819,26 @@ export const PolicyLogs = ({ data, reportdata }) => {
         return (
           <>
             <i>{`Delegate Admin`}</i>
-            {`: ${c === false ? "disabled" : "enabled"}`}
+            {`: ${filterOldVal === false ? "disabled" : "enabled"}`}
           </>
         );
       }
 
       return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        !isEmpty(c) ? c : "<empty>"
+        !isEmpty(filterOldVal) ? filterOldVal : "<empty>"
       }`;
     };
 
     const getfilterednewval = (val, newvals) => {
-      let b = newvals[0];
-      let c = b[val];
+      let newValues = newvals[0];
+      let filterNewVal = newValues[val];
       /* PERMISSIONS */
 
       if (val == "accesses") {
         let filterdiff = null;
         !isEmpty(addUsers[val])
-          ? (filterdiff = _.differenceWith(c, addUsers[val], isEqual))
-          : (filterdiff = c);
+          ? (filterdiff = differenceWith(filterNewVal, addUsers[val], isEqual))
+          : (filterdiff = filterNewVal);
         return (
           <>
             {objectName == "rowlevel" ||
@@ -671,9 +849,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
               <i>{`Permissions: `}</i>
             )}
 
-            {!isEqual(c, oldval[val])
+            {!isEqual(filterNewVal, oldVal[val])
               ? !isEmpty(addUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -695,8 +873,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj.type).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj.type).join(", ")
+              : !isEmpty(filterNewVal)
+              ? filterNewVal.map((obj) => obj.type).join(", ")
               : "<empty>"}
           </>
         );
@@ -705,14 +883,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "groups") {
         let filterdiff = null;
         !isEmpty(addUsers[val])
-          ? (filterdiff = _.difference(c, addUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterNewVal, addUsers[val]))
+          : (filterdiff = filterNewVal);
         return (
           <>
             <i>{`Groups`}</i>:{" "}
-            {!isEqual(c, oldval[val])
+            {!isEqual(filterNewVal, oldVal[val])
               ? !isEmpty(addUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -734,8 +912,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterNewVal)
+              ? filterNewVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -744,14 +922,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "roles") {
         let filterdiff = null;
         !isEmpty(addUsers[val])
-          ? (filterdiff = _.difference(c, addUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterNewVal, addUsers[val]))
+          : (filterdiff = filterNewVal);
         return (
           <>
             <i>{`Roles`}</i>:{" "}
-            {!isEqual(c, oldval[val])
+            {!isEqual(filterNewVal, oldVal[val])
               ? !isEmpty(addUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -773,8 +951,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterNewVal)
+              ? filterNewVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -783,14 +961,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "users") {
         let filterdiff = null;
         !isEmpty(addUsers[val])
-          ? (filterdiff = _.difference(c, addUsers[val]))
-          : (filterdiff = c);
+          ? (filterdiff = difference(filterNewVal, addUsers[val]))
+          : (filterdiff = filterNewVal);
         return (
           <>
             <i>{`Users`}</i>:{" "}
-            {!isEqual(c, oldval[val])
+            {!isEqual(filterNewVal, oldVal[val])
               ? !isEmpty(addUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -812,8 +990,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 : !isEmpty(filterdiff)
                 ? filterdiff.map((obj) => obj).join(", ")
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => obj).join(", ")
+              : !isEmpty(filterNewVal)
+              ? filterNewVal.map((obj) => obj).join(", ")
               : "<empty>"}
           </>
         );
@@ -834,14 +1012,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
       if (val == "conditions") {
         let filterdiff = null;
         !isEmpty(addUsers[val])
-          ? (filterdiff = _.differenceWith(c, addUsers[val], isEqual))
-          : (filterdiff = c);
+          ? (filterdiff = differenceWith(filterNewVal, addUsers[val], isEqual))
+          : (filterdiff = filterNewVal);
         return (
           <>
             <i>{`Conditions`}</i>:{" "}
-            {!isEqual(c, oldval[val])
+            {!isEqual(filterNewVal, oldVal[val])
               ? !isEmpty(addUsers[val])
-                ? _.unionBy(
+                ? unionBy(
                     filterdiff.map((obj) => {
                       return (
                         <>
@@ -864,8 +1042,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     `${obj.type}: ${obj.values}`;
                   })
                 : "<empty>"
-              : !isEmpty(c)
-              ? c.map((obj) => {
+              : !isEmpty(filterNewVal)
+              ? filterNewVal.map((obj) => {
                   `${obj.type}: ${obj.values}`;
                 })
               : "<empty>"}
@@ -877,7 +1055,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         return (
           <>
             <i>{`Data Mask Types`}</i>
-            {`: ${!isEmpty(c) ? c : "<empty>"}`}
+            {`: ${!isEmpty(filterNewVal) ? filterNewVal : "<empty>"}`}
           </>
         );
       }
@@ -887,7 +1065,11 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <>
             <i>{`Row Level Filter`}</i>
             {`: `}
-            {!isEmpty(c.filterExpr) ? <span>{c.filterExpr}</span> : "empty"}
+            {!isEmpty(filterNewVal.filterExpr) ? (
+              <span>{filterNewVal.filterExpr}</span>
+            ) : (
+              "empty"
+            )}
           </>
         );
       }
@@ -896,13 +1078,13 @@ export const PolicyLogs = ({ data, reportdata }) => {
         return (
           <>
             <i>{`Delegate Admin`}</i>
-            {`: ${c === false ? "disabled" : "enabled"}`}
+            {`: ${filterNewVal === false ? "disabled" : "enabled"}`}
           </>
         );
       }
 
       return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        c.length > 0 ? c : "<empty>"
+        isEmpty(filterNewVal) ? filterNewVal : "<empty>"
       }`;
     };
 
@@ -941,23 +1123,23 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   /* DELETE POLICY VARIABLES */
 
-  const deletePolicyDetails = reportdata.filter((c) => {
+  const deletePolicyDetails = reportdata.filter((policy) => {
     return (
-      c.action == "delete" &&
-      c.attributeName != "Policy Resources" &&
-      c.attributeName != "Policy Conditions" &&
-      c.attributeName != "Policy Items" &&
-      c.attributeName != "DenyPolicy Items" &&
-      c.attributeName != "Allow Exceptions" &&
-      c.attributeName != "Deny Exceptions" &&
-      c.attributeName != "Zone Name" &&
-      c.attributeName != "Masked Policy Items" &&
-      c.attributeName != "Row level filter Policy Items" &&
-      c.attributeName != "Validity Schedules"
+      policy.action == "delete" &&
+      policy.attributeName != "Policy Resources" &&
+      policy.attributeName != "Policy Conditions" &&
+      policy.attributeName != "Policy Items" &&
+      policy.attributeName != "DenyPolicy Items" &&
+      policy.attributeName != "Allow Exceptions" &&
+      policy.attributeName != "Deny Exceptions" &&
+      policy.attributeName != "Zone Name" &&
+      policy.attributeName != "Masked Policy Items" &&
+      policy.attributeName != "Row level filter Policy Items" &&
+      policy.attributeName != "Validity Schedules"
     );
   });
-  const deletePolicyResources = reportdata.filter((c) => {
-    return c.attributeName == "Policy Resources" && c.action == "delete";
+  const deletePolicyResources = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Resources" && obj.action == "delete";
   });
   const deleteDetails = (details, resources) => {
     let tablerow = [];
@@ -979,7 +1161,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
     Object.keys(keynew).map((key, index) => {
       return tablerow.push(
         <>
-          <tr>
+          <tr key={index}>
             <td className="table-warning">{key}</td>
             <td className="table-warning"> {keynew[key].values}</td>
           </tr>
@@ -1177,143 +1359,143 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   const exportJson = reportdata.filter((obj) => obj.action == "EXPORT JSON");
 
-  const rowmask = reportdata.filter(
-    (obj) => obj.attributeName == "Row level filter Policy Items"
-  );
+  // const rowmask = reportdata.filter(
+  //   (obj) => obj.attributeName == "Row level filter Policy Items"
+  // );
 
-  const policydelete = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Items";
-  });
+  // const policydelete = reportdata.filter((obj) => {
+  //   return obj.attributeName == "Policy Items";
+  // });
 
   const policycondition = reportdata.filter((obj) => {
     return obj.attributeName == "Policy Conditions" && obj.action == "update";
   });
-  const policyConditionnewVal = policycondition.map(
-    (obj) => obj.previousValue && obj.action == "update"
-  );
-  const policyConditionoldVal = policycondition.map(
-    (obj) => obj.newValue && obj.action == "update"
-  );
+  // const policyConditionnewVal = policycondition.map(
+  //   (obj) => obj.previousValue && obj.action == "update"
+  // );
+  // const policyConditionoldVal = policycondition.map(
+  //   (obj) => obj.newValue && obj.action == "update"
+  // );
   const importdeleteresources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "Import Delete";
   });
 
-  const policyItems = reportdata.filter(
-    (obj) => obj.attributeName == "Policy Items"
-  );
+  // const policyItems = reportdata.filter(
+  //   (obj) => obj.attributeName == "Policy Items"
+  // );
 
-  const allowpolicyUpdate = (policy) => {
-    let tablerow = [];
-    let oldval = {};
-    let newval = {};
+  // const allowpolicyUpdate = (policy) => {
+  //   let tablerow = [];
+  //   let oldval = {};
+  //   let newval = {};
 
-    policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
-    let filteredval = Object.keys(oldval).concat(Object.keys(newval));
-    filteredval = filteredval.filter((item, index) => {
-      return filteredval.indexOf(item) == index;
-    });
+  //   policy.previousValue &&
+  //     JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
+  //   policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
+  //   let filteredval = Object.keys(oldval).concat(Object.keys(newval));
+  //   filteredval = filteredval.filter((item, index) => {
+  //     return filteredval.indexOf(item) == index;
+  //   });
 
-    const getfilteredoldval = (val, oldval) => {
-      let b = oldval[0];
-      let c = b[val];
-      if (val == "accesses") {
-        return (
-          <>
-            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-          </>
-        );
-      }
-      if (val == "delegateAdmin") {
-        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-          c == false ? "disabled" : "enabled"
-        }`;
-      }
+  //   const getfilteredoldval = (val, oldval) => {
+  //     let b = oldval[0];
+  //     let c = b[val];
+  //     if (val == "accesses") {
+  //       return (
+  //         <>
+  //           <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
+  //         </>
+  //       );
+  //     }
+  //     if (val == "delegateAdmin") {
+  //       return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
+  //         c == false ? "disabled" : "enabled"
+  //       }`;
+  //     }
 
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        c.length > 0 ? c : "<empty>"
-      }`;
-    };
+  //     return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+  //       c.length > 0 ? c : "<empty>"
+  //     }`;
+  //   };
 
-    const getfilterednewval = (val, newval) => {
-      let b = newval[0];
-      let c = b[val];
-      if (val == "accesses") {
-        return (
-          <>
-            <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-          </>
-        );
-      }
-      if (val == "delegateAdmin") {
-        return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-          c == false ? "disabled" : "enabled"
-        }`;
-      }
+  //   const getfilterednewval = (val, newval) => {
+  //     let b = newval[0];
+  //     let c = b[val];
+  //     if (val == "accesses") {
+  //       return (
+  //         <>
+  //           <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
+  //         </>
+  //       );
+  //     }
+  //     if (val == "delegateAdmin") {
+  //       return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
+  //         c == false ? "disabled" : "enabled"
+  //       }`;
+  //     }
 
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        c.length > 0 ? c : "<empty>"
-      }`;
-    };
+  //     return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
+  //       c.length > 0 ? c : "<empty>"
+  //     }`;
+  //   };
 
-    filteredval.map((val) => {
-      return tablerow.push(
-        <>
-          <tr>
-            {(policy.previousValue && (
-              <td className="table-warning">
-                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
-              </td>
-            )) || <span>empty</span>}
+  //   filteredval.map((val) => {
+  //     return tablerow.push(
+  //       <>
+  //         <tr>
+  //           {(policy.previousValue && (
+  //             <td className="table-warning">
+  //               {getfilteredoldval(val, JSON.parse(policy.previousValue))}
+  //             </td>
+  //           )) || <span>empty</span>}
 
-            {(policy.newValue && (
-              <td className="table-warning">
-                {getfilterednewval(val, JSON.parse(policy.newValue))}
-              </td>
-            )) || <span>empty</span>}
-          </tr>
-        </>
-      );
-    });
+  //           {(policy.newValue && (
+  //             <td className="table-warning">
+  //               {getfilterednewval(val, JSON.parse(policy.newValue))}
+  //             </td>
+  //           )) || <span>empty</span>}
+  //         </tr>
+  //       </>
+  //     );
+  //   });
 
-    return tablerow;
-  };
+  //   return tablerow;
+  // };
 
   const policyitems = reportdata.filter(
     (obj) => obj.attributeName == "Policy Items"
   );
 
-  const policyitemoldVal = policyitems.map((obj) => obj.previousValue);
+  // const policyitemoldVal = policyitems.map((obj) => obj.previousValue);
 
   const policyexception = reportdata.filter(
     (obj) => obj.attributeName == "Allow Exceptions"
   );
-  const policyexceptionoldval = policyexception.map((obj) => obj.previousValue);
+  // const policyexceptionoldval = policyexception.map((obj) => obj.previousValue);
 
-  const denyexceptions = reportdata.filter(
-    (obj) => obj.attributeName == "Deny Exceptions"
-  );
+  // const denyexceptions = reportdata.filter(
+  //   (obj) => obj.attributeName == "Deny Exceptions"
+  // );
 
   const denyPolicyItem = reportdata.filter(
     (obj) => obj.attributeName == "DenyPolicy Items"
   );
-  const denyPolicyItemoldval = denyPolicyItem.map((obj) => obj.previousValue);
+  // const denyPolicyItemoldval = denyPolicyItem.map((obj) => obj.previousValue);
 
   const maskPolicyItem = reportdata.filter(
     (obj) => obj.attributeName == "Masked Policy Items"
   );
-  const maskpolicyoldVal = maskPolicyItem.map((obj) => obj.previousValue);
+  // const maskpolicyoldVal = maskPolicyItem.map((obj) => obj.previousValue);
 
   const validityschedules = reportdata.filter(
     (obj) => obj.attributeName == "Validity Schedules"
   );
-  const validityupdate = reportdata.filter(
-    (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
-  );
+  // const validityupdate = reportdata.filter(
+  //   (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
+  // );
 
-  const validitynewVal = validityschedules.map((obj) => obj.newValue);
-  const validityoldVal = validityschedules.map((obj) => obj.previousValue);
+  // const validitynewVal = validityschedules.map((obj) => obj.newValue);
+  // const validityoldVal = validityschedules.map((obj) => obj.previousValue);
 
   return (
     <div>
@@ -1360,9 +1542,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </tr>
                     </thead>
                     {createValidityNew.map((policyitem) => {
-                      return policyitem.map((policy) => (
+                      return policyitem.map((policy, index) => (
                         <tbody>
-                          <tr>
+                          <tr key={index}>
                             <td className="table-warning">
                               {`Start Date: ${
                                 policy.startTime.length == 0
@@ -1413,9 +1595,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </thead>
 
                     {createConditionNew.map((policyitem) => {
-                      return JSON.parse(policyitem).map((policy) => (
+                      return JSON.parse(policyitem).map((policy, index) => (
                         <tbody>
-                          <tr>
+                          <tr key={index}>
                             <td className="table-warning">{`${policy.type}: ${policy.values}`}</td>
                           </tr>
                         </tbody>
@@ -1442,68 +1624,70 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </thead>
 
                     {createPolicyItems.map((policyitem) => {
-                      return JSON.parse(policyitem.newValue).map((policy) => (
-                        <tbody>
-                          <tr>
-                            <td className="table-warning">
-                              <i>{`Roles`}</i>
-                              {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="table-warning">
-                              <i>{`Groups`}</i>
-                              {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="table-warning">
-                              <i>{`Users`}</i>
-                              {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="table-warning">
-                              <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
-                            </td>
-                          </tr>
-                          <tr>
-                            {policy.conditions.length > 0 && (
-                              <td className="table-warning">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) => `${type.type} : ${type.values}`
-                                )}`}
+                      return JSON.parse(policyitem.newValue).map(
+                        (policy, index) => (
+                          <tbody>
+                            <tr key={index}>
+                              <td className="table-warning text-nowrap">
+                                <i>{`Roles`}</i>
+                                {`: ${
+                                  policy.roles.length == 0
+                                    ? "<empty>"
+                                    : policy.roles.join(", ")
+                                }`}
                               </td>
-                            )}
-                          </tr>
-                          <tr>
-                            <td className="table-warning">
-                              <i>{`Delegate Admin`}</i>
-                              {`: ${
-                                policy.delegateAdmin == true
-                                  ? "enabled"
-                                  : "disabled"
-                              }`}
-                            </td>
-                          </tr>
-                        </tbody>
-                      ));
+                            </tr>
+                            <tr>
+                              <td className="table-warning text-nowrap">
+                                <i>{`Groups`}</i>
+                                {`: ${
+                                  policy.groups.length == 0
+                                    ? "<empty>"
+                                    : policy.groups.join(", ")
+                                }`}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="table-warning text-nowrap">
+                                <i>{`Users`}</i>
+                                {`: ${
+                                  policy.users.length == 0
+                                    ? "<empty>"
+                                    : policy.users.join(", ")
+                                }`}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="table-warning text-nowrap">
+                                <i>{`Permissions`}</i>
+                                {`: ${policy.accesses
+                                  .map((obj) => obj.type)
+                                  .join(", ")}`}
+                              </td>
+                            </tr>
+                            <tr>
+                              {policy.conditions.length > 0 && (
+                                <td className="table-warning text-nowrap">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) => `${type.type} : ${type.values}`
+                                  )}`}
+                                </td>
+                              )}
+                            </tr>
+                            <tr>
+                              <td className="table-warning text-nowrap">
+                                <i>{`Delegate Admin`}</i>
+                                {`: ${
+                                  policy.delegateAdmin == true
+                                    ? "enabled"
+                                    : "disabled"
+                                }`}
+                              </td>
+                            </tr>
+                          </tbody>
+                        )
+                      );
                     })}
                   </Table>
                   <br />
@@ -1518,7 +1702,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Row Level Filter Policy Items:
                   </h5>
-                  <Table className="table table-striped  table-bordered  table-responsive w-auto">
+                  <Table className="table table-striped  table-bordered   w-auto">
                     <thead>
                       <tr>
                         <th>New Value</th>
@@ -1529,7 +1713,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
                                 policy.roles.length == 0
@@ -1539,7 +1723,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
                                 policy.groups.length == 0
@@ -1549,7 +1733,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
                                 policy.users.length == 0
@@ -1559,7 +1743,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Accesses`}</i>
                               {`: ${policy.accesses
                                 .map((obj) => obj.type)
@@ -1568,7 +1752,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
 
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Row Level Filter`}</i>
                               {`: ${policy.rowFilterInfo.filterExpr}`}
                             </td>
@@ -1580,32 +1764,6 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <br />
                 </>
               )}
-
-            {/* {action == "update" && policyexception.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">
-                Allow Exception PolicyItems:
-              </h5>
-            )}
-
-            {action == "update" && policyexception.length > 0 && (
-              <Table className="table table-striped  table-bordered  w-auto ">
-                <thead>
-                  <tr>
-                    <th>New Value</th>
-                  </tr>
-                </thead>
-
-                {reportdata
-                  .filter(
-                    (obj) =>
-                      obj.attributeName == "Allow Exceptions" &&
-                      obj.action == "update"
-                  )
-                  .map((policy) => {
-                    return <tbody>{allowpolicyUpdate(policy)}</tbody>;
-                  })}
-              </Table>
-            )} */}
 
             {action == "create" &&
               !isEmpty(createExceptionNew) &&
@@ -1624,7 +1782,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
                                 policy.roles.length == 0
@@ -1634,7 +1792,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
                                 policy.groups.length == 0
@@ -1644,7 +1802,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
                                 policy.users.length == 0
@@ -1654,7 +1812,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
                               {`: ${policy.accesses
                                 .map((obj) => obj.type)
@@ -1663,7 +1821,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
                                   .map(
@@ -1674,7 +1832,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -1708,7 +1866,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
                                 policy.roles.length == 0
@@ -1718,7 +1876,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
                                 policy.groups.length == 0
@@ -1728,7 +1886,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
                                 policy.users.length == 0
@@ -1738,7 +1896,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
                               {`: ${policy.accesses
                                 .map((obj) => obj.type)
@@ -1747,7 +1905,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
                                   .map((type) => `${type.type}: ${type.values}`)
@@ -1756,7 +1914,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -1792,7 +1950,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
                                 policy.roles.length == 0
@@ -1802,7 +1960,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
                                 policy.groups.length == 0
@@ -1812,7 +1970,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
                                 policy.users.length == 0
@@ -1822,7 +1980,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
                               {`: ${policy.accesses
                                 .map((obj) => obj.type)
@@ -1831,7 +1989,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) => `${type.type} : ${type.values}`
@@ -1840,7 +1998,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -1876,7 +2034,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
                                 policy.roles.length == 0
@@ -1886,7 +2044,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
                                 policy.groups.length == 0
@@ -1896,7 +2054,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
                                 policy.users.length == 0
@@ -1906,7 +2064,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning text-nowrap">
                               <i>{`Accesses`}</i>
                               {`: ${policy.accesses
                                 .map((obj) => obj.type)
@@ -1916,7 +2074,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
                           <tr>
                             {policy.delegateAdmin == true && (
-                              <td className="table-warning">
+                              <td className="table-warning text-nowrap">
                                 <i>{`Delegate Admin`}</i>
                                 {`: ${
                                   policy.delegateAdmin == true
@@ -1928,7 +2086,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {!isEmpty(policy.DataMasklabel) && (
-                              <td className="table-warning">
+                              <td className="table-warning text-nowrap">
                                 <i>{`Data Mask Types`}</i>
                                 {`: ${policy.DataMasklabel}`}
                               </td>
@@ -2010,10 +2168,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                         <th>New Value</th>
                       </tr>
                     </thead>
-
-                    {updateValidity.map((policyitem) => {
-                      return <tbody>{updatePolicyOldNew(policyitem)}</tbody>;
-                    })}
+                    {updateValidity.map((policy) => (
+                      <tbody>{updateValidityOldNew(policy)}</tbody>
+                    ))}
                   </Table>
                   <br />
                 </>
@@ -2051,7 +2208,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Policy Conditions:
                   </h5>
-                  <Table className="table table-striped  table-bordered   w-auto">
+                  {updatePolicyCondition.map((policyitem) => {
+                    return updateConditionOldNew(policyitem);
+                  })}
+                  {/* <Table className="table table-striped  table-bordered   w-auto">
                     <thead>
                       <tr>
                         <th>Old Value</th>
@@ -2059,10 +2219,12 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </tr>
                     </thead>
 
-                    {updatePolicyCondition.map((policyitem) => {
-                      return <tbody>{updateConditionOldNew(policyitem)}</tbody>;
-                    })}
-                  </Table>
+                    <tbody>
+                      {updatePolicyCondition.map((policyitem) => {
+                        return updateConditionOldNew(policyitem);
+                      })}
+                    </tbody>
+                  </Table> */}
                 </>
               )}
 

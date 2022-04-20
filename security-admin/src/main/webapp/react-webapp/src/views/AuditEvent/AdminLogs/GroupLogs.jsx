@@ -1,16 +1,80 @@
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, Badge } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
+import _, { isEmpty } from "lodash";
 
 export const GroupLogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
+
   const oldval = reportdata.map((obj) => {
     return obj.previousValue;
   });
   const newval = reportdata.map((obj) => {
     return obj.newValue;
   });
+
+  const updateGrpOldNew = (userDetails) => {
+    var tablerow = [];
+
+    const getfilteredoldval = (oldvals) => {
+      return !isEmpty(oldvals) ? oldvals : "--";
+    };
+
+    const getfilterednewval = (newvals) => {
+      return !isEmpty(newvals) ? newvals : "--";
+    };
+
+    userDetails.map((val) => {
+      return tablerow.push(
+        <>
+          <tr key={val.id}>
+            <td className="table-warning">{val.attributeName}</td>
+            {val && val.previousValue && !isEmpty(val.previousValue) ? (
+              <td className="table-warning">
+                {val && val.previousValue && !isEmpty(val.previousValue) ? (
+                  isEmpty(val.newValue) ? (
+                    <h6>
+                      <Badge className="d-inline mr-1" variant="danger">
+                        {getfilteredoldval(val.previousValue)}
+                      </Badge>
+                    </h6>
+                  ) : (
+                    getfilteredoldval(val.previousValue)
+                  )
+                ) : (
+                  "--"
+                )}
+              </td>
+            ) : (
+              <td>{"--"}</td>
+            )}
+            {val && val.newValue && !isEmpty(val.newValue) ? (
+              <td className="table-warning">
+                {val && val.newValue && !isEmpty(val.newValue) ? (
+                  isEmpty(val.previousValue) ? (
+                    <h6>
+                      <Badge className="d-inline mr-1" variant="success">
+                        {getfilterednewval(val.newValue)}
+                      </Badge>
+                    </h6>
+                  ) : (
+                    getfilterednewval(val.newValue)
+                  )
+                ) : (
+                  "--"
+                )}
+              </td>
+            ) : (
+              <td>{"--"}</td>
+            )}
+          </tr>
+        </>
+      );
+    });
+
+    return tablerow;
+  };
   return (
     <div>
       {/* CREATE  */}
@@ -34,13 +98,15 @@ export const GroupLogs = ({ data, reportdata }) => {
                 </tr>
               </thead>
 
-              {reportdata.map((c) => {
+              {reportdata.map((grp) => {
                 return (
                   <tbody>
-                    <tr key={c.id}>
-                      <td className="table-warning">{c.attributeName}</td>
+                    <tr key={grp.id}>
+                      <td className="table-warning">{grp.attributeName}</td>
 
-                      <td className="table-warning">{c.newValue || "--"}</td>
+                      <td className="table-warning">
+                        {!isEmpty(grp.newValue) ? grp.newValue : "--"}
+                      </td>
                     </tr>
                   </tbody>
                 );
@@ -56,7 +122,7 @@ export const GroupLogs = ({ data, reportdata }) => {
           <div>
             <div className="row">
               <div className="col-md-6">
-                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">Name: {objectName}</div>
                 <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
@@ -64,8 +130,8 @@ export const GroupLogs = ({ data, reportdata }) => {
                 <div className="font-weight-bolder">Updated By: {owner}</div>
               </div>
               <div className="col-md-6 text-right">
-                <div className="add-text legend"></div> {" Added "}
-                <div className="delete-text legend"></div> {" Deleted "}
+                <div className="bg-success legend"></div> {" Added "}
+                <div className="bg-danger legend"></div> {" Deleted "}
               </div>
             </div>
             <br />
@@ -79,17 +145,8 @@ export const GroupLogs = ({ data, reportdata }) => {
                   <th>New Value</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td className="table-warning"> Group Description</td>
-                  <td className="table-warning">
-                    <span className="add-text">{oldval}</span>
-                  </td>
-                  <td className="table-warning">
-                    <span className="add-text">{newval}</span>
-                  </td>
-                </tr>
-              </tbody>
+
+              <tbody>{updateGrpOldNew(reportdata)}</tbody>
             </Table>
           </div>
         )}
@@ -114,13 +171,13 @@ export const GroupLogs = ({ data, reportdata }) => {
                   <th>Old Value</th>
                 </tr>
               </thead>
-              {reportdata.map((obj) => {
+              {reportdata.map((grp) => {
                 return (
                   <tbody>
                     <tr>
-                      <td className="table-warning">{obj.attributeName}</td>
+                      <td className="table-warning">{grp.attributeName}</td>
                       <td className="table-warning">
-                        {obj.previousValue || "--"}
+                        {!isEmpty(grp.previousValue) ? grp.previousValue : "--"}
                       </td>
                     </tr>{" "}
                   </tbody>
