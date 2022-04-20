@@ -141,6 +141,7 @@ function Users() {
             }
           });
         } catch (error) {
+          console.log(error.response);
           if (error.response.data.msgDesc) {
             errorMsg += error.response.data.msgDesc + "\n";
           } else {
