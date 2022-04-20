@@ -6,6 +6,7 @@ import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import CreatableSelect from "react-select/creatable";
 import Editable from "Components/Editable";
+import CreatableField from "Components/CreatableField";
 import ModalResourceComp from "../Resources/ModalResourceComp";
 import { uniq, map, join, isEmpty, forEach } from "lodash";
 
@@ -134,6 +135,10 @@ export default function ServiceAuditFilter(props) {
     });
   };
 
+  const handleSelectChange = (value, input) => {
+    input.onChange(value);
+  };
+
   return (
     <React.Fragment>
       <Table bordered size="sm" className="mt-3 table-audit-filter text-center">
@@ -242,15 +247,11 @@ export default function ServiceAuditFilter(props) {
                             name={`${name}.actions`}
                           >
                             {({ input, meta }) => (
-                              <CreatableSelect
-                                {...input}
-                                components={{
-                                  DropdownIndicator: () => null
-                                }}
-                                menuIsOpen={false}
-                                isClearable={false}
-                                isMulti
-                                placeholder="Type Action Name"
+                              <CreatableField
+                                actionValues={input.value}
+                                creatableOnChange={(value) =>
+                                  handleSelectChange(value, input)
+                                }
                               />
                             )}
                           </Field>
