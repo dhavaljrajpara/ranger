@@ -46,7 +46,20 @@ function Permissions() {
     () => [
       {
         Header: "Modules",
-        accessor: "module" // accessor is the "key" in the data
+        accessor: "module",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <Link
+                className={`${"text-info"}`}
+                to={`/permissions/${rawValue.row.original.id}/edit`}
+              >
+                {rawValue.row.original.module}
+              </Link>
+            );
+          }
+          return "--";
+        }
       },
       {
         Header: "Groups",

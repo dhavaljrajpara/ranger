@@ -107,6 +107,18 @@ const EditPermission = (props) => {
       toast.success("Success! Module Permissions updated successfully");
     } catch (error) {
       console.error(`Error occurred while fetching Policies ! ${error}`);
+      if (error) {
+        if (
+          error &&
+          error.response &&
+          error.response.data &&
+          error.response.data.msgDesc
+        ) {
+          toast.error(error.response.data.msgDesc);
+        } else {
+          toast.error(`Error occurred while fetching Policies ! ${error}`);
+        }
+      }
     }
   };
 
