@@ -666,7 +666,7 @@ header {
 
 .oldvalbg {
   background-color: #ffefe4;
-  vertical-align: middle;
+  vertical-align: middle !important;
 }
 
 /*Encryption Key Manager */

@@ -142,7 +142,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
               <>
                 <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
                 <Table className="table  table-bordered table-striped w-50">
-                  <thead>
+                  <thead className="thead-light">
                     <tr>
                       <th>Fields</th>
                       <th>New Value</th>
@@ -177,7 +177,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                   </h5>
                   <Table className="table  table-bordered w-auto">
                     <>
-                      <thead>
+                      <thead className="thead-light">
                         <tr>
                           <th>Fields</th>
                           <th>New Value</th>
@@ -239,7 +239,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
                   <Table className="table  table-bordered  table-striped  w-50">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>
@@ -260,7 +260,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered  table-striped  w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>
@@ -284,7 +284,6 @@ export const ServiceLogs = ({ data, reportdata }) => {
                                       JSON.parse(config.newValue)[obj]
                                     ) ? (
                                       <h6>
-                                        {" "}
                                         <Badge
                                           className="d-inline mr-1"
                                           variant="danger"
@@ -311,7 +310,6 @@ export const ServiceLogs = ({ data, reportdata }) => {
                                       JSON.parse(config.previousValue)[obj]
                                     ) ? (
                                       <h6>
-                                        {" "}
                                         <Badge
                                           className="d-inline mr-1"
                                           variant="success"
@@ -356,7 +354,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Service Details:</h5>
                   <Table className="table  table-bordered table-striped  w-50">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>
@@ -397,7 +395,7 @@ export const ServiceLogs = ({ data, reportdata }) => {
                     Connection Configurations :
                   </h5>
                   <Table className="table  table-bordered table-striped w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Fields</th>
                         <th>Old Value</th>

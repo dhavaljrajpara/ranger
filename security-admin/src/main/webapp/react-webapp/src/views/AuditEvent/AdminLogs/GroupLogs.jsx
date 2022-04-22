@@ -7,13 +7,6 @@ import _, { isEmpty } from "lodash";
 export const GroupLogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
 
-  const oldval = reportdata.map((obj) => {
-    return obj.previousValue;
-  });
-  const newval = reportdata.map((obj) => {
-    return obj.newValue;
-  });
-
   const updateGrpOldNew = (userDetails) => {
     var tablerow = [];
 
@@ -90,7 +83,7 @@ export const GroupLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Group Detail:</h5>
 
             <Table className="table table-striped table-bordered w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
 
@@ -138,7 +131,7 @@ export const GroupLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Group Detail:</h5>
 
             <Table className="table  table-bordered table-striped w-75 ">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -165,7 +158,7 @@ export const GroupLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Group Details:</h5>
 
             <Table className="table table-striped table-bordered w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -179,7 +172,7 @@ export const GroupLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         {!isEmpty(grp.previousValue) ? grp.previousValue : "--"}
                       </td>
-                    </tr>{" "}
+                    </tr>
                   </tbody>
                 );
               })}

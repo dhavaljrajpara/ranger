@@ -1,7 +1,8 @@
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, Badge } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
+import _, { isEmpty } from "lodash";
 
 export const UserprofileLogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
@@ -14,7 +15,7 @@ export const UserprofileLogs = ({ data, reportdata }) => {
           <div>
             <div className="row">
               <div className="col-md-6">
-                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">Name: {objectName}</div>
                 <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
@@ -22,15 +23,14 @@ export const UserprofileLogs = ({ data, reportdata }) => {
                 <div className="font-weight-bolder">Updated By: {owner}</div>
               </div>
               <div className="col-md-6 text-right">
-                <div className="add-text legend"></div> {" Added "}
-                <div className="delete-text legend"></div> {" Deleted "}
+                <div className="bg-success legend"></div> {" Added "}
+                <div className="bg-danger legend"></div> {" Deleted "}
               </div>
             </div>
-
+            <br />
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
-
             <Table className="table table-striped table-bordered w-75">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -42,10 +42,43 @@ export const UserprofileLogs = ({ data, reportdata }) => {
                   <tbody>
                     <tr>
                       <td className="table-warning">{obj.attributeName}</td>
+
                       <td className="table-warning">
-                        {obj.previousValue || "--"}
+                        {obj &&
+                        obj.previousValue &&
+                        !isEmpty(obj.previousValue) ? (
+                          isEmpty(obj.newValue) ? (
+                            <h6>
+                              <Badge className="d-inline mr-1" variant="danger">
+                                {obj.previousValue}
+                              </Badge>
+                            </h6>
+                          ) : (
+                            obj.previousValue
+                          )
+                        ) : (
+                          "--"
+                        )}
                       </td>
-                      <td className="table-warning">{obj.newValue || "--"}</td>
+
+                      <td className="table-warning">
+                        {obj && obj.newValue && !isEmpty(obj.newValue) ? (
+                          isEmpty(obj.previousValue) ? (
+                            <h6>
+                              <Badge
+                                className="d-inline mr-1"
+                                variant="success"
+                              >
+                                {obj.newValue}
+                              </Badge>
+                            </h6>
+                          ) : (
+                            obj.newValue
+                          )
+                        ) : (
+                          "--"
+                        )}
+                      </td>
                     </tr>
                   </tbody>
                 );
@@ -67,7 +100,7 @@ export const UserprofileLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
             <Table className="table table-striped table-bordered w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -79,7 +112,7 @@ export const UserprofileLogs = ({ data, reportdata }) => {
                     <tr>
                       <td className="table-warning">{obj.attributeName}</td>
                       <td className="table-warning">
-                        {obj.previousValue || "--"}
+                        {!isEmpty(obj.previousValue) ? obj.previousValue : "--"}
                       </td>
                     </tr>
                   </tbody>

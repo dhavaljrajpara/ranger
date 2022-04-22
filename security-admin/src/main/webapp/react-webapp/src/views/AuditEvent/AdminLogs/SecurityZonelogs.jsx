@@ -1,17 +1,33 @@
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, Badge } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
+import _, { isEmpty } from "lodash";
 
 export const SecurityZonelogs = ({ data, reportdata }) => {
   const { objectName, objectClassType, createDate, owner, action } = data;
+
+  const updateZoneDetails = reportdata.filter(
+    (zone) => zone.action == "update" && zone.attributeName !== "Zone Services"
+  );
+
+  const updateZoneServices = reportdata.filter(
+    (zone) => zone.action == "update" && zone.attributeName == "Zone Services"
+  );
+
+  const createZoneDetails = (newvalue) => {
+    return !isEmpty(newvalue.replace(/[[\]]/g, ""))
+      ? newvalue.replace(/[[\]]/g, "")
+      : "--";
+  };
+
   return (
     <div>
       {/* CREATE  */}
       {action == "create" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value && (
           <div>
-            <div className="font-weight-bolder">Name : {objectName}</div>
+            <div className="font-weight-bolder">Name: {objectName}</div>
             <div className="font-weight-bolder">
               Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
               India Standard Time
@@ -20,8 +36,8 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
 
-            <Table className="table table-striped table-bordered w-50">
-              <thead>
+            <Table className="table table-striped table-bordered w-auto">
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
 
@@ -38,7 +54,9 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                       <tr>
                         <td className="table-warning">{obj.attributeName}</td>
                         <td className="table-warning">
-                          {obj.newValue || "--"}
+                          {!isEmpty(obj.newValue)
+                            ? createZoneDetails(obj.newValue)
+                            : "--"}
                         </td>
                       </tr>
                     </tbody>
@@ -48,15 +66,11 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Zone Service Details:</h5>
             <Table className="table table-striped table-bordered w-75">
-              <thead>
+              <thead className="thead-light">
                 <tr>
-                  <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
-                    Service Name
-                  </th>
+                  <th>Service Name</th>
 
-                  <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
-                    Zone Service Resources
-                  </th>
+                  <th>Zone Service Resources</th>
                 </tr>
               </thead>
 
@@ -67,10 +81,10 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                     return (
                       <tbody>
                         <tr>
-                          <td className="table-warning">
+                          <td className="table-warning align-middle">
                             <strong> {c}</strong>
                           </td>
-                          <td className="table-warning">
+                          <td className="table-warning ">
                             {Object.values(
                               JSON.parse(key.newValue)[c].resources
                             ).map((resource) => (
@@ -103,7 +117,7 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
           <div>
             <div className="row">
               <div className="col-md-6">
-                <div className="font-weight-bolder">Name : {objectName}</div>
+                <div className="font-weight-bolder">Name: {objectName}</div>
                 <div className="font-weight-bolder">
                   Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
                   India Standard Time
@@ -111,47 +125,178 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                 <div className="font-weight-bolder">Updated By: {owner}</div>
               </div>
               <div className="col-md-6 text-right">
-                <div className="add-text legend"></div> {" Added "}
-                <div className="delete-text legend"></div> {" Deleted "}
+                <div className="bg-success legend"></div> {" Added "}
+                <div className="bg-danger legend"></div> {" Deleted "}
               </div>
             </div>
             <br />
-            <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
+            {action == "update" && !isEmpty(updateZoneDetails) && (
+              <>
+                <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
 
-            <Table className="table  table-bordered table-striped table-responsive w-auto">
-              <thead>
-                <tr>
-                  <th>Fields</th>
-                  <th>Old Value</th>
-                  <th>New Value</th>
-                </tr>
-              </thead>
-              {reportdata.map((obj) => (
-                <tbody>
-                  <tr key={obj.id}>
-                    <td className="table-warning overflow-auto text-nowrap">
-                      {obj.attributeName}
-                    </td>
+                <Table className="table  table-bordered table-striped  w-auto">
+                  <thead className="thead-light">
+                    <tr>
+                      <th>Fields</th>
+                      <th>Old Value</th>
+                      <th>New Value</th>
+                    </tr>
+                  </thead>
+                  {updateZoneDetails.map((obj) => (
+                    <tbody>
+                      <tr key={obj.id}>
+                        <td className="table-warning text-nowrap">
+                          {obj.attributeName}
+                        </td>
 
-                    <td className="table-warning overflow-auto text-nowrap">
-                      {obj.previousValue || "--"}
-                    </td>
-                    <td className="table-warning overflow-auto text-nowrap">
-                      {obj.newValue}
-                    </td>
-                  </tr>
-                </tbody>
-              ))}
-            </Table>
+                        <td className="table-warning text-nowrap">
+                          {!isEmpty(obj.previousValue.replace(/[[\]]/g, "")) ? (
+                            isEmpty(obj.newValue.replace(/[[\]]/g, "")) ? (
+                              <h6>
+                                <Badge
+                                  className="d-inline mr-1"
+                                  variant="danger"
+                                >
+                                  {obj.previousValue.replace(/[[\]]/g, "")}
+                                </Badge>
+                              </h6>
+                            ) : (
+                              obj.previousValue.replace(/[[\]]/g, "")
+                            )
+                          ) : (
+                            "--"
+                          )}
+                        </td>
+                        <td className="table-warning text-nowrap">
+                          {!isEmpty(obj.newValue.replace(/[[\]]/g, "")) ? (
+                            isEmpty(obj.previousValue.replace(/[[\]]/g, "")) ? (
+                              <h6>
+                                <Badge
+                                  className="d-inline mr-1"
+                                  variant="success"
+                                >
+                                  {obj.newValue.replace(/[[\]]/g, "")}
+                                </Badge>
+                              </h6>
+                            ) : (
+                              obj.newValue.replace(/[[\]]/g, "")
+                            )
+                          ) : (
+                            "--"
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  ))}
+                </Table>
+                <br />
+              </>
+            )}
           </div>
         )}
+
+      {action == "update" && !isEmpty(updateZoneServices) && (
+        <div className="row">
+          <div className="col">
+            <h5 className="bold wrap-header m-t-sm">
+              Old Zone Service Details:
+            </h5>
+
+            <Table className="table  table-bordered table-striped w-100">
+              <thead className="thead-light">
+                <tr>
+                  <th>Service Name</th>
+
+                  <th> Zone Service Resources</th>
+                </tr>
+              </thead>
+              {updateZoneServices.map((key) => {
+                return Object.keys(JSON.parse(key.previousValue)).map((c) => {
+                  return (
+                    <tbody>
+                      <tr>
+                        <td className="oldvalbg">
+                          <strong> {c}</strong>
+                        </td>
+                        <td className="oldvalbg">
+                          {Object.values(
+                            JSON.parse(key.previousValue)[c].resources
+                          ).map((resource) => (
+                            <div className="zone-resource">
+                              {Object.keys(resource).map((policy) => {
+                                return (
+                                  <>
+                                    <strong>{`${policy} : `}</strong>
+                                    {resource[policy].join(", ")}
+                                    <br />
+                                  </>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </td>
+                      </tr>
+                    </tbody>
+                  );
+                });
+              })}
+            </Table>
+          </div>
+          <div className="col">
+            <h5 className="bold wrap-header m-t-sm">
+              New Zone Service Details:
+            </h5>
+
+            <Table className="table  table-bordered table-striped w-100">
+              <thead className="thead-light">
+                <tr>
+                  <th>Service Name </th>
+
+                  <th> Zone Service Resources</th>
+                </tr>
+              </thead>
+              {updateZoneServices.map((key) => {
+                return Object.keys(JSON.parse(key.newValue)).map((c) => {
+                  return (
+                    <tbody>
+                      <tr>
+                        <td className="table-warning align-middle">
+                          <strong> {c}</strong>
+                        </td>
+                        <td className="table-warning ">
+                          {Object.values(
+                            JSON.parse(key.newValue)[c].resources
+                          ).map((resource) => (
+                            <div className="zone-resource">
+                              {Object.keys(resource).map((policy) => {
+                                return (
+                                  <>
+                                    <strong>{`${policy} : `}</strong>
+                                    {resource[policy].join(", ")}
+                                    <br />
+                                  </>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </td>
+                      </tr>
+                    </tbody>
+                  );
+                });
+              })}
+            </Table>
+            <br />
+          </div>
+        </div>
+      )}
 
       {/* DELETE  */}
 
       {action == "delete" &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value && (
           <div>
-            <div className="font-weight-bolder">Name : {objectName}</div>
+            <div className="font-weight-bolder">Name: {objectName}</div>
             <div className="font-weight-bolder">
               Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
               India Standard Time
@@ -159,8 +304,8 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
             <div className="font-weight-bolder">Deleted By: {owner}</div>
             <br />
             <h5 className="bold wrap-header m-t-sm">Zone Details:</h5>
-            <Table className="table table-striped table-bordered w-auto">
-              <thead>
+            <Table className="table table-striped table-bordered w-50">
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -177,7 +322,10 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                         <td className="table-warning">{c.attributeName}</td>
 
                         <td className="table-warning">
-                          {c.previousValue || "--"}
+                          {/* {c.previousValue || "--"} */}
+                          {!isEmpty(c.previousValue)
+                            ? createZoneDetails(c.previousValue)
+                            : "--"}
                         </td>
                       </tr>
                     </tbody>
@@ -187,15 +335,11 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Zone Service Details:</h5>
             <Table className="table table-striped table-bordered w-75">
-              <thead>
+              <thead className="thead-light">
                 <tr>
-                  <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
-                    Service Name
-                  </th>
+                  <th>Service Name</th>
 
-                  <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
-                    Zone Service Resources
-                  </th>
+                  <th>Zone Service Resources</th>
                 </tr>
               </thead>
 
@@ -206,7 +350,7 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                     return (
                       <tbody>
                         <tr>
-                          <td className="table-warning">
+                          <td className="table-warning align-middle">
                             <strong> {c}</strong>
                           </td>
                           <td className="table-warning">

@@ -52,11 +52,27 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const policyDetails = (details, resources) => {
     let tablerow = [];
 
-    details.map((o) => {
+    const createDetailsPolicy = (val, newVal) => {
+      if (val == "Policy Labels") {
+        return (newVal = !isEmpty(JSON.parse(newVal))
+          ? JSON.parse(newVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (newVal = newVal === "false" ? "disabled" : "enabled");
+      }
+      return !isEmpty(newVal) ? newVal : "--";
+    };
+
+    details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{o.attributeName}</td>
-          <td className="table-warning">{o.newValue}</td>
+          <td className="table-warning">{policy.attributeName}</td>
+          <td className="table-warning">
+            {!isEmpty(policy.newValue)
+              ? createDetailsPolicy(policy.attributeName, policy.newValue)
+              : "--"}
+          </td>
         </tr>
       );
     });
@@ -71,7 +87,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         <>
           <tr key={index}>
             <td className="table-warning">{key}</td>
-            <td className="table-warning"> {newVal[key].values}</td>
+            <td className="table-warning"> {newVal[key].values.join(", ")}</td>
           </tr>
           <tr>
             <td className="table-warning">{key + " " + "exclude"}</td>
@@ -150,22 +166,45 @@ export const PolicyLogs = ({ data, reportdata }) => {
   });
   const policyDetailsUpdate = (details, resources) => {
     let tablerow = [];
+    const policyOldVal = (val, oldVal) => {
+      if (val == "Policy Labels") {
+        return (oldVal = !isEmpty(JSON.parse(oldVal))
+          ? JSON.parse(oldVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (oldVal = oldVal === "false" ? "disabled" : "enabled");
+      }
+      // if (val == "Policy Resources") {
+      //   return;
+      // }
+
+      return !isEmpty(oldVal) ? oldVal : "--";
+    };
+    const policyNewVal = (val, newVal) => {
+      if (val == "Policy Labels") {
+        return (newVal = !isEmpty(JSON.parse(newVal))
+          ? JSON.parse(newVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (newVal = newVal === "false" ? "disabled" : "enabled");
+      }
+      return !isEmpty(newVal) ? newVal : "--";
+    };
+
     details.map((o, index) => {
       return tablerow.push(
         <tr key={index}>
           <td className="table-warning">{o.attributeName}</td>
           <td className="table-warning">
             {!isEmpty(o.previousValue)
-              ? o.attributeName == "Policy Labels"
-                ? JSON.parse(o.previousValue).join(", ") || "--"
-                : o.previousValue || "--"
+              ? policyOldVal(o.attributeName, o.previousValue)
               : "--"}
           </td>
           <td className="table-warning">
             {!isEmpty(o.newValue)
-              ? o.attributeName == "Policy Labels"
-                ? JSON.parse(o.newValue).join(", ")
-                : o.newValue
+              ? policyNewVal(o.attributeName, o.newValue)
               : "--"}
           </td>
         </tr>
@@ -196,8 +235,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
       }
       return diff;
     };
-    var removedUsers = diffVal(newVal, oldVal);
-    var addUsers = diffVal(oldVal, newVal);
+    let removedUsers = diffVal(newVal, oldVal);
+    let addUsers = diffVal(oldVal, newVal);
 
     const getfilteredoldval = (val, oldvals) => {
       let filterdiff = null;
@@ -208,29 +247,31 @@ export const PolicyLogs = ({ data, reportdata }) => {
         <>
           {!isEqual(oldvals, newVal[val])
             ? !isEmpty(removedUsers[val])
-              ? (filterdiff.map((obj) => {
-                  return (
-                    <>
-                      <span>{obj}</span>
-                      {`, `}
-                    </>
-                  );
-                }),
-                removedUsers[val].map((obj) => {
-                  return (
-                    <>
-                      <Badge className="d-inline mr-1" variant="danger">
-                        {obj}
-                      </Badge>
-                    </>
-                  );
-                }))
+              ? unionBy(
+                  filterdiff.map((obj) => {
+                    return (
+                      <>
+                        <span>{obj}</span>
+                        {`, `}
+                      </>
+                    );
+                  }),
+                  removedUsers[val].map((obj) => {
+                    return (
+                      <>
+                        <Badge className="d-inline mr-1" variant="danger">
+                          {obj}
+                        </Badge>
+                      </>
+                    );
+                  })
+                )
               : !isEmpty(filterdiff)
               ? filterdiff.map((obj) => obj).join(", ")
-              : "<empty>"
+              : "--"
             : !isEmpty(oldvals)
             ? oldvals.values.map((obj) => obj).join(", ")
-            : "<empty>"}
+            : "--"}
         </>
       );
     };
@@ -264,29 +305,77 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 )
               : !isEmpty(filterdiff)
               ? filterdiff.map((obj) => obj).join(", ")
-              : "<empty>"
+              : "--"
             : !isEmpty(newvals)
             ? newvals.values.map((obj) => obj).join(", ")
-            : "<empty>"}
+            : "--"}
         </>
       );
     };
+
     Object.keys(oldVal).map((key, index) => {
       return tablerow.push(
         <>
-          <tr key={index}>
-            <td className="table-warning">{key}</td>
-            {oldVal[key] && !isEmpty(oldVal[key].values) && (
+          {!isEqual(oldVal[key].values, newVal[key].values) && (
+            <tr>
+              <td className="table-warning">{key}</td>
+              {oldVal[key] && !isEmpty(oldVal[key].values) && (
+                <td className="table-warning">
+                  {getfilteredoldval(key, oldVal[key])}
+                </td>
+              )}
+              {newVal[key] && !isEmpty(newVal[key].values) && (
+                <td className="table-warning">
+                  {getfilterednewval(key, newVal[key])}
+                </td>
+              )}
+            </tr>
+          )}
+          {(oldVal[key].isExcludes === true ||
+            newVal[key].isExcludes === true) && (
+            <tr>
+              <td className="table-warning">{key + " " + "exclude"}</td>
+
               <td className="table-warning">
-                {getfilteredoldval(key, oldVal[key])}
+                <h6>
+                  <Badge variant="danger">
+                    {oldVal[key].isExcludes === false ? "false" : "true"}
+                  </Badge>
+                </h6>
               </td>
-            )}
-            {newVal[key] && !isEmpty(newVal[key].values) && (
+
               <td className="table-warning">
-                {getfilterednewval(key, newVal[key])}
+                <h6>
+                  {" "}
+                  <Badge variant="success">
+                    {newVal[key].isExcludes === false ? "false" : "true"}
+                  </Badge>
+                </h6>
               </td>
-            )}
-          </tr>
+            </tr>
+          )}
+          {(oldVal[key].isRecursive === true ||
+            newVal[key].isRecursive === true) && (
+            <tr>
+              <td className="table-warning">{key + " " + "recursive"}</td>
+
+              <td className="table-warning">
+                <h6>
+                  <Badge variant="danger">
+                    {oldVal[key].isRecursive === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+
+              <td className="table-warning">
+                <h6>
+                  <Badge variant="success">
+                    {newVal[key].isRecursive === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+            </tr>
+          )}
         </>
       );
     });
@@ -369,7 +458,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         : (filterdiff = filteredNewVal);
       return (
         <>
-          <i>{startCase(val)}</i>:{" "}
+          <i>{startCase(val)}</i>:
           {!isEqual(filteredNewVal, oldVal[val]) ? (
             !isEmpty(addUsers[0][val]) ? (
               <Badge className="d-inline mr-1" variant="success">
@@ -996,18 +1085,6 @@ export const PolicyLogs = ({ data, reportdata }) => {
           </>
         );
       }
-      // if (val == "conditions") {
-      //   return (
-      //     <>
-      //       <i>{`Conditions`}</i>
-      //       {`: ${
-      //         c.length > 0
-      //           ? c.map((type) => `${type.type} : ${type.values}`).join(", ")
-      //           : "<empty>"
-      //       }`}
-      //     </>
-      //   );
-      // }
 
       if (val == "conditions") {
         let filterdiff = null;
@@ -1144,11 +1221,27 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const deleteDetails = (details, resources) => {
     let tablerow = [];
 
-    details.map((o) => {
+    const policyOldVal = (val, oldVal) => {
+      if (val == "Policy Labels") {
+        return (oldVal = !isEmpty(JSON.parse(oldVal))
+          ? JSON.parse(oldVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (oldVal = oldVal === "false" ? "disabled" : "enabled");
+      }
+      return !isEmpty(oldVal) ? oldVal : "--";
+    };
+
+    details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{o.attributeName}</td>
-          <td className="table-warning">{o.previousValue}</td>
+          <td className="table-warning">{policy.attributeName}</td>
+          <td className="table-warning">
+            {!isEmpty(policy.previousValue)
+              ? policyOldVal(policy.attributeName, policy.previousValue)
+              : "--"}
+          </td>
         </tr>
       );
     });
@@ -1355,147 +1448,48 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   const importEnd = reportdata.filter((obj) => obj.action == "IMPORT END");
 
-  /* EXPORT JSON LOGS */
+  /* EXPORT JSON | CSV | EXCEL  LOGS */
 
-  const exportJson = reportdata.filter((obj) => obj.action == "EXPORT JSON");
-
-  // const rowmask = reportdata.filter(
-  //   (obj) => obj.attributeName == "Row level filter Policy Items"
-  // );
-
-  // const policydelete = reportdata.filter((obj) => {
-  //   return obj.attributeName == "Policy Items";
-  // });
+  const exportVal = reportdata.filter(
+    (obj) =>
+      obj.action == "EXPORT JSON" ||
+      obj.action == "EXPORT EXCEL" ||
+      obj.action == "EXPORT CSV"
+  );
+  const exportOldVal = (val, oldVal) => {
+    if (val == "Export time") {
+      return (oldVal = dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT "));
+    }
+    return oldVal;
+  };
 
   const policycondition = reportdata.filter((obj) => {
     return obj.attributeName == "Policy Conditions" && obj.action == "update";
   });
-  // const policyConditionnewVal = policycondition.map(
-  //   (obj) => obj.previousValue && obj.action == "update"
-  // );
-  // const policyConditionoldVal = policycondition.map(
-  //   (obj) => obj.newValue && obj.action == "update"
-  // );
+
   const importdeleteresources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "Import Delete";
   });
-
-  // const policyItems = reportdata.filter(
-  //   (obj) => obj.attributeName == "Policy Items"
-  // );
-
-  // const allowpolicyUpdate = (policy) => {
-  //   let tablerow = [];
-  //   let oldval = {};
-  //   let newval = {};
-
-  //   policy.previousValue &&
-  //     JSON.parse(policy.previousValue).map((obj) => (oldval = obj));
-  //   policy.newValue && JSON.parse(policy.newValue).map((obj) => (newval = obj));
-  //   let filteredval = Object.keys(oldval).concat(Object.keys(newval));
-  //   filteredval = filteredval.filter((item, index) => {
-  //     return filteredval.indexOf(item) == index;
-  //   });
-
-  //   const getfilteredoldval = (val, oldval) => {
-  //     let b = oldval[0];
-  //     let c = b[val];
-  //     if (val == "accesses") {
-  //       return (
-  //         <>
-  //           <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-  //         </>
-  //       );
-  //     }
-  //     if (val == "delegateAdmin") {
-  //       return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-  //         c == false ? "disabled" : "enabled"
-  //       }`;
-  //     }
-
-  //     return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-  //       c.length > 0 ? c : "<empty>"
-  //     }`;
-  //   };
-
-  //   const getfilterednewval = (val, newval) => {
-  //     let b = newval[0];
-  //     let c = b[val];
-  //     if (val == "accesses") {
-  //       return (
-  //         <>
-  //           <i>Permissions</i> : {c.map((obj) => obj.type).join(", ")}
-  //         </>
-  //       );
-  //     }
-  //     if (val == "delegateAdmin") {
-  //       return `${val.charAt(0).toUpperCase() + val.slice(1)}: ${
-  //         c == false ? "disabled" : "enabled"
-  //       }`;
-  //     }
-
-  //     return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-  //       c.length > 0 ? c : "<empty>"
-  //     }`;
-  //   };
-
-  //   filteredval.map((val) => {
-  //     return tablerow.push(
-  //       <>
-  //         <tr>
-  //           {(policy.previousValue && (
-  //             <td className="table-warning">
-  //               {getfilteredoldval(val, JSON.parse(policy.previousValue))}
-  //             </td>
-  //           )) || <span>empty</span>}
-
-  //           {(policy.newValue && (
-  //             <td className="table-warning">
-  //               {getfilterednewval(val, JSON.parse(policy.newValue))}
-  //             </td>
-  //           )) || <span>empty</span>}
-  //         </tr>
-  //       </>
-  //     );
-  //   });
-
-  //   return tablerow;
-  // };
 
   const policyitems = reportdata.filter(
     (obj) => obj.attributeName == "Policy Items"
   );
 
-  // const policyitemoldVal = policyitems.map((obj) => obj.previousValue);
-
   const policyexception = reportdata.filter(
     (obj) => obj.attributeName == "Allow Exceptions"
   );
-  // const policyexceptionoldval = policyexception.map((obj) => obj.previousValue);
-
-  // const denyexceptions = reportdata.filter(
-  //   (obj) => obj.attributeName == "Deny Exceptions"
-  // );
 
   const denyPolicyItem = reportdata.filter(
     (obj) => obj.attributeName == "DenyPolicy Items"
   );
-  // const denyPolicyItemoldval = denyPolicyItem.map((obj) => obj.previousValue);
 
   const maskPolicyItem = reportdata.filter(
     (obj) => obj.attributeName == "Masked Policy Items"
   );
-  // const maskpolicyoldVal = maskPolicyItem.map((obj) => obj.previousValue);
 
   const validityschedules = reportdata.filter(
     (obj) => obj.attributeName == "Validity Schedules"
   );
-  // const validityupdate = reportdata.filter(
-  //   (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
-  // );
-
-  // const validitynewVal = validityschedules.map((obj) => obj.newValue);
-  // const validityoldVal = validityschedules.map((obj) => obj.previousValue);
 
   return (
     <div>
@@ -1510,14 +1504,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">Service Name: {owner}</div>
             <div className="font-weight-bolder">
-              Created Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}{" "}
+              Created Date: {dateFormat(createDate, "mm/dd/yyyy hh:MM:ss TT ")}
               India Standard Time
             </div>
             <div className="font-weight-bolder">Created By: {owner}</div>
             <h5 className="bold wrap-header mt-3">Policy Details:</h5>
 
             <Table className="table table-striped table-bordered w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
 
@@ -1536,7 +1530,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1588,7 +1582,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Policy Conditions:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-25">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1617,7 +1611,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1703,7 +1697,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Row Level Filter Policy Items:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1772,7 +1766,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Allow Exceptions:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1856,7 +1850,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
                   <Table className="table table-striped  table-bordered  w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -1940,7 +1934,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Deny Exception PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered  w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -2022,9 +2016,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">
                     Masking Policy Items:
-                  </h5>{" "}
+                  </h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
                       </tr>
@@ -2132,12 +2126,12 @@ export const PolicyLogs = ({ data, reportdata }) => {
             </div>
             <br />
 
-            {(updatePolicyDetails.length > 0 ||
-              updatePolicyResources.length > 0) && (
+            {(!isEmpty(updatePolicyDetails) ||
+              !isEmpty(updatePolicyResources)) && (
               <>
                 <h5 className="bold wrap-header m-t-sm">Policy details</h5>
                 <Table className="table table-striped table-bordered w-auto">
-                  <thead>
+                  <thead className="thead-light">
                     <tr>
                       <th>Fields</th>
                       <th>Old Value</th>
@@ -2162,7 +2156,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2185,7 +2179,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Row Level Filter Policy Items:
                   </h5>
                   <Table className="table table-striped  table-bordered w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2211,20 +2205,6 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   {updatePolicyCondition.map((policyitem) => {
                     return updateConditionOldNew(policyitem);
                   })}
-                  {/* <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {updatePolicyCondition.map((policyitem) => {
-                        return updateConditionOldNew(policyitem);
-                      })}
-                    </tbody>
-                  </Table> */}
                 </>
               )}
 
@@ -2237,7 +2217,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Mask Policy Items:
                   </h5>
                   <Table className="table table-striped  table-bordered w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2261,7 +2241,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2284,7 +2264,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow Exception PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2305,7 +2285,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
                   <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2328,7 +2308,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Deny Exception PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                         <th>New Value</th>
@@ -2367,7 +2347,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               <h5 className="bold wrap-header m-t-sm">Masking Policy Items:</h5>
             )} */}
             <Table className="table table-striped table-bordered w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
 
@@ -2387,7 +2367,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>old Value</th>
                       </tr>
@@ -2442,7 +2422,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Policy Conditions:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-25">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2473,7 +2453,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Row Level Filter Policy Items:
                   </h5>
                   <Table className="table table-striped  table-bordered  table-responsive w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2543,7 +2523,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Masking Policy Items:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2627,7 +2607,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered  w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2711,7 +2691,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow Exception PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2793,7 +2773,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2878,7 +2858,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Deny Exception PolicyItems:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -2988,18 +2968,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
           </div>
         )}
       {/* Export JSON */}
-      {action == "EXPORT JSON" &&
+      {(action == "EXPORT JSON" ||
+        action == "EXPORT CSV" ||
+        action == "EXPORT EXCEL") &&
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <>
             <h5 className="bold wrap-header m-t-sm">Details:</h5>
             <Table className="table table-striped table-bordered w-50">
-              {exportJson.map((c) =>
+              {exportVal.map((c) =>
                 Object.keys(JSON.parse(c.previousValue)).map((s, index) => (
                   <tbody key={index}>
                     <tr>
                       <td className="table-warning">{s}</td>
                       <td className="table-warning">
-                        {JSON.parse(c.previousValue)[s]}
+                        {c &&
+                        c.previousValue &&
+                        !isEmpty(JSON.parse(c.previousValue))
+                          ? exportOldVal(s, JSON.parse(c.previousValue)[s])
+                          : "--"}
                       </td>
                     </tr>
                   </tbody>
@@ -3026,7 +3012,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
             <Table className="table table-striped table-bordered w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>
@@ -3049,7 +3035,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>old Value</th>
                       </tr>
@@ -3105,7 +3091,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table table-striped  table-bordered   w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -3189,7 +3175,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Policy Conditions:
                   </h5>
                   <Table className="table table-striped  table-bordered   w-25">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -3217,7 +3203,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     Allow PolicyItems:
                   </h5>
                   <Table className="table table-striped table-bordered w-auto">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Old Value</th>
                       </tr>
@@ -3296,7 +3282,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               Allow Exception PolicyItems:
             </h5>
             <Table className="table table-striped  table-bordered   w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Old Value</th>
                 </tr>
@@ -3376,7 +3362,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <>
             <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
             <Table className="table table-striped  table-bordered  w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Old Value</th>
                 </tr>
@@ -3458,7 +3444,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               Deny Exception PolicyItems:
             </h5>
             <Table className="table table-striped  table-bordered w-auto">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Old Value</th>
                 </tr>

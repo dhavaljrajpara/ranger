@@ -20,6 +20,11 @@ export const UserLogs = ({ data, reportdata }) => {
     return obj.attributeName != "Group Name" && obj.action == "update";
   });
 
+  const updateUserDetailsOld = updateUserDetails.map(
+    (obj) => obj.previousValue
+  );
+  const updateUserDetailsNew = updateUserDetails.map((obj) => obj.newValue);
+
   const updateUserGrp = reportdata.filter((obj) => {
     return obj.attributeName == "Group Name";
   });
@@ -250,7 +255,7 @@ export const UserLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
             <Table className="table table-striped table-bordered w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
 
@@ -279,7 +284,7 @@ export const UserLogs = ({ data, reportdata }) => {
               <>
                 <h5 className="bold wrap-header m-t-sm">Group: </h5>
                 <Table className="table table-striped table-bordered w-50">
-                  <thead>
+                  <thead className="thead-light">
                     <tr>
                       <th>Fields</th>
                       <th>New Value</th>
@@ -324,26 +329,33 @@ export const UserLogs = ({ data, reportdata }) => {
               </div>
             </div>
             <br />
-            <h5 className="bold wrap-header m-t-sm">User Details:</h5>
+            {action == "update" &&
+              ((updateUserDetailsOld.length > 0 &&
+                updateUserDetailsOld[0] != "") ||
+                (updateUserDetailsNew.length > 0 &&
+                  updateUserDetailsNew[0] != "")) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
-            <Table className="table table-striped table-bordered w-50">
-              <thead>
-                <tr>
-                  <th>Fields</th>
-                  <th>Old Value</th>
-                  <th>New Value</th>
-                </tr>
-              </thead>
+                  <Table className="table table-striped table-bordered w-50">
+                    <thead className="thead-light">
+                      <tr>
+                        <th>Fields</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                      </tr>
+                    </thead>
 
-              <tbody>{updatePolicyOldNew(updateUserDetails)}</tbody>
-            </Table>
-            <br />
-
+                    <tbody>{updatePolicyOldNew(updateUserDetails)}</tbody>
+                  </Table>
+                  <br />
+                </>
+              )}
             {action == "update" && !isEmpty(updateUserGrp) && (
               <>
                 <h5 className="bold wrap-header m-t-sm">Group: </h5>
                 <Table className="table table-striped table-bordered w-50">
-                  <thead>
+                  <thead className="thead-light">
                     <tr>
                       <th>Fields</th>
                       <th>Old Value</th>
@@ -373,7 +385,7 @@ export const UserLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
             <Table className="table table-striped table-bordered w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>

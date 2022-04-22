@@ -58,7 +58,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
 
             <Table className="table table-bordered table-striped w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>New Value</th>
@@ -80,7 +80,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Users:</h5>
             <Table className="table  table-bordered table-striped w-50">
               <>
-                <thead>
+                <thead className="thead-light">
                   <tr>
                     <th>Name</th>
 
@@ -110,7 +110,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Groups:</h5>
             <Table className="table  table-bordered table-striped w-50">
               <thead>
-                <tr>
+                <tr className="thead-light">
                   <th>Name</th>
 
                   <th> Role Admin</th>
@@ -138,7 +138,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <h5 className="bold wrap-header m-t-sm">Roles:</h5>
             <Table className="table  table-bordered  table-striped w-50">
               <thead>
-                <tr>
+                <tr className="thead-light">
                   <th>Name</th>
 
                   <th> Role Admin</th>
@@ -191,12 +191,14 @@ export const RoleLogs = ({ data, reportdata }) => {
               <>
                 <h5 className="bold wrap-header m-t-sm">Role Detail:</h5>
                 <Table className="table table-bordered table-striped w-75">
-                  <tbody>
+                  <thead className="thead-light">
                     <tr>
                       <th>Fields</th>
                       <th>Old Value</th>
                       <th>New Value</th>
                     </tr>
+                  </thead>
+                  <tbody>
                     {Roledetail.map((role, index) => {
                       return (
                         <tr key={index}>
@@ -256,7 +258,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -291,7 +293,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -332,7 +334,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -367,7 +369,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -407,7 +409,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -442,7 +444,7 @@ export const RoleLogs = ({ data, reportdata }) => {
                   </h5>
 
                   <Table className="table  table-bordered table-striped w-100">
-                    <thead>
+                    <thead className="thead-light">
                       <tr>
                         <th>Name</th>
 
@@ -493,7 +495,7 @@ export const RoleLogs = ({ data, reportdata }) => {
 
             <Table className="table  table-bordered table-striped w-50">
               <>
-                <thead>
+                <thead className="thead-light">
                   <tr>
                     <th>Fields</th>
 
@@ -530,7 +532,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Users:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Name</th>
 
@@ -554,7 +556,7 @@ export const RoleLogs = ({ data, reportdata }) => {
 
             <h5 className="bold wrap-header m-t-sm">Groups:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Name</th>
 
@@ -578,7 +580,7 @@ export const RoleLogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">Roles:</h5>
             <Table className="table  table-bordered table-striped w-50">
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Name</th>
 
