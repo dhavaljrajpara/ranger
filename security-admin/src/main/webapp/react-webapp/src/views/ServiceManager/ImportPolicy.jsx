@@ -37,7 +37,12 @@ class ImportPolicy extends Component {
   }
 
   removeFile = () => {
-    this.setState({ fileName: null, fileJsonData: null, fileNotJson: false });
+    this.setState({
+      fileName: null,
+      fileJsonData: null,
+      fileNotJson: false,
+      sourceServicesMap: null
+    });
   };
 
   handleFileUpload = (e) => {

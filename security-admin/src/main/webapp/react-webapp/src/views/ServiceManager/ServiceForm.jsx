@@ -1,9 +1,7 @@
 import React, { Component } from "react";
-import Button from "react-bootstrap/Button";
-import Table from "react-bootstrap/Table";
+import { Button, Modal, Table } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
-import Modal from "react-bootstrap/Modal";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
@@ -11,7 +9,7 @@ import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
-import { Condition } from "../../components/CommonComponents";
+import { Condition, CustomPopover } from "../../components/CommonComponents";
 import {
   difference,
   keys,
@@ -20,13 +18,20 @@ import {
   reject,
   uniq,
   isEmpty,
-  isUndefined
+  isUndefined,
+  has
 } from "lodash";
 
 class ServiceForm extends Component {
   constructor(props) {
     super(props);
     this.configsJson = {};
+    this.initialValuesObj = {
+      isEnabled: "true",
+      configs: {},
+      customConfigs: [undefined],
+      auditFilters: []
+    };
     this.state = {
       serviceDef: {},
       service: {},
@@ -112,7 +117,7 @@ class ServiceForm extends Component {
     serviceJson["description"] = values.description;
     serviceJson["type"] = this.state.serviceDef.name;
     serviceJson["tagService"] =
-      values.tagService !== undefined ? values.tagService.value : "";
+      values.tagService == null ? "" : values.tagService.value;
     serviceJson["isEnabled"] = values.isEnabled === "true";
 
     serviceJson["configs"] = {};
@@ -151,8 +156,6 @@ class ServiceForm extends Component {
         Object.entries(item).map(([key, value]) => {
           if (key === "isAudited") {
             obj.isAudited = value === "true";
-          } else {
-            obj.isAudited = true;
           }
 
           if (key === "accessResult") {
@@ -205,6 +208,11 @@ class ServiceForm extends Component {
             obj.roles = map(value, "value");
           }
         });
+
+        if (!has(obj, "isAudited")) {
+          obj.isAudited = true;
+        }
+
         auditFiltersArray.push(obj);
       }
     });
@@ -214,22 +222,7 @@ class ServiceForm extends Component {
   };
 
   fetchServiceDef = async () => {
-    const serviceJson = {
-      isEnabled: "true",
-      configs: {
-        hadoop_security_authorization: "true",
-        hadoop_security_authentication: "simple",
-        hadoop_rpc_protection: "authentication",
-        hbase_security_authentication: "simple",
-        nifi_authentication: "NONE",
-        nifi_ssl_use_default_context: "true",
-        nifi_registry_authentication: "NONE",
-        nifi_registry_ssl_use_default_context: "true",
-        schema_registry_authentication: "KERBEROS"
-      },
-      customConfigs: [undefined],
-      auditFilters: []
-    };
+    const serviceJson = this.initialValuesObj;
     let serviceDefResp;
     let serviceDef;
     let serviceDefId = this.props.match.params.serviceDefId;
@@ -507,6 +500,14 @@ class ServiceForm extends Component {
     return auditFiltersArray;
   };
 
+  getConfigInfo = (configInfo) => {
+    if (configInfo !== undefined && configInfo !== "") {
+      let infoObj = JSON.parse(configInfo);
+      return infoObj.info !== undefined ? [infoObj.info] : [];
+    }
+    return [];
+  };
+
   serviceConfigs = (serviceDef) => {
     if (serviceDef.configs !== undefined) {
       let formField = [];
@@ -517,6 +518,9 @@ class ServiceForm extends Component {
         this.configsJson[configParam.name] = configParam.name
           .replaceAll(".", "_")
           .replaceAll("-", "_");
+        this.initialValuesObj.configs[this.configsJson[configParam.name]] =
+          configParam.defaultValue;
+        let configInfo = this.getConfigInfo(configParam.uiHint);
         switch (configParam.type) {
           case "string":
           case "int":
@@ -537,8 +541,20 @@ class ServiceForm extends Component {
                     <div className="col-sm-6">
                       <input {...input} type="text" className="form-control" />
                     </div>
+                    {configInfo.length === 1 && (
+                      <span className="d-inline">
+                        <CustomPopover
+                          title=""
+                          content={configInfo}
+                          placement="right"
+                          trigger={["hover", "focus"]}
+                        />
+                      </span>
+                    )}
                     {meta.error && meta.touched && (
-                      <span className="invalid-field">{meta.error}</span>
+                      <div className="col-sm-6 offset-sm-3 invalid-field">
+                        {meta.error}
+                      </div>
                     )}
                   </div>
                 )}
@@ -568,8 +584,20 @@ class ServiceForm extends Component {
                         {this.enumOptions(paramEnum)}
                       </select>
                     </div>
+                    {configInfo.length === 1 && (
+                      <span className="d-inline">
+                        <CustomPopover
+                          title=""
+                          content={configInfo}
+                          placement="right"
+                          trigger={["hover", "focus"]}
+                        />
+                      </span>
+                    )}
                     {meta.error && meta.touched && (
-                      <span className="invalid-field">{meta.error}</span>
+                      <span className="col-sm-6 offset-sm-3 invalid-field">
+                        {meta.error}
+                      </span>
                     )}
                   </div>
                 )}
@@ -596,8 +624,20 @@ class ServiceForm extends Component {
                         {this.booleanOptions(configParam.subType)}
                       </select>
                     </div>
+                    {configInfo.length === 1 && (
+                      <span className="d-inline">
+                        <CustomPopover
+                          title=""
+                          content={configInfo}
+                          placement="right"
+                          trigger={["hover", "focus"]}
+                        />
+                      </span>
+                    )}
                     {meta.error && meta.touched && (
-                      <span className="invalid-field">{meta.error}</span>
+                      <span className="col-sm-6 offset-sm-3 invalid-field">
+                        {meta.error}
+                      </span>
                     )}
                   </div>
                 )}
@@ -626,8 +666,20 @@ class ServiceForm extends Component {
                         className="form-control"
                       />
                     </div>
+                    {configInfo.length === 1 && (
+                      <span className="d-inline">
+                        <CustomPopover
+                          title=""
+                          content={configInfo}
+                          placement="right"
+                          trigger={["hover", "focus"]}
+                        />
+                      </span>
+                    )}
                     {meta.error && meta.touched && (
-                      <span className="invalid-field">{meta.error}</span>
+                      <span className="col-sm-6 offset-sm-3 invalid-field">
+                        {meta.error}
+                      </span>
                     )}
                   </div>
                 )}
@@ -809,7 +861,7 @@ class ServiceForm extends Component {
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
-                                  <span className="invalid-field">
+                                  <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
@@ -830,7 +882,7 @@ class ServiceForm extends Component {
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
-                                  <span className="invalid-field">
+                                  <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
@@ -850,7 +902,7 @@ class ServiceForm extends Component {
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
-                                  <span className="invalid-field">
+                                  <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
@@ -884,24 +936,27 @@ class ServiceForm extends Component {
                               </label>
                             </div>
                           </div>
-                          <div className="form-group row">
-                            <label className="col-sm-3 col-form-label">
-                              Select Tag Service
-                            </label>
-                            <div className="col-sm-6">
-                              <Field
-                                name="tagService"
-                                component={this.SelectField}
-                                options={this.state.tagService.map((s) => {
-                                  return {
-                                    value: s.name,
-                                    label: s.name
-                                  };
-                                })}
-                                placeholder="Select Tag Service"
-                              />
+                          {this.state.serviceDef.name !== "tag" && (
+                            <div className="form-group row">
+                              <label className="col-sm-3 col-form-label">
+                                Select Tag Service
+                              </label>
+                              <div className="col-sm-6">
+                                <Field
+                                  name="tagService"
+                                  component={this.SelectField}
+                                  options={this.state.tagService.map((s) => {
+                                    return {
+                                      value: s.name,
+                                      label: s.name
+                                    };
+                                  })}
+                                  placeholder="Select Tag Service"
+                                  isClearable={true}
+                                />
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                       <div className="row">

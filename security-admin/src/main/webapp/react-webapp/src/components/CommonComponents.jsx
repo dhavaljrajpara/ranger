@@ -1,8 +1,14 @@
 import React, { Component } from "react";
-import { Alert, Badge } from "react-bootstrap";
+import {
+  Alert,
+  Badge,
+  Popover,
+  OverlayTrigger,
+  Tooltip
+} from "react-bootstrap";
 import { Field } from "react-final-form";
-import moment from "moment-timezone";
 import { isEmpty } from "lodash";
+
 const Loader = () => {
   return (
     <div className="loading-img">
@@ -35,6 +41,7 @@ const Loader = () => {
     </div>
   );
 };
+
 export const FieldError = ({ name }) => (
   <Field name={name}>
     {({ meta: { error, touched } }) => {
@@ -140,6 +147,30 @@ export const Condition = ({ when, is, children }) => (
       )
     }
   </Field>
+);
+
+export const CustomPopover = ({ title, content, placement, trigger }) => (
+  <OverlayTrigger
+    trigger={trigger}
+    placement={placement}
+    overlay={
+      <Popover id={`popover-${placement}`}>
+        <Popover.Title as="h3">{title}</Popover.Title>
+        <Popover.Content>{content}</Popover.Content>
+      </Popover>
+    }
+  >
+    <i className="fa-fw fa fa-info-circle info-icon"></i>
+  </OverlayTrigger>
+);
+
+export const CustomTooltip = ({ placement, content }) => (
+  <OverlayTrigger
+    placement={placement}
+    overlay={<Tooltip id={`tooltip-${placement}`}>{content}</Tooltip>}
+  >
+    <i className="fa-fw fa fa-info-circle info-icon"></i>
+  </OverlayTrigger>
 );
 
 export { Loader };

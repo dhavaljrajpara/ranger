@@ -594,6 +594,10 @@ header {
   font-size: 12px;
 }
 
+.info-icon {
+  color: #808080;
+}
+
 /* Security Zone Service Table Resorces */
 .resource-group {
   display: block;

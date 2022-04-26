@@ -64,7 +64,11 @@ class ServiceDefinition extends Component {
     let defKey = serviceDefConfigs.map((c) => c.name);
     let customConfigKey = difference(configKey, defKey);
 
-    serviceDefConfigs.map((c) => (configs[c.name] = serviceConfigs[c.name]));
+    serviceDefConfigs.map(
+      (c) =>
+        (configs[c.label !== undefined ? c.label : c.name] =
+          serviceConfigs[c.name])
+    );
 
     Object.entries(configs).map(([key, value]) =>
       tableRow.push(
@@ -239,7 +243,7 @@ class ServiceDefinition extends Component {
                         alt="Folder logo"
                         className="m-r-5"
                       />
-                      {serviceDef.name}
+                      {serviceDef.displayName}
                     </span>
                     {this.props.isAdminRole && (
                       <span className="float-right">
@@ -341,7 +345,9 @@ class ServiceDefinition extends Component {
                                     </tr>
                                     <tr>
                                       <td>Description</td>
-                                      <td>{s.description}</td>
+                                      <td>
+                                        {s.description ? s.description : "--"}
+                                      </td>
                                     </tr>
                                     <tr>
                                       <td>Active Status</td>
@@ -358,11 +364,15 @@ class ServiceDefinition extends Component {
                                     <tr>
                                       <td>Tag Service</td>
                                       <td>
-                                        <h6>
-                                          <Badge variant="primary">
-                                            {s.tagService}
-                                          </Badge>
-                                        </h6>
+                                        {s.tagService ? (
+                                          <h6>
+                                            <Badge variant="primary">
+                                              {s.tagService}
+                                            </Badge>
+                                          </h6>
+                                        ) : (
+                                          "--"
+                                        )}
                                       </td>
                                     </tr>
                                   </tbody>
