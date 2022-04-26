@@ -774,3 +774,8 @@ header {
   text-align: center;
   border-right: 1px solid #ddd;
 }
+
+.activePolicyAlert {
+  color: #ec7337;
+  margin-right: 5px;
+}

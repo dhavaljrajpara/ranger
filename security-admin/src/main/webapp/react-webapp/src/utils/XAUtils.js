@@ -1,6 +1,9 @@
+import React from "react";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { UserRoles, PathAssociateWithModule } from "Utils/XAEnums";
-import _, { filter, flatMap, forEach, uniq } from "lodash";
+import _, { filter, flatMap, forEach, uniq, isEmpty } from "lodash";
+import dateFormat from "dateformat";
+import moment from "moment-timezone";
 import { matchPath } from "react-router";
 // import { includes, map, union, forEach } from "lodash";
 
@@ -121,4 +124,20 @@ export const hasAccessToPath = (pathName) => {
   }
 
   return !returnFlag;
+};
+
+/* Time Stamp */
+
+export const setTimeStamp = (dateTime) => {
+  let formatDateTime = dateFormat(parseInt(dateTime), "mm/dd/yyyy hh:MM:ss TT");
+  return !isEmpty(dateTime) ? (
+    <span title={formatDateTime}>
+      {formatDateTime}
+      <div class="text-muted">
+        <small>{moment(formatDateTime).fromNow()}</small>
+      </div>
+    </span>
+  ) : (
+    <center>--</center>
+  );
 };
