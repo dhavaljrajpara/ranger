@@ -1,38 +1,51 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
+import { AuditFilterEntries } from "Components/CommonComponents";
+import moment from "moment-timezone";
 
 function Plugins() {
   const [pluginsListingData, setPluginsLogs] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
+  const [entries, setEntries] = useState([]);
+  const [updateTable, setUpdateTable] = useState(moment.now());
   const fetchIdRef = useRef(0);
 
-  const fetchPluginsInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let logs = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const logsResp = await fetchApi({
-          url: "assets/exportAudit",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        logs = logsResp.data.vXPolicyExportAudits;
-        totalCount = logsResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching Plugins logs! ${error}`);
+  const fetchPluginsInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let logsResp = [];
+      let logs = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          logsResp = await fetchApi({
+            url: "assets/exportAudit",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          logs = logsResp.data.vXPolicyExportAudits;
+          totalCount = logsResp.data.totalCount;
+        } catch (error) {
+          console.error(`Error occurred while fetching Plugins logs! ${error}`);
+        }
+        setPluginsLogs(logs);
+        setEntries(logsResp.data);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setPluginsLogs(logs);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
-
+    },
+    [updateTable]
+  );
+  const refreshTable = () => {
+    setPluginsLogs([]);
+    setLoader(true);
+    setUpdateTable(moment.now());
+  };
   const columns = React.useMemo(
     () => [
       {
@@ -74,13 +87,17 @@ function Plugins() {
     []
   );
   return (
-    <XATableLayout
-      data={pluginsListingData}
-      columns={columns}
-      loading={loader}
-      fetchData={fetchPluginsInfo}
-      pageCount={pageCount}
-    />
+    <>
+      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
+      <XATableLayout
+        data={pluginsListingData}
+        columns={columns}
+        loading={loader}
+        fetchData={fetchPluginsInfo}
+        pageCount={pageCount}
+      />
+    </>
   );
 }
 

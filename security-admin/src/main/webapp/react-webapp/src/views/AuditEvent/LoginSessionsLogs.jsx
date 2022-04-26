@@ -5,6 +5,8 @@ import { AuthStatus } from "../../utils/XAEnums";
 import { AuthType } from "../../utils/XAEnums";
 import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
+import { AuditFilterEntries } from "Components/CommonComponents";
+import moment from "moment-timezone";
 import { truncate } from "lodash";
 
 function Login_Sessions() {
@@ -13,17 +15,22 @@ function Login_Sessions() {
   const [sessionId, setSessionId] = useState([]);
   const [showmodal, setShowModal] = useState(false);
   const [pageCount, setPageCount] = React.useState(0);
+  const [entries, setEntries] = useState([]);
+  const [updateTable, setUpdateTable] = useState(moment.now());
+
   const fetchIdRef = useRef(0);
+
   const handleClose = () => setShowModal(false);
   const fetchLoginSessionLogsInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
+      let logsResp = [];
       let logs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
       if (fetchId === fetchIdRef.current) {
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-          const logsResp = await fetchApi({
+          logsResp = await fetchApi({
             url: "xusers/authSessions",
             params: {
               pageSize: pageSize,
@@ -38,13 +45,18 @@ function Login_Sessions() {
           );
         }
         setLoginSessionLogs(logs);
+        setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
       }
     },
-    []
+    [updateTable]
   );
-
+  const refreshTable = () => {
+    setLoginSessionLogs([]);
+    setLoader(true);
+    setUpdateTable(moment.now());
+  };
   const openModal = (id) => {
     setShowModal(true);
     setSessionId(id);
@@ -157,7 +169,9 @@ function Login_Sessions() {
     []
   );
   return (
-    <div>
+    <>
+      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
       <XATableLayout
         data={loginSessionListingData}
         columns={columns}
@@ -170,7 +184,7 @@ function Login_Sessions() {
         data={sessionId}
         onHide={handleClose}
       ></AdminModal>
-    </div>
+    </>
   );
 }
 

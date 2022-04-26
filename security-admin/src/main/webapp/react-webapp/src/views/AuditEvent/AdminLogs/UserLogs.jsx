@@ -381,7 +381,7 @@ export const UserLogs = ({ data, reportdata }) => {
             </div>
             <div className="font-weight-bolder">Created By: {owner} </div>
             <div className="font-weight-bolder">Deleted By: {owner} </div>
-
+            <br />
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
 
             <Table className="table table-striped table-bordered w-50">

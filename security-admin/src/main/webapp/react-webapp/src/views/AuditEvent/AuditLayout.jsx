@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-import { Tab, Tabs } from "react-bootstrap";
+import { Tab, Tabs, Badge } from "react-bootstrap";
 import Access from "./AccessLogs";
 import Admin from "./AdminLogs";
 import Login_Sessions from "./LoginSessionsLogs";
 import Plugins from "./PluginsLog";
 import Plugin_Status from "./PluginStatusLogs";
 import User_Sync from "./UserSync";
+import { AuditFilterEntries } from "Components/CommonComponents";
 
 class AuditLayout extends Component {
   constructor(props) {
@@ -43,7 +44,7 @@ class AuditLayout extends Component {
 
   render() {
     return (
-      <div>
+      <>
         <h4 className="wrap-header bold">Audit Logs</h4>
         <div className="wrap">
           <Tabs
@@ -72,7 +73,7 @@ class AuditLayout extends Component {
             </Tab>
           </Tabs>
         </div>
-      </div>
+      </>
     );
   }
 }

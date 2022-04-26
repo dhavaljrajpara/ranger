@@ -2,38 +2,51 @@ import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import dateFormat from "dateformat";
+import { AuditFilterEntries } from "Components/CommonComponents";
+import moment from "moment-timezone";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
+  const [updateTable, setUpdateTable] = useState(moment.now());
+  const [entries, setEntries] = useState([]);
   const fetchIdRef = useRef(0);
 
-  const fetchAccessLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let logs = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const logsResp = await fetchApi({
-          url: "assets/accessAudit",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        logs = logsResp.data.vXAccessAudits;
-        totalCount = logsResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching Access logs! ${error}`);
+  const fetchAccessLogsInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let logsResp = [];
+      let logs = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          logsResp = await fetchApi({
+            url: "assets/accessAudit",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          logs = logsResp.data.vXAccessAudits;
+          totalCount = logsResp.data.totalCount;
+        } catch (error) {
+          console.error(`Error occurred while fetching Access logs! ${error}`);
+        }
+        setAccessLogs(logs);
+        setEntries(logsResp.data);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setAccessLogs(logs);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
-
+    },
+    [updateTable]
+  );
+  const refreshTable = () => {
+    setAccessLogs([]);
+    setLoader(true);
+    setUpdateTable(moment.now());
+  };
   const columns = React.useMemo(
     () => [
       {
@@ -155,13 +168,17 @@ function Access() {
     []
   );
   return (
-    <XATableLayout
-      data={accessListingData}
-      columns={columns}
-      fetchData={fetchAccessLogsInfo}
-      loading={loader}
-      pageCount={pageCount}
-    />
+    <>
+      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
+      <XATableLayout
+        data={accessListingData}
+        columns={columns}
+        fetchData={fetchAccessLogsInfo}
+        loading={loader}
+        pageCount={pageCount}
+      />
+    </>
   );
 }
 

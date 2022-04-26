@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Alert, Badge } from "react-bootstrap";
 import { Field } from "react-final-form";
-
+import moment from "moment-timezone";
+import { isEmpty } from "lodash";
 const Loader = () => {
   return (
     <div className="loading-img">
@@ -82,6 +83,50 @@ export class MoreLess extends Component {
     );
   }
 }
+
+export const AuditFilterEntries = (props) => {
+  const { entries, refreshTable } = props;
+  const refreshTables = () => {
+    refreshTable();
+  };
+  const showPageDetail = (entriesDetails) => {
+    let endIndex = Math.min(
+      entriesDetails.startIndex + entriesDetails.pageSize - 1,
+      entriesDetails.totalCount
+    );
+    return !isEmpty(entriesDetails)
+      ? `${entriesDetails.startIndex + 1} to ${endIndex} of 
+            ${entriesDetails.totalCount}`
+      : 0;
+  };
+  return (
+    <div className="row">
+      <div className="col-md-4"></div>
+      <div className="col-md-8 m-b-sm">
+        <div className="text-right">
+          Last Updated Time:&nbsp;
+          <Badge className="d-inline mr-1" variant="info">
+            {new Date().toLocaleString("en-US", { hour12: true })}
+          </Badge>
+          <span className="mr-1"> | </span>
+          Entries:&nbsp;
+          <Badge className="d-inline mr-1" variant="info">
+            {showPageDetail(entries)}
+          </Badge>
+          <button
+            className="link-tag m-l-xsm"
+            title="Refresh"
+            onClick={() => {
+              refreshTables();
+            }}
+          >
+            <i className="fa-fw fa fa-refresh"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const Condition = ({ when, is, children }) => (
   <Field name={when} subscription={{ value: true }}>

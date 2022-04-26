@@ -104,7 +104,6 @@ class ZoneDisplay extends Component {
                   show={this.state.showDeleteModal === this.props.zone.id}
                   onHide={this.closeZoneModal}
                   backdrop="static"
-                  keyboard={false}
                 >
                   <Modal.Header
                     closeButton

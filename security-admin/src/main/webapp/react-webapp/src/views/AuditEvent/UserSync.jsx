@@ -1,43 +1,58 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Badge, Modal, Button } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
+import { AuditFilterEntries } from "Components/CommonComponents";
 import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
+import moment from "moment-timezone";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const [entries, setEntries] = useState([]);
+  const [updateTable, setUpdateTable] = useState(moment.now());
   const [showTableSyncDetails, setTableSyncdetails] = useState({
     syncDteails: {},
     showSyncDetails: false
   });
 
-  const fetchUserSyncInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let logs = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const logsResp = await fetchApi({
-          url: "assets/ugsyncAudits",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        logs = logsResp.data.vxUgsyncAuditInfoList;
-        totalCount = logsResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching User Sync logs! ${error}`);
+  const fetchUserSyncInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let logsResp = [];
+      let logs = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          logsResp = await fetchApi({
+            url: "assets/ugsyncAudits",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          logs = logsResp.data.vxUgsyncAuditInfoList;
+          totalCount = logsResp.data.totalCount;
+        } catch (error) {
+          console.error(
+            `Error occurred while fetching User Sync logs! ${error}`
+          );
+        }
+        setUserSyncLogs(logs);
+        setEntries(logsResp.data);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setUserSyncLogs(logs);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
-
+    },
+    [updateTable]
+  );
+  const refreshTable = () => {
+    setUserSyncLogs([]);
+    setLoader(true);
+    setUpdateTable(moment.now());
+  };
   const toggleTableSyncModal = (raw) => {
     setTableSyncdetails({
       syncDteails: raw,
@@ -116,6 +131,8 @@ function User_Sync() {
   );
   return (
     <>
+      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
       <XATableLayout
         data={userSyncListingData}
         columns={columns}
@@ -146,7 +163,6 @@ function User_Sync() {
           </Button>
         </Modal.Footer>
       </Modal>
-      ;
     </>
   );
 }

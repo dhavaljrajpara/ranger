@@ -5,7 +5,9 @@ import { fetchApi } from "Utils/fetchAPI";
 import { ClassTypes, enumValueToLabel } from "../../utils/XAEnums";
 import dateFormat from "dateformat";
 import AdminModal from "./AdminModal";
+import { AuditFilterEntries } from "Components/CommonComponents";
 import OperationAdminModal from "./OperationAdminModal";
+import moment from "moment-timezone";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -14,8 +16,10 @@ function Admin() {
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = useState(0);
   const [showmodal, setShowModal] = useState(false);
+  const [entries, setEntries] = useState([]);
+  const [updateTable, setUpdateTable] = useState(moment.now());
   const [showrowmodal, setShowRowModal] = useState(false);
-  const [showview, setShowView] = useState(null);
+  // const [showview, setShowView] = useState(null);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
 
@@ -24,35 +28,46 @@ function Admin() {
 
   const rowModal = async (row) => {
     const { original = {} } = row;
-    setShowView(original.objectId);
+    // setShowView(original.objectId);
+    original.objectId;
     setShowRowModal(true);
     setRowData(original);
   };
 
-  const fetchAdminLogsInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let adminlogs = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const logsResp = await fetchApi({
-          url: "assets/report",
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize
-          }
-        });
-        adminlogs = logsResp.data.vXTrxLogs;
-        totalCount = logsResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching Admin logs! ${error}`);
+  const fetchAdminLogsInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let logsResp = [];
+      let adminlogs = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          logsResp = await fetchApi({
+            url: "assets/report",
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize
+            }
+          });
+          adminlogs = logsResp.data.vXTrxLogs;
+          totalCount = logsResp.data.totalCount;
+        } catch (error) {
+          console.error(`Error occurred while fetching Admin logs! ${error}`);
+        }
+        setAdminLogs(adminlogs);
+        setEntries(logsResp.data);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      setAdminLogs(adminlogs);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
-    }
-  }, []);
+    },
+    [updateTable]
+  );
 
+  const refreshTable = () => {
+    setAdminLogs([]);
+    setLoader(true);
+    setUpdateTable(moment.now());
+  };
   // const handleShow = async (sessionId) => {
   //   let authlogs = [];
   //   try {
@@ -245,8 +260,10 @@ function Admin() {
   );
 
   return (
-    <div>
+    <>
       <div>
+        <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+        <br />
         <XATableLayout
           data={adminListingData}
           columns={columns}
@@ -270,7 +287,7 @@ function Admin() {
           onHide={handleClosed}
         ></OperationAdminModal>
       }
-    </div>
+    </>
   );
 }
 

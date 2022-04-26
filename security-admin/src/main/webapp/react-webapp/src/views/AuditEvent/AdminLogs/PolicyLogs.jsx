@@ -109,8 +109,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const createValidity = reportdata.filter(
     (obj) => obj.attributeName == "Validity Schedules" && obj.action == "create"
   );
-  const createValidityNew = createValidity.map((obj) =>
-    obj.newValue != "" ? JSON.parse(obj.newValue) : []
+  const createValidityNew = createValidity.map(
+    (obj) => obj && obj.newValue && JSON.parse(obj.newValue)
   );
   const createCondition = reportdata.filter((obj) => {
     return obj.attributeName == "Policy Conditions" && obj.action == "create";
@@ -1293,9 +1293,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
     return obj.attributeName == "Policy Conditions" && obj.action == "delete";
   });
 
-  const deleteConditionOld = deleteCondition.map((obj) =>
-    obj.previousValue != "" ? JSON.parse(obj.previousValue) : []
-  );
+  const deleteConditionOld = deleteCondition.map((obj) => obj.previousValue);
   const deleteMaskPolicy = reportdata.filter(
     (obj) =>
       obj.attributeName == "Masked Policy Items" && obj.action == "delete"
@@ -1348,12 +1346,26 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   const ImportDeleteDetails = (details, resources) => {
     let tablerow = [];
-
-    details.map((o) => {
+    const createDetailsPolicy = (val, newVal) => {
+      if (val == "Policy Labels") {
+        return (newVal = !isEmpty(JSON.parse(newVal))
+          ? JSON.parse(newVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (newVal = newVal === "false" ? "disabled" : "enabled");
+      }
+      return !isEmpty(newVal) ? newVal : "--";
+    };
+    details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{o.attributeName}</td>
-          <td className="table-warning">{o.previousValue}</td>
+          <td className="table-warning">{policy.attributeName}</td>
+          <td className="table-warning">
+            {!isEmpty(policy.previousValue)
+              ? createDetailsPolicy(policy.attributeName, policy.previousValue)
+              : "--"}
+          </td>
         </tr>
       );
     });
@@ -1541,27 +1553,25 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           <tr key={index}>
                             <td className="table-warning">
                               {`Start Date: ${
-                                policy.startTime.length == 0
-                                  ? "<empty>"
-                                  : policy.startTime
+                                !isEmpty(policy.startTime)
+                                  ? policy.startTime
+                                  : "--"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               {`End Date: ${
-                                policy.endTime.length == 0
-                                  ? "<empty>"
-                                  : policy.endTime
+                                !isEmpty(policy.endTime) ? policy.endTime : "--"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               {`Time Zone: ${
-                                policy.timeZone.length == 0
-                                  ? "<empty>"
-                                  : policy.timeZone
+                                !isEmpty(policy.timeZone)
+                                  ? policy.timeZone
+                                  : "--"
                               } `}
                             </td>
                           </tr>
@@ -1625,49 +1635,52 @@ export const PolicyLogs = ({ data, reportdata }) => {
                               <td className="table-warning text-nowrap">
                                 <i>{`Roles`}</i>
                                 {`: ${
-                                  policy.roles.length == 0
-                                    ? "<empty>"
-                                    : policy.roles.join(", ")
-                                }`}
+                                  !isEmpty(policy.roles)
+                                    ? policy.roles.join(", ")
+                                    : "<empty>"
+                                } `}
                               </td>
                             </tr>
                             <tr>
                               <td className="table-warning text-nowrap">
                                 <i>{`Groups`}</i>
                                 {`: ${
-                                  policy.groups.length == 0
-                                    ? "<empty>"
-                                    : policy.groups.join(", ")
-                                }`}
+                                  !isEmpty(policy.groups)
+                                    ? policy.roles.join(", ")
+                                    : "<empty>"
+                                } `}
                               </td>
                             </tr>
                             <tr>
                               <td className="table-warning text-nowrap">
                                 <i>{`Users`}</i>
                                 {`: ${
-                                  policy.users.length == 0
-                                    ? "<empty>"
-                                    : policy.users.join(", ")
-                                }`}
+                                  !isEmpty(policy.users)
+                                    ? policy.users.join(", ")
+                                    : "<empty>"
+                                } `}
                               </td>
                             </tr>
                             <tr>
                               <td className="table-warning text-nowrap">
                                 <i>{`Permissions`}</i>
-                                {`: ${policy.accesses
-                                  .map((obj) => obj.type)
-                                  .join(", ")}`}
+                                {!isEmpty(policy.accesses)
+                                  ? `: ${policy.accesses
+                                      .map((obj) => obj.type)
+                                      .join(", ")} `
+                                  : "<empty>"}
                               </td>
                             </tr>
                             <tr>
-                              {policy.conditions.length > 0 && (
-                                <td className="table-warning text-nowrap">
-                                  <i>{`Conditions`}</i>
-                                  {`: ${policy.conditions.map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )}`}
-                                </td>
-                              )}
+                              {policy.conditions &&
+                                policy.conditions.length > 0 && (
+                                  <td className="table-warning text-nowrap">
+                                    <i>{`Conditions`}</i>
+                                    {`: ${policy.conditions.map(
+                                      (type) => `${type.type} : ${type.values}`
+                                    )}`}
+                                  </td>
+                                )}
                             </tr>
                             <tr>
                               <td className="table-warning text-nowrap">
@@ -1710,45 +1723,49 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Accesses`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
 
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Row Level Filter`}</i>
-                              {`: ${policy.rowFilterInfo.filterExpr}`}
+                              {!isEmpty(policy.rowFilterInfo.filterExpr)
+                                ? `: ${policy.rowFilterInfo.filterExpr} `
+                                : "<empty>"}
                             </td>
                           </tr>
                         </tbody>
@@ -1779,42 +1796,44 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
@@ -1863,46 +1882,50 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
-                                  .map((type) => `${type.type}: ${type.values}`)
+                                  .map(
+                                    (type) => `${type.type} : ${type.values}`
+                                  )
                                   .join(", ")}`}
                               </td>
                             )}
@@ -1947,42 +1970,44 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning text-nowrap">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
@@ -2031,38 +2056,40 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning text-nowrap">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
-                              }`}
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
-                              }`}
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
-                              }`}
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
+                              } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap">
                               <i>{`Accesses`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")}`}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
 
@@ -2082,7 +2109,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             {!isEmpty(policy.DataMasklabel) && (
                               <td className="table-warning text-nowrap">
                                 <i>{`Data Mask Types`}</i>
-                                {`: ${policy.DataMasklabel}`}
+                                {!isEmpty(policy.DataMasklabel)
+                                  ? `: ${policy.DataMasklabel} `
+                                  : "<empty>"}
                               </td>
                             )}
                           </tr>
@@ -2363,7 +2392,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               !isEmpty(deleteValidityOld) &&
               !isUndefined(deleteValidityOld) &&
               deleteValidityOld != "[]" &&
-              deleteValidityOld.length > 0 && (
+              deleteValidityOld != 0 && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
@@ -2379,9 +2408,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Start Date`}</i>
                               {`: ${
-                                policy.startTime.length == 0
-                                  ? "<empty>"
-                                  : policy.startTime
+                                !isEmpty(policy.startTime)
+                                  ? policy.startTime
+                                  : "--"
                               } `}
                             </td>
                           </tr>
@@ -2389,9 +2418,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`End Date`}</i>
                               {`: ${
-                                policy.endTime.length == 0
-                                  ? "<empty>"
-                                  : policy.endTime
+                                !isEmpty(policy.endTime) ? policy.endTime : "--"
                               } `}
                             </td>
                           </tr>
@@ -2399,9 +2426,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Time Zone`}</i>
                               {`: ${
-                                policy.timeZone.length == 0
-                                  ? "<empty>"
-                                  : policy.timeZone
+                                !isEmpty(policy.timeZone)
+                                  ? policy.timeZone
+                                  : "--"
                               } `}
                             </td>
                           </tr>
@@ -2429,7 +2456,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </thead>
 
                     {deleteConditionOld.map((policyitem) => {
-                      return policyitem.map((policy) => (
+                      return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
                             <td className="table-warning">
@@ -2466,9 +2493,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2476,9 +2503,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2486,25 +2513,29 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.suers)
+                                  ? policy.suers.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Accesses`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
 
                           <tr>
                             <td className="table-warning">
                               <i>{`Row Level Filter`}</i>
-                              {`: ${policy.rowFilterInfo.filterExpr} `}
+                              {!isEmpty(policy.rowFilterInfo.filterExpr)
+                                ? `: ${policy.rowFilterInfo.filterExpr}`
+                                : "<empty>"}
                             </td>
                           </tr>
                         </tbody>
@@ -2536,9 +2567,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2546,9 +2577,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2556,18 +2587,20 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Accesses`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
 
@@ -2584,12 +2617,13 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            {policy.DataMasklabel.length > 0 && (
-                              <td className="table-warning">
-                                <i>{`Data Mask Types`}</i>
-                                {`: ${policy.DataMasklabel} `}
-                              </td>
-                            )}
+                            {policy.DataMasklabel &&
+                              policy.DataMasklabel.length > 0 && (
+                                <td className="table-warning">
+                                  <i>{`Data Mask Types`}</i>
+                                  {`: ${policy.DataMasklabel} `}
+                                </td>
+                              )}
                           </tr>
                           <br />
                         </tbody>
@@ -2620,9 +2654,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2630,9 +2664,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2640,22 +2674,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
@@ -2704,9 +2740,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2714,9 +2750,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2724,22 +2760,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
@@ -2786,9 +2824,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2796,9 +2834,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2806,22 +2844,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
@@ -2871,9 +2911,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles.join(", ")
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2881,9 +2921,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups.join(", ")
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -2891,22 +2931,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users.join(", ")
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Permissions`}</i>
-                              {`: ${policy.accesses
-                                .map((obj) => obj.type)
-                                .join(", ")} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions.length > 0 && (
+                            {policy.conditions && policy.conditions.length > 0 && (
                               <td className="table-warning">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
@@ -3031,7 +3073,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               !isEmpty(importDelValidityOld) &&
               !isUndefined(importDelValidityOld) &&
               importDelValidityOld != "[]" &&
-              importDelValidityOld.length > 0 && (
+              importDelValidityOld != 0 && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
                   <Table className="table table-striped  table-bordered   w-auto">
@@ -3047,9 +3089,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Start Date`}</i>
                               {`: ${
-                                policy.startTime.length == 0
-                                  ? "<empty>"
-                                  : policy.startTime
+                                !isEmpty(policy.startTime)
+                                  ? policy.startTime
+                                  : "--"
                               } `}
                             </td>
                           </tr>
@@ -3057,9 +3099,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`End Date`}</i>
                               {`: ${
-                                policy.endTime.length == 0
-                                  ? "<empty>"
-                                  : policy.endTime
+                                !isEmpty(policy.endTime) ? policy.endTime : "--"
                               } `}
                             </td>
                           </tr>
@@ -3067,9 +3107,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Time Zone`}</i>
                               {`: ${
-                                policy.timeZone.length == 0
-                                  ? "<empty>"
-                                  : policy.timeZone
+                                !isEmpty(policy.timeZone)
+                                  ? policy.timeZone
+                                  : "--"
                               } `}
                             </td>
                           </tr>
@@ -3104,9 +3144,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Roles`}</i>
                               {`: ${
-                                policy.roles.length == 0
-                                  ? "<empty>"
-                                  : policy.roles
+                                !isEmpty(policy.roles)
+                                  ? policy.roles.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -3114,9 +3154,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Groups`}</i>
                               {`: ${
-                                policy.groups.length == 0
-                                  ? "<empty>"
-                                  : policy.groups
+                                !isEmpty(policy.groups)
+                                  ? policy.groups.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
@@ -3124,16 +3164,20 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <td className="table-warning">
                               <i>{`Users`}</i>
                               {`: ${
-                                policy.users.length == 0
-                                  ? "<empty>"
-                                  : policy.users
+                                !isEmpty(policy.users)
+                                  ? policy.users.join(", ")
+                                  : "<empty>"
                               } `}
                             </td>
                           </tr>
                           <tr>
                             <td className="table-warning">
                               <i>{`Accesses`}</i>
-                              {`: ${policy.accesses.map((obj) => obj.type)} `}
+                              {!isEmpty(policy.accesses)
+                                ? `: ${policy.accesses
+                                    .map((obj) => obj.type)
+                                    .join(", ")} `
+                                : "<empty>"}
                             </td>
                           </tr>
 
@@ -3150,12 +3194,13 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            {policy.DataMasklabel.length > 0 && (
-                              <td className="table-warning">
-                                <i>{`Data Mask Types`}</i>
-                                {`: ${policy.DataMasklabel} `}
-                              </td>
-                            )}
+                            {policy.DataMasklabel &&
+                              policy.DataMasklabel.length > 0 && (
+                                <td className="table-warning">
+                                  <i>{`Data Mask Types`}</i>
+                                  {`: ${policy.DataMasklabel} `}
+                                </td>
+                              )}
                           </tr>
                           <br />
                         </tbody>
@@ -3217,9 +3262,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 <td className="table-warning">
                                   <i>{`Roles`}</i>
                                   {`: ${
-                                    policy.roles.length == 0
-                                      ? "<empty>"
-                                      : policy.roles.join(", ")
+                                    !isEmpty(policy.roles)
+                                      ? policy.roles.join(", ")
+                                      : "<empty>"
                                   } `}
                                 </td>
                               </tr>
@@ -3227,9 +3272,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 <td className="table-warning">
                                   <i>{`Groups`}</i>
                                   {`: ${
-                                    policy.groups.length == 0
-                                      ? "<empty>"
-                                      : policy.groups.join(", ")
+                                    !isEmpty(policy.groups)
+                                      ? policy.groups.join(", ")
+                                      : "<empty>"
                                   } `}
                                 </td>
                               </tr>
@@ -3237,19 +3282,33 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 <td className="table-warning">
                                   <i>{`Users`}</i>
                                   {`: ${
-                                    policy.users.length == 0
-                                      ? "<empty>"
-                                      : policy.users.join(", ")
+                                    !isEmpty(policy.users)
+                                      ? policy.users.join(", ")
+                                      : "<empty>"
                                   } `}
                                 </td>
                               </tr>
                               <tr>
                                 <td className="table-warning">
                                   <i>{`Permissions`}</i>
-                                  {`: ${policy.accesses
-                                    .map((obj) => obj.type)
-                                    .join(", ")} `}
+                                  {!isEmpty(policy.accesses)
+                                    ? `: ${policy.accesses
+                                        .map((obj) => obj.type)
+                                        .join(", ")} `
+                                    : "<empty>"}
                                 </td>
+                              </tr>
+                              <tr>
+                                {policy.conditions &&
+                                  policy.conditions.length > 0 && (
+                                    <td className="table-warning">
+                                      <i>{`Conditions`}</i>
+                                      {`: ${policy.conditions.map(
+                                        (type) =>
+                                          `${type.type} : ${type.values}`
+                                      )} `}
+                                    </td>
+                                  )}
                               </tr>
                               <tr>
                                 <td className="table-warning">
@@ -3295,9 +3354,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Roles`}</i>
                         {`: ${
-                          policy.roles.length == 0
-                            ? "<empty>"
-                            : policy.roles.join(", ")
+                          !isEmpty(policy.roles)
+                            ? policy.roles.join(", ")
+                            : "<empty>"
                         } `}
                       </td>
                     </tr>
@@ -3305,9 +3364,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Groups`}</i>
                         {`: ${
-                          policy.groups.length == 0
-                            ? "<empty>"
-                            : policy.groups.join(", ")
+                          !isEmpty(policy.groups)
+                            ? policy.groups.join(", ")
+                            : "<empty>"
                         } `}
                       </td>
                     </tr>
@@ -3315,22 +3374,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Users`}</i>
                         {`: ${
-                          policy.users.length == 0
-                            ? "<empty>"
-                            : policy.users.join(", ")
+                          !isEmpty(policy.users)
+                            ? policy.users.join(", ")
+                            : "<empty>"
                         } `}
                       </td>
                     </tr>
                     <tr>
                       <td className="table-warning">
                         <i>{`Permissions`}</i>
-                        {`: ${policy.accesses
-                          .map((obj) => obj.type)
-                          .join(", ")} `}
+                        {!isEmpty(policy.accesses)
+                          ? `: ${policy.accesses
+                              .map((obj) => obj.type)
+                              .join(", ")} `
+                          : "<empty>"}
                       </td>
                     </tr>
                     <tr>
-                      {policy.conditions.length > 0 && (
+                      {policy.conditions && policy.conditions.length > 0 && (
                         <td className="table-warning">
                           <i>{`Conditions`}</i>
                           {`: ${policy.conditions.map(
@@ -3375,9 +3436,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Roles`}</i>
                         {`: ${
-                          policy.roles.length == 0
-                            ? "<empty>"
-                            : policy.roles.join(", ")
+                          !isEmpty(policy.roles)
+                            ? policy.roles.join(", ")
+                            : "<empty>"
                         } `}
                       </td>
                     </tr>
@@ -3385,9 +3446,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Groups`}</i>
                         {`: ${
-                          policy.groups.length == 0
-                            ? "<empty>"
-                            : policy.groups.join(", ")
+                          !isEmpty(policy.groups)
+                            ? policy.groups.join(", ")
+                            : "<empty>"
                         } `}
                       </td>
                     </tr>
@@ -3395,22 +3456,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Users`}</i>
                         {`: ${
-                          policy.users.length == 0
-                            ? "<empty>"
-                            : policy.users.join(", ")
-                        }`}
+                          !isEmpty(policy.users)
+                            ? policy.users.join(", ")
+                            : "<empty>"
+                        } `}
                       </td>
                     </tr>
                     <tr>
                       <td className="table-warning">
                         <i>{`Permissions`}</i>
-                        {`: ${policy.accesses
-                          .map((obj) => obj.type)
-                          .join(", ")}`}
+                        {!isEmpty(policy.accesses)
+                          ? `: ${policy.accesses
+                              .map((obj) => obj.type)
+                              .join(", ")} `
+                          : "<empty>"}
                       </td>
                     </tr>
                     <tr>
-                      {policy.conditions.length > 0 && (
+                      {policy.conditions && policy.conditions.length > 0 && (
                         <td className="table-warning">
                           <i>{`Conditions`}</i>
                           {`: ${policy.conditions.map(
@@ -3457,30 +3520,30 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       <td className="table-warning">
                         <i>{`Roles`}</i>
                         {`: ${
-                          policy.roles.length == 0
-                            ? "<empty>"
-                            : policy.roles.join(", ")
-                        }`}
+                          !isEmpty(policy.roles)
+                            ? policy.roles.join(", ")
+                            : "<empty>"
+                        } `}
                       </td>
                     </tr>
                     <tr>
                       <td className="table-warning">
                         <i>{`Groups`}</i>
                         {`: ${
-                          policy.groups.length == 0
-                            ? "<empty>"
-                            : policy.groups.join(", ")
-                        }`}
+                          !isEmpty(policy.groups)
+                            ? policy.groups.join(", ")
+                            : "<empty>"
+                        } `}
                       </td>
                     </tr>
                     <tr>
                       <td className="table-warning">
                         <i>{`Users`}</i>
                         {`: ${
-                          policy.users.length == 0
-                            ? "<empty>"
-                            : policy.users.join(", ")
-                        }`}
+                          !isEmpty(policy.users)
+                            ? policy.users.join(", ")
+                            : "<empty>"
+                        } `}
                       </td>
                     </tr>
                     <tr>
@@ -3492,7 +3555,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      {policy.conditions.length > 0 && (
+                      {policy.conditions && policy.conditions.length > 0 && (
                         <td className="table-warning">
                           <i>{`Conditions:`}</i>
                           {`: ${policy.conditions.map(
