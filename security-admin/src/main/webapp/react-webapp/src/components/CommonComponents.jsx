@@ -164,12 +164,12 @@ export const CustomPopover = ({ title, content, placement, trigger }) => (
   </OverlayTrigger>
 );
 
-export const CustomTooltip = ({ placement, content }) => (
+export const CustomTooltip = ({ placement, content, icon }) => (
   <OverlayTrigger
     placement={placement}
     overlay={<Tooltip id={`tooltip-${placement}`}>{content}</Tooltip>}
   >
-    <i className="fa-fw fa fa-info-circle info-icon"></i>
+    <i className={icon}></i>
   </OverlayTrigger>
 );
 

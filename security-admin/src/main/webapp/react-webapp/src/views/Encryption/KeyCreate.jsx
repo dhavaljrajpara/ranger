@@ -28,12 +28,15 @@ class KeyCreate extends Component {
       await fetchApi({
         url: "keys/key",
         method: "post",
-        data: serviceJson,
+        params: {
+          provider: this.props.location.state.detail
+        },
+        data: serviceJson
       });
       toast.success(`Success! Key created succesfully`);
       this.props.history.push({
         pathname: `/kms/keys/edit/manage/${this.props.location.state.detail}`,
-        state: { detail: this.props.location.state.detail },
+        state: { detail: this.props.location.state.detail }
       });
     } catch (error) {
       console.error(`Error occurred while creating Key`);
@@ -55,12 +58,12 @@ class KeyCreate extends Component {
         <Form
           onSubmit={this.onSubmit}
           mutators={{
-            ...arrayMutators,
+            ...arrayMutators
           }}
           initialValues={{
             attributes: [{ name: "", value: "" }],
             cipher: "AES/CTR/NoPadding",
-            length: "128",
+            length: "128"
           }}
           render={({
             handleSubmit,
@@ -68,8 +71,8 @@ class KeyCreate extends Component {
             submitting,
             pristine,
             form: {
-              mutators: { push },
-            },
+              mutators: { push }
+            }
           }) => (
             <div className="wrap">
               <form onSubmit={handleSubmit}>

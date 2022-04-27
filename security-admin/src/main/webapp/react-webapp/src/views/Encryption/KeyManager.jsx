@@ -24,7 +24,7 @@ function init(props) {
     editshowmodal: false,
     filterdata: null,
     pagecount: 0,
-    updatetable: moment.now(),
+    updatetable: moment.now()
   };
 }
 
@@ -35,7 +35,7 @@ function reducer(state, action) {
         ...state,
         loader: false,
         services: action.servicesdata,
-        servicesData: action.services,
+        servicesData: action.services
       };
     case "SET_SEL_SERVICE":
       return {
@@ -43,45 +43,45 @@ function reducer(state, action) {
         loader: false,
         selcServicesData: action.selcservicesData,
         keydata: action.keydatalist,
-        pagecount: action.pagecount,
+        pagecount: action.pagecount
       };
     case "SET_ONCHANGE_SERVICE":
       return {
         ...state,
         loader: action.loader,
-        onchangeval: action.onchangeval,
+        onchangeval: action.onchangeval
       };
     case "SET_DELETE_MODAL":
       return {
         ...state,
         loader: false,
         deleteshowmodal: action.deleteshowmodal,
-        filterdata: action.filterdata,
+        filterdata: action.filterdata
       };
     case "SET_DELETE_MODAL_CLOSE":
       return {
         ...state,
         loader: false,
-        deleteshowmodal: action.deleteshowmodal,
+        deleteshowmodal: action.deleteshowmodal
       };
     case "SET_EDIT_MODAL":
       return {
         ...state,
         loader: false,
         editshowmodal: action.editshowmodal,
-        filterdata: action.filterdata,
+        filterdata: action.filterdata
       };
     case "SET_EDIT_MODAL_CLOSE":
       return {
         ...state,
         loader: false,
-        editshowmodal: action.editshowmodal,
+        editshowmodal: action.editshowmodal
       };
     case "SET_UPDATE_TABLE":
       return {
         ...state,
         loader: false,
-        updatetable: action.updatetable,
+        updatetable: action.updatetable
       };
 
     default:
@@ -104,7 +104,7 @@ const KeyManager = (props) => {
     editshowmodal,
     pagecount,
     services,
-    updatetable,
+    updatetable
   } = keyState;
 
   useEffect(() => {
@@ -115,7 +115,7 @@ const KeyManager = (props) => {
     let servicesdata = null;
     try {
       const servicesResp = await fetchApi({
-        url: "plugins/services?name=&serviceType=kms&_=1646198589713",
+        url: "plugins/services?name=&serviceType=kms&_=1646198589713"
       });
       servicesdata = servicesResp.data.services;
     } catch (error) {
@@ -127,15 +127,15 @@ const KeyManager = (props) => {
       servicesdata: servicesdata,
       services: servicesdata.map((obj) => ({
         value: obj.name,
-        label: obj.name,
-      })),
+        label: obj.name
+      }))
     });
   };
   const selconChange = (e) => {
     dispatch({
       type: "SET_ONCHANGE_SERVICE",
       onchangeval: e,
-      loader: false,
+      loader: false
     });
   };
   const handleConfirmClick = () => {
@@ -143,7 +143,7 @@ const KeyManager = (props) => {
 
     dispatch({
       type: "SET_DELETE_MODAL",
-      deleteshowmodal: false,
+      deleteshowmodal: false
     });
   };
 
@@ -151,27 +151,27 @@ const KeyManager = (props) => {
     dispatch({
       type: "SET_DELETE_MODAL",
       deleteshowmodal: true,
-      filterdata: name,
+      filterdata: name
     });
   };
   const editModal = (name) => {
     dispatch({
       type: "SET_EDIT_MODAL",
       editshowmodal: true,
-      filterdata: name,
+      filterdata: name
     });
   };
   const closeEditModal = () => {
     dispatch({
       type: "SET_EDIT_MODAL_CLOSE",
-      editshowmodal: false,
+      editshowmodal: false
     });
   };
   const EditConfirmClick = () => {
     handleEditClick();
     dispatch({
       type: "SET_EDIT_MODAL_CLOSE",
-      editshowmodal: false,
+      editshowmodal: false
     });
   };
 
@@ -183,12 +183,12 @@ const KeyManager = (props) => {
         url: `/keys/key`,
         method: "PUT",
         params: { provider: onchangeval ? onchangeval.label : "" },
-        data: keyEdit,
+        data: keyEdit
       });
       toast.success(`Success! Key rollover successfully`);
       dispatch({
         type: "SET_UPDATE_TABLE",
-        updatetable: moment.now(),
+        updatetable: moment.now()
       });
     } catch (error) {
       let errorMsg = "";
@@ -205,13 +205,13 @@ const KeyManager = (props) => {
       await fetchApi({
         url: `/keys/key/${filterdata}`,
         method: "DELETE",
-        params: { provider: onchangeval ? onchangeval.label : "" },
+        params: { provider: onchangeval ? onchangeval.label : "" }
       });
 
       toast.success(`Success! Key deleted succesfully`);
       dispatch({
         type: "SET_UPDATE_TABLE",
-        updatetable: moment.now(),
+        updatetable: moment.now()
       });
     } catch (error) {
       let errorMsg = "";
@@ -225,7 +225,7 @@ const KeyManager = (props) => {
   const closeModal = () => {
     dispatch({
       type: "SET_DELETE_MODAL_CLOSE",
-      deleteshowmodal: false,
+      deleteshowmodal: false
     });
   };
   const selectServices = useCallback(
@@ -241,10 +241,10 @@ const KeyManager = (props) => {
             total_pages: 1,
             totalCount: Math.ceil(totalCount / pageSize),
             startIndex: pageIndex * pageSize,
-            provider: onchangeval && onchangeval.label,
+            provider: onchangeval && onchangeval.label
             // : props.match.params.kmsServiceName == "service"
             // ? []
-          },
+          }
         });
         selcservicesdata = selservicesResp.data.vXKeys;
         totalCount = selservicesResp.data.totalCount;
@@ -256,7 +256,7 @@ const KeyManager = (props) => {
         type: "SET_SEL_SERVICE",
         keydatalist: selcservicesdata,
         pagecount: Math.ceil(totalCount / pageSize),
-        loader: false,
+        loader: false
       });
     },
     [onchangeval, updatetable]
@@ -267,7 +267,7 @@ const KeyManager = (props) => {
         url:
           props.match.params.kmsManagePage == "edit"
             ? `plugins/services/name/${props.match.params.kmsServiceName}`
-            : `plugins/services/name/${onchangeval.label}`,
+            : `plugins/services/name/${onchangeval.label}`
       });
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
@@ -275,7 +275,7 @@ const KeyManager = (props) => {
 
     try {
       await fetchApi({
-        url: "plugins/definitions/name/kms",
+        url: "plugins/definitions/name/kms"
       });
     } catch (error) {
       console.error(`Error occurred while fetching Definitions! ${error}`);
@@ -289,8 +289,8 @@ const KeyManager = (props) => {
         detail:
           props.match.params.kmsManagePage == "edit"
             ? props.match.params.kmsServiceName
-            : onchangeval.label,
-      },
+            : onchangeval.label
+      }
     });
   };
 
@@ -298,15 +298,15 @@ const KeyManager = (props) => {
     () => [
       {
         Header: "Key Name",
-        accessor: "name",
+        accessor: "name"
       },
       {
         Header: "Cipher",
-        accessor: "cipher",
+        accessor: "cipher"
       },
       {
         Header: "Version",
-        accessor: "versions",
+        accessor: "versions"
       },
       {
         Header: "Attributes",
@@ -324,11 +324,11 @@ const KeyManager = (props) => {
             ));
           }
           return html;
-        },
+        }
       },
       {
         Header: "Length",
-        accessor: "length",
+        accessor: "length"
       },
       {
         Header: "Created Date",
@@ -337,7 +337,7 @@ const KeyManager = (props) => {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
           return newdate;
-        },
+        }
       },
       {
         Header: "Action",
@@ -367,8 +367,8 @@ const KeyManager = (props) => {
               </Button>
             </>
           );
-        },
-      },
+        }
+      }
     ],
     [updatetable]
   );
@@ -387,7 +387,7 @@ const KeyManager = (props) => {
               isClearable
               onChange={selconChange}
               components={{
-                IndicatorSeparator: () => null,
+                IndicatorSeparator: () => null
               }}
               options={servicesData}
               placeholder="Please select KMS service"

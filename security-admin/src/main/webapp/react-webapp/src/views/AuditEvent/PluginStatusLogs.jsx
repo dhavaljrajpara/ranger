@@ -1,13 +1,15 @@
-import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge } from "react-bootstrap";
+import React, { useState, useCallback, useRef } from "react";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import dateFormat from "dateformat";
 import _, { isUndefined } from "lodash";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { setTimeStamp } from "Utils/XAUtils";
-import { Loader } from "Components/CommonComponents";
+import {
+  CustomPopover,
+  CustomTooltip,
+  Loader
+} from "../../components/CommonComponents";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -58,6 +60,49 @@ function Plugin_Status() {
     setUpdateTable(moment.now());
   };
 
+  const contents = (val) => {
+    return (
+      <>
+        <ul class="list-inline">
+          <li class="list-inline-item">
+            <strong>Last Update: </strong> Last updated time of{" "}
+            {val == "Tag" ? "Tag-service" : "policy"}.
+          </li>
+          <li class="list-inline-item">
+            <strong>Download: </strong>
+            {val == "Tag"
+              ? "Time when tag-based policies sync-up with Ranger."
+              : "Time when policy actually downloaded(sync-up with Ranger)."}
+          </li>
+          <li class="list-inline-item">
+            <strong>Active: </strong> Time when{" "}
+            {val == "Tag" ? "tag-based" : "policy"} actually in use for
+            enforcement.
+          </li>
+        </ul>
+      </>
+    );
+  };
+
+  const infoIcon = (val) => {
+    return (
+      <>
+        <b>{val} ( Time )</b>
+
+        <CustomPopover
+          title={
+            val == "Policy"
+              ? "Policy (Time details)"
+              : "Tag Policy (Time details)"
+          }
+          content={contents(val)}
+          placement="left"
+          trigger={["hover", "focus"]}
+        />
+      </>
+    );
+  };
+
   const columns = React.useMemo(
     () => [
       {
@@ -65,24 +110,32 @@ function Plugin_Status() {
         accessor: "serviceName"
       },
       {
-        Header: "Service Name",
+        Header: "Service Type",
         accessor: "serviceType"
       },
       {
-        Header: "Plugin ID",
+        Header: "Application",
         accessor: "appType"
       },
       {
-        Header: "Plugin IP",
+        Header: "Host Name",
         accessor: "hostName"
       },
       {
-        Header: "Cluster Name",
+        Header: "Plugin IP",
         accessor: "ipAddress"
+      },
+      {
+        Header: "Cluster Name",
+        accessor: "clusterName",
+        Cell: ({ row: { original } }) => {
+          return original.info.clusterName;
+        }
       },
 
       {
-        Header: "Policy ( Time )",
+        Header: infoIcon("Policy"),
+        id: "policyinfo",
         columns: [
           {
             Header: "Last Update",
@@ -116,32 +169,26 @@ function Plugin_Status() {
                   ) {
                     return (
                       <span className="text-warning">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet downloaded(sync-up
-                              with Ranger)
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.policyDownloadTime)}
                       </span>
                     );
                   } else {
                     return (
                       <span className="text-error">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet downloaded(sync-up
-                              with Ranger)
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.policyDownloadTime)}{" "}
                       </span>
                     );
@@ -173,32 +220,26 @@ function Plugin_Status() {
                   ) {
                     return (
                       <span className="text-warning">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet used for any
-                              enforcement.
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            " Policy is updated but not yet used for any enforcement."
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.policyActivationTime)}
                       </span>
                     );
                   } else {
                     return (
                       <span className="text-error">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet used for any
-                              enforcement.
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            " Policy is updated but not yet used for any enforcement."
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.policyActivationTime)}
                       </span>
                     );
@@ -211,7 +252,8 @@ function Plugin_Status() {
         ]
       },
       {
-        Header: "Tag ( Time )",
+        Header: infoIcon("Tag"),
+        id: "taginfo",
         columns: [
           {
             Header: "Last Update",
@@ -242,32 +284,26 @@ function Plugin_Status() {
                   ) {
                     return (
                       <span className="text-warning">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet downloaded(sync-up
-                              with Ranger)
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.tagDownloadTime)}
                       </span>
                     );
                   } else {
                     return (
                       <span className="text-error">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet downloaded(sync-up
-                              with Ranger)
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.tagDownloadTime)}{" "}
                       </span>
                     );
@@ -299,32 +335,26 @@ function Plugin_Status() {
                   ) {
                     return (
                       <span className="text-warning">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet used for any
-                              enforcement.
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet used for anyenforcement."
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.tagActivationTime)}
                       </span>
                     );
                   } else {
                     return (
                       <span className="text-error">
-                        <OverlayTrigger
-                          overlay={
-                            <Tooltip id="tooltip">
-                              Policy is updated but not yet used for any
-                              enforcement.
-                            </Tooltip>
+                        <CustomTooltip
+                          placement="bottom"
+                          content={
+                            "Policy is updated but not yet used for anyenforcement."
                           }
-                        >
-                          <i className="fa-fw fa fa-exclamation-circle activePolicyAlert"></i>
-                        </OverlayTrigger>
+                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                        />
                         {setTimeStamp(original.info.tagActivationTime)}{" "}
                       </span>
                     );
