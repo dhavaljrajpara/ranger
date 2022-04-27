@@ -33,6 +33,7 @@ class ServiceDefinitions extends Component {
       isAdminRole: isSystemAdmin() || isKeyAdmin(),
       isAuditorRole: isAuditor() || isKMSAuditor(),
       isUserRole: isUser(),
+      isKMSRole: isKeyAdmin() || isKMSAuditor(),
       loader: true
     };
   }
@@ -243,7 +244,8 @@ class ServiceDefinitions extends Component {
       showExportModal,
       showImportModal,
       isAdminRole,
-      isUserRole
+      isUserRole,
+      isKMSRole
     } = this.state;
     return (
       <React.Fragment>
@@ -252,26 +254,28 @@ class ServiceDefinitions extends Component {
             <h3 className="wrap-header bold text-left">Service Manager</h3>
           </Col>
           <Col sm={5} className="text-right">
-            <b className="bold"> Security Zone: </b>
+            {!isKMSRole && <b className="bold"> Security Zone: </b>}
           </Col>
           <Col sm={3}>
-            <Select
-              isDisabled={isDisabled}
-              onChange={this.getSelectedZone}
-              isClearable
-              components={{
-                IndicatorSeparator: () => null
-              }}
-              theme={this.Theme}
-              options={zones.map((zone) => {
-                return {
-                  value: zone.id,
-                  label: zone.name
-                };
-              })}
-              menuPlacement="auto"
-              placeholder="Select Zone Name"
-            />
+            {!isKMSRole && (
+              <Select
+                isDisabled={isDisabled}
+                onChange={this.getSelectedZone}
+                isClearable
+                components={{
+                  IndicatorSeparator: () => null
+                }}
+                theme={this.Theme}
+                options={zones.map((zone) => {
+                  return {
+                    value: zone.id,
+                    label: zone.name
+                  };
+                })}
+                menuPlacement="auto"
+                placeholder="Select Zone Name"
+              />
+            )}
           </Col>
           <Col sm={2} className="text-right">
             {isAdminRole && (

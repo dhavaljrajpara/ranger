@@ -112,12 +112,14 @@ class ServiceDefinition extends Component {
             <b>{key}: </b>
             {val.join()}
           </span>
-          {resources[key].isExcludes !== undefined ? (
+          {resources[key].isExcludes !== undefined &&
+          resources[key].isExcludes ? (
             <span className="badge badge-secondary float-right">Exclude</span>
           ) : (
             ""
           )}
-          {resources[key].isRecursive !== undefined ? (
+          {resources[key].isRecursive !== undefined &&
+          resources[key].isRecursive ? (
             <h6 className="d-inline">
               <span className="badge badge-secondary float-right">
                 Recursive

@@ -308,14 +308,18 @@ class ImportPolicy extends Component {
                           <Field name="uploadPolicyFile">
                             {({ input, meta }) => (
                               <div className="form-group col-sm-6">
-                                <label className="">Select File :</label>
-                                <input
-                                  {...input}
-                                  type="file"
-                                  className="form-control-file"
-                                  accept=" .json "
-                                  onChange={this.handleFileUpload}
-                                />
+                                <label className="btn btn-sm border">
+                                  Select File :
+                                  <i className="fa-fw fa fa-arrow-circle-o-up"></i>
+                                  <input
+                                    {...input}
+                                    style={{ display: "none" }}
+                                    type="file"
+                                    className="form-control-file"
+                                    accept=" .json "
+                                    onChange={this.handleFileUpload}
+                                  />
+                                </label>
                               </div>
                             )}
                           </Field>
@@ -335,7 +339,7 @@ class ImportPolicy extends Component {
                         </div>
                       </Col>
                       <Col sm={12}>
-                        {this.state.fileName && (
+                        {this.state.fileName ? (
                           <span>
                             {this.state.fileName}
                             <label
@@ -345,6 +349,8 @@ class ImportPolicy extends Component {
                               }}
                             ></label>
                           </span>
+                        ) : (
+                          <span className="ml-1">No File Chosen</span>
                         )}
                       </Col>
                       <Col sm={12}>

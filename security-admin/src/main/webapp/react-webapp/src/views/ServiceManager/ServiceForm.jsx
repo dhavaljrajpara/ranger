@@ -19,7 +19,8 @@ import {
   uniq,
   isEmpty,
   isUndefined,
-  has
+  has,
+  without
 } from "lodash";
 
 class ServiceForm extends Component {
@@ -324,15 +325,18 @@ class ServiceForm extends Component {
 
     serviceJson["configs"] = {};
 
-    let configs = map(this.state.serviceDef.configs, "name");
-    let customConfigs = difference(keys(serviceResp.data.configs), configs);
+    let serviceDefConfigs = map(this.state.serviceDef.configs, "name");
+    let serviceCustomConfigs = without(
+      difference(keys(serviceResp.data.configs), serviceDefConfigs),
+      "ranger.plugin.audit.filters"
+    );
 
-    configs.map((config) => {
+    serviceDefConfigs.map((config) => {
       serviceJson["configs"][config.replaceAll(".", "_").replaceAll("-", "_")] =
         serviceResp.data.configs[config];
     });
 
-    let editCustomConfigs = customConfigs.map((config) => {
+    let editCustomConfigs = serviceCustomConfigs.map((config) => {
       return { name: config, value: serviceResp.data.configs[config] };
     });
 

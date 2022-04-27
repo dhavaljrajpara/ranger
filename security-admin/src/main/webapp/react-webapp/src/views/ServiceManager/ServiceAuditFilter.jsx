@@ -82,12 +82,14 @@ export default function ServiceAuditFilter(props) {
               </span>
             </p>
             <p className="pull-right">
-              {resourceData[`isRecursiveSupport-${level}`] !== undefined ? (
+              {resourceData[`isRecursiveSupport-${level}`] !== undefined &&
+              resourceData[`isRecursiveSupport-${level}`] ? (
                 <span className="badge badge-secondary">Recursive</span>
               ) : (
                 ""
               )}
-              {resourceData[`isExcludesSupport-${level}`] !== undefined ? (
+              {resourceData[`isExcludesSupport-${level}`] !== undefined &&
+              resourceData[`isExcludesSupport-${level}`] ? (
                 <span className="badge badge-secondary">Exclude</span>
               ) : (
                 ""
