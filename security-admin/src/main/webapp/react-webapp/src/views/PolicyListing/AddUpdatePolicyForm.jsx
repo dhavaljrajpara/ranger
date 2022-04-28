@@ -6,12 +6,16 @@ import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
 import { groupBy, filter, find } from "lodash";
 import { toast } from "react-toastify";
+import { Loader } from "Components/CommonComponents";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
 import PolicyPermissionItem from "../PolicyListing/PolicyPermissionItem";
 import { useParams, useHistory } from "react-router-dom";
+import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
+import { getAllTimeZoneList } from "Utils/XAUtils";
+import moment from "moment";
 
 const noneOptions = {
   label: "None",
@@ -285,6 +289,24 @@ export default function AddUpdatePolicyForm() {
           }
         });
       }
+      if (policyData.validitySchedules) {
+        data["validitySchedules"] = [];
+        policyData.validitySchedules.filter((val) => {
+          let obj = {};
+          if (val.endTime) {
+            obj["endTime"] = moment(val.endTime, "YYYY/MM/DD HH:mm:ss");
+          }
+          if (val.startTime) {
+            obj["startTime"] = moment(val.startTime, "YYYY/MM/DD HH:mm:ss");
+          }
+          if (val.timeZone) {
+            obj["timeZone"] = getAllTimeZoneList().find((tZoneVal) => {
+              return tZoneVal.id == val.timeZone;
+            });
+          }
+          data["validitySchedules"].push(obj);
+        });
+      }
     }
     data.isDenyAllElse = policyData?.isDenyAllElse || false;
     return data;
@@ -419,6 +441,29 @@ export default function AddUpdatePolicyForm() {
         };
       }
     }
+    if (values?.validitySchedules) {
+      data["validitySchedules"] = [];
+
+      values.validitySchedules.filter((val) => {
+        if (val) {
+          let timeObj = {};
+          if (val.startTime) {
+            timeObj["startTime"] = moment(val.startTime).format(
+              "YYYY/MM/DD HH:mm:ss"
+            );
+          }
+          if (val.endTime) {
+            timeObj["endTime"] = moment(val.endTime).format(
+              "YYYY/MM/DD HH:mm:ss"
+            );
+          }
+          if (val.timeZone) {
+            timeObj["timeZone"] = val.timeZone.id;
+          }
+          data["validitySchedules"].push(timeObj);
+        }
+      });
+    }
     if (policyId) {
       let dataVal = {
         ...policyData,
@@ -451,7 +496,6 @@ export default function AddUpdatePolicyForm() {
       }
     }
   };
-
   const closeForm = () => {
     let polType = policyId ? policyData.policyType : policyType;
     history.push(`/service/${serviceId}/policies/${polType}`);
@@ -460,7 +504,7 @@ export default function AddUpdatePolicyForm() {
   return (
     <>
       {loader ? (
-        <div>Loading...</div>
+        <Loader />
       ) : (
         <div>
           <h5>{`${policyId ? "Edit" : "Create"} Policy`}</h5>
@@ -506,13 +550,9 @@ export default function AddUpdatePolicyForm() {
                           </Badge>
                         </Col>
                         <Col sm={6}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="pull-right"
-                          >
-                            Add Validity Period
-                          </Button>
+                          <PolicyValidityPeriodComp
+                            addPolicyItem={addPolicyItem}
+                          />
                         </Col>
                       </FormB.Group>
                     )}

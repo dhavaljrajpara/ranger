@@ -1,42 +1,87 @@
 import React, { Component, useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Badge, Button, Col, Row, Tab, Tabs } from "react-bootstrap";
+import { Badge, Button, Col, Row, Tab, Tabs, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { Loader } from "Components/CommonComponents";
+import moment from "moment-timezone";
+import { toast } from "react-toastify";
+import { fetchApi } from "Utils/fetchAPI";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
+  const [deletePolicyModal, setConfirmModal] = useState({
+    policyDetails: {},
+    showSyncDetails: false
+  });
+  const [updateTable, setUpdateTable] = useState(moment.now());
+
   let { serviceId, policyType } = useParams();
 
-  const fetchPolicyInfo = useCallback(async ({ pageSize, pageIndex }) => {
-    let policyData = [];
-    let totalCount = 0;
-    const fetchId = ++fetchIdRef.current;
-    if (fetchId === fetchIdRef.current) {
-      try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-        const policyResp = await fetchApi({
-          url: `plugins/policies/service/${serviceId}`,
-          params: {
-            pageSize: pageSize,
-            startIndex: pageIndex * pageSize,
-            policyType: policyType
-          }
-        });
-        policyData = policyResp.data.policies;
-        totalCount = policyResp.data.totalCount;
-      } catch (error) {
-        console.error(`Error occurred while fetching Policies ! ${error}`);
+  const fetchPolicyInfo = useCallback(
+    async ({ pageSize, pageIndex }) => {
+      let policyData = [];
+      let totalCount = 0;
+      const fetchId = ++fetchIdRef.current;
+      if (fetchId === fetchIdRef.current) {
+        try {
+          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
+          const policyResp = await fetchApi({
+            url: `plugins/policies/service/${serviceId}`,
+            params: {
+              pageSize: pageSize,
+              startIndex: pageIndex * pageSize,
+              policyType: policyType
+            }
+          });
+          policyData = policyResp.data.policies;
+          totalCount = policyResp.data.totalCount;
+        } catch (error) {
+          console.error(`Error occurred while fetching Policies ! ${error}`);
+        }
+        console.log(policyData);
+        setPolicyData(policyData);
+        setPageCount(Math.ceil(totalCount / pageSize));
+        setLoader(false);
       }
-      console.log(policyData);
-      setPolicyData(policyData);
-      setPageCount(Math.ceil(totalCount / pageSize));
-      setLoader(false);
+    },
+    [updateTable]
+  );
+
+  const toggleConfirmModalForDelete = (policyID, policyName) => {
+    setConfirmModal({
+      policyDetails: { policyID: policyID, policyName: policyName },
+      showPopup: true
+    });
+  };
+
+  const toggleClose = () => {
+    setConfirmModal({
+      policyDetails: {},
+      showPopup: false
+    });
+  };
+
+  const handleDeleteClick = async (policyID) => {
+    try {
+      await fetchApi({
+        url: `plugins/policies/${policyID}`,
+        method: "DELETE"
+      });
+      toast.success(" Success! Policy deleted successfully");
+    } catch (error) {
+      console.log(error.response);
+      if (error.response.data.msgDesc) {
+        errorMsg += error.response.data.msgDesc + "\n";
+      } else {
+        errorMsg += `Error occurred during deleting policy`;
+      }
     }
-  }, []);
+    setUpdateTable(moment.now());
+    toggleClose();
+  };
 
   const columns = React.useMemo(
     () => [
@@ -177,6 +222,9 @@ function PolicyListing() {
                 size="sm"
                 className="m-r-5"
                 title="Delete"
+                onClick={() =>
+                  toggleConfirmModalForDelete(original.id, original.name)
+                }
               >
                 <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
               </Button>
@@ -187,10 +235,8 @@ function PolicyListing() {
     ],
     []
   );
-  return loader ? (
-    <Loader />
-  ) : (
-    <div>
+  return (
+    <>
       <h4 className="wrap-header bold">List of Policies </h4>
       <div className="wrap policy-manager">
         <Row>
@@ -210,11 +256,29 @@ function PolicyListing() {
               columns={columns}
               fetchData={fetchPolicyInfo}
               pageCount={pageCount}
+              loading={loader}
             />
           </div>
         </Row>
       </div>
-    </div>
+      <Modal show={deletePolicyModal.showPopup} onHide={toggleClose}>
+        <Modal.Body>Are you sure you want to delete</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={toggleClose}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() =>
+              handleDeleteClick(deletePolicyModal.policyDetails.policyID)
+            }
+          >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 

@@ -27,6 +27,12 @@ class ErrorPage extends Component {
         errorInfo: "Sorry, Please sync-up the users with your source directory."
       });
     }
+    if (this.props.errorCode == "403") {
+      this.setState({
+        errorCode: "Forbidden (403).",
+        errorInfo: "Sorry, you don't have enough privileges to view this page."
+      });
+    }
   };
 
   onGoBack = (e) => {
@@ -59,7 +65,7 @@ class ErrorPage extends Component {
               >
                 <i className="fa-fw fa fa-long-arrow-left"></i> Go back
               </Button>
-              <Button href="/#/policymanager/resource" size="sm">
+              <Button href="#/policymanager/resource" size="sm">
                 Home
               </Button>
             </div>

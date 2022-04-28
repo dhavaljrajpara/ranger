@@ -285,12 +285,14 @@ export default function PolicyPermissionItem(props) {
                       return <td key={colName}>{colName}</td>;
                     })}
                     <td>
-                      <span
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        title="Remove"
                         onClick={() => fields.remove(index)}
-                        style={{ cursor: "pointer" }}
                       >
-                        ❌
-                      </span>
+                        <i className="fa-fw fa fa-remove"></i>
+                      </Button>
                     </td>
                   </tr>
                 ))
