@@ -73,7 +73,7 @@ export const UserLogs = ({ data, reportdata }) => {
                 )}
               </td>
             ) : (
-              <td>{"--"}</td>
+              <td className="table-warning">{"--"}</td>
             )}
             {val && val.newValue && !isEmpty(val.newValue) ? (
               <td className="table-warning">
@@ -92,7 +92,7 @@ export const UserLogs = ({ data, reportdata }) => {
                 )}
               </td>
             ) : (
-              <td>{"--"}</td>
+              <td className="table-warning">{"--"}</td>
             )}
           </tr>
         </>
@@ -266,7 +266,9 @@ export const UserLogs = ({ data, reportdata }) => {
                 return (
                   <tbody>
                     <tr key={index}>
-                      <td className="table-warning">{user.attributeName}</td>
+                      <td className="table-warning text-nowrap">
+                        {user.attributeName}
+                      </td>
 
                       <td className="table-warning">
                         {!isEmpty(user.newValue)

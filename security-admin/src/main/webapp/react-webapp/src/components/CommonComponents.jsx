@@ -7,7 +7,7 @@ import {
   Tooltip
 } from "react-bootstrap";
 import { Field } from "react-final-form";
-import { isEmpty } from "lodash";
+import { isEmpty, isUndefined } from "lodash";
 
 const Loader = () => {
   return (
@@ -97,12 +97,15 @@ export const AuditFilterEntries = (props) => {
     refreshTable();
   };
   const showPageDetail = (entriesDetails) => {
-    let endIndex = Math.min(
-      entriesDetails.startIndex + entriesDetails.pageSize - 1,
-      entriesDetails.totalCount
-    );
-    return !isEmpty(entriesDetails)
-      ? `${entriesDetails.startIndex + 1} to ${endIndex} of 
+    let startIndex = !isEmpty(entriesDetails) && entriesDetails.startIndex + 1;
+    let endIndex =
+      !isEmpty(entriesDetails) &&
+      Math.min(
+        startIndex + entriesDetails.pageSize - 1,
+        entriesDetails.totalCount
+      );
+    return entriesDetails && entriesDetails.totalCount > 0
+      ? `${startIndex} to ${endIndex} of 
             ${entriesDetails.totalCount}`
       : 0;
   };
