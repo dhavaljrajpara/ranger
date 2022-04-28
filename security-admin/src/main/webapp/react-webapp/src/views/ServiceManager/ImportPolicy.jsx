@@ -7,19 +7,19 @@ import arrayMutators from "final-form-arrays";
 import { toast } from "react-toastify";
 import {
   find,
-  has,
   groupBy,
-  map,
-  isNull,
+  has,
   isEmpty,
+  map,
   toString,
+  split,
   uniq
 } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
 class ImportPolicy extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       file: null,
       fileName: null,
@@ -52,7 +52,7 @@ class ImportPolicy extends Component {
     if (e.target && e.target.files.length > 0) {
       let file = e.target.files[0];
       let fileName = e.target.files[0].name;
-      let fileExtention = _.split(fileName, ".").pop();
+      let fileExtention = split(fileName, ".").pop();
 
       if (fileExtention !== "json") {
         this.setState({
@@ -71,7 +71,7 @@ class ImportPolicy extends Component {
 
     fileReader.onload = (e) => {
       let jsonParseFileData = JSON.parse(e.target.result);
-      let servicesJsonParseFile = _.groupBy(
+      let servicesJsonParseFile = groupBy(
         jsonParseFileData.policies,
         function (policy) {
           return policy.service;
@@ -80,7 +80,7 @@ class ImportPolicy extends Component {
 
       let zoneNameJsonParseFile;
       if (
-        _.has(jsonParseFileData, "policies") &&
+        has(jsonParseFileData, "policies") &&
         jsonParseFileData.policies.length > 0
       ) {
         zoneNameJsonParseFile = jsonParseFileData.policies[0].zoneName;
@@ -94,7 +94,7 @@ class ImportPolicy extends Component {
               destServiceName: { value: obj, label: obj }
             };
           } else {
-            let sameDefType = _.find(this.props.services, {
+            let sameDefType = find(this.props.services, {
               name: obj,
               type: this.props.serviceDef.name
             });
@@ -130,7 +130,7 @@ class ImportPolicy extends Component {
     let zoneMapJson = {};
     let importData = new FormData();
 
-    _.map(values.serviceFields, function (field) {
+    map(values.serviceFields, function (field) {
       return (
         field !== undefined &&
         (servicesMapJson[field.sourceServiceName.value] =
@@ -155,7 +155,7 @@ class ImportPolicy extends Component {
     );
 
     if (this.props.isParentImport) {
-      serviceTypeList = _.toString(_.uniq(_.map(this.props.services, "type")));
+      serviceTypeList = toString(uniq(map(this.props.services, "type")));
     } else {
       serviceTypeList = this.props.serviceDef.name;
     }
@@ -188,7 +188,7 @@ class ImportPolicy extends Component {
           url: `public/v2/api/zones/${e && e.value}/service-headers`
         });
 
-        let zoneServiceNames = _.map(zonesResp.data, "name");
+        let zoneServiceNames = map(zonesResp.data, "name");
 
         let zoneServices = zoneServiceNames.map((zoneService) => {
           return this.props.services.filter((service) => {
@@ -201,7 +201,7 @@ class ImportPolicy extends Component {
         let serviceFieldsFromJson = Object.keys(
           this.state.sourceServicesMap
         ).map((obj) => {
-          let zoneServiceType = _.find(zoneServices, {
+          let zoneServiceType = find(zoneServices, {
             name: obj
           });
           return {
@@ -290,8 +290,6 @@ class ImportPolicy extends Component {
             initialValues={this.state.filterFormFields}
             render={({
               handleSubmit,
-              submitting,
-              values,
               form: {
                 mutators: { push: addItem, pop: removeItem }
               }
@@ -306,7 +304,7 @@ class ImportPolicy extends Component {
                       <Col sm={12}>
                         <div className="form-row">
                           <Field name="uploadPolicyFile">
-                            {({ input, meta }) => (
+                            {({ input }) => (
                               <div className="form-group col-sm-6">
                                 <label className="btn btn-sm border">
                                   Select File :
@@ -362,7 +360,7 @@ class ImportPolicy extends Component {
                       </Col>
                     </Row>
                     {this.state.fileJsonData &&
-                      !_.isEmpty(this.state.sourceServicesMap) && (
+                      !isEmpty(this.state.sourceServicesMap) && (
                         <React.Fragment>
                           <hr />
                           <Row>
@@ -394,7 +392,7 @@ class ImportPolicy extends Component {
                           <Row className="mt-3">
                             <Col sm={4}>
                               <Field name="sourceZoneName">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <input
                                     {...input}
                                     type="text"
@@ -523,7 +521,7 @@ class ImportPolicy extends Component {
                         </React.Fragment>
                       )}
                     {this.state.fileJsonData &&
-                      _.isEmpty(this.state.sourceServicesMap) && (
+                      isEmpty(this.state.sourceServicesMap) && (
                         <React.Fragment>
                           <p className="invalid-field mt-2">
                             Json file uploaded is invalid.
@@ -539,7 +537,7 @@ class ImportPolicy extends Component {
                   <Button
                     variant="primary"
                     type="submit"
-                    disabled={_.isEmpty(this.state.sourceServicesMap)}
+                    disabled={isEmpty(this.state.sourceServicesMap)}
                   >
                     Import
                   </Button>

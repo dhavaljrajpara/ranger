@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Select from "react-select";
-import dateFormat from "dateformat";
 import { has, map, toString } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
@@ -40,20 +39,32 @@ class ExportPolicy extends Component {
     };
   };
 
-  downloadFile = ({ data, fileName, fileType }) => {
-    const blob = new Blob([data], { type: fileType });
-    const a = document.createElement("a");
+  downloadFile = ({ responseData }) => {
+    let serviceNameList = responseData.config.params.serviceName;
+    let zoneName = responseData.config.params.zoneName;
 
-    a.download = fileName;
-    a.href = window.URL.createObjectURL(blob);
+    let downloadUrl =
+      window.location.protocol +
+      "//" +
+      window.location.hostname +
+      (window.location.port ? ":" + window.location.port : "") +
+      "/service/plugins/policies/exportJson?serviceName=" +
+      serviceNameList +
+      "&checkPoliciesExists=false" +
+      (zoneName !== null ? "&zoneName=" + zoneName : "");
+
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
 
     const clickEvt = new MouseEvent("click", {
       view: window,
       bubbles: true,
       cancelable: true
     });
-    a.dispatchEvent(clickEvt);
-    a.remove();
+    document.body.appendChild(link);
+    link.dispatchEvent(clickEvt);
+    link.remove();
   };
 
   handleServiceChange = (value) => {
@@ -102,12 +113,7 @@ class ExportPolicy extends Component {
 
       if (exportResp.status === 200) {
         this.downloadFile({
-          data: JSON.stringify(exportResp.data),
-          fileName:
-            "Ranger_Policies_" +
-            dateFormat(new Date(), "yyyymmdd_HHMMss") +
-            ".json",
-          fileType: "application/json"
+          responseData: exportResp
         });
       } else {
         toast.warning("No policies found to export");
@@ -133,9 +139,7 @@ class ExportPolicy extends Component {
           <Modal.Body>
             {isParentExport && (
               <div className="mb-3">
-                <b>
-                  <h6>Service Type *</h6>
-                </b>
+                <h6 className="bold">Service Type *</h6>
                 <Select
                   isMulti
                   onChange={this.handleServiceDefChange}
@@ -154,9 +158,7 @@ class ExportPolicy extends Component {
             )}
 
             <div className="mt-2">
-              <b>
-                <h6>Select Service Name *</h6>
-              </b>
+              <h6 className="bold">Select Service Name *</h6>
               <Select
                 isMulti
                 onChange={this.handleServiceChange}

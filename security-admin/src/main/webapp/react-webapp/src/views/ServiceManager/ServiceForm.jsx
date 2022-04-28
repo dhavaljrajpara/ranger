@@ -512,7 +512,7 @@ class ServiceForm extends Component {
     return [];
   };
 
-  serviceConfigs = (serviceDef) => {
+  getServiceConfigs = (serviceDef) => {
     if (serviceDef.configs !== undefined) {
       let formField = [];
       const filterServiceConfigs = reject(serviceDef.configs, {
@@ -543,7 +543,15 @@ class ServiceForm extends Component {
                       {configParam.mandatory ? " * " : ""}
                     </label>
                     <div className="col-sm-6">
-                      <input {...input} type="text" className="form-control" />
+                      <input
+                        {...input}
+                        type="text"
+                        className={
+                          meta.error && meta.touched
+                            ? "form-control border border-danger"
+                            : "form-control"
+                        }
+                      />
                     </div>
                     {configInfo.length === 1 && (
                       <span className="d-inline">
@@ -584,7 +592,14 @@ class ServiceForm extends Component {
                       {configParam.mandatory ? " * " : ""}
                     </label>
                     <div className="col-sm-6">
-                      <select {...input} className="form-control">
+                      <select
+                        {...input}
+                        className={
+                          meta.error && meta.touched
+                            ? "form-control border border-danger"
+                            : "form-control"
+                        }
+                      >
                         {this.enumOptions(paramEnum)}
                       </select>
                     </div>
@@ -624,7 +639,14 @@ class ServiceForm extends Component {
                       {configParam.mandatory ? " * " : ""}
                     </label>
                     <div className="col-sm-6">
-                      <select {...input} className="form-control">
+                      <select
+                        {...input}
+                        className={
+                          meta.error && meta.touched
+                            ? "form-control border border-danger"
+                            : "form-control"
+                        }
+                      >
                         {this.booleanOptions(configParam.subType)}
                       </select>
                     </div>
@@ -667,7 +689,11 @@ class ServiceForm extends Component {
                       <input
                         {...input}
                         type="password"
-                        className="form-control"
+                        className={
+                          meta.error && meta.touched
+                            ? "form-control border border-danger"
+                            : "form-control"
+                        }
                       />
                     </div>
                     {configInfo.length === 1 && (
@@ -861,7 +887,11 @@ class ServiceForm extends Component {
                                   <input
                                     {...input}
                                     type="text"
-                                    className="form-control"
+                                    className={
+                                      meta.error && meta.touched
+                                        ? "form-control border border-danger"
+                                        : "form-control"
+                                    }
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
@@ -882,7 +912,11 @@ class ServiceForm extends Component {
                                   <input
                                     {...input}
                                     type="text"
-                                    className="form-control"
+                                    className={
+                                      meta.error && meta.touched
+                                        ? "form-control border border-danger"
+                                        : "form-control"
+                                    }
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
@@ -902,7 +936,11 @@ class ServiceForm extends Component {
                                 <div className="col-sm-6">
                                   <textarea
                                     {...input}
-                                    className="form-control"
+                                    className={
+                                      meta.error && meta.touched
+                                        ? "form-control border border-danger"
+                                        : "form-control"
+                                    }
                                   />
                                 </div>
                                 {meta.error && meta.touched && (
@@ -966,7 +1004,7 @@ class ServiceForm extends Component {
                       <div className="row">
                         <div className="col-sm-12">
                           <p className="form-header">Config Properties :</p>
-                          {this.serviceConfigs(this.state.serviceDef)}
+                          {this.getServiceConfigs(this.state.serviceDef)}
                           <div className="form-group row">
                             <label className="col-sm-3 col-form-label">
                               Add New Configurations
@@ -1038,7 +1076,7 @@ class ServiceForm extends Component {
                       <div className="row">
                         <div className="col-sm-12">
                           <div className="form-group row form-header p-0">
-                            <label className="col-sm-2 col-form-label form-check-label">
+                            <label className="col-sm-1 col-form-label form-check-label mr-2">
                               Audit Filter :
                             </label>
                             <div className="col-sm-10 mt-2">

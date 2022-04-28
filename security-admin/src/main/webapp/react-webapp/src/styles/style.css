@@ -304,6 +304,9 @@ table.no-bg-color thead tr th:first-child {
   white-space: nowrap;
   border-bottom: 1px solid #0b7fad;
 }
+.table-read-only thead {
+  background-color: #eeeeee;
+}
 
 .external-badge {
   background-color: #9bb922;
@@ -613,6 +616,13 @@ header {
   white-space: initial;
 }
 
+.resource-filter {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 /*Audit page Admin tab  */
 .link-tag {
   display: inline-block;
@@ -711,11 +721,11 @@ header {
 
 /* Audit Filters */
 
-.table-audit-filter thead {
+.table-audit-filter thead, .table-audit-filter-ready-only thead {
   background-color: #eeeeee;
 }
 
-.table-audit-filter th {
+.table-audit-filter th, .table-audit-filter-ready-only th {
   padding: 7px 5px;
   text-align: center;
 }

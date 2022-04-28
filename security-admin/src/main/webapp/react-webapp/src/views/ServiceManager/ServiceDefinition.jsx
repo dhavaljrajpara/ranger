@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Button, Col, Modal, Row, Table } from "react-bootstrap";
-import { difference, isEmpty, keys, omit, pick } from "lodash";
+import { difference, isEmpty, keys, map, omit, pick } from "lodash";
 import { RangerPolicyType } from "Utils/XAEnums";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
@@ -55,19 +55,21 @@ class ServiceDefinition extends Component {
     let tableRow = [];
     let configs = {};
     let customConfigs = {};
+
     let serviceDefConfigs = serviceDef.configs.filter(
-      (c) => c.name !== "ranger.plugin.audit.filters"
+      (config) => config.name !== "ranger.plugin.audit.filters"
     );
+
     serviceConfigs = omit(serviceConfigs, "ranger.plugin.audit.filters");
 
-    let configKey = keys(serviceConfigs);
-    let defKey = serviceDefConfigs.map((c) => c.name);
-    let customConfigKey = difference(configKey, defKey);
+    let serviceConfigsKey = keys(serviceConfigs);
+    let serviceDefConfigsKey = map(serviceDefConfigs, "name");
+    let customConfigsKey = difference(serviceConfigsKey, serviceDefConfigsKey);
 
     serviceDefConfigs.map(
-      (c) =>
-        (configs[c.label !== undefined ? c.label : c.name] =
-          serviceConfigs[c.name])
+      (config) =>
+        (configs[config.label !== undefined ? config.label : config.name] =
+          serviceConfigs[config.name])
     );
 
     Object.entries(configs).map(([key, value]) =>
@@ -79,7 +81,9 @@ class ServiceDefinition extends Component {
       )
     );
 
-    customConfigKey.map((c) => (customConfigs[c] = serviceConfigs[c]));
+    customConfigsKey.map(
+      (config) => (customConfigs[config] = serviceConfigs[config])
+    );
 
     tableRow.push(
       <tr key="custom-configs-title">
@@ -88,6 +92,15 @@ class ServiceDefinition extends Component {
         </td>
       </tr>
     );
+
+    if (isEmpty(customConfigs)) {
+      tableRow.push(
+        <tr key="custom-configs-empty">
+          <td>--</td>
+          <td>--</td>
+        </tr>
+      );
+    }
 
     Object.entries(customConfigs).map(([key, value]) =>
       tableRow.push(
@@ -107,23 +120,31 @@ class ServiceDefinition extends Component {
       let val = resources[key].values;
       let spanVal = resources[key].isExcludes;
       return (
-        <div key={index} className="clearfix">
+        <div key={index} className="clearfix mb-2">
           <span className="float-left">
             <b>{key}: </b>
             {val.join()}
           </span>
-          {resources[key].isExcludes !== undefined &&
-          resources[key].isExcludes ? (
-            <span className="badge badge-secondary float-right">Exclude</span>
+          {resources[key].isExcludes !== undefined ? (
+            <h6 className="d-inline">
+              {resources[key].isExcludes ? (
+                <span className="badge badge-dark float-right">Exclude</span>
+              ) : (
+                <span className="badge badge-dark float-right">Include</span>
+              )}
+            </h6>
           ) : (
             ""
           )}
-          {resources[key].isRecursive !== undefined &&
-          resources[key].isRecursive ? (
+          {resources[key].isRecursive !== undefined ? (
             <h6 className="d-inline">
-              <span className="badge badge-secondary float-right">
-                Recursive
-              </span>
+              {resources[key].isRecursive ? (
+                <span className="badge badge-dark float-right">Recursive</span>
+              ) : (
+                <span className="badge badge-dark float-right">
+                  Non Recursive
+                </span>
+              )}
             </h6>
           ) : (
             ""
@@ -391,7 +412,11 @@ class ServiceDefinition extends Component {
                                   </tbody>
                                 </Table>
                                 <p className="form-header">Audit Filter :</p>
-                                <Table bordered size="sm">
+                                <Table
+                                  bordered
+                                  size="sm"
+                                  className="table-audit-filter-ready-only"
+                                >
                                   <thead>
                                     <tr>
                                       <th>Is Audited</th>

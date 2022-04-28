@@ -71,8 +71,8 @@ export default function ServiceAuditFilter(props) {
         resourceData[`value-${level}`] !== undefined
       ) {
         return (
-          <div className="clearfix text-left" key={index}>
-            <p className="pull-left">
+          <div className="resource-filter" key={index}>
+            <div>
               <span className="bold mr-1">
                 {resourceData[`resourceName-${level}`].name}
               </span>
@@ -80,21 +80,31 @@ export default function ServiceAuditFilter(props) {
               <span className="ml-1">
                 {join(map(resourceData[`value-${level}`], "value"), ", ")}
               </span>
-            </p>
-            <p className="pull-right">
-              {resourceData[`isRecursiveSupport-${level}`] !== undefined &&
-              resourceData[`isRecursiveSupport-${level}`] ? (
-                <span className="badge badge-secondary">Recursive</span>
+            </div>
+            <div className="pull-right ml-3">
+              {resourceData[`isRecursiveSupport-${level}`] !== undefined ? (
+                <h6>
+                  {resourceData[`isRecursiveSupport-${level}`] ? (
+                    <span className="badge badge-dark">Recursive</span>
+                  ) : (
+                    <span className="badge badge-dark">Non Recursive</span>
+                  )}
+                </h6>
               ) : (
                 ""
               )}
-              {resourceData[`isExcludesSupport-${level}`] !== undefined &&
-              resourceData[`isExcludesSupport-${level}`] ? (
-                <span className="badge badge-secondary">Exclude</span>
+              {resourceData[`isExcludesSupport-${level}`] !== undefined ? (
+                <h6>
+                  {resourceData[`isExcludesSupport-${level}`] ? (
+                    <span className="badge badge-dark">Exclude</span>
+                  ) : (
+                    <span className="badge badge-dark">Include</span>
+                  )}
+                </h6>
               ) : (
                 ""
               )}
-            </p>
+            </div>
           </div>
         );
       }
@@ -212,7 +222,7 @@ export default function ServiceAuditFilter(props) {
                             render={({ input }) => (
                               <React.Fragment>
                                 <div className="resource-list min-width-150">
-                                  <div className="resource-group text-center">
+                                  <div className="resource-group">
                                     {getResourceData(input.value)}
                                   </div>
 
