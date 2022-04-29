@@ -8,6 +8,7 @@ import { filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType } from "Utils/XAEnums";
+import { FieldError } from "Components/CommonComponents";
 
 const noneOptions = {
   label: "None",
@@ -178,6 +179,12 @@ export default function ResourceComp(props) {
     }
   };
 
+  const required = (value) => {
+    if (!value || value.length == 0) {
+      return "Required";
+    }
+  };
+
   return grpResourcesKeys.map((levelKey, index) => {
     const resourceKey = `resourceName-${levelKey}`;
     if (index !== 0) {
@@ -233,26 +240,42 @@ export default function ResourceComp(props) {
             <Field
               className="form-control"
               name={`value-${levelKey}`}
-              render={({ input }) => (
-                <AsyncCreatableSelect
-                  {...input}
-                  defaultOptions
-                  isMulti
-                  isDisabled={
-                    formValues[`resourceName-${levelKey}`].value ===
-                    noneOptions.value
-                  }
-                  loadOptions={(inputValue) =>
-                    new Promise((resolve, reject) => {
-                      fetchResourceLookup(
-                        inputValue,
-                        formValues[`resourceName-${levelKey}`],
-                        input.value,
-                        resolve
-                      );
-                    })
-                  }
-                />
+              validate={
+                formValues &&
+                formValues[`resourceName-${levelKey}`]?.mandatory &&
+                required
+              }
+              render={({ input, meta }) => (
+                <>
+                  <AsyncCreatableSelect
+                    {...input}
+                    defaultOptions
+                    isMulti
+                    isDisabled={
+                      formValues[`resourceName-${levelKey}`].value ===
+                      noneOptions.value
+                    }
+                    loadOptions={(inputValue) =>
+                      new Promise((resolve, reject) => {
+                        fetchResourceLookup(
+                          inputValue,
+                          formValues[`resourceName-${levelKey}`],
+                          input.value,
+                          resolve
+                        );
+                      })
+                    }
+                  />
+                  {formValues &&
+                    formValues[`resourceName-${levelKey}`]?.mandatory &&
+                    meta.touched &&
+                    meta.error && (
+                      <span className="invalid-field">{meta.error}</span>
+                    )}
+                  {/* {meta.touched && meta.error && (
+                    <span className="invalid-field">{meta.error}</span>
+                  )} */}
+                </>
               )}
             />
           </Col>

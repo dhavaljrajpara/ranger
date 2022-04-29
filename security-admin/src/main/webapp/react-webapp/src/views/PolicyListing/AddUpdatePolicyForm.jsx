@@ -4,7 +4,7 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, filter, find } from "lodash";
+import { groupBy, filter, find, values } from "lodash";
 import { toast } from "react-toastify";
 import { Loader } from "Components/CommonComponents";
 
@@ -496,6 +496,9 @@ export default function AddUpdatePolicyForm() {
       }
     }
   };
+
+  const required = (value) => (value ? undefined : "Required");
+
   const closeForm = () => {
     let polType = policyId ? policyData.policyType : policyType;
     history.push(`/service/${serviceId}/policies/${polType}`);
@@ -571,17 +574,30 @@ export default function AddUpdatePolicyForm() {
                     <Field
                       className="form-control"
                       name="policyName"
-                      render={({ input }) => (
+                      validate={required}
+                      render={({ input, meta }) => (
                         <>
                           <FormB.Label column sm={2}>
                             Policy Name*
                           </FormB.Label>
-                          <Col sm={4}>
-                            <FormB.Control
-                              {...input}
-                              placeholder="Policy Name"
-                            />
-                          </Col>
+                          <>
+                            <Col sm={4}>
+                              <FormB.Control
+                                {...input}
+                                placeholder="Policy Name"
+                                className={
+                                  meta.error && meta.touched
+                                    ? "form-control border border-danger"
+                                    : "form-control"
+                                }
+                              />
+                              {meta.touched && meta.error && (
+                                <span className="invalid-field">
+                                  {meta.error}
+                                </span>
+                              )}
+                            </Col>
+                          </>
                         </>
                       )}
                     />
