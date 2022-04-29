@@ -347,9 +347,6 @@ a.active,
 a:active {
   color: #2996ba;
 }
-a {
-  color: #212529;
-}
 .headerperm {
   text-align-last: center;
   font-size: 13px;
@@ -792,4 +789,14 @@ header {
 .activePolicyAlert {
   color: #ec7337;
   margin-right: 5px;
+}
+
+/* Policy Listing Page */
+.policy-listing table thead {
+  text-align: center;
+}
+
+.policy-listing table tr td:first-child,
+.policy-listing table tr td:last-child {
+  text-align: center;
 }

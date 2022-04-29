@@ -1,11 +1,11 @@
-import React, { Component, useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Col, Row, Tab, Tabs, Modal } from "react-bootstrap";
-import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
+import { uniq, map, flatMap } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
+import XATableLayout from "Components/XATableLayout";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
@@ -87,7 +87,17 @@ function PolicyListing() {
     () => [
       {
         Header: "Policy ID",
-        accessor: "id"
+        accessor: "id",
+        Cell: (rawValue) => {
+          return (
+            <Link
+              title="Edit"
+              to={`/service/${serviceId}/policies/${rawValue.value}/edit`}
+            >
+              {rawValue.value}
+            </Link>
+          );
+        }
       },
       {
         Header: "Policy Name",
@@ -98,12 +108,16 @@ function PolicyListing() {
         accessor: "policyLabels",
         Cell: (rawValue) => {
           if (rawValue.value == "") return "--";
-          else
-            return (
-              <h6>
-                <Badge variant="primary">{rawValue.value}</Badge>
+          else {
+            let policyLabels = rawValue.value.map((label) => (
+              <h6 className="d-inline mr-1">
+                <Badge variant="primary" key={label}>
+                  {label}
+                </Badge>
               </h6>
-            );
+            ));
+            return policyLabels;
+          }
         }
       },
       {
@@ -147,14 +161,17 @@ function PolicyListing() {
         accessor: "roles",
         Cell: (rawValue) => {
           if (rawValue) {
-            let roles = rawValue.row.original.policyItems.map((a) => (
-              <h6>
-                <Badge variant="primary" key={a.roles}>
-                  {a.roles}
+            let getRoles = uniq(
+              flatMap(map(rawValue.row.original.policyItems, "roles"))
+            );
+            let roles = getRoles.map((a) => (
+              <h6 className="d-inline mr-1">
+                <Badge variant="primary" key={a}>
+                  {a}
                 </Badge>
               </h6>
             ));
-            return roles;
+            return roles.length > 0 ? roles : "--";
           } else {
             return "--";
           }
@@ -165,14 +182,17 @@ function PolicyListing() {
         accessor: "groups",
         Cell: (rawValue) => {
           if (rawValue) {
-            let groups = rawValue.row.original.policyItems.map((a) => (
-              <h6>
-                <Badge variant="primary" key={a.groups}>
-                  {a.groups}
+            let getGroups = uniq(
+              flatMap(map(rawValue.row.original.policyItems, "groups"))
+            );
+            let groups = getGroups.map((a) => (
+              <h6 className="d-inline mr-1">
+                <Badge variant="primary" key={a}>
+                  {a}
                 </Badge>
               </h6>
             ));
-            return groups;
+            return groups.length > 0 ? groups : "--";
           } else {
             return "--";
           }
@@ -183,14 +203,17 @@ function PolicyListing() {
         accessor: "users",
         Cell: (rawValue) => {
           if (rawValue) {
-            let users = rawValue.row.original.policyItems.map((a) => (
-              <h6>
-                <Badge variant="primary" key={a.users}>
-                  {a.users}
+            let getUsers = uniq(
+              flatMap(map(rawValue.row.original.policyItems, "users"))
+            );
+            let users = getUsers.map((a) => (
+              <h6 className="d-inline mr-1">
+                <Badge variant="primary" key={a}>
+                  {a}
                 </Badge>
               </h6>
             ));
-            return users;
+            return users.length > 0 ? users : "--";
           } else {
             return "--";
           }
@@ -236,11 +259,11 @@ function PolicyListing() {
     []
   );
   return (
-    <>
+    <React.Fragment>
       <h4 className="wrap-header bold">List of Policies </h4>
-      <div className="wrap policy-manager">
+      <div className="wrap policy-listing">
         <Row>
-          <Col md={12}>
+          <Col sm={12}>
             <div className="pull-right">
               <Link
                 to={`/service/${serviceId}/policies/create/${policyType}`}
@@ -250,7 +273,7 @@ function PolicyListing() {
               </Link>
             </div>
           </Col>
-          <div className="col-sm-12">
+          <Col sm={12}>
             <XATableLayout
               data={policyListingData}
               columns={columns}
@@ -258,7 +281,7 @@ function PolicyListing() {
               pageCount={pageCount}
               loading={loader}
             />
-          </div>
+          </Col>
         </Row>
       </div>
       <Modal show={deletePolicyModal.showPopup} onHide={toggleClose}>
@@ -278,7 +301,7 @@ function PolicyListing() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </React.Fragment>
   );
 }
 
