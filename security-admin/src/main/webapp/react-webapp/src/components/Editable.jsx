@@ -218,6 +218,7 @@ const Editable = (props) => {
     } else {
       initialLoad.current = false;
     }
+    selectValRef.current = editableValue;
   }, [editableValue]);
 
   const handleApply = () => {
