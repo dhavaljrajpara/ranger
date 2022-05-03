@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState, useRef } from "react";
 import {
   Alert,
   Badge,
@@ -91,6 +91,56 @@ export class MoreLess extends Component {
   }
 }
 
+export class AccessMoreLess extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: props.data.length > 4 ? props.data.slice(0, 4) : props.data,
+      show: true
+    };
+  }
+
+  handleShowMoreClick = () => {
+    let show = !this.state.show;
+    let data = show ? this.props.data.slice(0, 4) : this.props.data;
+    this.setState({ show, data });
+  };
+
+  render() {
+    return (
+      // style={{ width: "100%", height: "100px", overflowX: "hidden" }}
+      <div>
+        {this.state.data.map((key, index) => {
+          return (
+            <span className="item" key={index}>
+              {key}
+            </span>
+          );
+        })}
+        <a
+          onClick={(e) => {
+            e.stopPropagation();
+            this.handleShowMoreClick();
+          }}
+        >
+          {this.props.data.length > 4 ? (
+            this.state.show ? (
+              <span className="float-left-margin-1">
+                <code className="show-more-less"> + More..</code>
+              </span>
+            ) : (
+              <span className="float-left-margin-1">
+                <code className="show-more-less">
+                  <br /> - Less..
+                </code>
+              </span>
+            )
+          ) : null}
+        </a>
+      </div>
+    );
+  }
+}
 export const AuditFilterEntries = (props) => {
   const { entries, refreshTable } = props;
   const refreshTables = () => {
@@ -152,20 +202,130 @@ export const Condition = ({ when, is, children }) => (
   </Field>
 );
 
-export const CustomPopover = ({ title, content, placement, trigger }) => (
-  <OverlayTrigger
-    trigger={trigger}
-    placement={placement}
-    overlay={
-      <Popover id={`popover-${placement}`}>
-        <Popover.Title as="h3">{title}</Popover.Title>
-        <Popover.Content>{content}</Popover.Content>
-      </Popover>
-    }
-  >
-    <i className="fa-fw fa fa-info-circle info-icon"></i>
-  </OverlayTrigger>
-);
+export const CustomPopover = ({ title, content, placement, trigger, icon }) => {
+  return (
+    <>
+      <OverlayTrigger
+        trigger={trigger}
+        placement={placement}
+        overlay={
+          <Popover id={`popover-${placement}`}>
+            <Popover.Title as="h3">
+              {title}
+              {/* <i class="pull-right">×</i> */}
+            </Popover.Title>
+            <Popover.Content>{content}</Popover.Content>
+          </Popover>
+        }
+      >
+        {/* <i className="{fa-fw fa fa-info-circle} info-icon"></i> */}
+        <i className={icon}></i>
+      </OverlayTrigger>
+    </>
+  );
+};
+
+export const CustomPopoverOnClick = ({
+  title,
+  content,
+  placement,
+  trigger,
+  icon
+}) => {
+  const [show, setShow] = useState(false);
+
+  const handleClick = () => {
+    setShow(!show);
+  };
+
+  return (
+    <>
+      <OverlayTrigger
+        show={show}
+        trigger={trigger}
+        placement={placement}
+        overlay={
+          <Popover id={`popover-${placement}`}>
+            <Popover.Title as="h3">
+              {title}
+              <i
+                class="pull-right"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClick();
+                }}
+              >
+                ×
+              </i>
+            </Popover.Title>
+            <Popover.Content>{content}</Popover.Content>
+          </Popover>
+        }
+      >
+        {/* <i className="{fa-fw fa fa-info-circle} info-icon"></i> */}
+        <i
+          className={icon}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }}
+        ></i>
+      </OverlayTrigger>
+    </>
+  );
+};
+
+export const CustomPopoverTagOnClick = ({
+  data,
+  title,
+  content,
+  placement,
+  trigger,
+  icon
+}) => {
+  const [show, setShow] = useState(false);
+
+  const handleClick = () => {
+    setShow(!show);
+  };
+
+  return (
+    <>
+      <OverlayTrigger
+        show={show}
+        trigger={trigger}
+        placement={placement}
+        overlay={
+          <Popover id={`popover-${placement}`}>
+            <Popover.Title as="h3">
+              {title}
+              <i
+                class="pull-right"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClick();
+                }}
+              >
+                ×
+              </i>
+            </Popover.Title>
+            <Popover.Content>{content}</Popover.Content>
+          </Popover>
+        }
+      >
+        <span
+          className={icon}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClick();
+          }}
+        >
+          {data}
+        </span>
+      </OverlayTrigger>
+    </>
+  );
+};
 
 export const CustomTooltip = ({ placement, content, icon }) => (
   <OverlayTrigger

@@ -115,10 +115,11 @@ function Permissions() {
   );
 
   return (
-    <div>
+    <>
       <h3 className="wrap-header bold">Permissions</h3>
 
       <div className="wrap">
+        <br />
         <XATableLayout
           data={permissionslistData}
           columns={
@@ -129,7 +130,7 @@ function Permissions() {
           pageCount={pageCount}
         />
       </div>
-    </div>
+    </>
   );
 }
 

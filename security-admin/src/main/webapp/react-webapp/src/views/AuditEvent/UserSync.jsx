@@ -133,6 +133,7 @@ function User_Sync() {
     <>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
       <br />
+      <br />
       <XATableLayout
         data={userSyncListingData}
         columns={columns}

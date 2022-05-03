@@ -559,6 +559,7 @@ class ServiceForm extends Component {
                           title=""
                           content={configInfo}
                           placement="right"
+                          icon="fa-fw fa fa-info-circle"
                           trigger={["hover", "focus"]}
                         />
                       </span>
@@ -609,6 +610,7 @@ class ServiceForm extends Component {
                           title=""
                           content={configInfo}
                           placement="right"
+                          icon="fa-fw fa fa-info-circle"
                           trigger={["hover", "focus"]}
                         />
                       </span>
@@ -656,6 +658,7 @@ class ServiceForm extends Component {
                           title=""
                           content={configInfo}
                           placement="right"
+                          icon="fa-fw fa fa-info-circle"
                           trigger={["hover", "focus"]}
                         />
                       </span>
@@ -702,6 +705,7 @@ class ServiceForm extends Component {
                           title=""
                           content={configInfo}
                           placement="right"
+                          icon="fa-fw fa fa-info-circle"
                           trigger={["hover", "focus"]}
                         />
                       </span>

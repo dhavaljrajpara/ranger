@@ -366,6 +366,7 @@ function Users() {
           </Col>
         )}
       </Row>
+      <br />
       <div>
         <XATableLayout
           data={userListingData}

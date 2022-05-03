@@ -54,6 +54,9 @@ const AddUpdatePolicyForm = lazy(() =>
 );
 const EncryptionComp = lazy(() => import("Views/Encryption/KeyManager"));
 const KeyCreateComp = lazy(() => import("Views/Encryption/KeyCreate"));
+const AccesLogDetailComp = lazy(() =>
+  import("Views/AuditEvent/AccessLogDetail")
+);
 
 function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
@@ -320,6 +323,12 @@ export default class App extends Component {
                       exact
                       path="/reports/audit/userSync"
                       component={UserSyncLogs}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/audit/eventlog/:eventId"
+                      component={AccesLogDetailComp}
                       {...defaultProps}
                     />
                     <Redirect

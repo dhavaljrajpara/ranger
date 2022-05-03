@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
-import { Table } from "react-bootstrap";
+import { Table, Dropdown, ButtonGroup, Button } from "react-bootstrap";
+import DropdownButton from "react-bootstrap/DropdownButton";
 import { Loader } from "Components/CommonComponents";
 const IndeterminateCheckbox = forwardRef(
   ({ indeterminate, chkType, ...rest }, ref) => {
@@ -33,6 +34,7 @@ function XATableLayout({
   fetchData,
   pageCount: controlledPageCount,
   rowSelectOp,
+  columnHide,
   getRowProps = () => ({})
 }) {
   const {
@@ -47,6 +49,8 @@ function XATableLayout({
     previousPage,
     setPageSize,
     canPreviousPage,
+    allColumns,
+    getToggleHideAllColumnsProps,
     canNextPage,
     pageOptions,
     state: { pageIndex, pageSize, selectedRowIds },
@@ -112,159 +116,223 @@ function XATableLayout({
 
   return (
     // apply the table props
-    <div className="row">
-      <div className="col-sm-12">
-        <div className="table-responsive">
-          <Table bordered hover {...getTableProps()}>
-            <thead className="thead-light">
-              {
-                // Loop over the header rows
-                headerGroups.map((headerGroup) => (
-                  // Apply the header row props
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {
-                      // Loop over the headers in each row
-                      headerGroup.headers.map((column) => (
-                        // Apply the header cell props
-                        <th {...column.getHeaderProps()}>
-                          {
-                            // Render the header
-                            column.render("Header")
-                          }
-                        </th>
-                      ))
-                    }
-                  </tr>
-                ))
-              }
-            </thead>
-            {/* Apply the table body props */}
-            <tbody {...getTableBodyProps()}>
-              {
-                // Loop over the table rows
-                rows.map((row) => {
-                  // Prepare the row for display
-                  prepareRow(row);
-                  return (
-                    // Apply the row props
-                    <tr {...row.getRowProps(getRowProps(row))}>
+    <>
+      {
+        <div className="text-right mt-n5">
+          {/* <Dropdown>
+            {[DropdownButton].map((DropdownType, idx) => (
+              <DropdownType
+                key={idx}
+                menuAlign="right"
+                id={`dropdown-button-drop-${idx}`}
+                size="sm"
+                title="Columns"
+                variant="info"
+              >
+                <ul className="list-group">
+                  {allColumns.map((column) => (
+                    <li className="column-list">
+                      <label>
+                        <input
+                          type="checkbox"
+                          {...column.getToggleHiddenProps()}
+                        />{" "}
+                        {column.id}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </DropdownType>
+            ))}
+          </Dropdown> */}
+          <>
+            {columnHide &&
+              ["Info"].map((variant, idx) => (
+                <DropdownButton
+                  key={idx}
+                  menuAlign="left"
+                  as={ButtonGroup}
+                  key={variant}
+                  size="sm"
+                  id={`dropdown-variants-${variant}`}
+                  variant={variant.toLowerCase()}
+                  title="Columns"
+                >
+                  <ul className="list-group">
+                    {allColumns.map((column) => (
+                      <li className="column-list">
+                        <label>
+                          <input
+                            type="checkbox"
+                            {...column.getToggleHiddenProps()}
+                          />{" "}
+                          {column.id}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </DropdownButton>
+              ))}
+          </>
+        </div>
+      }
+      <div className="row">
+        <div className="col-sm-12">
+          <div className="table-responsive">
+            <br />
+            <Table bordered hover {...getTableProps()}>
+              <thead className="thead-light">
+                {
+                  // Loop over the header rows
+                  headerGroups.map((headerGroup) => (
+                    // Apply the header row props
+                    <tr {...headerGroup.getHeaderGroupProps()}>
                       {
-                        // Loop over the rows cells
-                        row.cells.map((cell) => {
-                          // Apply the cell props
-                          return (
-                            <td {...cell.getCellProps()}>
-                              {
-                                cell.render("Cell")
-                                // Render the cell contents
-                              }
-                            </td>
-                          );
-                        })
+                        // Loop over the headers in each row
+                        headerGroup.headers.map((column) => (
+                          // Apply the header cell props
+                          <th {...column.getHeaderProps()}>
+                            {
+                              // Render the header
+                              column.render("Header")
+                            }
+                          </th>
+                        ))
                       }
                     </tr>
-                  );
-                })
-              }
+                  ))
+                }
+              </thead>
+              {/* Apply the table body props */}
+              <tbody {...getTableBodyProps()}>
+                {
+                  // Loop over the table rows
+                  rows.map((row) => {
+                    // Prepare the row for display
+                    prepareRow(row);
+                    return (
+                      // Apply the row props
+                      <tr {...row.getRowProps(getRowProps(row))}>
+                        {
+                          // Loop over the rows cells
+                          row.cells.map((cell) => {
+                            // Apply the cell props
+                            return (
+                              <td {...cell.getCellProps()}>
+                                {
+                                  cell.render("Cell")
+                                  // Render the cell contents
+                                }
+                              </td>
+                            );
+                          })
+                        }
+                      </tr>
+                    );
+                  })
+                }
 
-              <tr>
-                <td colSpan={columns.length + 1}>
-                  <center>
-                    {loading && (
-                      <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
-                    )}
-                    {rows.length === 0 && loading == false && (
-                      <span className="text-muted" data-cy="tbleDataMsg">
-                        "No data to show!!"
-                      </span>
-                    )}
-                    {/* {loading && (
+                <tr>
+                  <td colSpan={columns.length + 1}>
+                    <center>
+                      {loading && (
+                        <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                      )}
+                      {rows.length === 0 && loading == false && (
+                        <span className="text-muted" data-cy="tbleDataMsg">
+                          "No data to show!!"
+                        </span>
+                      )}
+                      {/* {loading && (
                         <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
                       )  rows.length === 0 && (
                         <span className="text-muted" data-cy="tbleDataMsg">
                           "No data to show!!"
                         </span>
                       )} */}
-                  </center>
-                </td>
-              </tr>
-            </tbody>
-          </Table>
-        </div>
+                    </center>
+                  </td>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
 
-        <div className="row mt-2">
-          <div className="col-2">
-            <button
-              onClick={() => gotoPage(0)}
-              disabled={!canPreviousPage}
-              className="pagebtn btn btn-outline-dark btn-sm"
-            >
-              {"<<"}
-            </button>
-            <button
-              onClick={() => previousPage()}
-              disabled={!canPreviousPage}
-              className="pagebtn btn btn-outline-dark btn-sm"
-            >
-              {"<"}
-            </button>
-          </div>
-          <div className="col-4">
-            <span className="pagelbl">
-              Page
-              <strong>
-                {pageIndex + 1} of {pageOptions.length}
-              </strong>
-            </span>
-            <span>
-              | Go to page:
-              <input
-                className="inputpagebtn"
-                type="number"
-                defaultValue={pageIndex + 1}
-                onChange={(e) => {
-                  const page = e.target.value ? Number(e.target.value) - 1 : 0;
-                  gotoPage(page);
-                }}
-              />
-            </span>
-          </div>
-          <div className="col-4">
-            <span>
-              <select
-                className="selectpage custom-select"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                }}
+          <div className="row mt-2">
+            <div className="col-2">
+              <button
+                onClick={() => gotoPage(0)}
+                disabled={!canPreviousPage}
+                className="pagebtn btn btn-outline-dark btn-sm"
               >
-                {[25, 50, 75, 100].map((pageSize) => (
-                  <option key={pageSize} value={pageSize}>
-                    Show {pageSize}
-                  </option>
-                ))}
-              </select>
-            </span>
-          </div>
-          <div className="col-2">
-            <button
-              onClick={() => nextPage()}
-              className="pagebtn btn btn-outline-dark btn-sm"
-              disabled={!canNextPage}
-            >
-              {">"}
-            </button>
-            <button
-              onClick={() => gotoPage(pageCount)}
-              className="pagebtn btn btn-outline-dark btn-sm"
-              disabled={!canNextPage}
-            >
-              {">>"}
-            </button>
+                {"<<"}
+              </button>
+              <button
+                onClick={() => previousPage()}
+                disabled={!canPreviousPage}
+                className="pagebtn btn btn-outline-dark btn-sm"
+              >
+                {"<"}
+              </button>
+            </div>
+            <div className="col-4">
+              <span className="pagelbl">
+                Page
+                <strong>
+                  {pageIndex + 1} of {pageOptions.length}
+                </strong>
+              </span>
+              <span>
+                | Go to page:
+                <input
+                  className="inputpagebtn"
+                  type="number"
+                  defaultValue={pageIndex + 1}
+                  onChange={(e) => {
+                    const page = e.target.value
+                      ? Number(e.target.value) - 1
+                      : 0;
+                    gotoPage(page);
+                  }}
+                />
+              </span>
+            </div>
+            <div className="col-4">
+              <span>
+                <select
+                  className="selectpage custom-select"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                  }}
+                >
+                  {[25, 50, 75, 100].map((pageSize) => (
+                    <option key={pageSize} value={pageSize}>
+                      Show {pageSize}
+                    </option>
+                  ))}
+                </select>
+              </span>
+            </div>
+            <div className="col-2">
+              <button
+                onClick={() => nextPage()}
+                className="pagebtn btn btn-outline-dark btn-sm"
+                disabled={!canNextPage}
+              >
+                {">"}
+              </button>
+              <button
+                onClick={() => gotoPage(pageCount)}
+                className="pagebtn btn btn-outline-dark btn-sm"
+                disabled={!canNextPage}
+              >
+                {">>"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 export default XATableLayout;

@@ -68,23 +68,7 @@ function Admin() {
     setLoader(true);
     setUpdateTable(moment.now());
   };
-  // const handleShow = async (sessionId) => {
-  //   let authlogs = [];
-  //   try {
-  //     const authResp = await fetchApi({
-  //       url: "xusers/authSessions",
-  //       params: {
-  //         id: sessionId
-  //       }
-  //     });
-  //     authlogs = authResp.data.vXAuthSessions;
-  //   } catch (error) {
-  //     console.error(`Error occurred while fetching Admin logs! ${error}`);
-  //   }
-  //   setShowModal(true);
-  //   setAuthSession(authlogs);
-  //   setLoader(false);
-  // };
+
   const openModal = (sessionId) => {
     setShowModal(true);
     setSessionId(sessionId);
@@ -99,7 +83,7 @@ function Admin() {
           let classtype = rawValue.row.original.objectClassType;
           let action = rawValue.row.original.action;
           let objectname = rawValue.row.original.objectName;
-          // let label = enumValueToLabel(ClassTypes, classtype);
+
           let operation = "";
           let hasAction = [
             "EXPORT JSON",
@@ -148,7 +132,7 @@ function Admin() {
       },
       {
         Header: "Audit Type",
-        accessor: "objectClassType", // accessor is the "key" in the data
+        accessor: "objectClassType",
         Cell: (rawValue) => {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
@@ -157,11 +141,11 @@ function Admin() {
       },
       {
         Header: "User",
-        accessor: "owner" // accessor is the "key" in the data
+        accessor: "owner"
       },
       {
         Header: "Date ( India Standard Time )",
-        accessor: "createDate", // accessor is the "key" in the data
+        accessor: "createDate",
         Cell: (rawValue) => {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
@@ -170,7 +154,7 @@ function Admin() {
       },
       {
         Header: "Actions",
-        accessor: "action", // accessor is the "key" in the data
+        accessor: "action",
         Cell: (rawValue) => {
           var operation = "";
           if (rawValue.value == "create") {
@@ -235,7 +219,7 @@ function Admin() {
       },
       {
         Header: "Session ID",
-        accessor: "sessionId", // accessor is the "key" in the data
+        accessor: "sessionId",
         Cell: (rawValue) => {
           var sessionId = rawValue.value;
           if (sessionId != undefined) {
@@ -261,20 +245,20 @@ function Admin() {
 
   return (
     <>
-      <div>
-        <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-        <br />
-        <XATableLayout
-          data={adminListingData}
-          columns={columns}
-          fetchData={fetchAdminLogsInfo}
-          pageCount={pageCount}
-          loading={loader}
-          getRowProps={(row) => ({
-            onClick: () => rowModal(row)
-          })}
-        />
-      </div>
+      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
+      <br />
+      <XATableLayout
+        data={adminListingData}
+        columns={columns}
+        fetchData={fetchAdminLogsInfo}
+        pageCount={pageCount}
+        loading={loader}
+        getRowProps={(row) => ({
+          onClick: () => rowModal(row)
+        })}
+      />
+
       <AdminModal
         show={showmodal}
         data={sessionId}

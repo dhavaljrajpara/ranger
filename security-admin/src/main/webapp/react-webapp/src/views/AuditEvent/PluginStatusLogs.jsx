@@ -90,6 +90,7 @@ function Plugin_Status() {
         <b>{val} ( Time )</b>
 
         <CustomPopover
+          icon="fa-fw fa fa-info-circle info-icon"
           title={
             val == "Policy"
               ? "Policy (Time details)"
@@ -372,6 +373,7 @@ function Plugin_Status() {
   return (
     <>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+      <br />
       <br />
       <XATableLayout
         data={pluginStatusListingData}

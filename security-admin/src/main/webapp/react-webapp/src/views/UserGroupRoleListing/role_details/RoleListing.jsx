@@ -201,6 +201,7 @@ function Roles() {
           </Col>
         )}
       </Row>
+      <br />
       <div>
         <XATableLayout
           data={roleListingData}

@@ -544,7 +544,9 @@ header {
 .resource-text {
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 85%;
+  max-width: 250px;
+  flex: 1;
+  padding-right: 12px;
 }
 
 /*Pagination Button */
@@ -718,11 +720,13 @@ header {
 
 /* Audit Filters */
 
-.table-audit-filter thead, .table-audit-filter-ready-only thead {
+.table-audit-filter thead,
+.table-audit-filter-ready-only thead {
   background-color: #eeeeee;
 }
 
-.table-audit-filter th, .table-audit-filter-ready-only th {
+.table-audit-filter th,
+.table-audit-filter-ready-only th {
   padding: 7px 5px;
   text-align: center;
 }
@@ -799,4 +803,21 @@ header {
 .policy-listing table tr td:first-child,
 .policy-listing table tr td:last-child {
   text-align: center;
+}
+
+.item:not(:last-of-type)::after {
+  content: ", ";
+}
+
+.column-list {
+  list-style-type: none;
+  padding: 5px 0px 0px 20px;
+  border-bottom: solid 1px lightgray;
+  cursor: pointer;
+}
+
+.popoverspan {
+  font-style: italic;
+  max-height: 200px;
+  overflow-y: auto;
 }

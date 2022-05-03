@@ -172,6 +172,7 @@ function Login_Sessions() {
     <>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
       <br />
+      <br />
       <XATableLayout
         data={loginSessionListingData}
         columns={columns}

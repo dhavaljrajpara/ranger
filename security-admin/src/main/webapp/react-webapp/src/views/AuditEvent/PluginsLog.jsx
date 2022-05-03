@@ -90,6 +90,7 @@ function Plugins() {
     <>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
       <br />
+      <br />
       <XATableLayout
         data={pluginsListingData}
         columns={columns}

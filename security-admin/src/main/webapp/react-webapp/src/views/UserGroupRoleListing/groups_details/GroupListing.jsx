@@ -341,6 +341,7 @@ function Groups() {
           </Col>
         )}
       </Row>
+      <br />
       <div>
         <XATableLayout
           data={groupListingData}
