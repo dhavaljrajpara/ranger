@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
-import { Button, Modal, Row, Col } from "react-bootstrap";
+import { Button, Row, Col } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
-import { groupBy, findIndex, isEmpty, pickBy, find, filter } from "lodash";
+import { groupBy, findIndex, isEmpty, pickBy, find, has } from "lodash";
 import { Table } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
@@ -17,15 +17,14 @@ const noneOptions = {
   label: "None",
   value: "none"
 };
+
 const SecurityZoneForm = (props) => {
   const history = useHistory();
-  const [service, SetService] = useState([]);
-  const [resource, SetResource] = useState([]);
-  const [servicedef, SetServiceDef] = useState([]);
-  const [showmodal, SetShowModal] = useState(false);
-  const [zones, SetZones] = useState([]);
-  const [loader, SetLoader] = useState(true);
-
+  const [serviceDefs, setServiceDefs] = useState([]);
+  const [services, setServices] = useState([]);
+  const [zone, setZone] = useState({});
+  const [resource, setResource] = useState([]);
+  const [loader, setLoader] = useState(true);
   const [modelState, setModalstate] = useState({
     showModalResource: false,
     data: null,
@@ -37,14 +36,6 @@ const SecurityZoneForm = (props) => {
     fetchInitalData();
   }, []);
 
-  // const showModal = () => {
-  //   SetShowModal(true);
-  // };
-
-  // const hideModal = () => {
-  //   SetShowModal(false);
-  // };
-
   const handleClose = () => {
     setModalstate({
       showModalResource: false,
@@ -54,26 +45,12 @@ const SecurityZoneForm = (props) => {
     });
   };
 
-  const fetchZones = async () => {
-    let zoneResp;
-    if (props.match.params.id !== undefined) {
-      let Id = props.match.params.id;
-
-      try {
-        zoneResp = await fetchApi({
-          url: `zones/zones/${Id}`
-        });
-      } catch (error) {
-        console.error(
-          `Error occurred while fetching Zone or CSRF headers! ${error}`
-        );
-        toast.error(error.response.data.msgDesc);
-      }
-    }
-
-    SetZones(zoneResp);
-    SetLoader(false);
+  const fetchInitalData = async () => {
+    await fetchServiceDefs();
+    await fetchResourceServices();
+    await fetchZones();
   };
+
   const fetchServiceDefs = async () => {
     let servicetypeResp;
 
@@ -85,36 +62,95 @@ const SecurityZoneForm = (props) => {
       console.error(`Error occurred while fetching Services! ${error}`);
     }
 
-    SetServiceDef(servicetypeResp.data.serviceDefs);
+    setServiceDefs(servicetypeResp.data.serviceDefs);
   };
-  const fetchInitalData = async () => {
-    await fetchResourceService();
-    await fetchServiceDefs();
-    await fetchZones();
+
+  const fetchResourceServices = async (inputValue) => {
+    let params = {};
+
+    if (inputValue) {
+      params["name"] = inputValue || "";
+    }
+    const serviceDefnsResp = await fetchApi({
+      url: "plugins/services",
+      params: params
+    });
+
+    const filterServices = serviceDefnsResp.data.services.filter(
+      (obj) => obj.type !== "tag" && obj.type !== "kms"
+    );
+
+    setServices(filterServices);
+
+    const servicesByType = groupBy(filterServices, "type");
+
+    let resourceServices = [];
+
+    for (var key of Object.keys(servicesByType)) {
+      resourceServices.push({
+        label: <span className="font-weight-bold text-body h6">{key}</span>,
+        options: servicesByType[key].map((name) => {
+          return { label: name.name, value: name.name };
+        })
+      });
+    }
+
+    return resourceServices;
   };
+
+  const fetchZones = async () => {
+    let zoneResp;
+
+    if (props.match.params.id !== undefined) {
+      let zoneId = props.match.params.id;
+
+      try {
+        zoneResp = await fetchApi({
+          url: `zones/zones/${zoneId}`
+        });
+      } catch (error) {
+        console.error(
+          `Error occurred while fetching Zone or CSRF headers! ${error}`
+        );
+        toast.error(error.response.data.msgDesc);
+      }
+      setZone(zoneResp.data);
+    }
+
+    setLoader(false);
+  };
+
   const renderResourcesModal = (input, serviceType) => {
-    let filterdef = servicedef.find((obj) => obj.name == serviceType);
-    for (const obj of filterdef.resources) {
+    let filterServiceDef = find(serviceDefs, ["name", serviceType]);
+
+    for (const obj of filterServiceDef.resources) {
       obj.recursiveSupported = false;
       obj.excludesSupported = false;
       if (obj.level !== 10) {
         obj.mandatory = false;
       }
-      if (obj.lookupSupported !== undefined && obj.lookupSupported) {
+      if (
+        props.match.params.id == undefined &&
+        obj.lookupSupported !== undefined &&
+        obj.lookupSupported
+      ) {
         obj.lookupSupported = false;
       }
     }
+
     setModalstate({
       showModalResource: true,
       data: {},
       inputval: input,
       index: -1
     });
-    SetResource(filterdef);
+
+    setResource(filterServiceDef);
   };
+
   const editResourcesModal = (idx, input, serviceType) => {
     let editData = input.input.value[idx];
-    let filterdef = servicedef.find((obj) => obj.name == serviceType);
+    let filterdef = serviceDefs.find((obj) => obj.name == serviceType);
     for (const obj of filterdef.resources) {
       obj.recursiveSupported = false;
       obj.excludesSupported = false;
@@ -129,8 +165,9 @@ const SecurityZoneForm = (props) => {
       inputval: input,
       index: idx
     });
-    SetResource(filterdef);
+    setResource(filterdef);
   };
+
   const onSubmit = async (values) => {
     let zoneId;
     let apiMethod;
@@ -225,7 +262,7 @@ const SecurityZoneForm = (props) => {
     }
     if (props.match.params.id) {
       zoneData = {
-        ...zones.data,
+        ...zone,
         ...zoneData
       };
     }
@@ -239,127 +276,101 @@ const SecurityZoneForm = (props) => {
       history.goBack();
     } catch (error) {
       console.error(`Error occurred while ${apiError} Zone`);
-      if (
-        error.response !== undefined &&
-        _.has(error.response, "data.msgDesc")
-      ) {
+      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
         toast.error(error.response.data.msgDesc);
       }
     }
   };
-  const fetchResourceService = async (inputValue) => {
-    let params = {};
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-    const serviceDefnsResp = await fetchApi({
-      url: "plugins/services",
-      params: params
-    });
-
-    const services = serviceDefnsResp.data.services.filter(
-      (obj) => obj.type !== "tag" && obj.type !== "kms"
-    );
-
-    SetService(services);
-
-    const service = groupBy(services, "type");
-
-    let resourceService = [];
-    for (var key of Object.keys(service)) {
-      resourceService.push({
-        label: <span className="font-weight-bold text-body h6">{key}</span>,
-        options: service[key].map((name) => {
-          return { label: name.name, value: name.name };
-        })
-      });
-    }
-
-    return resourceService;
-  };
 
   const EditFormData = () => {
     const zoneData = {};
-    zoneData.name = zones.data.name;
-    zoneData.description = zones.data.description;
+
+    zoneData.name = zone.name;
+    zoneData.description = zone.description;
+
     zoneData.adminUserGroups = [];
-    if (zones.data.adminUserGroups) {
-      zones.data.adminUserGroups.map((name) =>
+    if (zone.adminUserGroups) {
+      zone.adminUserGroups.map((name) =>
         zoneData.adminUserGroups.push({ label: name, value: name })
       );
     }
+
     zoneData.adminUsers = [];
-    if (zones.data.adminUsers) {
-      zones.data.adminUsers.map((name) =>
+    if (zone.adminUsers) {
+      zone.adminUsers.map((name) =>
         zoneData.adminUsers.push({ label: name, value: name })
       );
     }
+
     zoneData.auditUserGroups = [];
-    if (zones.data.auditUserGroups) {
-      zones.data.auditUserGroups.map((name) =>
+    if (zone.auditUserGroups) {
+      zone.auditUserGroups.map((name) =>
         zoneData.auditUserGroups.push({ label: name, value: name })
       );
     }
+
     zoneData.auditUsers = [];
-    if (zones.data.auditUsers) {
-      zones.data.auditUsers.map((name) =>
+    if (zone.auditUsers) {
+      zone.auditUsers.map((name) =>
         zoneData.auditUsers.push({ label: name, value: name })
       );
     }
 
     zoneData.tagServices = [];
-    if (zones.data.tagServices) {
-      zones.data.tagServices.map((name) =>
+    if (zone.tagServices) {
+      zone.tagServices.map((name) =>
         zoneData.tagServices.push({ label: name, value: name })
       );
     }
-    zoneData.resourceservices = [];
-    if (zones.data.services) {
-      Object.keys(zones.data.services).map((name) =>
-        zoneData.resourceservices.push({ label: name, value: name })
+
+    zoneData.resourceServices = [];
+    if (zone.services) {
+      Object.keys(zone.services).map((name) =>
+        zoneData.resourceServices.push({ label: name, value: name })
       );
     }
 
     zoneData.tableList = [];
-    for (let name of Object.keys(zones.data.services)) {
-      let tablevalues = {};
-      tablevalues["serviceName"] = name;
-      let serviceType = service.find((obj) => {
-        return obj.name == name;
-      });
-      tablevalues["serviceType"] = serviceType;
+    for (let name of Object.keys(zone.services)) {
+      let tableValues = {};
 
-      let filterdef = servicedef.find((def) => {
-        return def.name == serviceType.type;
-      });
-      for (const obj of filterdef.resources) {
+      tableValues["serviceName"] = name;
+
+      let serviceType = find(services, ["name", name]);
+      tableValues["serviceType"] = serviceType.type;
+
+      let filterServiceDef = find(serviceDefs, ["name", serviceType.type]);
+
+      for (const obj of filterServiceDef.resources) {
         obj.recursiveSupported = false;
         obj.excludesSupported = false;
         if (obj.level !== 10) {
           obj.mandatory = false;
         }
       }
-      let serviceresource = {};
-      zones.data.services[name].resources.map((obj) => {
+
+      let serviceResource = {};
+
+      zone.services[name].resources.map((obj) => {
         Object.entries(obj).map(([key, value]) => {
-          tablevalues["resources"] = [];
-          let setResources = find(filterdef.resources, ["name", key]);
-          serviceresource[`resourceName-${setResources.level}`] = setResources;
-          serviceresource[`value-${setResources.level}`] = value.map((m) => {
+          tableValues["resources"] = [];
+          let setResources = find(filterServiceDef.resources, ["name", key]);
+          serviceResource[`resourceName-${setResources.level}`] = setResources;
+          serviceResource[`value-${setResources.level}`] = value.map((m) => {
             return { label: m, value: m };
           });
           if (setResources.excludesSupported) {
-            serviceresource[`isExcludesSupport-${setResources.level}`] =
+            serviceResource[`isExcludesSupport-${setResources.level}`] =
               value.isExcludes;
           }
           if (setResources.recursiveSupported) {
-            serviceresource[`recursiveSupported-${setResources.level}`] =
+            serviceResource[`recursiveSupported-${setResources.level}`] =
               value.isRecursive;
           }
         });
       });
-      tablevalues["resources"].push(serviceresource);
-      zoneData.tableList.push(tablevalues);
+      tableValues["resources"].push(serviceResource);
+      zoneData.tableList.push(tableValues);
     }
 
     return zoneData;
@@ -384,6 +395,7 @@ const SecurityZoneForm = (props) => {
         };
       });
     }
+
     return op;
   };
 
@@ -412,41 +424,31 @@ const SecurityZoneForm = (props) => {
       url: "plugins/services",
       params: params
     });
-    const services = serviceResp.data.services.filter(
+    const filterServices = serviceResp.data.services.filter(
       (obj) => obj.type == "tag"
     );
-    return services.map(({ name }) => ({
+    return filterServices.map(({ name }) => ({
       label: name,
       value: name
     }));
   };
 
-  const resourceonChange = async (values, input, push, e, remove) => {
-    let Serviceval = [];
-    let Servicename = [];
-    for (var key of Object.keys(values)) {
-      Serviceval.push(values[key].value);
-      Servicename.push(values[key].label);
-    }
-
+  const resourceServicesOnChange = (e, input, values, push, remove) => {
     if (e.action == "select-option") {
-      var servicetype = Object.values(service).find((obj) => {
-        return obj.name === e.option.label;
-      });
-
+      let serviceType = find(services, { name: e.option.value });
       push("tableList", {
-        serviceName: e.option.label,
-        serviceType: servicetype,
+        serviceName: e.option.value,
+        serviceType: serviceType.type,
         resources: []
       });
     }
 
     if (e.action == "remove-value") {
-      let Removedvalindex = findIndex(input.value, [
-        "label",
-        e.removedValue.label
+      let removeItemIndex = findIndex(input.value, [
+        "value",
+        e.removedValue.value
       ]);
-      remove("tableList", Removedvalindex);
+      remove("tableList", removeItemIndex);
     }
 
     input.onChange(values);
@@ -474,7 +476,8 @@ const SecurityZoneForm = (props) => {
 
   const showResources = (value, serviceType) => {
     let data = {};
-    let filterdef = servicedef.find((obj) => obj.name == serviceType);
+    let filterdef = serviceDefs.find((obj) => obj.name == serviceType);
+
     for (const obj of filterdef.resources) {
       obj.recursiveSupported = false;
       obj.excludesSupported = false;
@@ -505,8 +508,8 @@ const SecurityZoneForm = (props) => {
         };
       }
     }
-    return Object.keys(data.resources).map((obj) => (
-      <p>
+    return Object.keys(data.resources).map((obj, index) => (
+      <p key={index}>
         {data.resources[obj].values.length !== 0 ? (
           <>
             <strong>{`${obj} : `}</strong>
@@ -530,8 +533,8 @@ const SecurityZoneForm = (props) => {
       </h4>
       <Form
         onSubmit={onSubmit}
-        /* override the Initial Values */
         keepDirtyOnReinitialize={true}
+        initialValuesEqual={() => true}
         initialValues={props.match.params.id !== undefined && EditFormData()}
         mutators={{
           ...arrayMutators
@@ -578,8 +581,8 @@ const SecurityZoneForm = (props) => {
             };
           }
 
-          if (isEmpty(values.resourceservices)) {
-            errors.resourceservices = {
+          if (isEmpty(values.resourceServices)) {
+            errors.resourceServices = {
               required: true,
               text: "Required"
             };
@@ -592,12 +595,7 @@ const SecurityZoneForm = (props) => {
           form: {
             mutators: { push, remove }
           },
-
-          form,
-          values,
-          submitting,
-          pristine,
-          errors
+          submitting
         }) => (
           <div className="wrap">
             <form onSubmit={handleSubmit}>
@@ -644,7 +642,6 @@ const SecurityZoneForm = (props) => {
               </Field>
               <br />
               <p className="form-header">Zone Details:</p>
-
               <Field
                 name="adminUsers"
                 render={({ input, meta }) => (
@@ -789,7 +786,6 @@ const SecurityZoneForm = (props) => {
                 render={({ input }) => (
                   <Row>
                     <Col xs={3}>
-                      {" "}
                       <label className="form-label pull-right">
                         Select Tag Services
                       </label>
@@ -815,7 +811,7 @@ const SecurityZoneForm = (props) => {
               <br />
               <Field
                 className="form-control"
-                name="resourceservices"
+                name="resourceServices"
                 render={({ input, meta }) => (
                   <Row>
                     <Col xs={3}>
@@ -829,9 +825,15 @@ const SecurityZoneForm = (props) => {
                         className="form-control p-0 border-0"
                         defaultOptions
                         onChange={(values, e) =>
-                          resourceonChange(values, input, push, e, remove)
+                          resourceServicesOnChange(
+                            e,
+                            input,
+                            values,
+                            push,
+                            remove
+                          )
                         }
-                        loadOptions={fetchResourceService}
+                        loadOptions={fetchResourceServices}
                         isMulti
                         components={{
                           DropdownIndicator: () => null,
@@ -848,7 +850,6 @@ const SecurityZoneForm = (props) => {
                 )}
               />
               <br />
-
               <Table striped bordered>
                 <thead>
                   <tr>
@@ -869,73 +870,67 @@ const SecurityZoneForm = (props) => {
                       fields.value && fields.value.length > 0 ? (
                         fields.map((name, index) => (
                           <tr className="bg-white" key={index}>
-                            <td className="align-middle" width="20%">
+                            <td className="align-middle">
                               <h6> {fields.value[index].serviceName} </h6>
                             </td>
-
-                            <td className="align-middle" width="20%">
+                            <td className="align-middle">
                               <h6>
-                                {fields.value[index].serviceType.type
+                                {fields.value[index].serviceType
                                   .toString()
                                   .toUpperCase()}
                               </h6>
                             </td>
-
-                            <td
-                              className="text-center"
-                              width="32%"
-                              height="55px"
-                              key={name}
-                            >
+                            <td className="text-center" key={name}>
                               <Field
                                 name={`${name}.resources`}
                                 render={(input) => (
-                                  <>
+                                  <React.Fragment>
                                     {input.input.value &&
                                     input.input.value.length > 0
                                       ? input.input.value.map((obj, idx) => (
-                                          <>
-                                            <div className="resource-group">
-                                              <Row>
-                                                <Col xs={9}>
-                                                  <span className="m-t-xs">
-                                                    {showResources(
-                                                      obj,
+                                          <div
+                                            className="resource-group"
+                                            key={idx}
+                                          >
+                                            <Row>
+                                              <Col xs={9}>
+                                                <span className="m-t-xs">
+                                                  {showResources(
+                                                    obj,
+                                                    fields.value[index]
+                                                      .serviceType
+                                                  )}
+                                                </span>
+                                              </Col>
+                                              <Col xs={3}>
+                                                <Button
+                                                  title="edit"
+                                                  className="btn btn-primary m-r-xs btn-mini m-r-5"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                    editResourcesModal(
+                                                      idx,
+                                                      input,
                                                       fields.value[index]
-                                                        .serviceType.type
-                                                    )}
-                                                  </span>
-                                                </Col>
-                                                <Col xs={3}>
-                                                  <Button
-                                                    title="edit"
-                                                    className="btn btn-primary m-r-xs btn-mini m-r-5"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                      editResourcesModal(
-                                                        idx,
-                                                        input,
-                                                        fields.value[index]
-                                                          .serviceType.type
-                                                      )
-                                                    }
-                                                  >
-                                                    <i className="fa-fw fa fa-edit"></i>
-                                                  </Button>
-                                                  <Button
-                                                    title="delete"
-                                                    className="btn btn-danger active  btn-mini"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                      handleRemove(idx, input)
-                                                    }
-                                                  >
-                                                    <i className="fa-fw fa fa-remove"></i>
-                                                  </Button>
-                                                </Col>
-                                              </Row>
-                                            </div>
-                                          </>
+                                                        .serviceType
+                                                    )
+                                                  }
+                                                >
+                                                  <i className="fa-fw fa fa-edit"></i>
+                                                </Button>
+                                                <Button
+                                                  title="delete"
+                                                  className="btn btn-danger active  btn-mini"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                    handleRemove(idx, input)
+                                                  }
+                                                >
+                                                  <i className="fa-fw fa fa-remove"></i>
+                                                </Button>
+                                              </Col>
+                                            </Row>
+                                          </div>
                                         ))
                                       : ""}
                                     <div className="resource-list min-width-150">
@@ -947,14 +942,14 @@ const SecurityZoneForm = (props) => {
                                         onClick={() =>
                                           renderResourcesModal(
                                             input,
-                                            fields.value[index].serviceType.type
+                                            fields.value[index].serviceType
                                           )
                                         }
                                       >
                                         <i className="fa-fw fa fa-plus "></i>
                                       </Button>
                                     </div>
-                                  </>
+                                  </React.Fragment>
                                 )}
                               />
                             </td>
@@ -997,21 +992,6 @@ const SecurityZoneForm = (props) => {
                 </div>
               </div>
             </form>
-            {/* <Modal
-              show={showmodal}
-              onHide={hideModal}
-              backdrop="static"
-              keyboard={false}
-            >
-              <Modal.Header
-                closeButton
-              >{`Please add at least one resource for  service`}</Modal.Header>
-              <Modal.Footer>
-                <Button variant="primary" onClick={hideModal}>
-                  OK
-                </Button>
-              </Modal.Footer>
-            </Modal> */}
             <ModalResourceComp
               serviceDetails={{}}
               serviceCompDetails={resource}
