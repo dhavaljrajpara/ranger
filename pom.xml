@@ -14,7 +14,8 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
---><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache</groupId>
@@ -87,7 +88,7 @@
         <atlas.jettison.version>1.3.7</atlas.jettison.version>
         <atlas.commons.logging.version>1.1.3</atlas.commons.logging.version>
         <bouncycastle.version>1.55</bouncycastle.version>
-        <c3p0.version>0.9.5.3</c3p0.version>
+        <c3p0.version>0.9.5.5</c3p0.version>
         <cglib.version>2.2.0-b23</cglib.version>
         <checkstyle.plugin.version>3.1.0</checkstyle.plugin.version>
         <checkstyle.version>8.29</checkstyle.version>
@@ -112,7 +113,7 @@
         <derby.version>10.11.1.1</derby.version>
         <eclipse.jpa.version>2.5.2</eclipse.jpa.version>
         <elasticsearch.version>7.6.0</elasticsearch.version>
-        <enunciate.version>2.11.1</enunciate.version>
+        <enunciate.version>2.13.2</enunciate.version>
         <spotbugs.plugin.version>4.5.0.0</spotbugs.plugin.version>
         <google.guava.version>27.0-jre</google.guava.version>
         <googlecode.log4jdbc.version>1.2</googlecode.log4jdbc.version>
@@ -159,7 +160,7 @@
         <kafka.version>2.8.1</kafka.version>
         <kerby.version>1.0.0</kerby.version>
         <knox.gateway.version>1.4.0</knox.gateway.version>
-        <kylin.version>2.6.6</kylin.version>
+        <kylin.version>3.1.3</kylin.version>
         <libpam4j.version>1.10</libpam4j.version>
         <local.lib.dir>${project.basedir}/../lib/local</local.lib.dir>
         <logback.version>1.2.10</logback.version>
@@ -167,17 +168,18 @@
         <log4j2.version>2.17.1</log4j2.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <maven.pmd.plugin.version>3.14.0</maven.pmd.plugin.version>
+        <maven.surefire.plugin.version>3.0.0-M6</maven.surefire.plugin.version>
         <metrics.core.version>3.0.2</metrics.core.version>
         <mockito.version>3.0.0</mockito.version>
         <mockito.all.version>1.10.19</mockito.all.version>
         <mysql-connector-java.version>5.1.31</mysql-connector-java.version>
-        <netty-all.version>4.1.72.Final</netty-all.version>
+        <netty-all.version>4.1.76.Final</netty-all.version>
         <noggit.version>0.8</noggit.version>
         <orc.core.version>1.6.7</orc.core.version>
         <owasp-java-html-sanitizer.version>r239</owasp-java-html-sanitizer.version>
         <paranamer.version>2.3</paranamer.version>
         <presto.version>333</presto.version>
-        <poi.version>5.1.0</poi.version>
+        <poi.version>5.2.2</poi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <protobuf-java.version>3.19.3</protobuf-java.version>
         <gcp.protobuf-java.version>3.19.3</gcp.protobuf-java.version>
@@ -192,20 +194,20 @@
         <slf4j.version>1.7.32</slf4j.version>
         <solr.version>8.6.3</solr.version>
         <spring-ldap-core.version>2.3.5.RELEASE</spring-ldap-core.version>
-        <springframework.security.version>5.6.1</springframework.security.version>
-        <springframework.test.version>5.3.18</springframework.test.version>
-        <springframework.version>5.3.18</springframework.version>
+        <springframework.security.version>5.6.3</springframework.security.version>
+        <springframework.test.version>5.3.19</springframework.test.version>
+        <springframework.version>5.3.19</springframework.version>
         <sqoop.version>1.99.7</sqoop.version>
         <storm.version>1.2.4</storm.version>
         <sun-jersey-bundle.version>1.19</sun-jersey-bundle.version>
-        <tomcat.embed.version>8.5.76</tomcat.embed.version>
+        <tomcat.embed.version>8.5.78</tomcat.embed.version>
         <testng.version>6.9.4</testng.version>
         <velocity.version>2.3</velocity.version>
         <zookeeper.version>3.4.14</zookeeper.version>
         <codehaus.woodstox.stax2api.version>3.1.4</codehaus.woodstox.stax2api.version>
         <fasterxml.woodstox.version>5.0.3</fasterxml.woodstox.version>
-        <fasterxml.jackson.version>2.11.3</fasterxml.jackson.version>
-        <fasterxml.jackson.databind.version>2.11.3</fasterxml.jackson.databind.version>
+        <fasterxml.jackson.version>2.13.2</fasterxml.jackson.version>
+        <fasterxml.jackson.databind.version>2.13.2.2</fasterxml.jackson.databind.version>
         <kstruct.gethostname4j.version>0.0.2</kstruct.gethostname4j.version>
         <jna.version>5.2.0</jna.version>
         <jna-platform.version>5.2.0</jna-platform.version>
@@ -226,7 +228,7 @@
         <com.microsoft.azure.adal4j.version>1.6.4</com.microsoft.azure.adal4j.version>
         <io.reactivex.rxjava.version>1.3.8</io.reactivex.rxjava.version>
         <net.minidev.asm.version>1.0.2</net.minidev.asm.version>
-        <org.bouncycastle.bcprov-jdk15on>1.59</org.bouncycastle.bcprov-jdk15on>
+        <org.bouncycastle.bcprov-jdk15on>1.68</org.bouncycastle.bcprov-jdk15on>
         <org.bouncycastle.bcpkix-jdk15on>1.59</org.bouncycastle.bcpkix-jdk15on>
         <lucene.version>8.4.0</lucene.version>
         <hppc.version>0.8.0</hppc.version>
@@ -308,6 +310,7 @@
                 <module>ranger-kylin-plugin-shim</module>
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
+                <module>ranger-authn</module>
                 <!--
                    'distro' should be the last module. If a module gets inserted after
                    ranger-elasticsearch-plugin-shim, make sure to update dependency in distro/pom.xml
@@ -605,6 +608,7 @@
                 <module>ranger-presto-plugin-shim</module>
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
+                <module>ranger-authn</module>
                 <!--
                    'distro' should be the last module. If a module gets inserted after
                    ranger-elasticsearch-plugin-shim, make sure to update dependency in distro/pom.xml
@@ -873,7 +877,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.21.0</version>
+                    <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <argLine>${argLine} -Djava.library.path="${hadoop.library.path}${path.separator}${java.library.path}"</argLine>
                         <skipTests>${skipTests}</skipTests>
@@ -1162,4 +1166,13 @@
             </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

@@ -1231,7 +1231,7 @@ public class ServiceREST {
 
 					if (vxUser.getUserRoleList().contains(RangerConstants.ROLE_ADMIN_AUDITOR) || vxUser.getUserRoleList().contains(RangerConstants.ROLE_KEY_ADMIN_AUDITOR)) {
 						VXResponse vXResponse = new VXResponse();
-						vXResponse.setStatusCode(HttpServletResponse.SC_UNAUTHORIZED);
+						vXResponse.setStatusCode(HttpServletResponse.SC_FORBIDDEN);
 						vXResponse.setMsgDesc("Operation denied. LoggedInUser=" + vxUser.getId() + " is not permitted to perform the action.");
 						throw restErrorUtil.generateRESTException(vXResponse);
 					}
@@ -1467,7 +1467,7 @@ public class ServiceREST {
 
 					if (vxUser.getUserRoleList().contains(RangerConstants.ROLE_ADMIN_AUDITOR) || vxUser.getUserRoleList().contains(RangerConstants.ROLE_KEY_ADMIN_AUDITOR)) {
 						VXResponse vXResponse = new VXResponse();
-						vXResponse.setStatusCode(HttpServletResponse.SC_UNAUTHORIZED);
+						vXResponse.setStatusCode(HttpServletResponse.SC_FORBIDDEN);
 						vXResponse.setMsgDesc("Operation denied. LoggedInUser=" + vxUser.getId() + " is not permitted to perform the action.");
 						throw restErrorUtil.generateRESTException(vXResponse);
 					}
@@ -1596,8 +1596,8 @@ public class ServiceREST {
 			LOG.debug("<== ServiceREST.secureRevokeAccess(" + serviceName + ", " + revokeRequest + "): " + ret);
 		}
 		return ret;
-	}	
-	
+	}
+
 	@POST
 	@Path("/policies")
 	@Produces({ "application/json", "application/xml" })
@@ -1908,7 +1908,7 @@ public class ServiceREST {
 		return ret;
 	}
 
-        @GET
+	@GET
 	@Path("/policies")
 	@Produces({ "application/json", "application/xml" })
 	public RangerPolicyList getPolicies(@Context HttpServletRequest request) {
@@ -1956,6 +1956,42 @@ public class ServiceREST {
 		}
 		return ret;
 	}
+
+    @GET
+    @Path("/policies/cache/reset")
+    @Produces({ "application/json", "application/xml" })
+    public boolean resetPolicyCache(@QueryParam("name") String name) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("==> ServiceREST.resetPolicyCache(" + name + ")");
+        }
+
+        // check for ADMIN access
+        if (!bizUtil.isAdmin()) {
+            boolean isServiceAdmin = false;
+            String  loggedInUser   = bizUtil.getCurrentUserLoginId();
+
+            if (StringUtils.isNotEmpty(name)) {
+                try {
+                    RangerService rangerService = svcStore.getServiceByName(name);
+                    isServiceAdmin = bizUtil.isUserServiceAdmin(rangerService, loggedInUser);
+                } catch (Exception e) {
+                    LOG.warn("Failed to find if user [" + loggedInUser + "] has service admin privileges on service [" + name + "]", e);
+                }
+            }
+
+            if (!isServiceAdmin) {
+                throw restErrorUtil.createRESTException("User cannot reset policy cache", MessageEnums.OPER_NO_PERMISSION);
+            }
+        }
+
+        boolean ret = svcStore.resetPolicyCache(name);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("<== ServiceREST.resetPolicyCache(): ret=" + ret);
+        }
+
+        return ret;
+    }
 
 	@GET
 	@Path("/policies/downloadExcel")
@@ -2990,7 +3026,7 @@ public class ServiceREST {
 	@Produces({ "application/json", "application/xml" })
 	public ServicePolicies getServicePoliciesIfUpdated(
 			@PathParam("serviceName") String serviceName,
-			@QueryParam("lastKnownVersion") Long lastKnownVersion,
+			@DefaultValue("-1") @QueryParam("lastKnownVersion") Long lastKnownVersion,
 			@DefaultValue("0") @QueryParam("lastActivationTime") Long lastActivationTime,
 			@QueryParam("pluginId") String pluginId,
 			@DefaultValue("") @QueryParam("clusterName") String clusterName,
@@ -3023,11 +3059,8 @@ public class ServiceREST {
 			httpCode = HttpServletResponse.SC_BAD_REQUEST;
 			logMsg = e.getMessage();
 		}
-		if (isValid) {
-			if (lastKnownVersion == null) {
-				lastKnownVersion = Long.valueOf(-1);
-			}
 
+		if (isValid) {
 			try {
 				if(RangerPerfTracer.isPerfTraceEnabled(PERF_LOG)) {
 					perf = RangerPerfTracer.getPerfTracer(PERF_LOG, "ServiceREST.getServicePoliciesIfUpdated(serviceName=" + serviceName + ",lastKnownVersion=" + lastKnownVersion + ",lastActivationTime=" + lastActivationTime + ")");
@@ -3072,7 +3105,7 @@ public class ServiceREST {
 	@Produces({ "application/json", "application/xml" })
 	public ServicePolicies getSecureServicePoliciesIfUpdated(
 			@PathParam("serviceName") String serviceName,
-			@QueryParam("lastKnownVersion") Long lastKnownVersion,
+			@DefaultValue("-1") @QueryParam("lastKnownVersion") Long lastKnownVersion,
 			@DefaultValue("0") @QueryParam("lastActivationTime") Long lastActivationTime,
 			@QueryParam("pluginId") String pluginId,
 			@DefaultValue("") @QueryParam("clusterName") String clusterName,
@@ -3105,10 +3138,8 @@ public class ServiceREST {
 			httpCode = HttpServletResponse.SC_BAD_REQUEST;
 			logMsg = e.getMessage();
 		}
+
 		if (isValid) {
-			if (lastKnownVersion == null) {
-				lastKnownVersion = Long.valueOf(-1);
-			}
 			try {
 				if (RangerPerfTracer.isPerfTraceEnabled(PERF_LOG)) {
 					perf = RangerPerfTracer.getPerfTracer(PERF_LOG, "ServiceREST.getSecureServicePoliciesIfUpdated(serviceName=" + serviceName + ",lastKnownVersion=" + lastKnownVersion + ",lastActivationTime=" + lastActivationTime + ")");
@@ -3157,7 +3188,7 @@ public class ServiceREST {
 
 				} else {
 					LOG.error("getSecureServicePoliciesIfUpdated(" + serviceName + ", " + lastKnownVersion + ") failed as User doesn't have permission to download Policy");
-					httpCode = HttpServletResponse.SC_UNAUTHORIZED;
+					httpCode = HttpServletResponse.SC_FORBIDDEN; // assert user is authenticated.
 					logMsg = "User doesn't have permission to download policy";
 				}
 			} catch (Throwable excp) {
@@ -3558,7 +3589,7 @@ public class ServiceREST {
 			
 
 			if (!isAllowed) {
-				throw restErrorUtil.createRESTException(HttpServletResponse.SC_UNAUTHORIZED,
+				throw restErrorUtil.createRESTException(HttpServletResponse.SC_FORBIDDEN,
 						"User '" + userName + "' does not have delegated-admin privilege on given resources", true);
 			}
 		} else {
@@ -4044,7 +4075,7 @@ public class ServiceREST {
 			}
 
 			if (!isAllowed) {
-				throw restErrorUtil.createRESTException(HttpServletResponse.SC_UNAUTHORIZED, "User '"
+				throw restErrorUtil.createRESTException(HttpServletResponse.SC_FORBIDDEN, "User '"
 						+ userName + "' does not have delegated-admin privilege on given resources", true);
 			}
 		} else {

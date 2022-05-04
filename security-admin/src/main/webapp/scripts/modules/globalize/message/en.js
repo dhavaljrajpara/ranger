@@ -500,7 +500,8 @@ define(function(require) {
                 signOutIsNotComplete    : 'Authentication to this instance of Ranger is managed externally(for example,Apache Knox). \
                                         You can still open this instance of Ranger from the same web browser without re-authentication. \
                                         To prevent additional access to Ranger, <b>close all browser windows and exit the browser</b>.',
-                pageNotFound            : 'Sorry, this page isn\'t here or has moved.'
+                pageNotFound            : 'Sorry, this page isn\'t here or has moved.',
+                resourcesLookup         : 'Resouce lookup fail for current resource'
 
 
 			},
@@ -524,10 +525,10 @@ define(function(require) {
 				alphaNumericUnderscoreDotComma :'* Only Alpha Numeric,underscore,comma,hypen,dot and space characters are allowed',
 				oldPasswordError       :'Your password does not match. Please try again with proper password',
 				oldPasswordRepeatError :'You can not use old password.',
-				newPasswordError       :'Invalid Password. Minimum 8 characters with min one alphabet and one numeric.',
+				newPasswordError       :'Invalid Password. Password should be minimum 8 characters, atleast one uppercase letter, one lowercase letter and one numeric. For FIPS environment password should be minimum 14 characters with atleast one uppercase letter, one special characters, one lowercase letter and one numeric.',
 				emailIdError           : 'Please enter valid email address.',
 				enterValidName         : 'Please enter valid name.',
-				passwordError          :'Password should be minimum 8 characters with min one alphabet and one numeric. For FIPS environment password should be minimum 14 characters with min one alphabet and one numeric.',
+				passwordError          :'Password should be minimum 8 characters, atleast one uppercase letter, one lowercase letter and one numeric. For FIPS environment password should be minimum 14 characters with atleast one uppercase letter, one special characters, one lowercase letter and one numeric.',
 				userNameValidationMsg  :'1. User name should be start with alphabet / numeric / underscore / non-us characters.<br> 2. Allowed special character ,._\-+/@= and space. <br>3. Name length should be greater than one.',
 				groupNameValidationMsg :'1. Group name should be start with alphabet / numeric / underscore / non-us characters.<br> 2. Allowed special character ,._\-+/@= and space. <br>3. Name length should be greater than one.',
                 firstNameValidationMsg :'1. First name should be start with alphabet / numeric / underscore / non-us characters.<br> 2. Allowed special character ._-@ and space. <br>3. Name length should be greater than one.',

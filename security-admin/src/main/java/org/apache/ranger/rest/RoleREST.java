@@ -723,7 +723,7 @@ public class RoleREST {
     @Produces({ "application/json", "application/xml" })
     public RangerRoles getRangerRolesIfUpdated(
             @PathParam("serviceName") String serviceName,
-            @QueryParam("lastKnownRoleVersion") Long lastKnownRoleVersion,
+            @DefaultValue("-1") @QueryParam("lastKnownRoleVersion") Long lastKnownRoleVersion,
             @DefaultValue("0") @QueryParam("lastActivationTime") Long lastActivationTime,
             @QueryParam("pluginId") String pluginId,
             @DefaultValue("") @QueryParam("clusterName") String clusterName,
@@ -751,9 +751,6 @@ public class RoleREST {
             logMsg = e.getMessage();
         }
         if (isValid) {
-            if (lastKnownRoleVersion == null) {
-                lastKnownRoleVersion = Long.valueOf(-1);
-            }
             try {
                 RangerRoles roles = roleStore.getRoles(serviceName, lastKnownRoleVersion);
                 if (roles == null) {
@@ -793,7 +790,7 @@ public class RoleREST {
     @Produces({ "application/json", "application/xml" })
     public RangerRoles getSecureRangerRolesIfUpdated(
             @PathParam("serviceName") String serviceName,
-            @QueryParam("lastKnownRoleVersion") Long lastKnownRoleVersion,
+            @DefaultValue("-1") @QueryParam("lastKnownRoleVersion") Long lastKnownRoleVersion,
             @DefaultValue("0") @QueryParam("lastActivationTime") Long lastActivationTime,
             @QueryParam("pluginId") String pluginId,
             @DefaultValue("") @QueryParam("clusterName") String clusterName,
@@ -824,9 +821,6 @@ public class RoleREST {
             logMsg = e.getMessage();
         }
         if (isValid) {
-            if (lastKnownRoleVersion == null) {
-                lastKnownRoleVersion = Long.valueOf(-1);
-            }
             try {
                 XXService xService = daoManager.getXXService().findByName(serviceName);
                 if (xService == null) {
@@ -866,7 +860,7 @@ public class RoleREST {
                     }
                 } else {
                     LOG.error("getSecureRangerRolesIfUpdated(" + serviceName + ", " + lastKnownRoleVersion + ") failed as User doesn't have permission to UserGroupRoles");
-                    httpCode = HttpServletResponse.SC_UNAUTHORIZED;
+                    httpCode = HttpServletResponse.SC_FORBIDDEN; // assert user is authenticated.
                     logMsg = "User doesn't have permission to download UserGroupRoles";
                 }
 

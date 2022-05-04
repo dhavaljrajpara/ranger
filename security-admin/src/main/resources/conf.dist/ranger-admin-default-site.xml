@@ -390,7 +390,7 @@
 
 	<property>
 		<name>ranger.jpa.jdbc.preferredtestquery</name>
-		<value>select 1;</value>
+		<value>select 1</value>
 		<description></description>
 	</property>
 
@@ -509,6 +509,11 @@
 	<property>
 		<name>ranger.sha256Password.update.disable</name>
 		<value>false</value>
+		<description></description>
+	</property>
+	<property>
+		<name>ranger.password.history.count</name>
+		<value>4</value>
 		<description></description>
 	</property>
 	<!-- # DB Info for audit_DB -->
@@ -651,4 +656,8 @@
             <name>ranger.tomcat.work.dir</name>
             <value></value>
           </property>
+	<property>
+		<name>ranger.allow.kerberos.auth.login.browser</name>
+		<value>false</value>
+	</property>
 </configuration>
