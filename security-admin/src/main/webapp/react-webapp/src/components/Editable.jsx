@@ -198,7 +198,16 @@ const Editable = (props) => {
             </h6>
           ) || "--";
       } else if (type === TYPE_RADIO) {
-        val = selectVal && selectVal.value ? selectVal.value : selectVal;
+        val =
+          selectVal && selectVal.label ? (
+            <h6>
+              <span className="badge bg-info">{selectVal.label}</span>
+            </h6>
+          ) : (
+            <h6>
+              <span className="badge bg-info">{selectVal}</span>
+            </h6>
+          );
       } else {
         val = selectVal || "--";
       }

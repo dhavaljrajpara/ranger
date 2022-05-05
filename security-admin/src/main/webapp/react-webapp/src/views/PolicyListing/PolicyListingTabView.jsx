@@ -4,13 +4,14 @@ import PolicyListing from "./PolicyListing";
 import { fetchApi } from "Utils/fetchAPI";
 import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
+import { MoreLess } from "Components/CommonComponents";
 
 class policyTabView extends Component {
   state = {
     serviceDetails: {},
     componentDefinationDetails: {},
-    loader: true,
-    activeKey: "access"
+    loader: true
+    // activeKey: "0"
   };
 
   componentDidMount() {
@@ -37,19 +38,8 @@ class policyTabView extends Component {
   };
 
   tabChange = (tabName) => {
-    let polivyType;
-    if (tabName == "access") {
-      polivyType = 0;
-    } else if (tabName == "masking") {
-      polivyType = 1;
-    } else {
-      polivyType = 2;
-    }
     this.props.history.replace({
-      pathname: `/service/${this.props.match.params.serviceId}/policies/${polivyType}`
-    });
-    this.setState({
-      activeKey: tabName
+      pathname: `/service/${this.props.match.params.serviceId}/policies/${tabName}`
     });
   };
 
@@ -65,20 +55,20 @@ class policyTabView extends Component {
           <Tabs
             id="PolicyListing"
             className="mb-3"
-            activeKey={this.state.activeKey}
+            activeKey={this.props.match.params.policyType}
             onSelect={(k) => this.tabChange(k)}
           >
-            <Tab eventKey="access" title="Access">
-              {this.state.activeKey == "access" && <PolicyListing />}
+            <Tab eventKey="0" title="Access">
+              {this.props.match.params.policyType == "0" && <PolicyListing />}
             </Tab>
             {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
-              <Tab eventKey="masking" title="Masking">
-                {this.state.activeKey == "masking" && <PolicyListing />}
+              <Tab eventKey="1" title="Masking">
+                {this.props.match.params.policyType == "1" && <PolicyListing />}
               </Tab>
             )}
             {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
-              <Tab eventKey="rowLevelFilter" title="Row Level Filter">
-                {this.state.activeKey == "rowLevelFilter" && <PolicyListing />}
+              <Tab eventKey="2" title="Row Level Filter">
+                {this.props.match.params.policyType == "2" && <PolicyListing />}
               </Tab>
             )}
           </Tabs>

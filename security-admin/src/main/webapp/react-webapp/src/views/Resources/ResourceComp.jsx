@@ -272,9 +272,6 @@ export default function ResourceComp(props) {
                     meta.error && (
                       <span className="invalid-field">{meta.error}</span>
                     )}
-                  {/* {meta.touched && meta.error && (
-                    <span className="invalid-field">{meta.error}</span>
-                  )} */}
                 </>
               )}
             />

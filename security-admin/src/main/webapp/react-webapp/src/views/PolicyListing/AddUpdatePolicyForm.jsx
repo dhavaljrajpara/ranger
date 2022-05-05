@@ -4,7 +4,7 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, filter, find, values } from "lodash";
+import { groupBy, filter, find, values, isEmpty } from "lodash";
 import { toast } from "react-toastify";
 import { Loader } from "Components/CommonComponents";
 
@@ -240,7 +240,8 @@ export default function AddUpdatePolicyForm() {
       policyId && policyData.dataMaskPolicyItems.length > 0
         ? setPolicyItemVal(
             policyData.dataMaskPolicyItems,
-            serviceCompData.accessTypes
+            serviceCompData.dataMaskDef.accessTypes,
+            serviceCompData.dataMaskDef.maskTypes
           )
         : [{}];
     data.rowFilterPolicyItems =
@@ -284,7 +285,7 @@ export default function AddUpdatePolicyForm() {
             data[`isExcludesSupport-${setResources.level}`] = value.isExcludes;
           }
           if (setResources.recursiveSupported) {
-            data[`recursiveSupported-${setResources.level}`] =
+            data[`isRecursiveSupport-${setResources.level}`] =
               value.isRecursive;
           }
         });
@@ -315,7 +316,7 @@ export default function AddUpdatePolicyForm() {
   const getPolicyItemsVal = (formData, name) => {
     var policyResourceItem = [];
     for (let key of formData[name]) {
-      if (Object.entries(key).length > 0) {
+      if (!isEmpty(key) && Object.entries(key).length > 0) {
         let obj = {};
         console.log(key);
         if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
@@ -342,7 +343,7 @@ export default function AddUpdatePolicyForm() {
         }
         if (key.dataMaskInfo != "undefined" && key.dataMaskInfo != null) {
           obj.dataMaskInfo = {};
-          obj.dataMaskInfo.dataMaskType = key.dataMaskInfo[0].value;
+          obj.dataMaskInfo.dataMaskType = key.dataMaskInfo.value;
           obj.dataMaskInfo.valueExpr = "";
         }
         policyResourceItem.push(obj);
@@ -351,7 +352,7 @@ export default function AddUpdatePolicyForm() {
     return policyResourceItem;
   };
 
-  const setPolicyItemVal = (formData, accessTypes) => {
+  const setPolicyItemVal = (formData, accessTypes, maskTypes) => {
     return formData.map((val) => {
       let obj = {},
         accessTypesObj = [];
@@ -395,8 +396,11 @@ export default function AddUpdatePolicyForm() {
         val.dataMaskInfo.dataMaskType
       ) {
         obj.dataMaskInfo = {};
-        obj.dataMaskInfo.label = val.dataMaskInfo.dataMaskType;
-        obj.dataMaskInfo.value = val.dataMaskInfo.dataMaskType;
+        let maskDataType = maskTypes.find((m) => {
+          return m.name == val.dataMaskInfo.dataMaskType;
+        });
+        obj.dataMaskInfo.label = maskDataType.label;
+        obj.dataMaskInfo.value = maskDataType.name;
       }
       return obj;
     });
@@ -497,7 +501,7 @@ export default function AddUpdatePolicyForm() {
     }
   };
 
-  const required = (value) => (value ? undefined : "Required");
+  // const required = (value) => (value ? undefined : "Required");
 
   const closeForm = () => {
     let polType = policyId ? policyData.policyType : policyType;
@@ -518,6 +522,16 @@ export default function AddUpdatePolicyForm() {
                 ...arrayMutators
               }}
               initialValues={formData}
+              validate={(values) => {
+                const errors = {};
+                if (!values.policyName) {
+                  errors.policyName = {
+                    required: true,
+                    text: "Required"
+                  };
+                }
+                return errors;
+              }}
               render={({
                 handleSubmit,
                 submitting,
@@ -570,11 +584,15 @@ export default function AddUpdatePolicyForm() {
                       </Col>
                     </FormB.Group>
                   )}
-                  <FormB.Group as={Row} className="mb-3" controlId="policyName">
+                  <FormB.Group
+                    as={Row}
+                    className="mb-3"
+                    controlId="policyNames"
+                  >
                     <Field
                       className="form-control"
                       name="policyName"
-                      validate={required}
+                      // validate={required}
                       render={({ input, meta }) => (
                         <>
                           <FormB.Label column sm={2}>
@@ -593,7 +611,7 @@ export default function AddUpdatePolicyForm() {
                               />
                               {meta.touched && meta.error && (
                                 <span className="invalid-field">
-                                  {meta.error}
+                                  {meta.error.text}
                                 </span>
                               )}
                             </Col>

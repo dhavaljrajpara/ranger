@@ -1,7 +1,14 @@
 import React from "react";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { UserRoles, PathAssociateWithModule } from "Utils/XAEnums";
-import _, { filter, flatMap, forEach, uniq, isEmpty } from "lodash";
+import _, {
+  filter,
+  flatMap,
+  forEach,
+  uniq,
+  isEmpty,
+  isUndefined
+} from "lodash";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import { matchPath } from "react-router";
@@ -800,4 +807,33 @@ export const getAllTimeZoneList = () => {
     { text: "Zulu (UTC)", id: "Zulu" }
   ];
   return Timezones;
+};
+
+export const showGroupsOrUsersOrRolesForPolicy = (
+  showType,
+  rawData,
+  policyType
+) => {
+  let itemList = [];
+  if (policyType == "0") {
+    itemList = [
+      "policyItems",
+      "allowExceptions",
+      "denyPolicyItems",
+      "denyExceptions"
+    ];
+  } else if (policyType == "1") {
+    itemList = ["dataMaskPolicyItems"];
+  } else {
+    itemList = ["rowFilterPolicyItems"];
+  }
+  let allTypes = new Set();
+  for (let item of itemList) {
+    if (rawData[item] && rawData[item].length > 0)
+      for (const obj of rawData[item]) {
+        allTypes = new Set([...allTypes, ...obj[showType]]);
+      }
+  }
+  allTypes = [...allTypes];
+  return allTypes;
 };

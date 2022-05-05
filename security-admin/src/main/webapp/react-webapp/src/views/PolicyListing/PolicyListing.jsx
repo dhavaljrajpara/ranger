@@ -3,9 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Col, Row, Tab, Tabs, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { uniq, map, flatMap } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
+import { showGroupsOrUsersOrRolesForPolicy } from "Utils/XAUtils";
+import { MoreLess } from "Components/CommonComponents";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
@@ -41,7 +42,6 @@ function PolicyListing() {
         } catch (error) {
           console.error(`Error occurred while fetching Policies ! ${error}`);
         }
-        console.log(policyData);
         setPolicyData(policyData);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
@@ -109,8 +109,8 @@ function PolicyListing() {
         Cell: (rawValue) => {
           if (rawValue.value == "") return "--";
           else {
-            let policyLabels = rawValue.value.map((label) => (
-              <h6 className="d-inline mr-1">
+            let policyLabels = rawValue.value.map((label, index) => (
+              <h6 className="d-inline mr-1" key={index}>
                 <Badge variant="primary" key={label}>
                   {label}
                 </Badge>
@@ -161,17 +161,18 @@ function PolicyListing() {
         accessor: "roles",
         Cell: (rawValue) => {
           if (rawValue) {
-            let getRoles = uniq(
-              flatMap(map(rawValue.row.original.policyItems, "roles"))
+            let rolesData = showGroupsOrUsersOrRolesForPolicy(
+              "roles",
+              rawValue.row.original,
+              policyType
             );
-            let roles = getRoles.map((a) => (
-              <h6 className="d-inline mr-1">
-                <Badge variant="primary" key={a}>
-                  {a}
-                </Badge>
+            return rolesData.length > 0 ? (
+              <h6>
+                <MoreLess data={rolesData} />
               </h6>
-            ));
-            return roles.length > 0 ? roles : "--";
+            ) : (
+              "--"
+            );
           } else {
             return "--";
           }
@@ -182,17 +183,18 @@ function PolicyListing() {
         accessor: "groups",
         Cell: (rawValue) => {
           if (rawValue) {
-            let getGroups = uniq(
-              flatMap(map(rawValue.row.original.policyItems, "groups"))
+            let groupsData = showGroupsOrUsersOrRolesForPolicy(
+              "groups",
+              rawValue.row.original,
+              policyType
             );
-            let groups = getGroups.map((a) => (
-              <h6 className="d-inline mr-1">
-                <Badge variant="primary" key={a}>
-                  {a}
-                </Badge>
+            return groupsData.length > 0 ? (
+              <h6>
+                <MoreLess data={groupsData} />
               </h6>
-            ));
-            return groups.length > 0 ? groups : "--";
+            ) : (
+              "--"
+            );
           } else {
             return "--";
           }
@@ -203,17 +205,18 @@ function PolicyListing() {
         accessor: "users",
         Cell: (rawValue) => {
           if (rawValue) {
-            let getUsers = uniq(
-              flatMap(map(rawValue.row.original.policyItems, "users"))
+            let usersData = showGroupsOrUsersOrRolesForPolicy(
+              "users",
+              rawValue.row.original,
+              policyType
             );
-            let users = getUsers.map((a) => (
-              <h6 className="d-inline mr-1">
-                <Badge variant="primary" key={a}>
-                  {a}
-                </Badge>
+            return usersData.length > 0 ? (
+              <h6>
+                <MoreLess data={usersData} />
               </h6>
-            ));
-            return users.length > 0 ? users : "--";
+            ) : (
+              "--"
+            );
           } else {
             return "--";
           }
@@ -264,7 +267,7 @@ function PolicyListing() {
       <div className="wrap policy-listing">
         <Row>
           <Col sm={12}>
-            <div className="pull-right">
+            <div className="pull-right mb-1">
               <Link
                 to={`/service/${serviceId}/policies/create/${policyType}`}
                 className="btn btn-sm btn-primary mb-2"
@@ -273,16 +276,17 @@ function PolicyListing() {
               </Link>
             </div>
           </Col>
-          <Col sm={12}>
-            <XATableLayout
-              data={policyListingData}
-              columns={columns}
-              fetchData={fetchPolicyInfo}
-              pageCount={pageCount}
-              loading={loader}
-            />
-          </Col>
         </Row>
+        <br />
+        <>
+          <XATableLayout
+            data={policyListingData}
+            columns={columns}
+            fetchData={fetchPolicyInfo}
+            pageCount={pageCount}
+            loading={loader}
+          />
+        </>
       </div>
       <Modal show={deletePolicyModal.showPopup} onHide={toggleClose}>
         <Modal.Body>Are you sure you want to delete</Modal.Body>
