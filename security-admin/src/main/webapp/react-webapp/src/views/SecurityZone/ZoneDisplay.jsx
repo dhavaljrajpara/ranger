@@ -75,12 +75,16 @@ class ZoneDisplay extends Component {
         <div className="col-sm-12">
           <div className="clearfix">
             <div className="float-left">
-              <button
-                onClick={this.expandbtn}
-                className="btn btn-sm btn-slide-toggle m-r-sm btn-outline-secondary pull-left"
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="btn-slide-toggle m-r-sm pull-left"
+                aria-controls="example-collapse-text"
+                aria-expanded={this.props.isCollapse}
+                onClick={() => this.props.expandBtn(this.props.isCollapse)}
               >
                 <i className="fa-fw fa fa-reorder"></i>
-              </button>
+              </Button>
               <span className="text-info h2 px-2">{this.props.zone.name}</span>
             </div>
             {this.state.isAdminRole && (

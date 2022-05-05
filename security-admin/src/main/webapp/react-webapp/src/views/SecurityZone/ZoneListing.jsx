@@ -6,7 +6,7 @@ import { fetchApi } from "Utils/fetchAPI";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import ZoneDisplay from "./ZoneDisplay";
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Collapse } from "react-bootstrap";
 import { sortBy } from "lodash";
 
 class ZoneListing extends Component {
@@ -15,7 +15,7 @@ class ZoneListing extends Component {
     this.state = {
       zones: [],
       selectedZone: null,
-      expand: true,
+      isCollapse: true,
       loader: false,
       searchText: "",
       filterZone: [],
@@ -31,7 +31,7 @@ class ZoneListing extends Component {
   fetchZones = async () => {
     let zoneList = [],
       selectedZone = null,
-      zoneId = this.props.match.params.id;
+      zoneId = this.props.match.params.zoneId;
     try {
       const zonesResp = await fetchApi({
         url: "zones/zones"
@@ -41,6 +41,7 @@ class ZoneListing extends Component {
       console.error(`Error occurred while fetching Zones! ${error}`);
     }
 
+    zoneList = sortBy(zoneList, ["name"]);
     if (zoneId !== undefined) {
       selectedZone = zoneList.find((obj) => obj.id === +zoneId) || null;
     } else {
@@ -56,7 +57,7 @@ class ZoneListing extends Component {
       loader: false,
       selectedZone: selectedZone,
       zones: zoneList,
-      filterZone: sortBy(zoneList, ["name"])
+      filterZone: zoneList
     });
   };
 
@@ -109,70 +110,85 @@ class ZoneListing extends Component {
     }
   };
 
+  expandBtn = (open) => {
+    this.setState({
+      isCollapse: !open
+    });
+  };
+
   render() {
     return this.state.loader ? (
       <Loader />
     ) : (
       <div className="wrap">
         <Row>
-          <Col md={3} className="border-right border-dark">
-            <Row>
-              <Col>
-                <h5 className="text-muted wrap-header bold pull-left">
-                  Security Zones
-                </h5>
-              </Col>
-
-              {this.state.isAdminRole && (
+          <Collapse in={this.state.isCollapse}>
+            <Col sm={3} className="">
+              <Row>
                 <Col>
-                  <Link
-                    to="/zones/create"
-                    className="btn btn-outline-secondary btn-sm pull-right"
-                  >
-                    <i className="fa-fw fa fa-plus"></i>
-                  </Link>
+                  <h5 className="text-muted wrap-header bold pull-left">
+                    Security Zones
+                  </h5>
                 </Col>
-              )}
-            </Row>
-            <Row>
-              <Col>
-                <input
-                  className="form-control mt-2"
-                  type="text"
-                  value={this.state.searchText}
-                  onChange={this.onChangeSearch}
-                  placeholder="Search"
-                ></input>
-              </Col>
-            </Row>
-            <Row className="mt-2">
-              <Col>
-                {this.state.filterZone.length !== 0 ? (
-                  <ul className="list-group">
-                    {this.state.filterZone.map((zone) => (
-                      <li className="list-group-item border " key={zone.id}>
-                        <a
-                          className="text-primary"
+
+                {this.state.isAdminRole && (
+                  <Col>
+                    <Link
+                      to="/zones/create"
+                      className="btn btn-outline-secondary btn-sm pull-right"
+                    >
+                      <i className="fa-fw fa fa-plus"></i>
+                    </Link>
+                  </Col>
+                )}
+              </Row>
+              <Row>
+                <Col>
+                  <input
+                    className="form-control mt-2"
+                    type="text"
+                    value={this.state.searchText}
+                    onChange={this.onChangeSearch}
+                    placeholder="Search"
+                  ></input>
+                </Col>
+              </Row>
+              <Row className="mt-2">
+                <Col>
+                  {this.state.filterZone.length !== 0 ? (
+                    <ul className="zone-listing">
+                      {this.state.filterZone.map((zone) => (
+                        <li
+                          className="trim-containt"
+                          key={zone.id}
                           onClick={() => {
                             this.clickBtn(zone.id);
                           }}
                         >
-                          {zone.name}
-                        </a>
+                          <a
+                            className={
+                              this.state.selectedZone != null &&
+                              this.state.selectedZone.id === zone.id
+                                ? `selected`
+                                : ``
+                            }
+                          >
+                            {zone.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="p-4">
+                      <li className="list-unstyled text-auto" key="no-zone">
+                        <h5 className="text-muted large">No Zone Found!</h5>
                       </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <ul className="p-4">
-                    <li className="list-unstyled text-auto" key="no-zone">
-                      <h5 className="text-muted large">No Zone Found!</h5>
-                    </li>
-                  </ul>
-                )}
-              </Col>
-            </Row>
-          </Col>
-
+                    </ul>
+                  )}
+                </Col>
+              </Row>
+            </Col>
+          </Collapse>
           <Col>
             {this.state.selectedZone === null ? (
               <Row className="justify-content-md-center">
@@ -199,6 +215,8 @@ class ZoneListing extends Component {
                 history={this.props.history}
                 zone={this.state.selectedZone}
                 deleteZone={this.deleteZone}
+                expandBtn={this.expandBtn}
+                isCollapse={this.state.isCollapse}
               />
             )}
             <div></div>

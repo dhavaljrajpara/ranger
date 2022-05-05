@@ -622,6 +622,39 @@ header {
   margin-bottom: 8px;
 }
 
+.zone-listing {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+
+.zone-listing li {
+  cursor: pointer;
+  padding: 5px;
+}
+
+.zone-listing li a {
+  color: #adadad;
+  text-decoration: none;
+}
+
+.zone-listing li+li {
+  border-top: 1px #adadad dashed;
+}
+
+.zone-listing li a:hover,
+.zone-listing li a.selected {
+  color: #0B7FAD;
+  font-weight: bold;
+}
+
+.trim-containt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95%;
+}
+
 /*Audit page Admin tab  */
 .link-tag {
   display: inline-block;

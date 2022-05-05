@@ -11,7 +11,6 @@ import arrayMutators from "final-form-arrays";
 import ModalResourceComp from "../Resources/ModalResourceComp";
 import { RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
-import { Loader } from "Components/CommonComponents";
 
 const noneOptions = {
   label: "None",
@@ -23,7 +22,8 @@ const SecurityZoneForm = (props) => {
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
   const [zone, setZone] = useState({});
-  const [resource, setResource] = useState([]);
+  const [resourceServiceDef, setResourceServiceDef] = useState({});
+  const [resourceService, setResourceService] = useState({});
   const [loader, setLoader] = useState(true);
   const [modelState, setModalstate] = useState({
     showModalResource: false,
@@ -101,8 +101,8 @@ const SecurityZoneForm = (props) => {
   const fetchZones = async () => {
     let zoneResp;
 
-    if (props.match.params.id !== undefined) {
-      let zoneId = props.match.params.id;
+    if (props.match.params.zoneId !== undefined) {
+      let zoneId = props.match.params.zoneId;
 
       try {
         zoneResp = await fetchApi({
@@ -122,19 +122,13 @@ const SecurityZoneForm = (props) => {
 
   const renderResourcesModal = (input, serviceType) => {
     let filterServiceDef = find(serviceDefs, ["name", serviceType]);
+    let filterService = find(services, ["type", serviceType]);
 
     for (const obj of filterServiceDef.resources) {
       obj.recursiveSupported = false;
       obj.excludesSupported = false;
       if (obj.level !== 10) {
         obj.mandatory = false;
-      }
-      if (
-        props.match.params.id == undefined &&
-        obj.lookupSupported !== undefined &&
-        obj.lookupSupported
-      ) {
-        obj.lookupSupported = false;
       }
     }
 
@@ -145,13 +139,16 @@ const SecurityZoneForm = (props) => {
       index: -1
     });
 
-    setResource(filterServiceDef);
+    setResourceServiceDef(filterServiceDef);
+    setResourceService(filterService);
   };
 
   const editResourcesModal = (idx, input, serviceType) => {
     let editData = input.input.value[idx];
-    let filterdef = serviceDefs.find((obj) => obj.name == serviceType);
-    for (const obj of filterdef.resources) {
+    let filterServiceDef = find(serviceDefs, ["name", serviceType]);
+    let filterService = find(services, ["type", serviceType]);
+
+    for (const obj of filterServiceDef.resources) {
       obj.recursiveSupported = false;
       obj.excludesSupported = false;
       if (obj.level !== 10) {
@@ -165,7 +162,9 @@ const SecurityZoneForm = (props) => {
       inputval: input,
       index: idx
     });
-    setResource(filterdef);
+
+    setResourceServiceDef(filterServiceDef);
+    setResourceService(filterService);
   };
 
   const onSubmit = async (values) => {
@@ -175,9 +174,10 @@ const SecurityZoneForm = (props) => {
     let apiSuccess;
     let apiError;
     let zoneData = {};
+    let zoneResp;
 
-    if (props.match.params.id !== undefined) {
-      zoneId = props.match.params.id;
+    if (props.match.params.zoneId !== undefined) {
+      zoneId = props.match.params.zoneId;
       apiMethod = "put";
       apiUrl = `/zones/zones/${zoneId}`;
       apiSuccess = "updated";
@@ -260,20 +260,20 @@ const SecurityZoneForm = (props) => {
         });
       }
     }
-    if (props.match.params.id) {
+    if (props.match.params.zoneId) {
       zoneData = {
         ...zone,
         ...zoneData
       };
     }
     try {
-      await fetchApi({
+      zoneResp = await fetchApi({
         url: apiUrl,
         method: apiMethod,
         data: zoneData
       });
       toast.success(`Success! Service zone ${apiSuccess} succesfully`);
-      history.goBack();
+      history.push(`/zones/zone/${zoneResp.data.id}`);
     } catch (error) {
       console.error(`Error occurred while ${apiError} Zone`);
       if (error.response !== undefined && has(error.response, "data.msgDesc")) {
@@ -349,11 +349,10 @@ const SecurityZoneForm = (props) => {
         }
       }
 
-      let serviceResource = {};
-
+      tableValues["resources"] = [];
       zone.services[name].resources.map((obj) => {
+        let serviceResource = {};
         Object.entries(obj).map(([key, value]) => {
-          tableValues["resources"] = [];
           let setResources = find(filterServiceDef.resources, ["name", key]);
           serviceResource[`resourceName-${setResources.level}`] = setResources;
           serviceResource[`value-${setResources.level}`] = value.map((m) => {
@@ -368,8 +367,9 @@ const SecurityZoneForm = (props) => {
               value.isRecursive;
           }
         });
+        tableValues["resources"].push(serviceResource);
       });
-      tableValues["resources"].push(serviceResource);
+
       zoneData.tableList.push(tableValues);
     }
 
@@ -524,488 +524,528 @@ const SecurityZoneForm = (props) => {
     ));
   };
 
-  return loader ? (
-    <Loader />
-  ) : (
-    <div>
-      <h4 className="wrap-header bold">
-        {props.match.params.id !== undefined ? `Edit` : `Create`} Zone
-      </h4>
-      <Form
-        onSubmit={onSubmit}
-        keepDirtyOnReinitialize={true}
-        initialValuesEqual={() => true}
-        initialValues={props.match.params.id !== undefined && EditFormData()}
-        mutators={{
-          ...arrayMutators
-        }}
-        validate={(values) => {
-          const errors = {};
-          if (!values.name) {
-            errors.name = {
-              required: true,
-              text: "Required"
-            };
-          } else {
-            if (
-              !RegexValidation.NAME_VALIDATION.regexforNameValidation.test(
-                values.name
-              )
-            ) {
-              errors.name = {
-                text: RegexValidation.NAME_VALIDATION
-                  .regexforNameValidationMessage
-              };
-            }
-          }
-
-          if (isEmpty(values.adminUsers) && isEmpty(values.adminUserGroups)) {
-            errors.adminUserGroups = {
-              required: true,
-              text: "Please provide atleast one audit user or group!"
-            };
-            errors.adminUsers = {
-              required: true,
-              text: ""
-            };
-          }
-
-          if (isEmpty(values.auditUsers) && isEmpty(values.auditUserGroups)) {
-            errors.auditUserGroups = {
-              required: true,
-              text: "Please provide atleast one audit user or group!"
-            };
-            errors.auditUsers = {
-              required: true,
-              text: ""
-            };
-          }
-
-          if (isEmpty(values.resourceServices)) {
-            errors.resourceServices = {
-              required: true,
-              text: "Required"
-            };
-          }
-
-          return errors;
-        }}
-        render={({
-          handleSubmit,
-          form: {
-            mutators: { push, remove }
-          },
-          submitting
-        }) => (
-          <div className="wrap">
-            <form onSubmit={handleSubmit}>
-              <p className="form-header">Zone Details:</p>
-              <Field name="name">
-                {({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Zone Name *
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <input
-                        {...input}
-                        type="text"
-                        className={
-                          meta.error && meta.touched
-                            ? "form-control border border-danger"
-                            : "form-control"
-                        }
-                      />
-                      {meta.error && meta.touched && (
-                        <span className="invalid-field">{meta.error.text}</span>
-                      )}
-                    </Col>
-                  </Row>
-                )}
-              </Field>
-              <br />
-              <Field name="description">
-                {({ input }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Zone Description
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <textarea {...input} className="form-control" />
-                    </Col>
-                  </Row>
-                )}
-              </Field>
-              <br />
-              <p className="form-header">Zone Details:</p>
-              <Field
-                name="adminUsers"
-                render={({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Admin Users
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <AsyncSelect
-                        {...input}
-                        cacheOptions
-                        className={
-                          meta.error && meta.touched
-                            ? "form-control border border-danger p-0"
-                            : "form-control p-0  border-0"
-                        }
-                        defaultOptions
-                        loadOptions={fetchUsers}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select User"
-                      />
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <Field
-                name="adminUserGroups"
-                render={({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Admin Usergroups
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <AsyncSelect
-                        {...input}
-                        className={
-                          meta.error && meta.touched
-                            ? "form-control border border-danger p-0"
-                            : "form-control p-0  border-0"
-                        }
-                        defaultOptions
-                        loadOptions={fetchGroups}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select Group"
-                        required
-                      />
-                      {meta.touched && meta.error && (
-                        <span className="invalid-field">{meta.error.text}</span>
-                      )}
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <Field
-                name="auditUsers"
-                render={({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Auditor Users
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <AsyncSelect
-                        {...input}
-                        className={
-                          meta.error && meta.touched
-                            ? "form-control border border-danger p-0"
-                            : "form-control p-0  border-0"
-                        }
-                        defaultOptions
-                        loadOptions={fetchUsers}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select User"
-                      />
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <Field
-                className="form-control"
-                name="auditUserGroups"
-                render={({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Auditor Usergroups
-                      </label>
-                    </Col>
-                    <Col xs={4}>
-                      <AsyncSelect
-                        {...input}
-                        className={
-                          meta.error && meta.touched
-                            ? "form-control border border-danger p-0"
-                            : "form-control p-0  border-0"
-                        }
-                        defaultOptions
-                        loadOptions={fetchGroups}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select Group"
-                      />
-                      {meta.error && meta.touched && (
-                        <span className="invalid-field">{meta.error.text}</span>
-                      )}
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <p className="form-header">Services:</p>
-              <Field
-                className="form-control"
-                name="tagServices"
-                render={({ input }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Select Tag Services
-                      </label>
-                    </Col>
-                    <Col xs={6}>
-                      <AsyncSelect
-                        {...input}
-                        className="form-control p-0 border-0"
-                        defaultOptions
-                        loadOptions={fetchTagServices}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select Tag Services"
-                      />
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <Field
-                className="form-control"
-                name="resourceServices"
-                render={({ input, meta }) => (
-                  <Row>
-                    <Col xs={3}>
-                      <label className="form-label pull-right">
-                        Select Resource Services*
-                      </label>
-                    </Col>
-                    <Col xs={6}>
-                      <AsyncSelect
-                        {...input}
-                        className="form-control p-0 border-0"
-                        defaultOptions
-                        onChange={(values, e) =>
-                          resourceServicesOnChange(
-                            e,
-                            input,
-                            values,
-                            push,
-                            remove
-                          )
-                        }
-                        loadOptions={fetchResourceServices}
-                        isMulti
-                        components={{
-                          DropdownIndicator: () => null,
-                          IndicatorSeparator: () => null
-                        }}
-                        isClearable={false}
-                        placeholder="Select Service Name"
-                      />
-                      {meta.error && meta.touched && (
-                        <span className="invalid-field">{meta.error.text}</span>
-                      )}
-                    </Col>
-                  </Row>
-                )}
-              />
-              <br />
-              <Table striped bordered>
-                <thead>
-                  <tr>
-                    <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
-                      Service Name
-                    </th>
-                    <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
-                      Service Type
-                    </th>
-                    <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
-                      Resource
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <FieldArray name="tableList">
-                    {({ fields }) =>
-                      fields.value && fields.value.length > 0 ? (
-                        fields.map((name, index) => (
-                          <tr className="bg-white" key={index}>
-                            <td className="align-middle">
-                              <h6> {fields.value[index].serviceName} </h6>
-                            </td>
-                            <td className="align-middle">
-                              <h6>
-                                {fields.value[index].serviceType
-                                  .toString()
-                                  .toUpperCase()}
-                              </h6>
-                            </td>
-                            <td className="text-center" key={name}>
-                              <Field
-                                name={`${name}.resources`}
-                                render={(input) => (
-                                  <React.Fragment>
-                                    {input.input.value &&
-                                    input.input.value.length > 0
-                                      ? input.input.value.map((obj, idx) => (
-                                          <div
-                                            className="resource-group"
-                                            key={idx}
-                                          >
-                                            <Row>
-                                              <Col xs={9}>
-                                                <span className="m-t-xs">
-                                                  {showResources(
-                                                    obj,
-                                                    fields.value[index]
-                                                      .serviceType
-                                                  )}
-                                                </span>
-                                              </Col>
-                                              <Col xs={3}>
-                                                <Button
-                                                  title="edit"
-                                                  className="btn btn-primary m-r-xs btn-mini m-r-5"
-                                                  size="sm"
-                                                  onClick={() =>
-                                                    editResourcesModal(
-                                                      idx,
-                                                      input,
-                                                      fields.value[index]
-                                                        .serviceType
-                                                    )
-                                                  }
-                                                >
-                                                  <i className="fa-fw fa fa-edit"></i>
-                                                </Button>
-                                                <Button
-                                                  title="delete"
-                                                  className="btn btn-danger active  btn-mini"
-                                                  size="sm"
-                                                  onClick={() =>
-                                                    handleRemove(idx, input)
-                                                  }
-                                                >
-                                                  <i className="fa-fw fa fa-remove"></i>
-                                                </Button>
-                                              </Col>
-                                            </Row>
-                                          </div>
-                                        ))
-                                      : ""}
-                                    <div className="resource-list min-width-150">
-                                      <Button
-                                        title="add"
-                                        className="btn btn-mini pull-left"
-                                        variant="outline-secondary"
-                                        size="sm"
-                                        onClick={() =>
-                                          renderResourcesModal(
-                                            input,
-                                            fields.value[index].serviceType
-                                          )
-                                        }
-                                      >
-                                        <i className="fa-fw fa fa-plus "></i>
-                                      </Button>
-                                    </div>
-                                  </React.Fragment>
-                                )}
-                              />
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan="3"
-                            className="text-center text-secondary"
-                          >
-                            <h6>No Zone Data Found!!</h6>
-                          </td>
-                        </tr>
-                      )
-                    }
-                  </FieldArray>
-                </tbody>
-              </Table>
-              <div className="row form-actions">
-                <div className="col-md-9 offset-md-3">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    size="sm"
-                    disabled={submitting}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    size="sm"
-                    onClick={() => {
-                      props.history.goBack();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+  return (
+    <React.Fragment>
+      <div className="clearfix">
+        <h4 className="wrap-header bold">
+          {props.match.params.zoneId !== undefined ? `Edit` : `Create`} Zone
+        </h4>
+      </div>
+      <div className="wrap">
+        {loader ? (
+          <div className="row">
+            <div className="col-sm-12 text-center">
+              <div className="spinner-border mr-2" role="status">
+                <span className="sr-only">Loading...</span>
               </div>
-            </form>
-            <ModalResourceComp
-              serviceDetails={{}}
-              serviceCompDetails={resource}
-              cancelButtonText="Cancel"
-              actionButtonText="Submit"
-              modelState={modelState}
-              handleSave={handleSave}
-              handleClose={handleClose}
-              policyItem={true}
-            />
+              <div className="spinner-grow" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
           </div>
+        ) : (
+          <Form
+            onSubmit={onSubmit}
+            keepDirtyOnReinitialize={true}
+            initialValuesEqual={() => true}
+            initialValues={
+              props.match.params.zoneId !== undefined && EditFormData()
+            }
+            mutators={{
+              ...arrayMutators
+            }}
+            validate={(values) => {
+              const errors = {};
+              if (!values.name) {
+                errors.name = {
+                  required: true,
+                  text: "Required"
+                };
+              } else {
+                if (
+                  !RegexValidation.NAME_VALIDATION.regexforNameValidation.test(
+                    values.name
+                  )
+                ) {
+                  errors.name = {
+                    text: RegexValidation.NAME_VALIDATION
+                      .regexforNameValidationMessage
+                  };
+                }
+              }
+
+              if (
+                isEmpty(values.adminUsers) &&
+                isEmpty(values.adminUserGroups)
+              ) {
+                errors.adminUserGroups = {
+                  required: true,
+                  text: "Please provide atleast one audit user or group!"
+                };
+                errors.adminUsers = {
+                  required: true,
+                  text: ""
+                };
+              }
+
+              if (
+                isEmpty(values.auditUsers) &&
+                isEmpty(values.auditUserGroups)
+              ) {
+                errors.auditUserGroups = {
+                  required: true,
+                  text: "Please provide atleast one audit user or group!"
+                };
+                errors.auditUsers = {
+                  required: true,
+                  text: ""
+                };
+              }
+
+              if (isEmpty(values.resourceServices)) {
+                errors.resourceServices = {
+                  required: true,
+                  text: "Required"
+                };
+              }
+
+              return errors;
+            }}
+            render={({
+              handleSubmit,
+              form: {
+                mutators: { push, remove }
+              },
+              submitting
+            }) => (
+              <Row>
+                <Col sm={12}>
+                  <form onSubmit={handleSubmit}>
+                    <p className="form-header">Zone Details:</p>
+                    <Field name="name">
+                      {({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Zone Name *
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <input
+                              {...input}
+                              type="text"
+                              className={
+                                meta.error && meta.touched
+                                  ? "form-control border border-danger"
+                                  : "form-control"
+                              }
+                            />
+                            {meta.error && meta.touched && (
+                              <span className="invalid-field">
+                                {meta.error.text}
+                              </span>
+                            )}
+                          </Col>
+                        </Row>
+                      )}
+                    </Field>
+                    <br />
+                    <Field name="description">
+                      {({ input }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Zone Description
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <textarea {...input} className="form-control" />
+                          </Col>
+                        </Row>
+                      )}
+                    </Field>
+                    <br />
+                    <p className="form-header">Zone Details:</p>
+                    <Field
+                      name="adminUsers"
+                      render={({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Admin Users
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <AsyncSelect
+                              {...input}
+                              cacheOptions
+                              className={
+                                meta.error && meta.touched
+                                  ? "form-control border border-danger p-0"
+                                  : "form-control p-0  border-0"
+                              }
+                              defaultOptions
+                              loadOptions={fetchUsers}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select User"
+                            />
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <Field
+                      name="adminUserGroups"
+                      render={({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Admin Usergroups
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <AsyncSelect
+                              {...input}
+                              className={
+                                meta.error && meta.touched
+                                  ? "form-control border border-danger p-0"
+                                  : "form-control p-0  border-0"
+                              }
+                              defaultOptions
+                              loadOptions={fetchGroups}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select Group"
+                              required
+                            />
+                            {meta.touched && meta.error && (
+                              <span className="invalid-field">
+                                {meta.error.text}
+                              </span>
+                            )}
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <Field
+                      name="auditUsers"
+                      render={({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Auditor Users
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <AsyncSelect
+                              {...input}
+                              className={
+                                meta.error && meta.touched
+                                  ? "form-control border border-danger p-0"
+                                  : "form-control p-0  border-0"
+                              }
+                              defaultOptions
+                              loadOptions={fetchUsers}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select User"
+                            />
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <Field
+                      className="form-control"
+                      name="auditUserGroups"
+                      render={({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Auditor Usergroups
+                            </label>
+                          </Col>
+                          <Col xs={4}>
+                            <AsyncSelect
+                              {...input}
+                              className={
+                                meta.error && meta.touched
+                                  ? "form-control border border-danger p-0"
+                                  : "form-control p-0  border-0"
+                              }
+                              defaultOptions
+                              loadOptions={fetchGroups}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select Group"
+                            />
+                            {meta.error && meta.touched && (
+                              <span className="invalid-field">
+                                {meta.error.text}
+                              </span>
+                            )}
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <p className="form-header">Services:</p>
+                    <Field
+                      className="form-control"
+                      name="tagServices"
+                      render={({ input }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Select Tag Services
+                            </label>
+                          </Col>
+                          <Col xs={6}>
+                            <AsyncSelect
+                              {...input}
+                              className="form-control p-0 border-0"
+                              defaultOptions
+                              loadOptions={fetchTagServices}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select Tag Services"
+                            />
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <Field
+                      className="form-control"
+                      name="resourceServices"
+                      render={({ input, meta }) => (
+                        <Row>
+                          <Col xs={3}>
+                            <label className="form-label pull-right">
+                              Select Resource Services*
+                            </label>
+                          </Col>
+                          <Col xs={6}>
+                            <AsyncSelect
+                              {...input}
+                              className="form-control p-0 border-0"
+                              defaultOptions
+                              onChange={(values, e) =>
+                                resourceServicesOnChange(
+                                  e,
+                                  input,
+                                  values,
+                                  push,
+                                  remove
+                                )
+                              }
+                              loadOptions={fetchResourceServices}
+                              isMulti
+                              components={{
+                                DropdownIndicator: () => null,
+                                IndicatorSeparator: () => null
+                              }}
+                              isClearable={false}
+                              placeholder="Select Service Name"
+                            />
+                            {meta.error && meta.touched && (
+                              <span className="invalid-field">
+                                {meta.error.text}
+                              </span>
+                            )}
+                          </Col>
+                        </Row>
+                      )}
+                    />
+                    <br />
+                    <Table striped bordered>
+                      <thead>
+                        <tr>
+                          <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
+                            Service Name
+                          </th>
+                          <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
+                            Service Type
+                          </th>
+                          <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
+                            Resource
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <FieldArray name="tableList">
+                          {({ fields }) =>
+                            fields.value && fields.value.length > 0 ? (
+                              fields.map((name, index) => (
+                                <tr className="bg-white" key={index}>
+                                  <td className="align-middle">
+                                    <h6> {fields.value[index].serviceName} </h6>
+                                  </td>
+                                  <td className="align-middle">
+                                    <h6>
+                                      {fields.value[index].serviceType
+                                        .toString()
+                                        .toUpperCase()}
+                                    </h6>
+                                  </td>
+                                  <td className="text-center" key={name}>
+                                    <Field
+                                      name={`${name}.resources`}
+                                      render={(input) => (
+                                        <React.Fragment>
+                                          {input.input.value &&
+                                          input.input.value.length > 0
+                                            ? input.input.value.map(
+                                                (obj, idx) => (
+                                                  <div
+                                                    className="resource-group"
+                                                    key={idx}
+                                                  >
+                                                    <Row>
+                                                      <Col xs={9}>
+                                                        <span className="m-t-xs">
+                                                          {showResources(
+                                                            obj,
+                                                            fields.value[index]
+                                                              .serviceType
+                                                          )}
+                                                        </span>
+                                                      </Col>
+                                                      <Col xs={3}>
+                                                        <Button
+                                                          title="edit"
+                                                          className="btn btn-primary m-r-xs btn-mini m-r-5"
+                                                          size="sm"
+                                                          onClick={() =>
+                                                            editResourcesModal(
+                                                              idx,
+                                                              input,
+                                                              fields.value[
+                                                                index
+                                                              ].serviceType
+                                                            )
+                                                          }
+                                                        >
+                                                          <i className="fa-fw fa fa-edit"></i>
+                                                        </Button>
+                                                        <Button
+                                                          title="delete"
+                                                          className="btn btn-danger active  btn-mini"
+                                                          size="sm"
+                                                          onClick={() =>
+                                                            handleRemove(
+                                                              idx,
+                                                              input
+                                                            )
+                                                          }
+                                                        >
+                                                          <i className="fa-fw fa fa-remove"></i>
+                                                        </Button>
+                                                      </Col>
+                                                    </Row>
+                                                  </div>
+                                                )
+                                              )
+                                            : ""}
+                                          <div className="resource-list min-width-150">
+                                            <Button
+                                              title="add"
+                                              className="btn btn-mini pull-left"
+                                              variant="outline-secondary"
+                                              size="sm"
+                                              onClick={() =>
+                                                renderResourcesModal(
+                                                  input,
+                                                  fields.value[index]
+                                                    .serviceType
+                                                )
+                                              }
+                                            >
+                                              <i className="fa-fw fa fa-plus "></i>
+                                            </Button>
+                                          </div>
+                                        </React.Fragment>
+                                      )}
+                                    />
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td
+                                  colSpan="3"
+                                  className="text-center text-secondary"
+                                >
+                                  <h6>No Zone Data Found!!</h6>
+                                </td>
+                              </tr>
+                            )
+                          }
+                        </FieldArray>
+                      </tbody>
+                    </Table>
+                    <div className="row form-actions">
+                      <div className="col-md-9 offset-md-3">
+                        <Button
+                          variant="primary"
+                          type="submit"
+                          size="sm"
+                          disabled={submitting}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            props.history.goBack();
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                  <ModalResourceComp
+                    serviceDetails={resourceService}
+                    serviceCompDetails={resourceServiceDef}
+                    cancelButtonText="Cancel"
+                    actionButtonText="Submit"
+                    modelState={modelState}
+                    handleSave={handleSave}
+                    handleClose={handleClose}
+                    policyItem={true}
+                  />
+                </Col>
+              </Row>
+            )}
+          />
         )}
-      />
-    </div>
+      </div>
+    </React.Fragment>
   );
 };
 

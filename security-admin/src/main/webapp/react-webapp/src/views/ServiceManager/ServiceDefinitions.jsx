@@ -3,7 +3,7 @@ import { withRouter } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { filter, map, uniq } from "lodash";
+import { filter, map, sortBy, uniq } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import {
   isSystemAdmin,
@@ -72,7 +72,7 @@ class ServiceDefinitions extends Component {
     }
 
     this.setState({
-      zones: zoneList,
+      zones: sortBy(zoneList, ["name"]),
       isDisabled: zoneList.length === 0 ? true : false
     });
   };

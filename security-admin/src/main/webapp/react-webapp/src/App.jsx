@@ -195,7 +195,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/zones/zone/:id"
+                      path="/zones/zone/:zoneId"
                       component={ZoneListingComp}
                       {...defaultProps}
                     />
@@ -207,7 +207,7 @@ export default class App extends Component {
                     />
                     <AuthRoute
                       exact
-                      path="/zones/edit/:id"
+                      path="/zones/edit/:zoneId"
                       component={SecurityZoneFormComp}
                       {...defaultProps}
                     />
