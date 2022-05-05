@@ -235,7 +235,7 @@ export default function PolicyPermissionItem(props) {
                                   <Editable
                                     {...input}
                                     placement="right"
-                                    type="checkbox"
+                                    type="radio"
                                     options={getMaskingAccessTypeOptions()}
                                     showSelectAll={false}
                                     selectAllLabel="Select All"
