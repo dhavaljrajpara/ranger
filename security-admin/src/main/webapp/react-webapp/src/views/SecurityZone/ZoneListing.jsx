@@ -123,7 +123,7 @@ class ZoneListing extends Component {
       <div className="wrap">
         <Row>
           <Collapse in={this.state.isCollapse}>
-            <Col sm={3} className="">
+            <Col sm={3} className="border-right border-grey">
               <Row>
                 <Col>
                   <h5 className="text-muted wrap-header bold pull-left">

@@ -443,7 +443,7 @@ const SecurityZoneForm = (props) => {
       });
     }
 
-    if (e.action == "remove-value") {
+    if (e.action == "remove-value" || e.action == "pop-value") {
       let removeItemIndex = findIndex(input.value, [
         "value",
         e.removedValue.value
@@ -533,16 +533,16 @@ const SecurityZoneForm = (props) => {
       </div>
       <div className="wrap">
         {loader ? (
-          <div className="row">
-            <div className="col-sm-12 text-center">
+          <Row>
+            <Col sm={12} className="text-center">
               <div className="spinner-border mr-2" role="status">
                 <span className="sr-only">Loading...</span>
               </div>
               <div className="spinner-grow" role="status">
                 <span className="sr-only">Loading...</span>
               </div>
-            </div>
-          </div>
+            </Col>
+          </Row>
         ) : (
           <Form
             onSubmit={onSubmit}
@@ -624,7 +624,7 @@ const SecurityZoneForm = (props) => {
                     <p className="form-header">Zone Details:</p>
                     <Field name="name">
                       {({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Zone Name *
@@ -636,7 +636,7 @@ const SecurityZoneForm = (props) => {
                               type="text"
                               className={
                                 meta.error && meta.touched
-                                  ? "form-control border border-danger"
+                                  ? "form-control border-danger"
                                   : "form-control"
                               }
                             />
@@ -649,10 +649,10 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     </Field>
-                    <br />
+
                     <Field name="description">
                       {({ input }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Zone Description
@@ -664,12 +664,12 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     </Field>
-                    <br />
-                    <p className="form-header">Zone Details:</p>
+
+                    <p className="form-header">Zone Administration:</p>
                     <Field
                       name="adminUsers"
                       render={({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Admin Users
@@ -679,11 +679,6 @@ const SecurityZoneForm = (props) => {
                             <AsyncSelect
                               {...input}
                               cacheOptions
-                              className={
-                                meta.error && meta.touched
-                                  ? "form-control border border-danger p-0"
-                                  : "form-control p-0  border-0"
-                              }
                               defaultOptions
                               loadOptions={fetchUsers}
                               isMulti
@@ -698,11 +693,11 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <Field
                       name="adminUserGroups"
                       render={({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Admin Usergroups
@@ -711,11 +706,6 @@ const SecurityZoneForm = (props) => {
                           <Col xs={4}>
                             <AsyncSelect
                               {...input}
-                              className={
-                                meta.error && meta.touched
-                                  ? "form-control border border-danger p-0"
-                                  : "form-control p-0  border-0"
-                              }
                               defaultOptions
                               loadOptions={fetchGroups}
                               isMulti
@@ -736,11 +726,11 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <Field
                       name="auditUsers"
                       render={({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Auditor Users
@@ -749,11 +739,6 @@ const SecurityZoneForm = (props) => {
                           <Col xs={4}>
                             <AsyncSelect
                               {...input}
-                              className={
-                                meta.error && meta.touched
-                                  ? "form-control border border-danger p-0"
-                                  : "form-control p-0  border-0"
-                              }
                               defaultOptions
                               loadOptions={fetchUsers}
                               isMulti
@@ -768,12 +753,11 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <Field
-                      className="form-control"
                       name="auditUserGroups"
                       render={({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Auditor Usergroups
@@ -782,11 +766,6 @@ const SecurityZoneForm = (props) => {
                           <Col xs={4}>
                             <AsyncSelect
                               {...input}
-                              className={
-                                meta.error && meta.touched
-                                  ? "form-control border border-danger p-0"
-                                  : "form-control p-0  border-0"
-                              }
                               defaultOptions
                               loadOptions={fetchGroups}
                               isMulti
@@ -806,13 +785,12 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <p className="form-header">Services:</p>
                     <Field
-                      className="form-control"
                       name="tagServices"
                       render={({ input }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
                               Select Tag Services
@@ -821,7 +799,6 @@ const SecurityZoneForm = (props) => {
                           <Col xs={6}>
                             <AsyncSelect
                               {...input}
-                              className="form-control p-0 border-0"
                               defaultOptions
                               loadOptions={fetchTagServices}
                               isMulti
@@ -836,21 +813,19 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <Field
-                      className="form-control"
                       name="resourceServices"
                       render={({ input, meta }) => (
-                        <Row>
+                        <Row className="form-group">
                           <Col xs={3}>
                             <label className="form-label pull-right">
-                              Select Resource Services*
+                              Select Resource Services *
                             </label>
                           </Col>
                           <Col xs={6}>
                             <AsyncSelect
                               {...input}
-                              className="form-control p-0 border-0"
                               defaultOptions
                               onChange={(values, e) =>
                                 resourceServicesOnChange(
@@ -869,6 +844,7 @@ const SecurityZoneForm = (props) => {
                               }}
                               isClearable={false}
                               placeholder="Select Service Name"
+                              isSearchable={true}
                             />
                             {meta.error && meta.touched && (
                               <span className="invalid-field">
@@ -879,7 +855,7 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-                    <br />
+
                     <Table striped bordered>
                       <thead>
                         <tr>
@@ -1006,8 +982,8 @@ const SecurityZoneForm = (props) => {
                         </FieldArray>
                       </tbody>
                     </Table>
-                    <div className="row form-actions">
-                      <div className="col-md-9 offset-md-3">
+                    <Row className="form-actions">
+                      <Col sm={{ span: 9, offset: 3 }}>
                         <Button
                           variant="primary"
                           type="submit"
@@ -1026,8 +1002,8 @@ const SecurityZoneForm = (props) => {
                         >
                           Cancel
                         </Button>
-                      </div>
-                    </div>
+                      </Col>
+                    </Row>
                   </form>
                   <ModalResourceComp
                     serviceDetails={resourceService}
