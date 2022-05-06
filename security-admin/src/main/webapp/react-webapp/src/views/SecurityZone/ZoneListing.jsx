@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
-import { Loader } from "Components/CommonComponents";
 import ZoneDisplay from "./ZoneDisplay";
 import { Row, Col, Collapse } from "react-bootstrap";
 import { sortBy } from "lodash";
@@ -16,7 +15,7 @@ class ZoneListing extends Component {
       zones: [],
       selectedZone: null,
       isCollapse: true,
-      loader: false,
+      loader: true,
       searchText: "",
       filterZone: [],
       isAdminRole: isSystemAdmin() || isKeyAdmin()
@@ -117,9 +116,7 @@ class ZoneListing extends Component {
   };
 
   render() {
-    return this.state.loader ? (
-      <Loader />
-    ) : (
+    return (
       <div className="wrap">
         <Row>
           <Collapse in={this.state.isCollapse}>
@@ -130,7 +127,6 @@ class ZoneListing extends Component {
                     Security Zones
                   </h5>
                 </Col>
-
                 {this.state.isAdminRole && (
                   <Col>
                     <Link
@@ -179,18 +175,27 @@ class ZoneListing extends Component {
                       ))}
                     </ul>
                   ) : (
-                    <ul className="p-4">
-                      <li className="list-unstyled text-auto" key="no-zone">
-                        <h5 className="text-muted large">No Zone Found!</h5>
-                      </li>
-                    </ul>
+                    <h6 className="text-muted large mt-3 bold">
+                      No Zone Found !
+                    </h6>
                   )}
                 </Col>
               </Row>
             </Col>
           </Collapse>
           <Col>
-            {this.state.selectedZone === null ? (
+            {this.state.loader ? (
+              <Row>
+                <Col sm={12} className="text-center">
+                  <div className="spinner-border mr-2" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                  <div className="spinner-grow" role="status">
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                </Col>
+              </Row>
+            ) : this.state.selectedZone === null ? (
               <Row className="justify-content-md-center">
                 <Col md="auto">
                   <img
@@ -198,16 +203,17 @@ class ZoneListing extends Component {
                     className="w-50 p-3 d-block mx-auto"
                     src={noZoneImage}
                   />
-                  <br />
-                  <span className="pt-5 pr-5">
-                    <Link
-                      to="/zones/create"
-                      className="btn-add-security2 btn-lg"
-                    >
-                      <i className="fa-fw fa fa-plus"></i>Click here to Create
-                      new Zone
-                    </Link>
-                  </span>
+                  <div className="pt-5 pr-5">
+                    {this.state.isAdminRole && (
+                      <Link
+                        to="/zones/create"
+                        className="btn-add-security2 btn-lg"
+                      >
+                        <i className="fa-fw fa fa-plus"></i>Click here to Create
+                        new Zone
+                      </Link>
+                    )}
+                  </div>
                 </Col>
               </Row>
             ) : (
@@ -219,7 +225,6 @@ class ZoneListing extends Component {
                 isCollapse={this.state.isCollapse}
               />
             )}
-            <div></div>
           </Col>
         </Row>
       </div>

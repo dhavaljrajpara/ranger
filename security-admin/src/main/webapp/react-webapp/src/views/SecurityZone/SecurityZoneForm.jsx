@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
 import { Button, Row, Col } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
+import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
 import { groupBy, findIndex, isEmpty, pickBy, find, has } from "lodash";
@@ -24,6 +25,7 @@ const SecurityZoneForm = (props) => {
   const [zone, setZone] = useState({});
   const [resourceServiceDef, setResourceServiceDef] = useState({});
   const [resourceService, setResourceService] = useState({});
+  const [resourceServicesOpt, setResourceServicesOpt] = useState([]);
   const [loader, setLoader] = useState(true);
   const [modelState, setModalstate] = useState({
     showModalResource: false,
@@ -65,15 +67,9 @@ const SecurityZoneForm = (props) => {
     setServiceDefs(servicetypeResp.data.serviceDefs);
   };
 
-  const fetchResourceServices = async (inputValue) => {
-    let params = {};
-
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
+  const fetchResourceServices = async () => {
     const serviceDefnsResp = await fetchApi({
-      url: "plugins/services",
-      params: params
+      url: "plugins/services"
     });
 
     const filterServices = serviceDefnsResp.data.services.filter(
@@ -95,7 +91,7 @@ const SecurityZoneForm = (props) => {
       });
     }
 
-    return resourceServices;
+    setResourceServicesOpt(resourceServices);
   };
 
   const fetchZones = async () => {
@@ -824,9 +820,8 @@ const SecurityZoneForm = (props) => {
                             </label>
                           </Col>
                           <Col xs={6}>
-                            <AsyncSelect
+                            <Select
                               {...input}
-                              defaultOptions
                               onChange={(values, e) =>
                                 resourceServicesOnChange(
                                   e,
@@ -836,15 +831,15 @@ const SecurityZoneForm = (props) => {
                                   remove
                                 )
                               }
-                              loadOptions={fetchResourceServices}
                               isMulti
                               components={{
                                 DropdownIndicator: () => null,
                                 IndicatorSeparator: () => null
                               }}
+                              options={resourceServicesOpt}
                               isClearable={false}
-                              placeholder="Select Service Name"
                               isSearchable={true}
+                              placeholder="Select Service Name"
                             />
                             {meta.error && meta.touched && (
                               <span className="invalid-field">
