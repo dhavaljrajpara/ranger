@@ -628,13 +628,14 @@ export default function AddUpdatePolicyForm() {
                             render={({ input }) => (
                               <BootstrapSwitchButton
                                 {...input}
-                                checked={input.value}
+                                checked={!(input.value === false)}
                                 onlabel="Enabled"
                                 onstyle="primary"
                                 offlabel="Disabled"
                                 offstyle="outline-secondary"
                                 style="w-100"
                                 size="xs"
+                                key="isEnabled"
                               />
                             )}
                           />
@@ -653,6 +654,7 @@ export default function AddUpdatePolicyForm() {
                                 offstyle="outline-secondary"
                                 style="w-100"
                                 size="xs"
+                                key="policyPriority"
                               />
                             )}
                           />
@@ -723,12 +725,13 @@ export default function AddUpdatePolicyForm() {
                         <Col sm={4}>
                           <BootstrapSwitchButton
                             {...input}
-                            checked={input.value}
+                            checked={!(input.value === false)}
                             onlabel="Yes"
                             onstyle="primary"
                             offlabel="No"
                             offstyle="outline-secondary"
                             size="xs"
+                            key="isAuditEnabled"
                           />
                         </Col>
                       </FormB.Group>
@@ -793,6 +796,7 @@ export default function AddUpdatePolicyForm() {
                                 offstyle="outline-secondary"
                                 size="xs"
                                 style="w-100"
+                                key="isDenyAllElse"
                               />
                             </Col>
                           </FormB.Group>

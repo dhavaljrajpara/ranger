@@ -4,11 +4,12 @@ import { FieldArray } from "react-final-form-arrays";
 import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
-import { find, groupBy } from "lodash";
+import { find, groupBy, isEmpty } from "lodash";
 
 import Editable from "Components/Editable";
 import { RangerPolicyType } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
+import { toast } from "react-toastify";
 
 const noneOptions = {
   label: "None",
@@ -114,6 +115,25 @@ export default function PolicyPermissionItem(props) {
       );
     }
   };
+
+  const requiredForPermission = (fieldVals, index) => {
+    console.log(fieldVals);
+    if (fieldVals && !isEmpty(fieldVals[index])) {
+      let error;
+      let users = (fieldVals[index]?.users || []).length > 0;
+      let grps = (fieldVals[index]?.groups || []).length > 0;
+      let roles = (fieldVals[index]?.roles || []).length > 0;
+      let accTypes = (fieldVals[index]?.accesses || []).length > 0;
+      if ((users || grps || roles) && !accTypes) {
+        error = "Please select permision item for selected users/groups/roles";
+      }
+      if (accTypes && !users && !grps && !roles) {
+        error = "Please select users/groups/roles for selected permission item";
+      }
+      return error;
+    }
+  };
+
   return (
     <div>
       <Col sm="12">
@@ -133,6 +153,7 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.roles`}
+                              // validate={required}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect
@@ -157,6 +178,7 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.groups`}
+                              // validate={required()}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect
@@ -181,6 +203,7 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.users`}
+                              // validate={required}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect
@@ -205,6 +228,12 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.accesses`}
+                              validate={(value, formValues) =>
+                                requiredForPermission(
+                                  formValues[attrName],
+                                  index
+                                )
+                              }
                               render={({ input, meta }) => (
                                 <div className="table-editable">
                                   <Editable
@@ -215,8 +244,10 @@ export default function PolicyPermissionItem(props) {
                                     showSelectAll={true}
                                     selectAllLabel="Select All"
                                   />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
+                                  {meta.error && (
+                                    <span className="invalid-field">
+                                      {meta.error}
+                                    </span>
                                   )}
                                 </div>
                               )}

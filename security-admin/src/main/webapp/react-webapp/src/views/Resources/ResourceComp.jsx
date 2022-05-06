@@ -288,13 +288,14 @@ export default function ResourceComp(props) {
                     render={({ input }) => (
                       <BootstrapSwitchButton
                         {...input}
-                        checked={input.value}
+                        checked={!(input.value === false)}
                         onlabel="Include"
                         onstyle="primary"
                         offlabel="Exclude"
                         offstyle="outline-secondary"
                         style="w-100"
                         size="xs"
+                        key={`isExcludesSupport-${levelKey}`}
                       />
                     )}
                   />
@@ -308,13 +309,14 @@ export default function ResourceComp(props) {
                     render={({ input }) => (
                       <BootstrapSwitchButton
                         {...input}
-                        checked={input.value}
+                        checked={!(input.value === false)}
                         onlabel="Recursive"
                         onstyle="primary"
                         offlabel="Non-recursive"
                         offstyle="outline-secondary"
                         style="w-100"
                         size="xs"
+                        key={`isRecursiveSupport-${levelKey}`}
                       />
                     )}
                   />
