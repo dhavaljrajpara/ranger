@@ -426,7 +426,21 @@ export default function AddUpdatePolicyForm() {
     data.policyPriority = values.policyPriority ? "1" : "0";
     data.policyType = values.policyType;
     data.service = serviceDetails.name;
-    const grpResources = groupBy(serviceCompDetails.resources || [], "level");
+    let serviceCompRes;
+    if (values.policyType != null) {
+      if (
+        values.policyType == RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value
+      )
+        serviceCompRes = serviceCompDetails.dataMaskDef.resources;
+      if (
+        values.policyType ==
+        RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value
+      )
+        serviceCompRes = serviceCompDetails.rowFilterDef.resources;
+      if (values.policyType == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value)
+        serviceCompRes = serviceCompDetails.resources;
+    }
+    const grpResources = groupBy(serviceCompRes || [], "level");
     let grpResourcesKeys = [];
     for (const resourceKey in grpResources) {
       grpResourcesKeys.push(+resourceKey);
@@ -438,9 +452,18 @@ export default function AddUpdatePolicyForm() {
         values[`resourceName-${level}`] &&
         values[`resourceName-${level}`].value !== noneOptions.value
       ) {
+        let defObj = serviceCompRes.find(function (m) {
+          if (m.name == values[`resourceName-${level}`].name) {
+            return m;
+          }
+        });
         data.resources[values[`resourceName-${level}`].name] = {
-          isExcludes: values[`isExcludesSupport-${level}`] || false,
-          isRecursive: values[`isRecursiveSupport-${level}`] || false,
+          isExcludes:
+            defObj.excludesSupported &&
+            !(values[`isExcludesSupport-${level}`] === false),
+          isRecursive:
+            defObj.recursiveSupported &&
+            !(values[`isRecursiveSupport-${level}`] === false),
           values: values[`value-${level}`].map(({ value }) => value)
         };
       }
