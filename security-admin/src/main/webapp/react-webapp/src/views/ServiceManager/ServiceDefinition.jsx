@@ -118,7 +118,6 @@ class ServiceDefinition extends Component {
     let keyname = Object.keys(resources);
     return keyname.map((key, index) => {
       let val = resources[key].values;
-      let spanVal = resources[key].isExcludes;
       return (
         <div key={index} className="clearfix mb-2">
           <span className="float-left">
@@ -128,9 +127,9 @@ class ServiceDefinition extends Component {
           {resources[key].isExcludes !== undefined ? (
             <h6 className="d-inline">
               {resources[key].isExcludes ? (
-                <span className="badge badge-dark float-right">Exclude</span>
-              ) : (
                 <span className="badge badge-dark float-right">Include</span>
+              ) : (
+                <span className="badge badge-dark float-right">Exclude</span>
               )}
             </h6>
           ) : (

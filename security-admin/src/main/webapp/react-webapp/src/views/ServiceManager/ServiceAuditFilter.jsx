@@ -4,11 +4,10 @@ import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
-import CreatableSelect from "react-select/creatable";
 import Editable from "Components/Editable";
 import CreatableField from "Components/CreatableField";
 import ModalResourceComp from "../Resources/ModalResourceComp";
-import { uniq, map, join, isEmpty, forEach } from "lodash";
+import { uniq, map, join, isEmpty, find } from "lodash";
 
 export default function ServiceAuditFilter(props) {
   const {
@@ -50,9 +49,9 @@ export default function ServiceAuditFilter(props) {
   };
 
   const handleRemove = (input) => {
-    forEach(input.value, function (value, key) {
-      delete input.value[key];
-    });
+    for (const obj in input.value) {
+      delete input.value[obj];
+    }
     setModalstate({
       showModalResource: false,
       resourceInput: null,
@@ -70,6 +69,14 @@ export default function ServiceAuditFilter(props) {
         resourceData[`resourceName-${level}`] !== undefined &&
         resourceData[`value-${level}`] !== undefined
       ) {
+        let excludesSupported = find(serviceDefDetails.resources, {
+          level: level,
+          excludesSupported: true
+        });
+        let recursiveSupported = find(serviceDefDetails.resources, {
+          level: level,
+          recursiveSupported: true
+        });
         return (
           <div className="resource-filter" key={index}>
             <div>
@@ -82,7 +89,7 @@ export default function ServiceAuditFilter(props) {
               </span>
             </div>
             <div className="pull-right ml-3">
-              {resourceData[`isRecursiveSupport-${level}`] !== undefined ? (
+              {resourceData[`isRecursiveSupport-${level}`] !== undefined && (
                 <h6>
                   {resourceData[`isRecursiveSupport-${level}`] ? (
                     <span className="badge badge-dark">Recursive</span>
@@ -90,20 +97,28 @@ export default function ServiceAuditFilter(props) {
                     <span className="badge badge-dark">Non Recursive</span>
                   )}
                 </h6>
-              ) : (
-                ""
               )}
-              {resourceData[`isExcludesSupport-${level}`] !== undefined ? (
+              {resourceData[`isExcludesSupport-${level}`] !== undefined && (
                 <h6>
                   {resourceData[`isExcludesSupport-${level}`] ? (
-                    <span className="badge badge-dark">Exclude</span>
-                  ) : (
                     <span className="badge badge-dark">Include</span>
+                  ) : (
+                    <span className="badge badge-dark">Exclude</span>
                   )}
                 </h6>
-              ) : (
-                ""
               )}
+              {recursiveSupported !== undefined &&
+                resourceData[`isRecursiveSupport-${level}`] === undefined && (
+                  <h6>
+                    <span className="badge badge-dark">Recursive</span>
+                  </h6>
+                )}
+              {excludesSupported !== undefined &&
+                resourceData[`isExcludesSupport-${level}`] === undefined && (
+                  <h6>
+                    <span className="badge badge-dark">Include</span>
+                  </h6>
+                )}
             </div>
           </div>
         );

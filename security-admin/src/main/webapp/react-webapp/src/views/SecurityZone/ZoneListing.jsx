@@ -16,7 +16,6 @@ class ZoneListing extends Component {
       selectedZone: null,
       isCollapse: true,
       loader: true,
-      searchText: "",
       filterZone: [],
       isAdminRole: isSystemAdmin() || isKeyAdmin()
     };
@@ -143,7 +142,6 @@ class ZoneListing extends Component {
                   <input
                     className="form-control mt-2"
                     type="text"
-                    value={this.state.searchText}
                     onChange={this.onChangeSearch}
                     placeholder="Search"
                   ></input>

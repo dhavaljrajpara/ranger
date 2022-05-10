@@ -149,6 +149,7 @@ class ServiceForm extends Component {
 
   getAuditFiltersToSave = (auditFilters) => {
     let auditFiltersArray = [];
+    let serviceDef = this.state.serviceDef;
 
     auditFilters.map((item) => {
       let obj = {};
@@ -166,7 +167,7 @@ class ServiceForm extends Component {
           if (key === "resources" && !isEmpty(value)) {
             obj.resources = {};
 
-            let levels = uniq(map(this.state.serviceDef.resources, "level"));
+            let levels = uniq(map(serviceDef.resources, "level"));
 
             levels.map((level) => {
               if (
@@ -243,8 +244,8 @@ class ServiceForm extends Component {
     if (serviceDef.resources !== undefined) {
       for (const obj of serviceDef.resources) {
         if (
-          obj.lookupSupported !== undefined &&
           this.props.match.params.serviceId === undefined &&
+          obj.lookupSupported !== undefined &&
           obj.lookupSupported
         ) {
           obj.lookupSupported = false;
@@ -455,10 +456,16 @@ class ServiceForm extends Component {
             if (resourceIsRecursive !== undefined) {
               return (obj.resources[`isRecursiveSupport-${resourceLevel}`] =
                 resourceIsRecursive);
+            } else if (resourceObj.recursiveSupported) {
+              return (obj.resources[`isRecursiveSupport-${resourceLevel}`] =
+                resourceObj.recursiveSupported);
             }
             if (resourceIsExcludes !== undefined) {
               return (obj.resources[`isExcludesSupport-${resourceLevel}`] =
                 resourceIsExcludes);
+            } else if (resourceObj.excludesSupported) {
+              return (obj.resources[`isExcludesSupport-${resourceLevel}`] =
+                resourceObj.excludesSupported);
             }
           });
         }
