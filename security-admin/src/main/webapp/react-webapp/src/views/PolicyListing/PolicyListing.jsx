@@ -1,12 +1,14 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Badge, Button, Col, Row, Tab, Tabs, Modal } from "react-bootstrap";
+import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
+import { pick, indexOf, isUndefined } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
 import { showGroupsOrUsersOrRolesForPolicy } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
+import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
@@ -17,9 +19,17 @@ function PolicyListing() {
     policyDetails: {},
     showSyncDetails: false
   });
+  const [serviceDefs, setServiceDefs] = useState([]);
+  const [policyviewmodal, setPolicyViewModal] = useState(false);
+  const [policyParamsData, setPolicyParamsData] = useState(null);
   const [updateTable, setUpdateTable] = useState(moment.now());
+  const [currentPage, setCurrentPage] = useState(1);
 
   let { serviceId, policyType } = useParams();
+
+  useEffect(() => {
+    fetchServiceDefs();
+  }, []);
 
   const fetchPolicyInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -28,7 +38,6 @@ function PolicyListing() {
       const fetchId = ++fetchIdRef.current;
       if (fetchId === fetchIdRef.current) {
         try {
-          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           const policyResp = await fetchApi({
             url: `plugins/policies/service/${serviceId}`,
             params: {
@@ -49,7 +58,21 @@ function PolicyListing() {
     },
     [updateTable]
   );
+  const fetchServiceDefs = async () => {
+    let serviceDefsResp = [];
+    try {
+      serviceDefsResp = await fetchApi({
+        url: "plugins/definitions"
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
+      );
+    }
 
+    setServiceDefs(serviceDefsResp.data.serviceDefs);
+    setLoader(false);
+  };
   const toggleConfirmModalForDelete = (policyID, policyName) => {
     setConfirmModal({
       policyDetails: { policyID: policyID, policyName: policyName },
@@ -62,6 +85,34 @@ function PolicyListing() {
       policyDetails: {},
       showPopup: false
     });
+  };
+  const handleClosePolicyId = () => setPolicyViewModal(false);
+  const openModal = (policyDetails) => {
+    let policyId = pick(policyDetails, ["id"]);
+    setPolicyViewModal(true);
+    setPolicyParamsData(policyDetails);
+    fetchVersions(policyId.id);
+  };
+  const fetchVersions = async (policyId) => {
+    let versionsResp = {};
+    try {
+      versionsResp = await fetchApi({
+        url: `plugins/policy/${policyId}/versionList`
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Policy Version or CSRF headers! ${error}`
+      );
+    }
+    setCurrentPage(
+      versionsResp.data.value
+        .split(",")
+        .map(Number)
+        .sort(function (a, b) {
+          return a - b;
+        })
+    );
+    setLoader(false);
   };
 
   const handleDeleteClick = async (policyID) => {
@@ -82,7 +133,49 @@ function PolicyListing() {
     setUpdateTable(moment.now());
     toggleClose();
   };
+  const previousVer = (e) => {
+    if (e.currentTarget.classList.contains("active")) {
+      let curr = policyParamsData && policyParamsData.version;
+      let policyVersionList = currentPage;
+      var previousVal =
+        policyVersionList[
+          (indexOf(policyVersionList, curr) - 1) % policyVersionList.length
+        ];
+    }
+    let prevVal = {};
+    prevVal.version = previousVal;
+    prevVal.id = policyParamsData.id;
+    prevVal.isChangeVersion = true;
+    setPolicyParamsData(prevVal);
+  };
+  const nextVer = (e) => {
+    if (e.currentTarget.classList.contains("active")) {
+      let curr = policyParamsData && policyParamsData.version;
+      let policyVersionList = currentPage;
+      var nextValue =
+        policyVersionList[
+          (indexOf(policyVersionList, curr) + 1) % policyVersionList.length
+        ];
+    }
+    let nextVal = {};
+    nextVal.version = nextValue;
+    nextVal.id = policyParamsData.id;
+    nextVal.isChangeVersion = true;
+    setPolicyParamsData(nextVal);
+  };
 
+  const revert = (e) => {
+    let version = policyParamsData && policyParamsData.version;
+    let revertVal = {};
+    revertVal.version = version;
+    revertVal.id = policyParamsData.id;
+    revertVal.isRevert = true;
+    setPolicyParamsData(revertVal);
+    setPolicyViewModal(false);
+  };
+  const updateServices = () => {
+    setUpdateTable(moment.now());
+  };
   const columns = React.useMemo(
     () => [
       {
@@ -233,6 +326,10 @@ function PolicyListing() {
                 size="sm"
                 className="m-r-5"
                 title="View"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openModal(original);
+                }}
               >
                 <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
               </Button>
@@ -301,6 +398,69 @@ function PolicyListing() {
               handleDeleteClick(deletePolicyModal.policyDetails.policyID)
             }
           >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Policy Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PolicyViewDetails
+            paramsData={policyParamsData}
+            serviceDefs={serviceDefs}
+            policyInfo={fetchPolicyInfo}
+            policyView={true}
+            updateServices={updateServices}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="policy-version pull-left">
+            <i
+              className={
+                policyParamsData && policyParamsData.version > 1
+                  ? "fa-fw fa fa-chevron-left active"
+                  : "fa-fw fa fa-chevron-left"
+              }
+              onClick={(e) =>
+                e.currentTarget.classList.contains("active") && previousVer(e)
+              }
+            ></i>
+            <span>{`Version ${
+              policyParamsData && policyParamsData.version
+            }`}</span>
+            <i
+              className={
+                !isUndefined(
+                  currentPage[
+                    indexOf(
+                      currentPage,
+                      policyParamsData && policyParamsData.version
+                    ) + 1
+                  ]
+                )
+                  ? "fa-fw fa fa-chevron-right active"
+                  : "fa-fw fa fa-chevron-right"
+              }
+              onClick={(e) =>
+                e.currentTarget.classList.contains("active") && nextVer(e)
+              }
+            ></i>
+            {!isUndefined(
+              currentPage[
+                indexOf(
+                  currentPage,
+                  policyParamsData && policyParamsData.version
+                ) + 1
+              ]
+            ) && (
+              <Button variant="primary" onClick={(e) => revert(e)}>
+                Revert
+              </Button>
+            )}
+          </div>
+          <Button variant="primary" onClick={handleClosePolicyId}>
             OK
           </Button>
         </Modal.Footer>

@@ -1,7 +1,8 @@
-import React, { Component, useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Badge, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import dateFormat from "dateformat";
+import { fetchApi } from "Utils/fetchAPI";
 import {
   AuditFilterEntries,
   CustomPopoverOnClick,
@@ -9,21 +10,30 @@ import {
 } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import AccessLogsTable from "./AccessLogsTable";
-import { isEmpty, isUndefined } from "lodash";
+import { isEmpty, isUndefined, capitalize, pick, indexOf } from "lodash";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
+import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
+  const [serviceDefs, setServiceDefs] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [entries, setEntries] = useState([]);
   const [showrowmodal, setShowRowModal] = useState(false);
+  const [policyviewmodal, setPolicyViewModal] = useState(false);
+  const [policyParamsData, setPolicyParamsData] = useState(null);
   const [rowdata, setRowData] = useState([]);
   const [checked, setChecked] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const fetchIdRef = useRef(0);
+
+  useEffect(() => {
+    fetchServiceDefs();
+  }, []);
 
   const fetchAccessLogsInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -33,13 +43,12 @@ function Access() {
       const fetchId = ++fetchIdRef.current;
       if (fetchId === fetchIdRef.current) {
         try {
-          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
             url: "assets/accessAudit",
             params: {
               pageSize: pageSize,
               startIndex: pageIndex * pageSize,
-              policyId: 9
+              excludeServiceUser: checked ? true : false
             }
           });
           logs = logsResp.data.vXAccessAudits;
@@ -55,18 +64,63 @@ function Access() {
     },
     [updateTable]
   );
+  const fetchServiceDefs = async () => {
+    let serviceDefsResp = [];
+    try {
+      serviceDefsResp = await fetchApi({
+        url: "plugins/definitions"
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
+      );
+    }
 
+    setServiceDefs(serviceDefsResp.data.serviceDefs);
+    setLoader(false);
+  };
   const toggleChange = () => {
-    setChecked(!checked);
     setAccessLogs([]);
+    setChecked(!checked);
     setLoader(true);
     setUpdateTable(moment.now());
   };
-
+  const handleClosePolicyId = () => setPolicyViewModal(false);
   const handleClose = () => setShowRowModal(false);
   const rowModal = (row) => {
     setShowRowModal(true);
     setRowData(row.original);
+  };
+  const openModal = (policyDetails) => {
+    let policyParams = pick(policyDetails, [
+      "eventTime",
+      "policyId",
+      "policyVersion"
+    ]);
+    setPolicyViewModal(true);
+    setPolicyParamsData(policyParams);
+    fetchVersions(policyDetails.policyId);
+  };
+  const fetchVersions = async (policyId) => {
+    let versionsResp = {};
+    try {
+      versionsResp = await fetchApi({
+        url: `plugins/policy/${policyId}/versionList`
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Policy Version or CSRF headers! ${error}`
+      );
+    }
+    setCurrentPage(
+      versionsResp.data.value
+        .split(",")
+        .map(Number)
+        .sort(function (a, b) {
+          return a - b;
+        })
+    );
+    setLoader(false);
   };
   const refreshTable = () => {
     setAccessLogs([]);
@@ -76,7 +130,7 @@ function Access() {
 
   const rsrcContent = (requestData) => {
     const copyText = (val) => {
-      !isEmpty(val) && toast.success("User list copied succesfully!!");
+      !isEmpty(val) && toast.success("Copied succesfully!!");
       return val;
     };
     return (
@@ -138,7 +192,37 @@ function Access() {
     if (title == "hdfs") {
       filterTitle = `HDFS Operation Name`;
     }
-    return filterTitle;
+    return (filterTitle = `${capitalize(title)} Query`);
+  };
+  const previousVer = (e) => {
+    if (e.currentTarget.classList.contains("active")) {
+      let curr = policyParamsData && policyParamsData.policyVersion;
+      let policyVersionList = currentPage;
+      var previousVal =
+        policyVersionList[
+          (indexOf(policyVersionList, curr) - 1) % policyVersionList.length
+        ];
+    }
+    let prevVal = {};
+    prevVal.policyVersion = previousVal;
+    prevVal.policyId = policyParamsData.policyId;
+    prevVal.isChangeVersion = true;
+    setPolicyParamsData(prevVal);
+  };
+  const nextVer = (e) => {
+    if (e.currentTarget.classList.contains("active")) {
+      let curr = policyParamsData && policyParamsData.policyVersion;
+      let policyVersionList = currentPage;
+      var nextValue =
+        policyVersionList[
+          (indexOf(policyVersionList, curr) + 1) % policyVersionList.length
+        ];
+    }
+    let nextVal = {};
+    nextVal.policyVersion = nextValue;
+    nextVal.policyId = policyParamsData.policyId;
+    nextVal.isChangeVersion = true;
+    setPolicyParamsData(nextVal);
   };
 
   const columns = React.useMemo(
@@ -150,7 +234,17 @@ function Access() {
           return rawValue.value == -1 ? (
             "--"
           ) : (
-            <a className="text-primary">{rawValue.value}</a>
+            <>
+              <a
+                className="text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openModal(rawValue.row.original);
+                }}
+              >
+                {rawValue.value}
+              </a>
+            </>
           );
         }
       },
@@ -360,7 +454,7 @@ function Access() {
       <Modal show={showrowmodal} size="lg" onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
-            <h4 class="modal-title">
+            <h4>
               Audit Access Log Detail
               <Link
                 className="text-info"
@@ -373,7 +467,7 @@ function Access() {
                 <i class="fa-fw fa fa-external-link pull-right text-info"></i>
               </Link>
             </h4>
-          </Modal.Title>{" "}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body className="overflow-auto p-3 mb-3 mb-md-0 mr-md-3">
           <AccessLogsTable data={rowdata}></AccessLogsTable>
@@ -381,6 +475,56 @@ function Access() {
 
         <Modal.Footer>
           <Button variant="primary" onClick={handleClose}>
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Policy Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PolicyViewDetails
+            paramsData={policyParamsData}
+            serviceDefs={serviceDefs}
+            policyView={false}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="policy-version pull-left">
+            <i
+              className={
+                policyParamsData && policyParamsData.policyVersion > 1
+                  ? "fa-fw fa fa-chevron-left active"
+                  : "fa-fw fa fa-chevron-left"
+              }
+              onClick={(e) =>
+                e.currentTarget.classList.contains("active") && previousVer(e)
+              }
+            ></i>
+            <span>{`Version ${
+              policyParamsData && policyParamsData.policyVersion
+            }`}</span>
+            <i
+              className={
+                !isUndefined(
+                  currentPage[
+                    indexOf(
+                      currentPage,
+                      policyParamsData && policyParamsData.policyVersion
+                    ) + 1
+                  ]
+                )
+                  ? "fa-fw fa fa-chevron-right active"
+                  : "fa-fw fa fa-chevron-right"
+              }
+              onClick={(e) =>
+                e.currentTarget.classList.contains("active") && nextVer(e)
+              }
+            ></i>
+          </div>
+          <Button variant="primary" onClick={handleClosePolicyId}>
             OK
           </Button>
         </Modal.Footer>

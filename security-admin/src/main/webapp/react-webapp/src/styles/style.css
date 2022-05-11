@@ -706,3 +706,38 @@ header {
   max-height: 200px;
   overflow-y: auto;
 }
+
+.updateInfo {
+  margin-top: 10px;
+  border-top: 1px solid #ccc;
+}
+
+.updateInfo p {
+  margin-bottom: 0px;
+  margin-top: 0px;
+  font-size: 11px;
+}
+
+.policy-version {
+  font-size: 23px;
+  padding: 5px 0 0 3px;
+}
+
+.policy-version span {
+  padding: 0 10px;
+  color: black;
+  font-size: 14px;
+  position: relative;
+  top: -3px;
+}
+
+.policy-version i {
+  color: #0b7fad !important;
+  opacity: 0.4;
+}
+
+.policy-version i.active {
+  color: #0b7fad !important;
+  cursor: pointer;
+  opacity: 1;
+}

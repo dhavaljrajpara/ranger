@@ -32,7 +32,7 @@ export const AccessLogsTable = ({ data = {} }) => {
   } = data;
 
   const copyText = (val) => {
-    !isEmpty(val) && toast.success("User list copied succesfully!!");
+    !isEmpty(val) && toast.success("Copied succesfully!!");
     return val;
   };
 

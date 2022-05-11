@@ -245,7 +245,10 @@ export const CustomPopoverOnClick = ({
         trigger={trigger}
         placement={placement}
         overlay={
-          <Popover id={`popover-${placement}`}>
+          <Popover
+            id={`popover-${placement}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Popover.Title as="h3">
               {title}
               <i
@@ -296,7 +299,10 @@ export const CustomPopoverTagOnClick = ({
         trigger={trigger}
         placement={placement}
         overlay={
-          <Popover id={`popover-${placement}`}>
+          <Popover
+            id={`popover-${placement}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <Popover.Title as="h3">
               {title}
               <i

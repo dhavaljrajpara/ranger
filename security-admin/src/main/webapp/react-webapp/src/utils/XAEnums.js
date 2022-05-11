@@ -573,3 +573,36 @@ export const PathAssociateWithModule = {
   ],
   Permission: ["/permissions/models", "/permissions/:permissionId/edit"]
 };
+
+/* Access */
+
+export const DefStatus = {
+  RecursiveStatus: {
+    STATUS_RECURSIVE: {
+      value: true,
+      label: "recursive",
+      rbkey: "xa.enum.RecursiveStatus.RECURSIVE",
+      tt: "lbl.RecursiveStatus_RECURSIVE"
+    },
+    STATUS_NONRECURSIVE: {
+      value: false,
+      label: "nonrecursive",
+      rbkey: "xa.enum.RecursiveStatus.NONRECURSIVE",
+      tt: "lbl.RecursiveStatus_NONRECURSIVE"
+    }
+  },
+  ExcludeStatus: {
+    STATUS_EXCLUDE: {
+      value: true,
+      label: "exclude",
+      rbkey: "xa.enum.ExcludeStatus.EXCLUDE",
+      tt: "lbl.ExcludeStatus_EXCLUDE"
+    },
+    STATUS_INCLUDE: {
+      value: false,
+      label: "include",
+      rbkey: "xa.enum.ExcludeStatus.INCLUDE",
+      tt: "lbl.ExcludeStatus_INCLUDE"
+    }
+  }
+};

@@ -119,40 +119,13 @@ function XATableLayout({
     <>
       {
         <div className="text-right mt-n5">
-          {/* <Dropdown>
-            {[DropdownButton].map((DropdownType, idx) => (
-              <DropdownType
-                key={idx}
-                menuAlign="right"
-                id={`dropdown-button-drop-${idx}`}
-                size="sm"
-                title="Columns"
-                variant="info"
-              >
-                <ul className="list-group">
-                  {allColumns.map((column) => (
-                    <li className="column-list">
-                      <label>
-                        <input
-                          type="checkbox"
-                          {...column.getToggleHiddenProps()}
-                        />{" "}
-                        {column.id}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              </DropdownType>
-            ))}
-          </Dropdown> */}
           <>
             {columnHide &&
-              ["Info"].map((variant, idx) => (
+              ["Info"].map((variant, index) => (
                 <DropdownButton
-                  key={idx}
-                  menuAlign="left"
+                  key={index}
+                  menuAlign="right"
                   as={ButtonGroup}
-                  key={variant}
                   size="sm"
                   id={`dropdown-variants-${variant}`}
                   variant={variant.toLowerCase()}
@@ -165,7 +138,7 @@ function XATableLayout({
                           <input
                             type="checkbox"
                             {...column.getToggleHiddenProps()}
-                          />{" "}
+                          />
                           {column.id}
                         </label>
                       </li>
