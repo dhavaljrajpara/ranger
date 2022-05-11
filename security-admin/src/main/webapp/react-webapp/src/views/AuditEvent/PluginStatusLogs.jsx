@@ -175,7 +175,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.policyDownloadTime)}
                       </span>
@@ -188,7 +188,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.policyDownloadTime)}{" "}
                       </span>
@@ -226,7 +226,7 @@ function Plugin_Status() {
                           content={
                             " Policy is updated but not yet used for any enforcement."
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.policyActivationTime)}
                       </span>
@@ -239,7 +239,7 @@ function Plugin_Status() {
                           content={
                             " Policy is updated but not yet used for any enforcement."
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.policyActivationTime)}
                       </span>
@@ -290,7 +290,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.tagDownloadTime)}
                       </span>
@@ -303,7 +303,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet downloaded(sync-upwith Ranger)"
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.tagDownloadTime)}{" "}
                       </span>
@@ -341,7 +341,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet used for anyenforcement."
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.tagActivationTime)}
                       </span>
@@ -354,7 +354,7 @@ function Plugin_Status() {
                           content={
                             "Policy is updated but not yet used for anyenforcement."
                           }
-                          icon="fa-fw fa fa-exclamation-circle activePolicyAlert"
+                          icon="fa-fw fa fa-exclamation-circle active-policy-alert"
                         />
                         {setTimeStamp(original.info.tagActivationTime)}{" "}
                       </span>

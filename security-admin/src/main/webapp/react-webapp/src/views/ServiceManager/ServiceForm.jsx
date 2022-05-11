@@ -170,6 +170,7 @@ class ServiceForm extends Component {
             let levels = uniq(map(serviceDef.resources, "level"));
 
             levels.map((level) => {
+              let resourceObj = find(serviceDef.resources, { level: level });
               if (
                 value[`resourceName-${level}`] !== undefined &&
                 value[`value-${level}`] !== undefined
@@ -177,15 +178,26 @@ class ServiceForm extends Component {
                 obj.resources[value[`resourceName-${level}`].name] = {
                   values: map(value[`value-${level}`], "value")
                 };
-              }
-              if (value[`isRecursiveSupport-${level}`] !== undefined) {
-                obj.resources[value[`resourceName-${level}`].name].isRecursive =
-                  value[`isRecursiveSupport-${level}`];
-              }
 
-              if (value[`isExcludesSupport-${level}`] !== undefined) {
-                obj.resources[value[`resourceName-${level}`].name].isExcludes =
-                  value[`isExcludesSupport-${level}`];
+                if (value[`isRecursiveSupport-${level}`] !== undefined) {
+                  obj.resources[
+                    value[`resourceName-${level}`].name
+                  ].isRecursive = value[`isRecursiveSupport-${level}`];
+                } else if (resourceObj.recursiveSupported) {
+                  obj.resources[
+                    value[`resourceName-${level}`].name
+                  ].isRecursive = resourceObj.recursiveSupported;
+                }
+
+                if (value[`isExcludesSupport-${level}`] !== undefined) {
+                  obj.resources[
+                    value[`resourceName-${level}`].name
+                  ].isExcludes = value[`isExcludesSupport-${level}`];
+                } else if (resourceObj.excludesSupported) {
+                  obj.resources[
+                    value[`resourceName-${level}`].name
+                  ].isExcludes = resourceObj.excludesSupported;
+                }
               }
             });
           }

@@ -285,15 +285,15 @@ export const RoleLogs = ({ data, reportdata }) => {
                         return !isEmpty(usr.previousValue) ? (
                           JSON.parse(usr.previousValue).map((obj, index) => (
                             <tr key={index}>
-                              <td className="oldvalbg">{obj.name}</td>
-                              <td className="oldvalbg">
+                              <td className="old-value-bg">{obj.name}</td>
+                              <td className="old-value-bg">
                                 {obj.isAdmin === false ? "false" : "true"}
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={2} className="oldvalbg">
+                            <td colSpan={2} className="old-value-bg">
                               Empty
                             </td>
                           </tr>
@@ -361,15 +361,15 @@ export const RoleLogs = ({ data, reportdata }) => {
                         return !isEmpty(grp.previousValue) ? (
                           JSON.parse(grp.previousValue).map((obj, index) => (
                             <tr key={index}>
-                              <td className="oldvalbg">{obj.name}</td>
-                              <td className="oldvalbg">
+                              <td className="old-value-bg">{obj.name}</td>
+                              <td className="old-value-bg">
                                 {obj.isAdmin === false ? "false" : "true"}
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={2} className="oldvalbg">
+                            <td colSpan={2} className="old-value-bg">
                               Empty
                             </td>
                           </tr>
@@ -436,15 +436,15 @@ export const RoleLogs = ({ data, reportdata }) => {
                         return !isEmpty(roles.previousValue) ? (
                           JSON.parse(roles.previousValue).map((obj, index) => (
                             <tr key={index}>
-                              <td className="oldvalbg">{obj.name}</td>
-                              <td className="oldvalbg">
+                              <td className="old-value-bg">{obj.name}</td>
+                              <td className="old-value-bg">
                                 {obj.isAdmin === false ? "false" : "true"}
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={2} className="oldvalbg">
+                            <td colSpan={2} className="old-value-bg">
                               Empty
                             </td>
                           </tr>

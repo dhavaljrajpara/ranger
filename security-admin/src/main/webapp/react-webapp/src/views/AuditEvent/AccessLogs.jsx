@@ -81,7 +81,7 @@ function Access() {
     };
     return (
       <Row>
-        <Col sm={9} className="popoverspan">
+        <Col sm={9} className="popover-span">
           <span>{requestData}</span>
         </Col>
         <Col sm={3} className="pull-right">

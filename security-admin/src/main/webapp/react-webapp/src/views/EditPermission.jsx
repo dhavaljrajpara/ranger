@@ -1,7 +1,7 @@
 import { Form, Field } from "react-final-form";
 import { Button, Col, Form as FormB, Row } from "react-bootstrap";
 import React, { useEffect, useReducer } from "react";
-import { useParams, useHistory, Link } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { Table } from "react-bootstrap";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
@@ -302,7 +302,7 @@ const EditPermission = (props) => {
                                     <div>
                                       <AsyncSelect
                                         {...input}
-                                        className="editpermselect"
+                                        className="edit-perm-select"
                                         defaultOptions
                                         filterOption={filterGrpOp}
                                         loadOptions={fetchGroups}
@@ -347,7 +347,7 @@ const EditPermission = (props) => {
                                     <div>
                                       <AsyncSelect
                                         {...input}
-                                        className="editpermselect"
+                                        className="edit-perm-select"
                                         defaultOptions
                                         filterOption={filterUsrOp}
                                         loadOptions={fetchUsers}
@@ -444,7 +444,6 @@ const EditPermission = (props) => {
                   type="submit"
                   variant="primary"
                   size="sm"
-                  type="submit"
                   disabled={submitting}
                 >
                   Save

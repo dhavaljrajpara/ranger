@@ -148,36 +148,50 @@ class ZoneListing extends Component {
                 </Col>
               </Row>
               <Row className="mt-2">
-                <Col>
-                  {this.state.filterZone.length !== 0 ? (
-                    <ul className="zone-listing">
-                      {this.state.filterZone.map((zone) => (
-                        <li
-                          className="trim-containt"
-                          key={zone.id}
-                          onClick={() => {
-                            this.clickBtn(zone.id);
-                          }}
-                        >
-                          <a
-                            className={
-                              this.state.selectedZone != null &&
-                              this.state.selectedZone.id === zone.id
-                                ? `selected`
-                                : ``
-                            }
+                {this.state.loader ? (
+                  <Col className="text-center">
+                    <div
+                      className="spinner-border spinner-border-sm mr-2 mt-2"
+                      role="status"
+                    >
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                    <div className="spinner-grow spinner-grow-sm" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                  </Col>
+                ) : (
+                  <Col>
+                    {this.state.filterZone.length !== 0 ? (
+                      <ul className="zone-listing">
+                        {this.state.filterZone.map((zone) => (
+                          <li
+                            className="trim-containt"
+                            key={zone.id}
+                            onClick={() => {
+                              this.clickBtn(zone.id);
+                            }}
                           >
-                            {zone.name}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <h6 className="text-muted large mt-3 bold">
-                      No Zone Found !
-                    </h6>
-                  )}
-                </Col>
+                            <a
+                              className={
+                                this.state.selectedZone != null &&
+                                this.state.selectedZone.id === zone.id
+                                  ? `selected`
+                                  : ``
+                              }
+                            >
+                              {zone.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <h6 className="text-muted large mt-3 bold">
+                        No Zone Found !
+                      </h6>
+                    )}
+                  </Col>
+                )}
               </Row>
             </Col>
           </Collapse>

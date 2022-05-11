@@ -215,10 +215,10 @@ export const SecurityZonelogs = ({ data, reportdata }) => {
                   return (
                     <tbody>
                       <tr>
-                        <td className="oldvalbg">
+                        <td className="old-value-bg">
                           <strong> {c}</strong>
                         </td>
-                        <td className="oldvalbg">
+                        <td className="old-value-bg">
                           {Object.values(
                             JSON.parse(key.previousValue)[c].resources
                           ).map((resource) => (
