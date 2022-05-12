@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import XATableLayout from "Components/XATableLayout";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
-// import { Loader } from "Components/CommonComponents";
 import { MoreLess } from "Components/CommonComponents";
 import { reject } from "lodash";
 

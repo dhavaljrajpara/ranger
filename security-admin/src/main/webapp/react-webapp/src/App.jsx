@@ -44,8 +44,12 @@ const GroupForm = lazy(() =>
 const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
-const PermissionsComp = lazy(() => import("Views/Permissions"));
-const EditPermissionComp = lazy(() => import("Views/EditPermission"));
+const PermissionsComp = lazy(() =>
+  import("Views/PermissionsModule/Permissions")
+);
+const EditPermissionComp = lazy(() =>
+  import("Views/PermissionsModule/EditPermission")
+);
 const PolicyListingTabView = lazy(() =>
   import("Views/PolicyListing/PolicyListingTabView")
 );
