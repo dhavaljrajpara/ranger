@@ -35,7 +35,7 @@ a:active {
   width: 120px;
 }
 
-.ranger-navbar .navbar-nav>a {
+.ranger-navbar .navbar-nav > a {
   color: #fff !important;
   display: block;
   line-height: 22px;
@@ -59,7 +59,7 @@ a:active {
   padding: 9px 15px;
 }
 
-.login-id>i {
+.login-id > i {
   margin-right: 5px;
 }
 
@@ -275,7 +275,7 @@ div#center div.letter_container_7 {
   min-width: 150px;
 }
 
-.table-editable .editable~div {
+.table-editable .editable ~ div {
   z-index: 1060;
 }
 
@@ -369,12 +369,12 @@ table.no-bg-color thead tr th:first-child {
 }
 
 /* XA Table */
-.table-responsive>.table>thead>tr>th,
-.table-responsive>.table>tbody>tr>th,
-.table-responsive>.table>tfoot>tr>th,
-.table-responsive>.table>thead>tr>td,
-.table-responsive>.table>tbody>tr>td,
-.table-responsive>.table>tfoot>tr>td {
+.table-responsive > .table > thead > tr > th,
+.table-responsive > .table > tbody > tr > th,
+.table-responsive > .table > tfoot > tr > th,
+.table-responsive > .table > thead > tr > td,
+.table-responsive > .table > tbody > tr > td,
+.table-responsive > .table > tfoot > tr > td {
   white-space: nowrap;
 }
 
@@ -493,13 +493,13 @@ header {
   text-decoration: none;
 }
 
-.zone-listing li+li {
+.zone-listing li + li {
   border-top: 1px #adadad dashed;
 }
 
 .zone-listing li a:hover,
 .zone-listing li a.selected {
-  color: #0B7FAD;
+  color: #0b7fad;
   font-weight: bold;
 }
 
@@ -740,4 +740,44 @@ header {
   color: #0b7fad !important;
   cursor: pointer;
   opacity: 1;
+}
+
+.table-edit-permission th {
+  color: #495057;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  text-align: center;
+}
+.selected-list {
+  margin: 5px;
+  max-height: 270px;
+  overflow: auto;
+}
+
+.user,
+.group {
+  width: 35%;
+  overflow-x: hidden;
+}
+
+.pagination-btn-first,
+.pagination-btn-next {
+  height: 25px;
+  width: 31px;
+  line-height: 1;
+}
+.pagination-btn-previous {
+  height: 25px;
+  width: 31px;
+  line-height: 1px;
+}
+.pagination-btn-last {
+  height: 25px;
+  width: 31px;
+  line-height: 1px;
+}
+
+.pagination-input {
+  width: 41px;
+  height: 21px;
 }

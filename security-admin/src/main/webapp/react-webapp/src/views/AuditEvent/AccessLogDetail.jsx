@@ -9,7 +9,7 @@ import { Loader } from "Components/CommonComponents";
 function AccessLogDetail(props) {
   const [access, setAccess] = useState([]);
   const [serviceDefs, setServiceDefs] = useState([]);
-  const [policyParamsData, setPolicyParamsData] = useState(null);
+  // const [policyParamsData, setPolicyParamsData] = useState(null);
   const [loader, setLoader] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function AccessLogDetail(props) {
   };
   const fetchAcessLogs = async () => {
     let accessResp;
-    let accessData = {};
+    let accessData;
 
     try {
       accessResp = await fetchApi({
@@ -53,39 +53,36 @@ function AccessLogDetail(props) {
         accessData = obj;
       });
     }
-    let policyParams = pick(accessData, [
-      "eventTime",
-      "policyId",
-      "policyVersion"
-    ]);
     setAccess(accessData);
-    setPolicyParamsData(policyParams);
     setLoader(false);
   };
 
-  return loader ? (
-    <Loader />
-  ) : (
+  return (
     <>
-      <h4>
-        {props.match.params.eventId !== undefined
-          ? "Ranger – audit log"
-          : "Audit Access Log Detail"}
-      </h4>
-      <div className="wrap">
-        <AccessLogsTable data={access}></AccessLogsTable>
-      </div>
-
-      {policyParamsData.policyId != -1 && (
+      {loader ? (
+        <Loader />
+      ) : (
         <>
-          <h4>Policy Details</h4>
+          <h4>
+            {props.match.params.eventId !== undefined
+              ? "Ranger – audit log"
+              : "Audit Access Log Detail"}
+          </h4>
           <div className="wrap">
-            <PolicyViewDetails
-              paramsData={policyParamsData}
-              serviceDefs={serviceDefs}
-              policyView={false}
-            />
+            <AccessLogsTable data={access}></AccessLogsTable>
           </div>
+          {access.policyId != -1 && (
+            <>
+              <h4>Policy Details</h4>
+              <div className="wrap">
+                <PolicyViewDetails
+                  paramsData={access}
+                  serviceDefs={serviceDefs}
+                  policyView={false}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
     </>

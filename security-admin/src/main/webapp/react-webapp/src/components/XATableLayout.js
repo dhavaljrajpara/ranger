@@ -123,6 +123,7 @@ function XATableLayout({
             {columnHide &&
               ["Info"].map((variant, index) => (
                 <DropdownButton
+                  className="p-0"
                   key={index}
                   menuAlign="right"
                   as={ButtonGroup}
@@ -164,7 +165,11 @@ function XATableLayout({
                         // Loop over the headers in each row
                         headerGroup.headers.map((column) => (
                           // Apply the header cell props
-                          <th {...column.getHeaderProps()}>
+                          <th
+                            {...column.getHeaderProps([
+                              { className: column.className }
+                            ])}
+                          >
                             {
                               // Render the header
                               column.render("Header")
@@ -229,35 +234,37 @@ function XATableLayout({
               </tbody>
             </Table>
           </div>
-
           <div className="row mt-2">
-            <div className="col-2">
-              <button
-                onClick={() => gotoPage(0)}
-                disabled={!canPreviousPage}
-                className="pagebtn btn btn-outline-dark btn-sm"
-              >
-                {"<<"}
-              </button>
-              <button
-                onClick={() => previousPage()}
-                disabled={!canPreviousPage}
-                className="pagebtn btn btn-outline-dark btn-sm"
-              >
-                {"<"}
-              </button>
-            </div>
-            <div className="col-4">
-              <span className="pagelbl">
-                Page
-                <strong>
-                  {pageIndex + 1} of {pageOptions.length}
-                </strong>
-              </span>
-              <span>
-                | Go to page:
+            <div className="col-md-1"></div>
+            <div className="col-md-11 m-b-sm">
+              <div className="text-left">
+                <button
+                  title="First"
+                  onClick={() => gotoPage(0)}
+                  disabled={!canPreviousPage}
+                  className="pagination-btn-first mr-1  btn btn-outline-dark btn-sm"
+                >
+                  {"<<"}
+                </button>
+                <button
+                  title="Previous"
+                  onClick={() => previousPage()}
+                  disabled={!canPreviousPage}
+                  className="pagination-btn-previous btn btn-outline-dark btn-sm"
+                >
+                  {"< "}{" "}
+                </button>
+                <span className="mr-1">
+                  <span className="mr-1"> </span>
+                  Page{" "}
+                  <strong>
+                    {pageIndex + 1} of {pageOptions.length}
+                  </strong>{" "}
+                </span>
+                <span className="mr-1"> | </span>
+                Go to page:{" "}
                 <input
-                  className="inputpagebtn"
+                  className="pagination-input"
                   type="number"
                   defaultValue={pageIndex + 1}
                   onChange={(e) => {
@@ -267,12 +274,79 @@ function XATableLayout({
                     gotoPage(page);
                   }}
                 />
-              </span>
+                <span className="mr-1"> </span>
+                <span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                    }}
+                  >
+                    {[25, 50, 75, 100].map((pageSize) => (
+                      <option key={pageSize} value={pageSize}>
+                        Show {pageSize}
+                      </option>
+                    ))}
+                  </select>
+                </span>
+                <span className="mr-1"> </span>
+                <button
+                  onClick={() => nextPage()}
+                  className="pagination-btn-previous mr-1 btn btn-outline-dark btn-sm lh-1"
+                  disabled={!canNextPage}
+                >
+                  {">"}
+                </button>
+                <button
+                  onClick={() => gotoPage(pageCount)}
+                  className="pagination-btn-last btn btn-outline-dark btn-sm"
+                  disabled={!canNextPage}
+                >
+                  {">>"}
+                </button>
+              </div>
             </div>
-            <div className="col-4">
+          </div>
+          {/* <div className="row mt-3">
+            <div className="col-2 text-right">
+              <button
+                title="First"
+                onClick={() => gotoPage(0)}
+                disabled={!canPreviousPage}
+                className="mr-1 h-100 btn btn-outline-dark btn-sm"
+              >
+                {"<<"}
+              </button>
+              <button
+                title="Previous"
+                onClick={() => previousPage()}
+                disabled={!canPreviousPage}
+                className="h-100 btn btn-outline-dark btn-sm"
+              >
+                {"< "}
+              </button>
+            </div>
+            <span>
+              Page{" "}
+              <strong>
+                {pageIndex + 1} of {pageOptions.length}
+              </strong>{" "}
+            </span>
+            <span>
+              | Go to page:{" "}
+              <input
+                className="inputpagebtn"
+                type="number"
+                defaultValue={pageIndex + 1}
+                onChange={(e) => {
+                  const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                  gotoPage(page);
+                }}
+              />
+            </span>
+            <div className="col-1">
               <span>
                 <select
-                  className="selectpage custom-select"
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
@@ -286,23 +360,23 @@ function XATableLayout({
                 </select>
               </span>
             </div>
-            <div className="col-2">
+            <div className="col-1">
               <button
                 onClick={() => nextPage()}
-                className="pagebtn btn btn-outline-dark btn-sm"
+                className="mr-1 h-75 btn btn-outline-dark btn-sm lh-1"
                 disabled={!canNextPage}
               >
                 {">"}
               </button>
               <button
                 onClick={() => gotoPage(pageCount)}
-                className="pagebtn btn btn-outline-dark btn-sm"
+                className="h-75 btn btn-outline-dark btn-sm"
                 disabled={!canNextPage}
               >
                 {">>"}
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

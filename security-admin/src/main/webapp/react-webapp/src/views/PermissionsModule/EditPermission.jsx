@@ -282,14 +282,10 @@ const EditPermission = (props) => {
                       </FormB.Label>
                       <Col sm="10">
                         <Table striped bordered>
-                          <thead>
+                          <thead className="table-edit-permission">
                             <tr>
-                              <th className="text-center text-muted">
-                                Select and Add Group
-                              </th>
-                              <th className="text-center text-muted">
-                                Select and Add User{" "}
-                              </th>
+                              <th width="49%">Select and Add Group</th>
+                              <th width="49%">Select and Add User </th>
                             </tr>
                           </thead>
                           <tbody>
@@ -302,6 +298,8 @@ const EditPermission = (props) => {
                                     <div>
                                       <AsyncSelect
                                         {...input}
+                                        menuPlacement="auto"
+                                        menuPosition="fixed"
                                         className="edit-perm-select"
                                         defaultOptions
                                         filterOption={filterGrpOp}
@@ -318,8 +316,8 @@ const EditPermission = (props) => {
 
                                       <Button
                                         size="sm"
-                                        className="ml-2"
-                                        variant="outline-primary"
+                                        className="ml-2  m-r-sm"
+                                        variant="outline-secondary"
                                         onClick={() => {
                                           if (
                                             !values.selectgroup ||
@@ -360,10 +358,11 @@ const EditPermission = (props) => {
                                         isClearable={false}
                                         placeholder="Select Users"
                                       />
+
                                       <Button
                                         size="sm"
-                                        className="ml-2"
-                                        variant="outline-primary"
+                                        className="ml-2  m-r-sm"
+                                        variant="outline-secondary"
                                         onClick={() => {
                                           if (
                                             !values.selectuser ||
@@ -385,18 +384,20 @@ const EditPermission = (props) => {
                             <tr>
                               {selectedGrp.length !== 0 ? (
                                 <td>
-                                  {selectedGrp.map((obj, index) => (
-                                    <span
-                                      className="selected-widget"
-                                      key={index}
-                                    >
-                                      <i
-                                        className="icon remove fa-fw fa fa-remove"
-                                        onClick={(e) => handleRemoveGrp(obj)}
-                                      />
-                                      {obj.label}
-                                    </span>
-                                  ))}
+                                  <div className="selected-list">
+                                    {selectedGrp.map((obj, index) => (
+                                      <span
+                                        className="selected-widget"
+                                        key={index}
+                                      >
+                                        <i
+                                          className="icon remove fa-fw fa fa-remove"
+                                          onClick={(e) => handleRemoveGrp(obj)}
+                                        />
+                                        {obj.label}
+                                      </span>
+                                    ))}{" "}
+                                  </div>
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">
@@ -405,20 +406,23 @@ const EditPermission = (props) => {
                                   </strong>
                                 </td>
                               )}
+
                               {selectedUsr.length > 0 ? (
                                 <td>
-                                  {selectedUsr.map((obj, index) => (
-                                    <span
-                                      className="selected-widget"
-                                      key={index}
-                                    >
-                                      <i
-                                        className="icon remove fa-fw fa fa-remove"
-                                        onClick={(e) => handleRemoveUsr(obj)}
-                                      />
-                                      {obj.label}
-                                    </span>
-                                  ))}
+                                  <div className="selected-list">
+                                    {selectedUsr.map((obj, index) => (
+                                      <span
+                                        className="selected-widget"
+                                        key={index}
+                                      >
+                                        <i
+                                          className="icon remove fa-fw fa fa-remove"
+                                          onClick={(e) => handleRemoveUsr(obj)}
+                                        />
+                                        {obj.label}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">

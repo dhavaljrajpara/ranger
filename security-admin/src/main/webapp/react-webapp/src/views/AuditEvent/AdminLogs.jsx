@@ -225,6 +225,7 @@ function Admin() {
           if (sessionId != undefined) {
             return (
               <a
+                role="button"
                 className="text-primary"
                 onClick={(e) => {
                   e.stopPropagation();

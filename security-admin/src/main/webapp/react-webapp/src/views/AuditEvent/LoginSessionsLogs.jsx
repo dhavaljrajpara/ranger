@@ -71,6 +71,7 @@ function Login_Sessions() {
           if (id != undefined) {
             return (
               <a
+                role="button"
                 className="text-primary"
                 onClick={() => {
                   openModal(id);

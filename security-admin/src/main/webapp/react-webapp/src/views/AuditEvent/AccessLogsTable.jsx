@@ -49,7 +49,7 @@ export const AccessLogsTable = ({ data = {} }) => {
         </tr>
         <tr>
           <td>Policy Version</td>
-          <td>{!isEmpty(policyVersion) ? policyVersion : "--"}</td>
+          <td>{policyVersion || "--"}</td>
         </tr>
         <tr>
           <td>Event Time</td>
@@ -123,11 +123,11 @@ export const AccessLogsTable = ({ data = {} }) => {
           <td>{accessResult == 1 ? "Allowed" : "Denied"}</td>
         </tr>
         <tr>
-          <td>Access Enforcer</td>
+          <td className="text-nowrap">Access Enforcer</td>
           <td>{!isEmpty(aclEnforcer) ? aclEnforcer : "--"}</td>
         </tr>
         <tr>
-          <td>Agent Host Name </td>
+          <td className="text-nowrap">Agent Host Name </td>
           <td>{!isEmpty(agentHost) ? agentHost : "--"}</td>
         </tr>
         <tr>

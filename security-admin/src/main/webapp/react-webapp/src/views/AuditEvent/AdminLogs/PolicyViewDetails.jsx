@@ -188,15 +188,15 @@ export function PolicyViewDetails(props) {
       for (let key in resourceval) {
         let filterResourcesVal = find(resourceDef, { name: key });
         let resource = {};
-        resource.label = filterResourcesVal.label;
-        resource.level = filterResourcesVal.level;
+        resource.label = filterResourcesVal && filterResourcesVal.label;
+        resource.level = filterResourcesVal && filterResourcesVal.level;
         resource.values = resourceval[key].values;
-        if (filterResourcesVal.recursiveSupported) {
+        if (filterResourcesVal && filterResourcesVal.recursiveSupported) {
           resource.Rec_Recursive = resourceval[key].isRecursive
             ? DefStatus.RecursiveStatus.STATUS_RECURSIVE.label
             : DefStatus.RecursiveStatus.STATUS_NONRECURSIVE.label;
         }
-        if (filterResourcesVal.excludesSupported) {
+        if (filterResourcesVal && filterResourcesVal.excludesSupported) {
           resource.Rec_Exc = resourceval[key].isExcludes
             ? DefStatus.ExcludeStatus.STATUS_EXCLUDE.label
             : DefStatus.ExcludeStatus.STATUS_INCLUDE.label;
@@ -306,7 +306,8 @@ export function PolicyViewDetails(props) {
   ) => {
     let tableRow = [];
     let filterServiceDef = find(serviceDefs, ["name", serviceType]);
-    let policyCondition = filterServiceDef.hasOwnProperty("policyConditions");
+    let policyCondition =
+      filterServiceDef && filterServiceDef.hasOwnProperty("policyConditions");
     const getMaskingLabel = (label) => {
       let filterLabel = "";
       filterServiceDef.dataMaskDef.maskTypes.map((obj) => {
@@ -325,9 +326,9 @@ export function PolicyViewDetails(props) {
             <th className="text-center text-nowrap">Select Role </th>
             <th className="text-center text-nowrap">Select Group </th>
             <th className="text-center text-nowrap">Select User</th>
-            {!isEmpty(filterServiceDef.policyConditions) && (
-              <th className="text-center text-nowrap">Policy Conditions</th>
-            )}
+            {!isEmpty(
+              filterServiceDef && filterServiceDef.policyConditions
+            ) && <th className="text-center text-nowrap">Policy Conditions</th>}
             <th className="text-center text-nowrap">
               {policyType == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value
                 ? "Permissions"
@@ -395,7 +396,9 @@ export function PolicyViewDetails(props) {
                           ))
                         : "--"}
                     </td>
-                    {!isEmpty(filterServiceDef.policyConditions) && (
+                    {!isEmpty(
+                      filterServiceDef && filterServiceDef.policyConditions
+                    ) && (
                       <td className="text-center">
                         {!isEmpty(items.conditions)
                           ? items.conditions.map((obj) => {
@@ -573,7 +576,16 @@ export function PolicyViewDetails(props) {
     );
   };
   return loader ? (
-    <Loader />
+    <div className="row">
+      <div className="col-sm-12 text-center">
+        <div className="spinner-border mr-2" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
+        <div className="spinner-grow" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
+      </div>
+    </div>
   ) : (
     <>
       <div>

@@ -74,7 +74,8 @@ function Permissions() {
               </h6>
             </>
           );
-        }
+        },
+        className: "group"
       },
       {
         Header: "Users",
@@ -90,7 +91,8 @@ function Permissions() {
               </h6>
             </>
           );
-        }
+        },
+        className: "user"
       },
       {
         Header: "Action",

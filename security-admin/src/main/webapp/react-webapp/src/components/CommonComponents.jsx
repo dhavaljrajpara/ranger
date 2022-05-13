@@ -130,9 +130,7 @@ export class AccessMoreLess extends Component {
               </span>
             ) : (
               <span className="float-left-margin-1">
-                <code className="show-more-less">
-                  <br /> - Less..
-                </code>
+                <code className="show-more-less"> - Less..</code>
               </span>
             )
           ) : null}

@@ -254,7 +254,7 @@ class ServiceDefinitions extends Component {
             <h3 className="wrap-header bold text-left">Service Manager</h3>
           </Col>
           <Col sm={5} className="text-right">
-            {!isKMSRole && <b className="bold"> Security Zone: </b>}
+            {!isKMSRole && <b className="align-middle"> Security Zone: </b>}
           </Col>
           <Col sm={3}>
             {!isKMSRole && (

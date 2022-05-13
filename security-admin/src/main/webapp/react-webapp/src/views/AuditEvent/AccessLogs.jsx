@@ -236,6 +236,7 @@ function Access() {
           ) : (
             <>
               <a
+                role="button"
                 className="text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
