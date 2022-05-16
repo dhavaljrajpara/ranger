@@ -19,6 +19,7 @@ function Roles() {
   const [roleListingData, setRoleData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
@@ -45,6 +46,7 @@ function Roles() {
           console.error(`Error occurred while fetching Role list! ${error}`);
         }
         setRoleData(roleData);
+        setTotalCount(totalCount);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
       }
@@ -207,7 +209,9 @@ function Roles() {
           data={roleListingData}
           columns={columns}
           fetchData={fetchRoleInfo}
+          totalCount={totalCount}
           pageCount={pageCount}
+          pagination
           loading={loader}
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {

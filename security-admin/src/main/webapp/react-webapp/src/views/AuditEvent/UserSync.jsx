@@ -138,6 +138,7 @@ function User_Sync() {
         data={userSyncListingData}
         columns={columns}
         loading={loader}
+        totalCount={entries.totalCount}
         fetchData={fetchUserSyncInfo}
         pageCount={pageCount}
       />

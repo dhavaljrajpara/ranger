@@ -4,17 +4,15 @@ import XATableLayout from "Components/XATableLayout";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
 import { reject } from "lodash";
+import { fetchApi } from "Utils/fetchAPI";
 
 function Permissions() {
   const [permissionslistData, setPermissions] = useState([]);
   const [loader, setLoader] = useState(true);
-  const [isAdminRole] = useState(isSystemAdmin() || isKeyAdmin());
-  useEffect(() => {
-    fetchPermissions();
-  }, []);
-
   const [pageCount, setPageCount] = React.useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const fetchIdRef = useRef(0);
+  const [isAdminRole] = useState(isSystemAdmin() || isKeyAdmin());
 
   const fetchPermissions = useCallback(async ({ pageSize, pageIndex }) => {
     let permissionsdata = [];
@@ -22,7 +20,6 @@ function Permissions() {
     const fetchId = ++fetchIdRef.current;
     if (fetchId === fetchIdRef.current) {
       try {
-        const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
         const permissionResp = await fetchApi({
           url: "xusers/permission",
           params: {
@@ -36,6 +33,7 @@ function Permissions() {
         console.error(`Error occurred while fetching Group list! ${error}`);
       }
       setPermissions(permissionsdata);
+      setTotalCount(totalCount);
       setPageCount(Math.ceil(totalCount / pageSize));
       setLoader(false);
     }
@@ -126,6 +124,7 @@ function Permissions() {
           columns={
             isAdminRole ? columns : reject(columns, ["Header", "Action"])
           }
+          totalCount={totalCount}
           loading={loader}
           fetchData={fetchPermissions}
           pageCount={pageCount}

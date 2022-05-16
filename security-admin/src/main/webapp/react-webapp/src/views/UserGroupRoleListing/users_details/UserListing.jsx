@@ -45,6 +45,7 @@ function Users() {
     syncDteails: {},
     showSyncDetails: false
   });
+  const [totalCount, setTotalCount] = useState(0);
   const [updateTable, setUpdateTable] = useState(moment.now());
 
   const fetchUserInfo = useCallback(
@@ -75,6 +76,7 @@ function Users() {
           console.error(`Error occurred while fetching User list! ${error}`);
         }
         setUserData(userData);
+        setTotalCount(totalCount);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
       }
@@ -372,7 +374,9 @@ function Users() {
           data={userListingData}
           columns={columns}
           fetchData={fetchUserInfo}
+          totalCount={totalCount}
           pageCount={pageCount}
+          pagination
           loading={loader}
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {

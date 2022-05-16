@@ -30,7 +30,7 @@ export const PasswordLogs = ({ data, reportdata }) => {
             <br />
             <h5 className="bold wrap-header m-t-sm">User Details:</h5>
             <Table striped bordered hover>
-              <thead>
+              <thead className="thead-light">
                 <tr>
                   <th>Fields</th>
                   <th>Old Value</th>

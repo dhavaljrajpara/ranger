@@ -13,6 +13,7 @@ import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const [deletePolicyModal, setConfirmModal] = useState({
@@ -52,6 +53,7 @@ function PolicyListing() {
           console.error(`Error occurred while fetching Policies ! ${error}`);
         }
         setPolicyData(policyData);
+        setTotalCount(totalCount);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
       }
@@ -380,6 +382,7 @@ function PolicyListing() {
             data={policyListingData}
             columns={columns}
             fetchData={fetchPolicyInfo}
+            pagination
             pageCount={pageCount}
             loading={loader}
           />

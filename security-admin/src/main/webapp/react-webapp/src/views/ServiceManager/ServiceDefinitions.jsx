@@ -250,13 +250,13 @@ class ServiceDefinitions extends Component {
     return (
       <React.Fragment>
         <Row>
-          <Col sm={2}>
+          <Col sm={6}>
             <h3 className="wrap-header bold text-left">Service Manager</h3>
           </Col>
-          <Col sm={5} className="text-right">
+          <Col sm={2} className="text-right">
             {!isKMSRole && <b className="align-middle"> Security Zone: </b>}
           </Col>
-          <Col sm={3}>
+          <Col sm={2}>
             {!isKMSRole && (
               <Select
                 isDisabled={isDisabled}
@@ -322,7 +322,7 @@ class ServiceDefinitions extends Component {
             )}
           </Col>
         </Row>
-        <div className="wrap policy-manager mt-3">
+        <div className="wrap policy-manager mt-2">
           {this.state.loader ? (
             <Row className="row">
               <Col sm={12} className="text-center">

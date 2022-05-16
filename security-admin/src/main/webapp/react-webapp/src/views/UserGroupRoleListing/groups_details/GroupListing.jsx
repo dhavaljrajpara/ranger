@@ -29,6 +29,7 @@ function Groups() {
   let history = useHistory();
   const [groupListingData, setGroupData] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
@@ -61,6 +62,7 @@ function Groups() {
           toast.error(`Error occurred while fetching Group list! ${error}`);
         }
         setGroupData(groupData);
+        setTotalCount(totalCount);
         setPageCount(Math.ceil(totalCount / pageSize));
         setLoader(false);
       }
@@ -347,8 +349,10 @@ function Groups() {
           data={groupListingData}
           columns={columns}
           fetchData={fetchGroupInfo}
+          totalCount={totalCount}
           pageCount={pageCount}
           loading={loader}
+          pagination
           rowSelectOp={
             (isSystemAdmin() || isKeyAdmin()) && {
               position: "first",

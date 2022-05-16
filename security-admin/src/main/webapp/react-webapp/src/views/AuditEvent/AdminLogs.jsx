@@ -8,6 +8,7 @@ import AdminModal from "./AdminModal";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import OperationAdminModal from "./OperationAdminModal";
 import moment from "moment-timezone";
+import { capitalize, startCase, toLower } from "lodash";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -105,30 +106,62 @@ function Admin() {
               classtype == ClassTypes.CLASS_TYPE_XA_ASSET.value ||
               classtype == ClassTypes.CLASS_TYPE_RANGER_SERVICE.value
             )
-              operation = "Service " + action + "d " + objectname;
-            // "Service " + action + "d " + "<b>" + objectname + "</b>";
+              operation = (
+                <span>
+                  Service {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (
               classtype == ClassTypes.CLASS_TYPE_XA_RESOURCE.value ||
               classtype == ClassTypes.CLASS_TYPE_RANGER_POLICY.value
             )
-              operation = "Policy " + action + "d " + objectname;
+              operation = (
+                <span>
+                  Policy {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (classtype == ClassTypes.CLASS_TYPE_XA_USER.value)
-              operation = "User " + action + "d " + objectname;
+              operation = (
+                <span>
+                  User {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (classtype == ClassTypes.CLASS_TYPE_XA_GROUP.value)
-              operation = "Group " + action + "d " + objectname;
+              operation = (
+                <span>
+                  Group {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (classtype == ClassTypes.CLASS_TYPE_USER_PROFILE.value)
-              operation = "User profile " + action + "d " + objectname;
+              operation = (
+                <span>
+                  User profile {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (classtype == ClassTypes.CLASS_TYPE_PASSWORD_CHANGE.value)
-              operation = "User profile " + action + "d " + objectname;
+              operation = (
+                <span>
+                  User profile {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (
               classtype == ClassTypes.CLASS_TYPE_RANGER_SECURITY_ZONE.value
             )
-              operation = "Security Zone " + action + "d " + objectname;
+              operation = (
+                <span>
+                  Security Zone {action}d <strong>{objectname}</strong>
+                </span>
+              );
             else if (classtype == ClassTypes.CLASS_TYPE_RANGER_ROLE.value)
-              operation = "Role " + action + "d " + objectname;
+              operation = (
+                <span>
+                  Role {action}d <strong>{objectname}</strong>
+                </span>
+              );
             return operation;
           }
-        }
+        },
+        className: "w-25"
       },
       {
         Header: "Audit Type",
@@ -160,57 +193,39 @@ function Admin() {
           if (rawValue.value == "create") {
             operation = (
               <h6>
-                <Badge variant="success">
-                  {" "}
-                  {rawValue.value.charAt(0).toUpperCase() +
-                    rawValue.value.slice(1)}{" "}
-                </Badge>
+                <Badge variant="success">{capitalize(rawValue.value)}</Badge>
               </h6>
             );
           } else if (rawValue.value == "update") {
             operation = (
               <h6>
-                <Badge variant="warning">
-                  {" "}
-                  {rawValue.value.charAt(0).toUpperCase() +
-                    rawValue.value.slice(1)}{" "}
-                </Badge>
+                <Badge variant="warning">{capitalize(rawValue.value)}</Badge>
               </h6>
             );
           } else if (rawValue.value == "delete") {
             operation = (
               <h6>
-                <Badge variant="danger">
-                  {" "}
-                  {rawValue.value.charAt(0).toUpperCase() +
-                    rawValue.value.slice(1)}{" "}
-                </Badge>
+                <Badge variant="danger">{capitalize(rawValue.value)}</Badge>
               </h6>
             );
           } else if (rawValue.value == "IMPORT START") {
             operation = (
               <h6>
-                <Badge variant="info">
-                  {" "}
-                  {rawValue.value.charAt(0).toUpperCase() +
-                    rawValue.value.slice(1)}{" "}
-                </Badge>
+                <Badge variant="info">{capitalize(rawValue.value)}</Badge>
               </h6>
             );
           } else if (rawValue.value == "IMPORT END") {
             operation = (
               <h6>
-                <Badge variant="info">
-                  {" "}
-                  {rawValue.value.charAt(0).toUpperCase() +
-                    rawValue.value.slice(1)}{" "}
-                </Badge>
+                <Badge variant="info">{capitalize(rawValue.value)}</Badge>
               </h6>
             );
           } else {
             operation = (
               <h6>
-                <Badge variant="secondary"> {rawValue.value} </Badge>
+                <Badge variant="secondary">
+                  {startCase(toLower(rawValue.value))}
+                </Badge>{" "}
               </h6>
             );
           }
@@ -224,19 +239,21 @@ function Admin() {
           var sessionId = rawValue.value;
           if (sessionId != undefined) {
             return (
-              <a
-                role="button"
-                className="text-primary"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openModal(sessionId);
-                }}
-              >
-                {sessionId}
-              </a>
+              <div className="text-center">
+                <a
+                  role="button"
+                  className="text-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal(sessionId);
+                  }}
+                >
+                  {sessionId}
+                </a>
+              </div>
             );
           } else {
-            return "";
+            return <div className="text-center">--</div>;
           }
         }
       }
@@ -253,6 +270,7 @@ function Admin() {
         data={adminListingData}
         columns={columns}
         fetchData={fetchAdminLogsInfo}
+        totalCount={entries.totalCount}
         pageCount={pageCount}
         loading={loader}
         getRowProps={(row) => ({

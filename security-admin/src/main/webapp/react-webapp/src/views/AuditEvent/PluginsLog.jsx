@@ -50,23 +50,23 @@ function Plugins() {
     () => [
       {
         Header: "Export Date ( India Standard Time )",
-        accessor: "createDate" // accessor is the "key" in the data
+        accessor: "createDate"
       },
       {
         Header: "Service Name",
-        accessor: "repositoryName" // accessor is the "key" in the data
+        accessor: "repositoryName"
       },
       {
         Header: "Plugin ID",
-        accessor: "agentId" // accessor is the "key" in the data
+        accessor: "agentId"
       },
       {
         Header: "Plugin IP",
-        accessor: "clientIP" // accessor is the "key" in the data
+        accessor: "clientIP"
       },
       {
         Header: "Cluster Name",
-        accessor: "clusterName" // accessor is the "key" in the data
+        accessor: "clusterName"
       },
       {
         Header: "Http Response Code",
@@ -81,7 +81,7 @@ function Plugins() {
       },
       {
         Header: "Status",
-        accessor: "syncStatus" // accessor is the "key" in the data
+        accessor: "syncStatus"
       }
     ],
     []
@@ -95,6 +95,7 @@ function Plugins() {
         data={pluginsListingData}
         columns={columns}
         loading={loader}
+        totalCount={entries.totalCount}
         fetchData={fetchPluginsInfo}
         pageCount={pageCount}
       />

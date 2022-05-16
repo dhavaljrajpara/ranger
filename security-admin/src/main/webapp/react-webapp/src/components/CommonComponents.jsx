@@ -3,6 +3,8 @@ import {
   Alert,
   Badge,
   Popover,
+  Row,
+  Col,
   OverlayTrigger,
   Tooltip
 } from "react-bootstrap";
@@ -69,10 +71,10 @@ export class MoreLess extends Component {
 
   render() {
     return (
-      <div>
-        {this.state.data.map((key, index) => {
+      <>
+        {this.state.data.map((key) => {
           return (
-            <Badge variant="info" className="m-1">
+            <Badge variant="info" key={key} className="m-1">
               {key}
             </Badge>
           );
@@ -86,7 +88,7 @@ export class MoreLess extends Component {
             )
           ) : null}
         </a>
-      </div>
+      </>
     );
   }
 }
@@ -216,7 +218,6 @@ export const CustomPopover = ({ title, content, placement, trigger, icon }) => {
           </Popover>
         }
       >
-        {/* <i className="{fa-fw fa fa-info-circle} info-icon"></i> */}
         <i className={icon}></i>
       </OverlayTrigger>
     </>

@@ -442,6 +442,7 @@ function Access() {
         data={accessListingData}
         columns={columns}
         fetchData={fetchAccessLogsInfo}
+        totalCount={entries.totalCount}
         loading={loader}
         pageCount={pageCount}
         getRowProps={(row) => ({

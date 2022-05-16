@@ -35,6 +35,8 @@ function XATableLayout({
   pageCount: controlledPageCount,
   rowSelectOp,
   columnHide,
+  totalCount,
+  pagination,
   getRowProps = () => ({})
 }) {
   const {
@@ -155,7 +157,7 @@ function XATableLayout({
           <div className="table-responsive">
             <br />
             <Table bordered hover {...getTableProps()}>
-              <thead className="thead-light">
+              <thead className="thead-light text-center">
                 {
                   // Loop over the header rows
                   headerGroups.map((headerGroup) => (
@@ -234,149 +236,81 @@ function XATableLayout({
               </tbody>
             </Table>
           </div>
-          <div className="row mt-2">
-            <div className="col-md-1"></div>
-            <div className="col-md-11 m-b-sm">
-              <div className="text-left">
-                <button
-                  title="First"
-                  onClick={() => gotoPage(0)}
-                  disabled={!canPreviousPage}
-                  className="pagination-btn-first mr-1  btn btn-outline-dark btn-sm"
-                >
-                  {"<<"}
-                </button>
-                <button
-                  title="Previous"
-                  onClick={() => previousPage()}
-                  disabled={!canPreviousPage}
-                  className="pagination-btn-previous btn btn-outline-dark btn-sm"
-                >
-                  {"< "}{" "}
-                </button>
-                <span className="mr-1">
-                  <span className="mr-1"> </span>
-                  Page{" "}
-                  <strong>
-                    {pageIndex + 1} of {pageOptions.length}
-                  </strong>{" "}
-                </span>
-                <span className="mr-1"> | </span>
-                Go to page:{" "}
-                <input
-                  className="pagination-input"
-                  type="number"
-                  defaultValue={pageIndex + 1}
-                  onChange={(e) => {
-                    const page = e.target.value
-                      ? Number(e.target.value) - 1
-                      : 0;
-                    gotoPage(page);
-                  }}
-                />
-                <span className="mr-1"> </span>
-                <span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                    }}
+          {totalCount > 25 && (
+            <div className="row mt-2">
+              <div className="col-md-1"></div>
+              <div className="col-md-11 m-b-sm">
+                <div className="text-left">
+                  <button
+                    title="First"
+                    onClick={() => gotoPage(0)}
+                    disabled={!canPreviousPage}
+                    className="pagination-btn-first mr-1  btn btn-outline-dark btn-sm"
                   >
-                    {[25, 50, 75, 100].map((pageSize) => (
-                      <option key={pageSize} value={pageSize}>
-                        Show {pageSize}
-                      </option>
-                    ))}
-                  </select>
-                </span>
-                <span className="mr-1"> </span>
-                <button
-                  onClick={() => nextPage()}
-                  className="pagination-btn-previous mr-1 btn btn-outline-dark btn-sm lh-1"
-                  disabled={!canNextPage}
-                >
-                  {">"}
-                </button>
-                <button
-                  onClick={() => gotoPage(pageCount)}
-                  className="pagination-btn-last btn btn-outline-dark btn-sm"
-                  disabled={!canNextPage}
-                >
-                  {">>"}
-                </button>
+                    {"<<"}
+                  </button>
+                  <button
+                    title="Previous"
+                    onClick={() => previousPage()}
+                    disabled={!canPreviousPage}
+                    className="pagination-btn-previous btn btn-outline-dark btn-sm"
+                  >
+                    {"< "}{" "}
+                  </button>
+                  <span className="mr-1">
+                    <span className="mr-1"> </span>
+                    Page{" "}
+                    <strong>
+                      {pageIndex + 1} of {pageOptions.length}
+                    </strong>{" "}
+                  </span>
+                  <span className="mr-1"> | </span>
+                  Go to page:{" "}
+                  <input
+                    className="pagination-input"
+                    type="number"
+                    defaultValue={pageIndex + 1}
+                    onChange={(e) => {
+                      const page = e.target.value
+                        ? Number(e.target.value) - 1
+                        : 0;
+                      gotoPage(page);
+                    }}
+                  />
+                  <span className="mr-1"> </span>
+                  <span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                      }}
+                    >
+                      {[25, 50, 75, 100].map((pageSize) => (
+                        <option key={pageSize} value={pageSize}>
+                          Show {pageSize}
+                        </option>
+                      ))}
+                    </select>
+                  </span>
+                  <span className="mr-1"> </span>
+                  <button
+                    onClick={() => nextPage()}
+                    className="pagination-btn-previous mr-1 btn btn-outline-dark btn-sm lh-1"
+                    disabled={!canNextPage}
+                  >
+                    {">"}
+                  </button>
+                  <button
+                    onClick={() => gotoPage(pageCount - 1)}
+                    className="pagination-btn-last btn btn-outline-dark btn-sm"
+                    disabled={!canNextPage}
+                  >
+                    {">>"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          {/* <div className="row mt-3">
-            <div className="col-2 text-right">
-              <button
-                title="First"
-                onClick={() => gotoPage(0)}
-                disabled={!canPreviousPage}
-                className="mr-1 h-100 btn btn-outline-dark btn-sm"
-              >
-                {"<<"}
-              </button>
-              <button
-                title="Previous"
-                onClick={() => previousPage()}
-                disabled={!canPreviousPage}
-                className="h-100 btn btn-outline-dark btn-sm"
-              >
-                {"< "}
-              </button>
-            </div>
-            <span>
-              Page{" "}
-              <strong>
-                {pageIndex + 1} of {pageOptions.length}
-              </strong>{" "}
-            </span>
-            <span>
-              | Go to page:{" "}
-              <input
-                className="inputpagebtn"
-                type="number"
-                defaultValue={pageIndex + 1}
-                onChange={(e) => {
-                  const page = e.target.value ? Number(e.target.value) - 1 : 0;
-                  gotoPage(page);
-                }}
-              />
-            </span>
-            <div className="col-1">
-              <span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                  }}
-                >
-                  {[25, 50, 75, 100].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
-                      Show {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </span>
-            </div>
-            <div className="col-1">
-              <button
-                onClick={() => nextPage()}
-                className="mr-1 h-75 btn btn-outline-dark btn-sm lh-1"
-                disabled={!canNextPage}
-              >
-                {">"}
-              </button>
-              <button
-                onClick={() => gotoPage(pageCount)}
-                className="h-75 btn btn-outline-dark btn-sm"
-                disabled={!canNextPage}
-              >
-                {">>"}
-              </button>
-            </div>
-          </div> */}
+          )}
         </div>
       </div>
     </>

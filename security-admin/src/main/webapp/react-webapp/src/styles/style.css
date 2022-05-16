@@ -757,9 +757,12 @@ header {
 .user,
 .group {
   width: 35%;
-  overflow-x: hidden;
-}
 
+}
+.user-agent {
+  width: 21%;
+
+}
 .pagination-btn-first,
 .pagination-btn-next {
   height: 25px;
@@ -781,3 +784,4 @@ header {
   width: 41px;
   height: 21px;
 }
+

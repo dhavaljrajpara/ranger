@@ -65,29 +65,31 @@ function Login_Sessions() {
     () => [
       {
         Header: "Session ID",
-        accessor: "id", // accessor is the "key" in the data
+        accessor: "id",
         Cell: (rawValue) => {
           var id = rawValue.value;
           if (id != undefined) {
             return (
-              <a
-                role="button"
-                className="text-primary"
-                onClick={() => {
-                  openModal(id);
-                }}
-              >
-                {id}
-              </a>
+              <div className="text-center">
+                <a
+                  role="button"
+                  className="text-primary"
+                  onClick={() => {
+                    openModal(id);
+                  }}
+                >
+                  <span className="text-center">{id}</span>
+                </a>
+              </div>
             );
           } else {
-            return "";
+            return <div className="text-center">--</div>;
           }
         }
       },
       {
         Header: "Login ID",
-        accessor: "loginId", // accessor is the "key" in the data
+        accessor: "loginId",
         Cell: (rawValue) => {
           if (rawValue.value) {
             return rawValue.value;
@@ -98,7 +100,7 @@ function Login_Sessions() {
       },
       {
         Header: "Result",
-        accessor: "authStatus", // accessor is the "key" in the data
+        accessor: "authStatus",
         Cell: (rawValue) => {
           var label = "";
           var html = "";
@@ -120,7 +122,7 @@ function Login_Sessions() {
               } else {
                 html = (
                   <h6>
-                    <Badge>{label}</Badge>
+                    <Badge variant="secondary">{label}</Badge>
                   </h6>
                 );
               }
@@ -131,7 +133,7 @@ function Login_Sessions() {
       },
       {
         Header: "Login Type",
-        accessor: "authType", // accessor is the "key" in the data
+        accessor: "authType",
         Cell: (rawValue) => {
           var label = "";
           Object.keys(AuthType).map((item) => {
@@ -144,22 +146,27 @@ function Login_Sessions() {
       },
       {
         Header: "IP",
-        accessor: "requestIP" // accessor is the "key" in the data
+        accessor: "requestIP"
       },
       {
         Header: "User Agent",
-        accessor: "requestUserAgent", // accessor is the "key" in the data
+        accessor: "requestUserAgent",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return <div className="resource-text">{rawValue.value}</div>;
+            return (
+              <div className="resource-text" title={rawValue.value}>
+                {rawValue.value}
+              </div>
+            );
           } else {
-            return "--";
+            return <div className="text-center">--</div>;
           }
-        }
+        },
+        className: "user-agent"
       },
       {
         Header: "Login Time ( India Standard Time )",
-        accessor: "authTime", // accessor is the "key" in the data
+        accessor: "authTime",
         Cell: (rawValue) => {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
@@ -178,6 +185,7 @@ function Login_Sessions() {
         data={loginSessionListingData}
         columns={columns}
         fetchData={fetchLoginSessionLogsInfo}
+        totalCount={entries.totalCount}
         loading={loader}
         pageCount={pageCount}
       />
