@@ -757,11 +757,9 @@ header {
 .user,
 .group {
   width: 35%;
-
 }
 .user-agent {
   width: 21%;
-
 }
 .pagination-btn-first,
 .pagination-btn-next {
@@ -785,3 +783,27 @@ header {
   height: 21px;
 }
 
+.operation-text {
+  max-width: 22rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.validity-empty-field {
+  min-width: 16.5em;
+  line-height: 97px;
+}
+
+.policyitem-empty-field {
+  min-width: 16.5em;
+  line-height: 167px;
+}
+.policycondition-empty {
+  min-width: 16.5em;
+  line-height: 56px;
+}
+
+.policyitem-field,
+.validity-field {
+  min-width: 16.5em;
+}

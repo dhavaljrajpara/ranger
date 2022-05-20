@@ -158,7 +158,7 @@ function Admin() {
                   Role {action}d <strong>{objectname}</strong>
                 </span>
               );
-            return operation;
+            return <div className="operation-text">{operation}</div>;
           }
         },
         className: "w-25"

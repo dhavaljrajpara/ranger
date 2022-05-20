@@ -167,6 +167,7 @@ function PolicyListing() {
   };
 
   const revert = (e) => {
+    e.preventDefault();
     let version = policyParamsData && policyParamsData.version;
     let revertVal = {};
     revertVal.version = version;
@@ -414,6 +415,7 @@ function PolicyListing() {
             paramsData={policyParamsData}
             serviceDefs={serviceDefs}
             policyInfo={fetchPolicyInfo}
+            totalCount={totalCount}
             policyView={true}
             updateServices={updateServices}
           />

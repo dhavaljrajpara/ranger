@@ -4,13 +4,14 @@ import dateFormat from "dateformat";
 import { ClassTypes } from "../../../utils/XAEnums";
 import _, {
   isEmpty,
-  startCase,
   isEqual,
   isUndefined,
   unionBy,
   difference,
   differenceWith,
-  without
+  forEach,
+  filter,
+  map
 } from "lodash";
 
 export const PolicyLogs = ({ data, reportdata }) => {
@@ -67,8 +68,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
     details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{policy.attributeName}</td>
-          <td className="table-warning">
+          <td className="table-warning policyitem-field">
+            {policy.attributeName}
+          </td>
+          <td className="table-warning policyitem-field">
             {!isEmpty(policy.newValue)
               ? createDetailsPolicy(policy.attributeName, policy.newValue)
               : "--"}
@@ -86,18 +89,24 @@ export const PolicyLogs = ({ data, reportdata }) => {
       return tablerow.push(
         <>
           <tr key={index}>
-            <td className="table-warning">{key}</td>
+            <td className="table-warning text-nowrap policyitem-field">
+              {key}
+            </td>
             <td className="table-warning"> {newVal[key].values.join(", ")}</td>
           </tr>
           <tr>
-            <td className="table-warning">{key + " " + "exclude"}</td>
+            <td className="table-warning text-nowrap policyitem-field">
+              {key + " " + "exclude"}
+            </td>
             <td className="table-warning">
               {newVal[key].isExcludes == false ? "false" : "true"}
             </td>
           </tr>
           <tr>
-            <td className="table-warning">{key + " " + "recursive"}</td>
-            <td className="table-warning">
+            <td className="table-warning text-nowrap policyitem-field">
+              {key + " " + "recursive"}
+            </td>
+            <td className="table-warning policyitem-field">
               {newVal[key].isRecursive == false ? "false" : "true"}
             </td>
           </tr>
@@ -147,366 +156,11 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
   /* UPDATE LOGS VARIABLES */
 
-  const updatePolicyDetails = reportdata.filter((policy) => {
-    return (
-      policy.action == "update" &&
-      policy.attributeName != "Policy Resources" &&
-      policy.attributeName != "Policy Conditions" &&
-      policy.attributeName != "Policy Items" &&
-      policy.attributeName != "DenyPolicy Items" &&
-      policy.attributeName != "Allow Exceptions" &&
-      policy.attributeName != "Deny Exceptions" &&
-      policy.attributeName != "Masked Policy Items" &&
-      policy.attributeName != "Row level filter Policy Items" &&
-      policy.attributeName != "Validity Schedules"
-    );
-  });
-  const updatePolicyResources = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Resources" && obj.action == "update";
-  });
-  const policyDetailsUpdate = (details, resources) => {
-    let tablerow = [];
-    const policyOldVal = (val, oldVal) => {
-      if (val == "Policy Labels") {
-        return (oldVal = !isEmpty(JSON.parse(oldVal))
-          ? JSON.parse(oldVal).join(", ")
-          : "--");
-      }
-      if (val == "Policy Status") {
-        return (oldVal = oldVal === "false" ? "disabled" : "enabled");
-      }
-      // if (val == "Policy Resources") {
-      //   return;
-      // }
-
-      return !isEmpty(oldVal) ? oldVal : "--";
-    };
-    const policyNewVal = (val, newVal) => {
-      if (val == "Policy Labels") {
-        return (newVal = !isEmpty(JSON.parse(newVal))
-          ? JSON.parse(newVal).join(", ")
-          : "--");
-      }
-      if (val == "Policy Status") {
-        return (newVal = newVal === "false" ? "disabled" : "enabled");
-      }
-      return !isEmpty(newVal) ? newVal : "--";
-    };
-
-    details.map((o, index) => {
-      return tablerow.push(
-        <tr key={index}>
-          <td className="table-warning">{o.attributeName}</td>
-          <td className="table-warning">
-            {!isEmpty(o.previousValue)
-              ? policyOldVal(o.attributeName, o.previousValue)
-              : "--"}
-          </td>
-          <td className="table-warning">
-            {!isEmpty(o.newValue)
-              ? policyNewVal(o.attributeName, o.newValue)
-              : "--"}
-          </td>
-        </tr>
-      );
-    });
-
-    let oldVal = {};
-    let newVal = {};
-    resources.map((obj) => {
-      oldVal = JSON.parse(obj.previousValue);
-      newVal = JSON.parse(obj.newValue);
-    });
-
-    const diffVal = (obj1, obj2) => {
-      let diff = {};
-      if (!isEmpty(obj1)) {
-        _.forEach(obj2, function (value, key) {
-          if (obj1[key] !== undefined) {
-            diff[key] = differenceWith(
-              value.values,
-              obj1[key].values,
-              _.isEqual
-            );
-          }
-        });
-      } else {
-        return (diff = obj2);
-      }
-      return diff;
-    };
-    let removedUsers = diffVal(newVal, oldVal);
-    let addUsers = diffVal(oldVal, newVal);
-
-    const getfilteredoldval = (val, oldvals) => {
-      let filterdiff = null;
-      !isEmpty(removedUsers[val])
-        ? (filterdiff = difference(oldvals.values, removedUsers[val]))
-        : (filterdiff = oldvals.values);
-      return (
-        <>
-          {!isEqual(oldvals, newVal[val])
-            ? !isEmpty(removedUsers[val])
-              ? unionBy(
-                  filterdiff.map((obj) => {
-                    return (
-                      <>
-                        <span>{obj}</span>
-                        {`, `}
-                      </>
-                    );
-                  }),
-                  removedUsers[val].map((obj) => {
-                    return (
-                      <>
-                        <Badge className="d-inline mr-1" variant="danger">
-                          {obj}
-                        </Badge>
-                      </>
-                    );
-                  })
-                )
-              : !isEmpty(filterdiff)
-              ? filterdiff.map((obj) => obj).join(", ")
-              : "--"
-            : !isEmpty(oldvals)
-            ? oldvals.values.map((obj) => obj).join(", ")
-            : "--"}
-        </>
-      );
-    };
-    const getfilterednewval = (val, newvals) => {
-      let filterdiff = null;
-      !isEmpty(addUsers[val])
-        ? (filterdiff = difference(newvals.values, addUsers[val]))
-        : (filterdiff = newvals.values);
-      return (
-        <>
-          {!isEqual(newvals, oldVal[val])
-            ? !isEmpty(addUsers[val])
-              ? unionBy(
-                  filterdiff.map((obj) => {
-                    return (
-                      <>
-                        <span>{obj}</span>
-                        {`, `}
-                      </>
-                    );
-                  }),
-                  addUsers[val].map((obj) => {
-                    return (
-                      <>
-                        <Badge className="d-inline mr-1" variant="success">
-                          {obj}
-                        </Badge>
-                      </>
-                    );
-                  })
-                )
-              : !isEmpty(filterdiff)
-              ? filterdiff.map((obj) => obj).join(", ")
-              : "--"
-            : !isEmpty(newvals)
-            ? newvals.values.map((obj) => obj).join(", ")
-            : "--"}
-        </>
-      );
-    };
-
-    Object.keys(oldVal).map((key, index) => {
-      return tablerow.push(
-        <>
-          {!isEqual(oldVal[key].values, newVal[key].values) && (
-            <tr>
-              <td className="table-warning">{key}</td>
-              {oldVal[key] && !isEmpty(oldVal[key].values) && (
-                <td className="table-warning">
-                  {getfilteredoldval(key, oldVal[key])}
-                </td>
-              )}
-              {newVal[key] && !isEmpty(newVal[key].values) && (
-                <td className="table-warning">
-                  {getfilterednewval(key, newVal[key])}
-                </td>
-              )}
-            </tr>
-          )}
-          {(oldVal[key].isExcludes === true ||
-            newVal[key].isExcludes === true) && (
-            <tr>
-              <td className="table-warning">{key + " " + "exclude"}</td>
-
-              <td className="table-warning">
-                <h6>
-                  <Badge variant="danger">
-                    {oldVal[key].isExcludes === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-
-              <td className="table-warning">
-                <h6>
-                  {" "}
-                  <Badge variant="success">
-                    {newVal[key].isExcludes === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-            </tr>
-          )}
-          {(oldVal[key].isRecursive === true ||
-            newVal[key].isRecursive === true) && (
-            <tr>
-              <td className="table-warning">{key + " " + "recursive"}</td>
-
-              <td className="table-warning">
-                <h6>
-                  <Badge variant="danger">
-                    {oldVal[key].isRecursive === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-
-              <td className="table-warning">
-                <h6>
-                  <Badge variant="success">
-                    {newVal[key].isRecursive === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-            </tr>
-          )}
-        </>
-      );
-    });
-    return tablerow;
-  };
   const updateValidity = reportdata.filter(
     (obj) => obj.attributeName == "Validity Schedules" && obj.action == "update"
   );
   const updateValidityOld = updateValidity.map((obj) => obj.previousValue);
   const updateValidityNew = updateValidity.map((obj) => obj.newValue);
-
-  const updateValidityOldNew = (policy) => {
-    var tablerow = [];
-    let oldVal = {};
-    let newVal = {};
-
-    policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldVal = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newVal = obj));
-
-    let filteredval = Object.keys(oldVal).concat(Object.keys(newVal));
-    filteredval = filteredval.filter((item, index) => {
-      return filteredval.indexOf(item) == index;
-    });
-
-    const diffVal = (obj1, obj2) => {
-      let diff = null;
-      if (!isEmpty(obj1)) {
-        diff = difference(obj1, obj2);
-      } else {
-        return (diff = obj2);
-      }
-      return diff;
-    };
-
-    var removedUsers = diffVal(
-      JSON.parse(policy.previousValue),
-      JSON.parse(policy.newValue)
-    );
-    var addUsers = diffVal(
-      JSON.parse(policy.newValue),
-      JSON.parse(policy.previousValue)
-    );
-
-    let filterPolicys = without(filteredval, "recurrences");
-    const getfilteredoldval = (val, oldvals) => {
-      let oldValues = oldvals[0];
-      let filteredOldVal = oldValues[val];
-      let filterdiff = null;
-      !isEmpty(removedUsers[val])
-        ? (filterdiff = difference(filteredOldVal, removedUsers[val]))
-        : (filterdiff = filteredOldVal);
-      return (
-        <>
-          <i>{startCase(val)}</i>:{" "}
-          {!isEqual(filteredOldVal, newVal[val]) ? (
-            !isEmpty(removedUsers[0][val]) ? (
-              <Badge className="d-inline mr-1" variant="danger">
-                {removedUsers[0][val]}
-              </Badge>
-            ) : !isEmpty(filterdiff) ? (
-              filterdiff
-            ) : (
-              "--"
-            )
-          ) : !isEmpty(filteredOldVal) ? (
-            filteredOldVal
-          ) : (
-            "--"
-          )}
-        </>
-      );
-    };
-    const getfilterednewval = (val, newvals) => {
-      let newValues = newvals[0];
-      let filteredNewVal = newValues[val];
-      let filterdiff = null;
-      !isEmpty(addUsers[val])
-        ? (filterdiff = difference(filteredNewVal, addUsers[val]))
-        : (filterdiff = filteredNewVal);
-      return (
-        <>
-          <i>{startCase(val)}</i>:
-          {!isEqual(filteredNewVal, oldVal[val]) ? (
-            !isEmpty(addUsers[0][val]) ? (
-              <Badge className="d-inline mr-1" variant="success">
-                {addUsers[0][val]}
-              </Badge>
-            ) : !isEmpty(filterdiff) ? (
-              filterdiff
-            ) : (
-              "--"
-            )
-          ) : !isEmpty(filteredNewVal) ? (
-            filteredNewVal
-          ) : (
-            "--"
-          )}
-        </>
-      );
-    };
-
-    filterPolicys.map((val, index) => {
-      return tablerow.push(
-        <>
-          <tr key={index}>
-            {policy &&
-            policy.previousValue &&
-            !isEmpty(JSON.parse(policy.previousValue)) ? (
-              <td className="table-warning text-nowrap">
-                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
-              </td>
-            ) : (
-              <td>{"<empty>"}</td>
-            )}
-
-            {policy &&
-            policy.newValue &&
-            !isEmpty(JSON.parse(policy.newValue)) ? (
-              <td className="table-warning text-nowrap">
-                {getfilterednewval(val, JSON.parse(policy.newValue))}
-              </td>
-            ) : (
-              <td>{"<empty>"}</td>
-            )}
-          </tr>
-        </>
-      );
-    });
-    return tablerow;
-  };
 
   const updateMaskPolicy = reportdata.filter(
     (obj) =>
@@ -545,6 +199,253 @@ export const PolicyLogs = ({ data, reportdata }) => {
   const updatePolicyConditionNew = updatePolicyCondition.map(
     (obj) => obj.newValue
   );
+
+  const updatePolicyDetails = reportdata.filter((policy) => {
+    return (
+      policy.action == "update" &&
+      policy.attributeName != "Policy Resources" &&
+      policy.attributeName != "Policy Conditions" &&
+      policy.attributeName != "Policy Items" &&
+      policy.attributeName != "DenyPolicy Items" &&
+      policy.attributeName != "Allow Exceptions" &&
+      policy.attributeName != "Deny Exceptions" &&
+      policy.attributeName != "Masked Policy Items" &&
+      policy.attributeName != "Row level filter Policy Items" &&
+      policy.attributeName != "Validity Schedules"
+    );
+  });
+  const updatePolicyResources = reportdata.filter((obj) => {
+    return obj.attributeName == "Policy Resources" && obj.action == "update";
+  });
+
+  /*UPDATESS*/
+
+  const policyDetailsUpdate = (details, resources) => {
+    let tablerow = [];
+    const policyOldVal = (val, oldVal) => {
+      if (val == "Policy Labels") {
+        return (oldVal = !isEmpty(JSON.parse(oldVal))
+          ? JSON.parse(oldVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (oldVal = oldVal === "false" ? "disabled" : "enabled");
+      }
+
+      return !isEmpty(oldVal) ? oldVal : "--";
+    };
+    const policyNewVal = (val, newVal) => {
+      if (val == "Policy Labels") {
+        return (newVal = !isEmpty(JSON.parse(newVal))
+          ? JSON.parse(newVal).join(", ")
+          : "--");
+      }
+      if (val == "Policy Status") {
+        return (newVal = newVal === "false" ? "disabled" : "enabled");
+      }
+      return !isEmpty(newVal) ? newVal : "--";
+    };
+
+    details.map((o, index) => {
+      return tablerow.push(
+        <tr key={index}>
+          <td className="table-warning text-nowrap policyitem-field">
+            {o.attributeName}
+          </td>
+          <td className="table-warning text-nowrap policyitem-field">
+            {!isEmpty(o.previousValue)
+              ? policyOldVal(o.attributeName, o.previousValue)
+              : "--"}
+          </td>
+          <td className="table-warning text-nowrap  policyitem-field">
+            {!isEmpty(o.newValue)
+              ? policyNewVal(o.attributeName, o.newValue)
+              : "--"}
+          </td>
+        </tr>
+      );
+    });
+
+    let oldVal = {};
+    let newVal = {};
+    resources.map((obj) => {
+      oldVal = JSON.parse(obj.previousValue);
+      newVal = JSON.parse(obj.newValue);
+    });
+
+    const diffVal = (obj1, obj2) => {
+      let diff = {};
+      if (!isEmpty(obj1)) {
+        forEach(obj2, function (value, key) {
+          if (obj1[key] !== undefined) {
+            diff[key] = differenceWith(value.values, obj1[key].values, isEqual);
+          }
+        });
+      } else {
+        return (diff = obj2);
+      }
+      return diff;
+    };
+    let removedUsers = diffVal(newVal, oldVal);
+    let addUsers = diffVal(oldVal, newVal);
+
+    const getfilteredoldval = (val, oldvals) => {
+      let filterdiff = null;
+      !isEmpty(removedUsers[val])
+        ? (filterdiff = difference(oldvals.values, removedUsers[val]))
+        : (filterdiff = oldvals.values);
+      return (
+        <>
+          {!isEqual(oldvals, newVal[val])
+            ? !isEmpty(removedUsers[val])
+              ? unionBy(
+                  filterdiff.map((obj) => {
+                    return (
+                      <>
+                        <span>{obj}</span>
+                        {`, `}
+                      </>
+                    );
+                  }),
+                  removedUsers[val].map((obj) => {
+                    return (
+                      <>
+                        <h6 className="d-inline">
+                          <Badge
+                            className="d-inline-flex mr-1"
+                            variant="danger"
+                          >
+                            {obj}
+                          </Badge>
+                        </h6>
+                      </>
+                    );
+                  })
+                )
+              : !isEmpty(filterdiff)
+              ? filterdiff.map((obj) => obj).join(", ")
+              : "--"
+            : !isEmpty(oldvals)
+            ? oldvals.values.map((obj) => obj).join(", ")
+            : "--"}
+        </>
+      );
+    };
+    const getfilterednewval = (val, newvals) => {
+      let filterdiff = null;
+      !isEmpty(addUsers[val])
+        ? (filterdiff = difference(newvals.values, addUsers[val]))
+        : (filterdiff = newvals.values);
+      return (
+        <>
+          {!isEqual(newvals, oldVal[val])
+            ? !isEmpty(addUsers[val])
+              ? unionBy(
+                  filterdiff.map((obj) => {
+                    return (
+                      <>
+                        <span>{obj}</span>
+                        {`, `}
+                      </>
+                    );
+                  }),
+                  addUsers[val].map((obj) => {
+                    return (
+                      <>
+                        <h6 className="d-inline">
+                          <Badge
+                            className="d-inline-flex mr-1"
+                            variant="success"
+                          >
+                            {obj}
+                          </Badge>
+                        </h6>
+                      </>
+                    );
+                  })
+                )
+              : !isEmpty(filterdiff)
+              ? filterdiff.map((obj) => obj).join(", ")
+              : "--"
+            : !isEmpty(newvals)
+            ? newvals.values.map((obj) => obj).join(", ")
+            : "--"}
+        </>
+      );
+    };
+
+    Object.keys(oldVal).map((key, index) => {
+      return tablerow.push(
+        <>
+          {!isEqual(oldVal[key].values, newVal[key].values) && (
+            <tr>
+              <td className="table-warning policyitem-field">{key}</td>
+              {oldVal[key] && !isEmpty(oldVal[key].values) && (
+                <td className="table-warning policyitem-field">
+                  {getfilteredoldval(key, oldVal[key])}
+                </td>
+              )}
+              {newVal[key] && !isEmpty(newVal[key].values) && (
+                <td className="table-warning">
+                  {getfilterednewval(key, newVal[key])}
+                </td>
+              )}
+            </tr>
+          )}
+          {(oldVal[key].isExcludes === true ||
+            newVal[key].isExcludes === true) && (
+            <tr>
+              <td className="table-warning text-nowrap policyitem-field">
+                {key + " " + "exclude"}
+              </td>
+
+              <td className="table-warning text-nowrap policyitem-field">
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {oldVal[key].isExcludes === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+
+              <td className="table-warning  text-nowrap policyitem-field">
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {newVal[key].isExcludes === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+            </tr>
+          )}
+          {(oldVal[key].isRecursive === true ||
+            newVal[key].isRecursive === true) && (
+            <tr>
+              <td className="table-warning text-nowrap policyitem-field">
+                {key + " " + "recursive"}
+              </td>
+
+              <td className="table-warning  text-nowrap policyitem-field">
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {oldVal[key].isRecursive === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+
+              <td className="table-warning text-nowrap  policyitem-field">
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {newVal[key].isRecursive === false ? "false" : "true"}
+                  </Badge>
+                </h6>
+              </td>
+            </tr>
+          )}
+        </>
+      );
+    });
+    return tablerow;
+  };
+
   const updateConditionOldNew = (policy) => {
     var tablerow = [];
     let oldVal = [];
@@ -553,17 +454,19 @@ export const PolicyLogs = ({ data, reportdata }) => {
     oldVal =
       policy.previousValue &&
       JSON.parse(policy.previousValue).map(
-        (obj) => `${obj.type}:${obj.values}`
+        (obj) => `${obj.type}: ${obj.values.join(", ")}`
       );
 
     newVal =
       policy.newValue &&
-      JSON.parse(policy.newValue).map((obj) => `${obj.type}:${obj.values}`);
+      JSON.parse(policy.newValue).map(
+        (obj) => `${obj.type}: ${obj.values.join(", ")}`
+      );
     tablerow.push(
-      <Row>
-        <Col xs={6}>
-          <Table className="table table-bordered">
-            <thead>
+      <Row className="d-flex flex-nowrap">
+        <Col className="d-table" xs={6} md={4}>
+          <Table className="table table-bordered w-auto">
+            <thead className="thead-light">
               <tr>
                 <th>Old Value</th>
               </tr>
@@ -577,7 +480,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       {policy &&
                       policy.previousValue &&
                       !isEmpty(JSON.parse(policy.previousValue)) ? (
-                        <td className="table-warning text-nowrap">{val}</td>
+                        <td className="table-warning text-nowrap policyitem-field">
+                          {val}
+                        </td>
                       ) : (
                         <td>
                           <strong>--</strong>
@@ -587,16 +492,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   );
                 })
               ) : (
-                <td className="table-warning text-center">
+                <td className="table-warning text-center policycondition-empty">
                   <strong>{"<empty>"} </strong>
                 </td>
               )}
             </tbody>
           </Table>
         </Col>
-        <Col xs={6}>
-          <Table className="table table-bordered">
-            <thead>
+        <Col className="d-table" xs={6} md={4}>
+          <Table className="table table-bordered w-auto">
+            <thead className="thead-light">
               <tr>
                 <th>New Value</th>
               </tr>
@@ -608,7 +513,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     policy.newValue &&
                     !isEmpty(JSON.parse(policy.newValue)) ? (
                     <tr key={val.id}>
-                      <td className="table-warning">{val}</td>
+                      <td className="table-warning policyitem-field">{val}</td>
                     </tr>
                   ) : (
                     <tr>
@@ -617,7 +522,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   );
                 })
               ) : (
-                <td className="table-warning  text-center">
+                <td className="table-warning  text-center policycondition-empty">
                   <strong>{"<empty>"} </strong>
                 </td>
               )}
@@ -628,572 +533,893 @@ export const PolicyLogs = ({ data, reportdata }) => {
     );
     return tablerow;
   };
-
-  const updatePolicyOldNew = (policy) => {
-    var tablerow = [];
-    let oldVal = {};
-    let newVal = {};
-
-    policy.previousValue &&
-      JSON.parse(policy.previousValue).map((obj) => (oldVal = obj));
-    policy.newValue && JSON.parse(policy.newValue).map((obj) => (newVal = obj));
-
-    let filteredval = Object.keys(oldVal).concat(Object.keys(newVal));
-    filteredval = filteredval.filter((item, index) => {
-      return filteredval.indexOf(item) == index;
-    });
-
-    let filterPolicys =
-      policy.attributeName == "Masked Policy Items" ||
-      policy.attributeName == "Row level filter Policy Items"
-        ? without(filteredval, "conditions", "dataMaskInfo", "delegateAdmin")
-        : filteredval;
-    const diffVal = (obj1, obj2) => {
-      let diff = {};
-      if (!isEmpty(obj1)) {
-        _.forEach(obj2, function (value, key) {
-          if (obj1[key] !== undefined) {
-            diff[key] = differenceWith(value, obj1[key], _.isEqual);
+  const updatePolicyValidityNew = (policy) => {
+    var tableRow = [];
+    let newPolicyItems = [];
+    let oldPolicyItems = [];
+    let newPolicyItemsDiff = [];
+    let oldPolicyItemsDiff = [];
+    if (!isUndefined(policy.newValue) && !isEmpty(policy.newValue)) {
+      newPolicyItems = policy.newValue && JSON.parse(policy.newValue);
+    }
+    if (!isUndefined(policy.previousValue) && !isEmpty(policy.previousValue)) {
+      oldPolicyItems = policy.previousValue && JSON.parse(policy.previousValue);
+    }
+    newPolicyItemsDiff = differenceWith(
+      newPolicyItems,
+      oldPolicyItems,
+      isEqual
+    );
+    oldPolicyItemsDiff = differenceWith(
+      oldPolicyItems,
+      newPolicyItems,
+      isEqual
+    );
+    const diffVal = (obj1, obj2) =>
+      Object.fromEntries(
+        Object.entries(obj1).reduce((r, [key, value]) => {
+          if (value && typeof value === "object") {
+            let temp = diffVal(value, obj2[key] || {});
+            if (Object.keys(temp).length) r.push([key, temp]);
+          } else {
+            if (value !== obj2[key]) r.push([key, value]);
           }
-        });
-      } else {
-        return (diff = obj2);
-      }
-      return diff;
-    };
-    var removedUsers = diffVal(newVal, oldVal);
-    var addUsers = diffVal(oldVal, newVal);
-
-    const getfilteredoldval = (val, oldvals) => {
-      let oldValues = oldvals[0];
-      let filterOldVal = oldValues[val];
-      /* Permissions */
-
-      if (val == "accesses") {
-        let filterdiff = null;
-        !isEmpty(removedUsers[val])
-          ? (filterdiff = differenceWith(
-              filterOldVal,
-              removedUsers[val],
-              isEqual
-            ))
-          : (filterdiff = filterOldVal);
-        return (
-          <>
-            {objectName == "rowlevel" ||
-            objectName == "policyhivemask" ||
-            objectName == "rowpolicy" ? (
-              <i>{`Accesses: `} </i>
-            ) : (
-              <i>{`Permissions: `}</i>
-            )}
-
-            {!isEqual(filterOldVal, newVal[val])
-              ? !isEmpty(removedUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj.type}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    removedUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="danger">
-                            {obj.type}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj.type).join(", ")
-                : "<empty>"
-              : !isEmpty(filterOldVal)
-              ? filterOldVal.map((obj) => obj.type).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-
-      /* GROUPS */
-
-      if (val == "groups") {
-        let filterdiff = null;
-        !isEmpty(removedUsers[val])
-          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
-          : (filterdiff = filterOldVal);
-        return (
-          <>
-            <i>{`Groups`}</i>:{" "}
-            {!isEqual(filterOldVal, newVal[val])
-              ? !isEmpty(removedUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    removedUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="danger">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterOldVal)
-              ? filterOldVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-
-      /* ROLES */
-
-      if (val == "roles") {
-        let filterdiff = null;
-        !isEmpty(removedUsers[val])
-          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
-          : (filterdiff = filterOldVal);
-        return (
-          <>
-            <i>{`Roles`}</i>:{" "}
-            {!isEqual(filterOldVal, newVal[val])
-              ? !isEmpty(removedUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    removedUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="danger">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterOldVal)
-              ? filterOldVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-
-      /* USERS */
-
-      if (val == "users") {
-        let filterdiff = null;
-        !isEmpty(removedUsers[val])
-          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
-          : (filterdiff = filterOldVal);
-        return (
-          <>
-            <i>{`Users`}</i>:{" "}
-            {!isEqual(filterOldVal, newVal[val])
-              ? !isEmpty(removedUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    removedUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="danger">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterOldVal)
-              ? filterOldVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-      if (val == "conditions") {
-        let filterdiff = null;
-        !isEmpty(removedUsers[val])
-          ? (filterdiff = difference(filterOldVal, removedUsers[val]))
-          : (filterdiff = filterOldVal);
-        return (
-          <>
-            <i>{`Conditions`}</i>:{" "}
-            {!isEqual(filterOldVal, newVal[val])
-              ? !isEmpty(removedUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span> {`${obj.type}: ${obj.values}`}</span>
-                        </>
-                      );
-                    }),
-                    removedUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {`${obj.type}: ${obj.values}`}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => {
-                    `${obj.type}: ${obj.values}`;
-                  })
-                : "<empty>"
-              : !isEmpty(filterOldVal)
-              ? filterOldVal.map((obj) => {
-                  `${obj.type}: ${obj.values}`;
-                })
-              : "<empty>"}
-          </>
-        );
-      }
-      if (val == "rowFilterInfo") {
-        return (
-          <>
-            <i>{`Row Level Filter`}</i>
-            {`: `}
-            {!isEmpty(filterOldVal.filterExpr) ? (
-              <span>{filterOldVal.filterExpr}</span>
-            ) : (
-              "empty"
-            )}
-          </>
-        );
-      }
-      if (val == "DataMasklabel") {
-        return (
-          <>
-            <i>{`Data Mask Types`}</i>
-            {`: ${!isEmpty(filterOldVal) ? filterOldVal : "<empty>"}`}
-          </>
-        );
-      }
-
-      if (val == "delegateAdmin") {
-        return (
-          <>
-            <i>{`Delegate Admin`}</i>
-            {`: ${filterOldVal === false ? "disabled" : "enabled"}`}
-          </>
-        );
-      }
-
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        !isEmpty(filterOldVal) ? filterOldVal : "<empty>"
-      }`;
-    };
-
-    const getfilterednewval = (val, newvals) => {
-      let newValues = newvals[0];
-      let filterNewVal = newValues[val];
-      /* PERMISSIONS */
-
-      if (val == "accesses") {
-        let filterdiff = null;
-        !isEmpty(addUsers[val])
-          ? (filterdiff = differenceWith(filterNewVal, addUsers[val], isEqual))
-          : (filterdiff = filterNewVal);
-        return (
-          <>
-            {objectName == "rowlevel" ||
-            objectName == "policyhivemask" ||
-            objectName == "rowpolicy" ? (
-              <i>{`Accesses: `} </i>
-            ) : (
-              <i>{`Permissions: `}</i>
-            )}
-
-            {!isEqual(filterNewVal, oldVal[val])
-              ? !isEmpty(addUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj.type}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    addUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {obj.type}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj.type).join(", ")
-                : "<empty>"
-              : !isEmpty(filterNewVal)
-              ? filterNewVal.map((obj) => obj.type).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-      /* GROUPS */
-      if (val == "groups") {
-        let filterdiff = null;
-        !isEmpty(addUsers[val])
-          ? (filterdiff = difference(filterNewVal, addUsers[val]))
-          : (filterdiff = filterNewVal);
-        return (
-          <>
-            <i>{`Groups`}</i>:{" "}
-            {!isEqual(filterNewVal, oldVal[val])
-              ? !isEmpty(addUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    addUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterNewVal)
-              ? filterNewVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-      /* ROLES */
-      if (val == "roles") {
-        let filterdiff = null;
-        !isEmpty(addUsers[val])
-          ? (filterdiff = difference(filterNewVal, addUsers[val]))
-          : (filterdiff = filterNewVal);
-        return (
-          <>
-            <i>{`Roles`}</i>:{" "}
-            {!isEqual(filterNewVal, oldVal[val])
-              ? !isEmpty(addUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    addUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterNewVal)
-              ? filterNewVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-      /* USERS */
-      if (val == "users") {
-        let filterdiff = null;
-        !isEmpty(addUsers[val])
-          ? (filterdiff = difference(filterNewVal, addUsers[val]))
-          : (filterdiff = filterNewVal);
-        return (
-          <>
-            <i>{`Users`}</i>:{" "}
-            {!isEqual(filterNewVal, oldVal[val])
-              ? !isEmpty(addUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span>{obj}</span>
-                          {`, `}
-                        </>
-                      );
-                    }),
-                    addUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {obj}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => obj).join(", ")
-                : "<empty>"
-              : !isEmpty(filterNewVal)
-              ? filterNewVal.map((obj) => obj).join(", ")
-              : "<empty>"}
-          </>
-        );
-      }
-
-      if (val == "conditions") {
-        let filterdiff = null;
-        !isEmpty(addUsers[val])
-          ? (filterdiff = differenceWith(filterNewVal, addUsers[val], isEqual))
-          : (filterdiff = filterNewVal);
-        return (
-          <>
-            <i>{`Conditions`}</i>:{" "}
-            {!isEqual(filterNewVal, oldVal[val])
-              ? !isEmpty(addUsers[val])
-                ? unionBy(
-                    filterdiff.map((obj) => {
-                      return (
-                        <>
-                          <span> {`${obj.type}: ${obj.values}`}</span>
-                        </>
-                      );
-                    }),
-                    addUsers[val].map((obj) => {
-                      return (
-                        <>
-                          <Badge className="d-inline mr-1" variant="success">
-                            {`${obj.type}: ${obj.values}`}
-                          </Badge>
-                        </>
-                      );
-                    })
-                  )
-                : !isEmpty(filterdiff)
-                ? filterdiff.map((obj) => {
-                    `${obj.type}: ${obj.values}`;
-                  })
-                : "<empty>"
-              : !isEmpty(filterNewVal)
-              ? filterNewVal.map((obj) => {
-                  `${obj.type}: ${obj.values}`;
-                })
-              : "<empty>"}
-          </>
-        );
-      }
-
-      if (val == "DataMasklabel") {
-        return (
-          <>
-            <i>{`Data Mask Types`}</i>
-            {`: ${!isEmpty(filterNewVal) ? filterNewVal : "<empty>"}`}
-          </>
-        );
-      }
-
-      if (val == "rowFilterInfo") {
-        return (
-          <>
-            <i>{`Row Level Filter`}</i>
-            {`: `}
-            {!isEmpty(filterNewVal.filterExpr) ? (
-              <span>{filterNewVal.filterExpr}</span>
-            ) : (
-              "empty"
-            )}
-          </>
-        );
-      }
-
-      if (val == "delegateAdmin") {
-        return (
-          <>
-            <i>{`Delegate Admin`}</i>
-            {`: ${filterNewVal === false ? "disabled" : "enabled"}`}
-          </>
-        );
-      }
-
-      return `${val.charAt(0).toUpperCase() + val.slice(1)}:  ${
-        isEmpty(filterNewVal) ? filterNewVal : "<empty>"
-      }`;
-    };
-
-    filterPolicys.map((val) => {
-      return tablerow.push(
-        <>
-          <tr>
-            {policy &&
-            policy.previousValue &&
-            !isEmpty(JSON.parse(policy.previousValue)) ? (
-              <td className="table-warning text-nowrap">
-                {getfilteredoldval(val, JSON.parse(policy.previousValue))}
-              </td>
-            ) : (
-              <td>{"<empty>"}</td>
-            )}
-
-            {policy &&
-            policy.newValue &&
-            !isEmpty(JSON.parse(policy.newValue)) ? (
-              <td className="table-warning text-nowrap">
-                {getfilterednewval(val, JSON.parse(policy.newValue))}
-              </td>
-            ) : (
-              <td>{"<empty>"}</td>
-            )}
-          </tr>
-        </>
+          return r;
+        }, [])
       );
-    });
+    const getStartTime = (startTime, index) => {
+      var added = diffVal(newPolicyItemsDiff, oldPolicyItemsDiff);
 
-    return tablerow;
+      return !isEmpty(added[index] && added[index].startTime) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="success">
+            {added[index] && added[index].startTime}
+          </Badge>
+        </h6>
+      ) : (
+        startTime
+      );
+    };
+    const getEndTime = (endTime, index) => {
+      var added = diffVal(newPolicyItemsDiff, oldPolicyItemsDiff);
+
+      return !isEmpty(added[index] && added[index].endTime) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="success">
+            {added[index] && added[index].endTime}
+          </Badge>
+        </h6>
+      ) : (
+        endTime
+      );
+    };
+    const getTimeZone = (timeZone, index) => {
+      var added = diffVal(newPolicyItemsDiff, oldPolicyItemsDiff);
+
+      return !isEmpty(added[index] && added[index].timeZone) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="success">
+            {added[index] && added[index].timeZone}
+          </Badge>
+        </h6>
+      ) : (
+        timeZone
+      );
+    };
+    tableRow.push(
+      !isEmpty(newPolicyItemsDiff) ? (
+        newPolicyItemsDiff.map(({ startTime, endTime, timeZone }, index) => (
+          <tbody>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>Start Date: </i>
+                {!isEmpty(startTime) ? getStartTime(startTime, index) : "--"}
+              </td>
+            </tr>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>End Date: </i>
+                {!isEmpty(endTime) ? getEndTime(endTime, index) : "--"}
+              </td>
+            </tr>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>Time Zone: </i>
+                {!isEmpty(timeZone) ? getTimeZone(timeZone, index) : "--"}
+              </td>
+            </tr>
+          </tbody>
+        ))
+      ) : (
+        <tbody>
+          <tr>
+            <td className="validity-empty-field text-center table-warning">
+              <b>{"<empty>"}</b>
+            </td>
+          </tr>
+        </tbody>
+      )
+    );
+
+    return tableRow;
+  };
+
+  const updatePolicyValidityOld = (policy) => {
+    var tableRow = [];
+    let newPolicyItems = [];
+    let oldPolicyItems = [];
+    let newPolicyItemsDiff = [];
+    let oldPolicyItemsDiff = [];
+    if (!isUndefined(policy.newValue) && !isEmpty(policy.newValue)) {
+      newPolicyItems = policy.newValue && JSON.parse(policy.newValue);
+    }
+    if (!isUndefined(policy.previousValue) && !isEmpty(policy.previousValue)) {
+      oldPolicyItems = policy.previousValue && JSON.parse(policy.previousValue);
+    }
+    newPolicyItemsDiff = differenceWith(
+      newPolicyItems,
+      oldPolicyItems,
+      isEqual
+    );
+    oldPolicyItemsDiff = differenceWith(
+      oldPolicyItems,
+      newPolicyItems,
+      isEqual
+    );
+    const diffVal = (obj1, obj2) =>
+      Object.fromEntries(
+        Object.entries(obj1).reduce((r, [key, value]) => {
+          if (value && typeof value === "object") {
+            let temp = diffVal(value, obj2[key] || {});
+            if (Object.keys(temp).length) r.push([key, temp]);
+          } else {
+            if (value !== obj2[key]) r.push([key, value]);
+          }
+          return r;
+        }, [])
+      );
+    const getStartTime = (startTime, index) => {
+      var removed = diffVal(oldPolicyItemsDiff, newPolicyItemsDiff);
+      return !isEmpty(removed[index] && removed[index].startTime) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="danger">
+            {removed[index] && removed[index].startTime}
+          </Badge>
+        </h6>
+      ) : (
+        startTime
+      );
+    };
+    const getEndTime = (endTime, index) => {
+      var removed = diffVal(oldPolicyItemsDiff, newPolicyItemsDiff);
+
+      return !isEmpty(removed[index] && removed[index].endTime) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="danger">
+            {removed[index] && removed[index].endTime}
+          </Badge>
+        </h6>
+      ) : (
+        endTime
+      );
+    };
+    const getTimeZone = (timeZone, index) => {
+      var removed = diffVal(oldPolicyItemsDiff, newPolicyItemsDiff);
+
+      return !isEmpty(removed[index] && removed[index].timeZone) ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="danger">
+            {removed[index] && removed[index].timeZone}
+          </Badge>
+        </h6>
+      ) : (
+        timeZone
+      );
+    };
+    tableRow.push(
+      !isEmpty(oldPolicyItemsDiff) ? (
+        oldPolicyItemsDiff.map(({ startTime, endTime, timeZone }, index) => (
+          <tbody>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>Start Date: </i>
+                {!isEmpty(startTime) ? getStartTime(startTime, index) : "--"}
+              </td>
+            </tr>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>End Date: </i>
+                {!isEmpty(endTime) ? getEndTime(endTime, index) : "--"}
+              </td>
+            </tr>
+            <tr>
+              <td className="table-warning text-nowrap validity-field">
+                <i>Time Zone: </i>
+                {!isEmpty(timeZone) ? getTimeZone(timeZone, index) : "--"}
+              </td>
+            </tr>
+          </tbody>
+        ))
+      ) : (
+        <tbody>
+          <tr>
+            <td className="validity-empty-field text-center table-warning">
+              <b>{"<empty>"}</b>
+            </td>
+          </tr>
+        </tbody>
+      )
+    );
+
+    return tableRow;
+  };
+
+  const updatePolicyNew = (policy) => {
+    var tableRow = [];
+    let newPolicyItems = [];
+    let oldPolicyItems = [];
+    let newPolicyItemsDiff = [];
+    let oldPolicyItemsDiff = [];
+    if (!isUndefined(policy.newValue) && !isEmpty(policy.newValue)) {
+      newPolicyItems = policy.newValue && JSON.parse(policy.newValue);
+      newPolicyItems.map((obj) => {
+        if (!isUndefined(obj.accesses)) {
+          let permissions = map(
+            filter(obj.accesses, { isAllowed: true }),
+            function (t) {
+              return t.type;
+            }
+          );
+          obj["permissions"] = permissions;
+          obj["delegateAdmin"] = obj.delegateAdmin ? "enabled" : "disabled";
+        }
+      });
+    }
+
+    if (!isUndefined(policy.previousValue) && !isEmpty(policy.previousValue)) {
+      oldPolicyItems = policy.previousValue && JSON.parse(policy.previousValue);
+      oldPolicyItems.map((obj) => {
+        if (!isUndefined(obj.accesses)) {
+          let permissions = map(
+            filter(obj.accesses, { isAllowed: true }),
+            function (t) {
+              return t.type;
+            }
+          );
+          obj["permissions"] = permissions;
+          obj["delegateAdmin"] = obj.delegateAdmin ? "enabled" : "disabled";
+        }
+      });
+    }
+    newPolicyItemsDiff = differenceWith(
+      newPolicyItems,
+      oldPolicyItems,
+      isEqual
+    );
+    oldPolicyItemsDiff = differenceWith(
+      oldPolicyItems,
+      newPolicyItems,
+      isEqual
+    );
+
+    const getRoles = (roles, index) => {
+      let filterdiff = [];
+      var added = difference(
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].roles,
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].roles
+      );
+      !isEmpty(added)
+        ? (filterdiff = differenceWith(Object.values(roles), added, isEqual))
+        : (filterdiff = newPolicyItemsDiff);
+      return !isEmpty(added)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            added.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].roles.map((obj) => obj).join(", ");
+    };
+
+    const getGroups = (group, index) => {
+      let filterdiff = [];
+      var added = difference(
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].groups,
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].groups
+      );
+      !isEmpty(added)
+        ? (filterdiff = differenceWith(Object.values(group), added, isEqual))
+        : (filterdiff = newPolicyItemsDiff);
+      return !isEmpty(added)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            added.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].groups.map((obj) => obj).join(", ");
+    };
+    const getUsers = (users, index) => {
+      let filterdiff = [];
+      var added = difference(
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].users,
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].users
+      );
+      !isEmpty(added)
+        ? (filterdiff = differenceWith(Object.values(users), added, isEqual))
+        : (filterdiff = newPolicyItemsDiff);
+      return !isEmpty(added)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            added.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].users.map((obj) => obj).join(", ");
+    };
+    const getPermissions = (permissions, index) => {
+      let filterdiff = [];
+      var added = difference(
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].permissions,
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].permissions
+      );
+      !isEmpty(added)
+        ? (filterdiff = differenceWith(
+            Object.values(permissions),
+            added,
+            isEqual
+          ))
+        : (filterdiff = newPolicyItemsDiff);
+      return !isEmpty(added)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            added.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="success">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].permissions.map((obj) => obj).join(", ");
+    };
+
+    const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {
+      if (DataMasklabel) {
+        if (
+          !isEqual(
+            newPolicyItemsDiff[index] &&
+              newPolicyItemsDiff[index].DataMasklabel,
+            oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].DataMasklabel
+          )
+        ) {
+          return (
+            <h6 className="d-inline">
+              <Badge className="d-inline-flex mr-1" variant="danger">
+                {DataMasklabel}
+              </Badge>
+            </h6>
+          );
+        } else {
+          return DataMasklabel;
+        }
+      }
+      if (dataMaskInfo) {
+        if (
+          !isEqual(
+            newPolicyItemsDiff[index] &&
+              newPolicyItemsDiff[index].dataMaskInfo.dataMaskType,
+            oldPolicyItemsDiff[index] &&
+              oldPolicyItemsDiff[index].dataMaskInfo.dataMaskType
+          )
+        ) {
+          return (
+            <h6 className="d-inline">
+              <Badge className="d-inline-flex mr-1" variant="danger">
+                {dataMaskInfo.dataMaskType}
+              </Badge>
+            </h6>
+          );
+        } else {
+          return dataMaskInfo.dataMaskType;
+        }
+      }
+    };
+    const getRowLevelFilter = (rowFilter, index) => {
+      var added = isEqual(
+        newPolicyItemsDiff[index] &&
+          newPolicyItemsDiff[index].rowFilterInfo.filterExpr,
+        oldPolicyItemsDiff[index] &&
+          oldPolicyItemsDiff[index].rowFilterInfo.filterExpr
+      );
+      return !added ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="success">
+            {rowFilter}
+          </Badge>
+        </h6>
+      ) : (
+        rowFilter
+      );
+    };
+    const getCondition = (conditions, index) => {
+      var added = isEqual(
+        oldPolicyItemsDiff[index] &&
+          oldPolicyItemsDiff[index].conditions.map((obj) => obj.values),
+        newPolicyItemsDiff[index] &&
+          newPolicyItemsDiff[index].conditions.map((obj) => {
+            obj.values;
+          })
+      );
+      return !added ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="success">
+            {`${conditions.type}: ${conditions.values.join(", ")}`}
+          </Badge>
+        </h6>
+      ) : (
+        `${conditions.type}: ${conditions.values.join(", ")}`
+      );
+    };
+    tableRow.push(
+      !isEmpty(newPolicyItemsDiff) ? (
+        newPolicyItemsDiff.map(
+          (
+            {
+              roles,
+              groups,
+              users,
+              permissions,
+              delegateAdmin,
+              dataMaskInfo,
+              DataMasklabel,
+              conditions,
+              rowFilterInfo
+            },
+            index
+          ) => (
+            <tbody>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Roles: </i>
+                  {!isEmpty(roles) ? getRoles(roles, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Groups: </i>
+                  {!isEmpty(groups) ? getGroups(groups, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Users: </i>
+                  {!isEmpty(users) ? getUsers(users, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {policy.attributeName == "Masked Policy Items" ||
+                  policy.attributeName == "Row level filter Policy Items " ? (
+                    <i>Accesses: </i>
+                  ) : (
+                    <i>Permissions: </i>
+                  )}
+                  {getPermissions(permissions, index)}
+                </td>
+              </tr>
+              {(policy.attributeName != "Masked Policy Items" ||
+                policy.attributeName != "Row level filter Policy Items") &&
+                !isEmpty(conditions) && (
+                  <tr>
+                    <td className="table-warning text-nowrap policyitem-field">
+                      <i>Conditions: </i>
+                      {!isEmpty(conditions)
+                        ? conditions.map((obj) => {
+                            return getCondition(obj, index);
+                          })
+                        : "<empty>"}
+                    </td>
+                  </tr>
+                )}
+              {policy.attributeName != "Masked Policy Items" &&
+                policy.attributeName != "Row level filter Policy Items" && (
+                  <tr>
+                    <td className="table-warning text-nowrap policyitem-field">
+                      <i>Delegate Admin: </i>
+                      {delegateAdmin}
+                    </td>
+                  </tr>
+                )}
+              {policy.attributeName == "Masked Policy Items" && (
+                <tr>
+                  <td className="table-warning text-nowrap policyitem-field">
+                    <i>Data Mask Types: </i>
+                    {getMaskingLabel(
+                      DataMasklabel ? DataMasklabel : dataMaskInfo.dataMaskType
+                    )}
+                  </td>
+                </tr>
+              )}
+              {policy.attributeName == "Row level filter Policy Items" && (
+                <tr>
+                  <td className="table-warning text-nowrap">
+                    <i>Row Level Filter: </i>
+                    {!isEmpty(rowFilterInfo)
+                      ? getRowLevelFilter(rowFilterInfo.filterExpr, index)
+                      : "--"}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          )
+        )
+      ) : (
+        <tbody>
+          <tr>
+            <td className="policyitem-empty-field text-center table-warning">
+              <b>{"<empty>"}</b>
+            </td>
+          </tr>
+        </tbody>
+      )
+    );
+
+    return tableRow;
+  };
+  const updatePolicyOld = (policy) => {
+    var tableRow = [];
+    let oldPolicyItems = [];
+    let newPolicyItems = [];
+    let newPolicyItemsDiff = [];
+    let oldPolicyItemsDiff = [];
+
+    if (!isUndefined(policy.previousValue) && !isEmpty(policy.previousValue)) {
+      oldPolicyItems = policy.previousValue && JSON.parse(policy.previousValue);
+      oldPolicyItems.map((obj) => {
+        if (!isUndefined(obj.accesses)) {
+          let permissions = map(
+            filter(obj.accesses, { isAllowed: true }),
+            function (t) {
+              return t.type;
+            }
+          );
+          obj["permissions"] = permissions;
+          obj["delegateAdmin"] =
+            obj.delegateAdmin == true ? "enabled" : "disabled";
+        }
+      });
+    }
+    if (!isUndefined(policy.newValue) && !isEmpty(policy.newValue)) {
+      newPolicyItems = policy.newValue && JSON.parse(policy.newValue);
+      newPolicyItems.map((obj) => {
+        if (!isUndefined(obj.accesses)) {
+          let permissions = map(
+            filter(obj.accesses, { isAllowed: true }),
+            (t) => {
+              return t.type;
+            }
+          );
+          obj["permissions"] = permissions;
+          obj["delegateAdmin"] =
+            obj.delegateAdmin == true ? "enabled" : "disabled";
+        }
+      });
+    }
+    newPolicyItemsDiff = differenceWith(
+      newPolicyItems,
+      oldPolicyItems,
+      isEqual
+    );
+    oldPolicyItemsDiff = differenceWith(
+      oldPolicyItems,
+      newPolicyItems,
+      isEqual
+    );
+
+    const getRoles = (roles, index) => {
+      let filterdiff = [];
+      var removed = difference(
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].roles,
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].roles
+      );
+      !isEmpty(removed)
+        ? (filterdiff = differenceWith(Object.values(roles), removed, isEqual))
+        : (filterdiff = oldPolicyItemsDiff);
+      return !isEmpty(removed)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            removed.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].roles.map((obj) => obj).join(", ");
+    };
+    const getGroups = (group, index) => {
+      let filterdiff = [];
+      var removed = difference(
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].groups,
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].groups
+      );
+      !isEmpty(removed)
+        ? (filterdiff = differenceWith(Object.values(group), removed, isEqual))
+        : (filterdiff = oldPolicyItemsDiff);
+      return !isEmpty(removed)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            removed.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].groups.map((obj) => obj).join(", ");
+    };
+    const getUsers = (users, index) => {
+      let filterdiff = [];
+      var removed = difference(
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].users,
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].users
+      );
+      !isEmpty(removed)
+        ? (filterdiff = differenceWith(Object.values(users), removed, isEqual))
+        : (filterdiff = oldPolicyItemsDiff);
+      return !isEmpty(removed)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            removed.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].users.map((obj) => obj).join(", ");
+    };
+    const getPermissions = (permissions, index) => {
+      let filterdiff = [];
+      var removed = difference(
+        oldPolicyItemsDiff[index] && oldPolicyItemsDiff[index].permissions,
+        newPolicyItemsDiff[index] && newPolicyItemsDiff[index].permissions
+      );
+      !isEmpty(removed)
+        ? (filterdiff = differenceWith(
+            Object.values(permissions),
+            removed,
+            isEqual
+          ))
+        : (filterdiff = oldPolicyItemsDiff);
+      return !isEmpty(removed)
+        ? unionBy(
+            filterdiff.map((val) => `${val}, `),
+            removed.map((obj) => {
+              return (
+                <h6 className="d-inline">
+                  <Badge className="d-inline-flex mr-1" variant="danger">
+                    {obj}
+                  </Badge>
+                </h6>
+              );
+            })
+          )
+        : filterdiff[index].permissions.map((obj) => obj).join(", ");
+    };
+
+    const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {
+      if (DataMasklabel) {
+        if (
+          !isEqual(
+            oldPolicyItemsDiff[index] &&
+              oldPolicyItemsDiff[index].DataMasklabel,
+            newPolicyItemsDiff[index] && newPolicyItemsDiff[index].DataMasklabel
+          )
+        ) {
+          return (
+            <h6 className="d-inline">
+              <Badge className="d-inline-flex mr-1" variant="danger">
+                {DataMasklabel}
+              </Badge>
+            </h6>
+          );
+        } else {
+          return DataMasklabel;
+        }
+      }
+      if (dataMaskInfo) {
+        if (
+          !isEqual(
+            oldPolicyItemsDiff[index] &&
+              oldPolicyItemsDiff[index].dataMaskInfo.dataMaskType,
+            newPolicyItemsDiff[index] &&
+              newPolicyItemsDiff[index].dataMaskInfo.dataMaskType
+          )
+        ) {
+          return (
+            <h6 className="d-inline">
+              <Badge className="d-inline-flex mr-1" variant="danger">
+                {dataMaskInfo.dataMaskType}
+              </Badge>
+            </h6>
+          );
+        } else {
+          return dataMaskInfo.dataMaskType;
+        }
+      }
+    };
+    const getRowLevelFilter = (rowFilter, index) => {
+      var removed = isEqual(
+        oldPolicyItemsDiff[index] &&
+          oldPolicyItemsDiff[index].rowFilterInfo.filterExpr,
+        newPolicyItemsDiff[index] &&
+          newPolicyItemsDiff[index].rowFilterInfo.filterExpr
+      );
+      return !removed ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="danger">
+            {rowFilter}
+          </Badge>
+        </h6>
+      ) : (
+        rowFilter
+      );
+    };
+    const getCondition = (conditions, index) => {
+      var removed = isEqual(
+        newPolicyItemsDiff[index] &&
+          newPolicyItemsDiff[index].conditions.map((obj) => {
+            obj.values;
+          }),
+        oldPolicyItemsDiff[index] &&
+          oldPolicyItemsDiff[index].conditions.map((obj) => obj.values)
+      );
+      return !removed ? (
+        <h6 className="d-inline">
+          <Badge className="d-inline-flex mr-1" variant="danger">
+            {`${conditions.type}: ${conditions.values.join(", ")}`}
+          </Badge>
+        </h6>
+      ) : (
+        `${conditions.type}: ${conditions.values.join(", ")}`
+      );
+    };
+    tableRow.push(
+      !isEmpty(oldPolicyItemsDiff) ? (
+        oldPolicyItemsDiff.map(
+          (
+            {
+              roles,
+              groups,
+              users,
+              permissions,
+              delegateAdmin,
+              DataMasklabel,
+              dataMaskInfo,
+              conditions,
+              rowFilterInfo
+            },
+            index
+          ) => (
+            <tbody>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Roles: </i>
+                  {!isEmpty(roles) ? getRoles(roles, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Groups: </i>
+                  {!isEmpty(groups) ? getGroups(groups, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <i>Users: </i>
+                  {!isEmpty(users) ? getUsers(users, index) : "<empty>"}{" "}
+                </td>
+              </tr>
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {policy.attributeName == "Masked Policy Items" ||
+                  policy.attributeName == "Row level filter Policy Items" ? (
+                    <i>Accesses: </i>
+                  ) : (
+                    <i>Permissions: </i>
+                  )}
+
+                  {getPermissions(permissions, index)}
+                </td>
+              </tr>
+              {(policy.attributeName != "Masked Policy Items" ||
+                policy.attributeName != "Row level filter Policy Items") &&
+                !isEmpty(conditions) && (
+                  <tr>
+                    <td className="table-warning text-nowrap policyitem-field">
+                      <i>Conditions: </i>
+                      {!isEmpty(conditions)
+                        ? conditions.map((obj) => {
+                            return getCondition(obj, index);
+                          })
+                        : "<empty>"}
+                    </td>
+                  </tr>
+                )}
+              {policy.attributeName != "Masked Policy Items" &&
+                policy.attributeName != "Row level filter Policy Items" && (
+                  <tr>
+                    <td className="table-warning text-nowrap policyitem-field">
+                      <i>Delegate Admin: </i>
+                      {delegateAdmin}
+                    </td>
+                  </tr>
+                )}
+
+              {policy.attributeName == "Masked Policy Items" && (
+                <tr>
+                  <td className="table-warning text-nowrap policyitem-field">
+                    <i>Data Mask Type: </i>
+                    {getMaskingLabel(DataMasklabel, dataMaskInfo, index)}
+                  </td>
+                </tr>
+              )}
+              {policy.attributeName == "Row level filter Policy Items" && (
+                <tr>
+                  <td className="table-warning text-nowrap policyitem-field">
+                    <i>Row Level Filter: </i>
+                    {!isEmpty(rowFilterInfo)
+                      ? getRowLevelFilter(rowFilterInfo.filterExpr, index)
+                      : "--"}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          )
+        )
+      ) : (
+        <tbody>
+          <tr>
+            <td className="policyitem-empty-field text-center table-warning">
+              <b>{"<empty>"}</b>
+            </td>
+          </tr>
+        </tbody>
+      )
+    );
+
+    return tableRow;
   };
 
   /*UPDATE END */
@@ -1236,8 +1462,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
     details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{policy.attributeName}</td>
-          <td className="table-warning">
+          <td className="table-warning text-nowrap">{policy.attributeName}</td>
+          <td className="table-warning text-nowrap">
             {!isEmpty(policy.previousValue)
               ? policyOldVal(policy.attributeName, policy.previousValue)
               : "--"}
@@ -1360,8 +1586,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
     details.map((policy) => {
       return tablerow.push(
         <tr>
-          <td className="table-warning">{policy.attributeName}</td>
-          <td className="table-warning">
+          <td className="table-warning policyitem-field">
+            {policy.attributeName}
+          </td>
+          <td className="table-warning policyitem-field">
             {!isEmpty(policy.previousValue)
               ? createDetailsPolicy(policy.attributeName, policy.previousValue)
               : "--"}
@@ -1379,18 +1607,25 @@ export const PolicyLogs = ({ data, reportdata }) => {
       return tablerow.push(
         <>
           <tr>
-            <td className="table-warning">{key}</td>
-            <td className="table-warning"> {keynew[key].values}</td>
+            <td className="table-warning policyitem-field">{key}</td>
+            <td className="table-warning policyitem-field">
+              {" "}
+              {keynew[key].values}
+            </td>
           </tr>
           <tr>
-            <td className="table-warning">{key + " " + "exclude"}</td>
-            <td className="table-warning">
+            <td className="table-warning policyitem-field">
+              {key + " " + "exclude"}
+            </td>
+            <td className="table-warning policyitem-field">
               {keynew[key].isExcludes == false ? "false" : "true"}
             </td>
           </tr>
           <tr>
-            <td className="table-warning">{key + " " + "recursive"}</td>
-            <td className="table-warning">
+            <td className="table-warning policyitem-field">
+              {key + " " + "recursive"}
+            </td>
+            <td className="table-warning policyitem-field">
               {keynew[key].isRecursive == false ? "false" : "true"}
             </td>
           </tr>
@@ -1475,33 +1710,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
     return oldVal;
   };
 
-  const policycondition = reportdata.filter((obj) => {
-    return obj.attributeName == "Policy Conditions" && obj.action == "update";
-  });
-
   const importdeleteresources = reportdata.filter((c) => {
     return c.attributeName == "Policy Resources" && c.action == "Import Delete";
   });
-
-  const policyitems = reportdata.filter(
-    (obj) => obj.attributeName == "Policy Items"
-  );
-
-  const policyexception = reportdata.filter(
-    (obj) => obj.attributeName == "Allow Exceptions"
-  );
-
-  const denyPolicyItem = reportdata.filter(
-    (obj) => obj.attributeName == "DenyPolicy Items"
-  );
-
-  const maskPolicyItem = reportdata.filter(
-    (obj) => obj.attributeName == "Masked Policy Items"
-  );
-
-  const validityschedules = reportdata.filter(
-    (obj) => obj.attributeName == "Validity Schedules"
-  );
 
   return (
     <div>
@@ -1511,7 +1722,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
             <div className="font-weight-bolder">
-              Policy ID : <Badge variant="info">{objectId}</Badge>
+              Policy ID :{" "}
+              <Badge className="d-inline-flex mr-1" variant="info">
+                {objectId}
+              </Badge>
             </div>
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">Service Name: {owner}</div>
@@ -1551,7 +1765,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return policyitem.map((policy, index) => (
                         <tbody>
                           <tr key={index}>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               {`Start Date: ${
                                 !isEmpty(policy.startTime)
                                   ? policy.startTime
@@ -1560,14 +1774,14 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               {`End Date: ${
                                 !isEmpty(policy.endTime) ? policy.endTime : "--"
                               } `}
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               {`Time Zone: ${
                                 !isEmpty(policy.timeZone)
                                   ? policy.timeZone
@@ -1602,7 +1816,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy, index) => (
                         <tbody>
                           <tr key={index}>
-                            <td className="table-warning">{`${policy.type}: ${policy.values}`}</td>
+                            <td className="table-warning policyitem-field">{`${policy.type}: ${policy.values}`}</td>
                           </tr>
                         </tbody>
                       ));
@@ -1632,7 +1846,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                         (policy, index) => (
                           <tbody>
                             <tr key={index}>
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Roles`}</i>
                                 {`: ${
                                   !isEmpty(policy.roles)
@@ -1642,17 +1856,17 @@ export const PolicyLogs = ({ data, reportdata }) => {
                               </td>
                             </tr>
                             <tr>
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Groups`}</i>
                                 {`: ${
                                   !isEmpty(policy.groups)
-                                    ? policy.roles.join(", ")
+                                    ? policy.groups.join(", ")
                                     : "<empty>"
                                 } `}
                               </td>
                             </tr>
                             <tr>
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Users`}</i>
                                 {`: ${
                                   !isEmpty(policy.users)
@@ -1662,7 +1876,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                               </td>
                             </tr>
                             <tr>
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Permissions`}</i>
                                 {!isEmpty(policy.accesses)
                                   ? `: ${policy.accesses
@@ -1674,7 +1888,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             <tr>
                               {policy.conditions &&
                                 policy.conditions.length > 0 && (
-                                  <td className="table-warning text-nowrap">
+                                  <td className="table-warning text-nowrap policyitem-field">
                                     <i>{`Conditions`}</i>
                                     {`: ${policy.conditions.map(
                                       (type) => `${type.type} : ${type.values}`
@@ -1683,7 +1897,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 )}
                             </tr>
                             <tr>
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Delegate Admin`}</i>
                                 {`: ${
                                   policy.delegateAdmin == true
@@ -1720,7 +1934,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -1730,7 +1944,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -1740,7 +1954,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -1750,7 +1964,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Accesses`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -1761,7 +1975,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
 
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Row Level Filter`}</i>
                               {!isEmpty(policy.rowFilterInfo.filterExpr)
                                 ? `: ${policy.rowFilterInfo.filterExpr} `
@@ -1793,7 +2007,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -1803,7 +2017,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -1813,7 +2027,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -1823,7 +2037,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -1834,7 +2048,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
                                   .map(
@@ -1845,7 +2059,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -1879,7 +2093,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -1889,7 +2103,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -1899,7 +2113,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -1909,7 +2123,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -1920,7 +2134,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions
                                   .map(
@@ -1931,7 +2145,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -1967,7 +2181,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -1977,7 +2191,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -1987,7 +2201,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -1997,7 +2211,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2008,7 +2222,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) => `${type.type} : ${type.values}`
@@ -2017,7 +2231,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -2042,7 +2256,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Masking Policy Items:
                   </h5>
-                  <Table className="table table-striped  table-bordered   w-auto">
+                  <Table className="table table-striped  table-bordered   w-auto ">
                     <thead className="thead-light">
                       <tr>
                         <th>New Value</th>
@@ -2053,7 +2267,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2063,7 +2277,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2073,7 +2287,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2083,7 +2297,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning text-nowrap">
+                            <td className="table-warning text-nowrap policyitem-field">
                               <i>{`Accesses`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2095,7 +2309,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
                           <tr>
                             {policy.delegateAdmin == true && (
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Delegate Admin`}</i>
                                 {`: ${
                                   policy.delegateAdmin == true
@@ -2107,7 +2321,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {!isEmpty(policy.DataMasklabel) && (
-                              <td className="table-warning text-nowrap">
+                              <td className="table-warning text-nowrap policyitem-field">
                                 <i>{`Data Mask Types`}</i>
                                 {!isEmpty(policy.DataMasklabel)
                                   ? `: ${policy.DataMasklabel} `
@@ -2133,7 +2347,12 @@ export const PolicyLogs = ({ data, reportdata }) => {
             <div className="row">
               <div className="col-md-6">
                 <div className="font-weight-bolder">
-                  Policy ID : <Badge variant="info">{objectId}</Badge>
+                  Policy ID :{" "}
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="info">
+                      {objectId}
+                    </Badge>
+                  </h6>
                 </div>
                 <div className="font-weight-bolder">
                   Policy Name: {objectName}
@@ -2177,52 +2396,6 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 <br />
               </>
             )}
-
-            {action == "update" &&
-              !isEqual(updateValidityOld, updateValidityNew) &&
-              (!updateValidityOld.includes("") ||
-                !updateValidityNew.includes("")) && (
-                <>
-                  <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
-                  <Table className="table table-striped  table-bordered   w-auto">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
-                    {updateValidity.map((policy) => (
-                      <tbody>{updateValidityOldNew(policy)}</tbody>
-                    ))}
-                  </Table>
-                  <br />
-                </>
-              )}
-
-            {action == "update" &&
-              !isEqual(updateRowMaskOld, updateRowMaskNew) &&
-              (!updateRowMaskOld.includes("") ||
-                !updateRowMaskNew.includes("")) && (
-                <>
-                  <h5 className="bold wrap-header m-t-sm">
-                    Row Level Filter Policy Items:
-                  </h5>
-                  <Table className="table table-striped  table-bordered w-auto">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
-
-                    {updateRowMask.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
-                  <br />
-                </>
-              )}
-
             {action == "update" &&
               !isEqual(updatePolicyConditionOld, updatePolicyConditionNew) &&
               (!updatePolicyConditionOld.includes("") ||
@@ -2236,6 +2409,86 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   })}
                 </>
               )}
+            {action == "update" &&
+              !isEqual(updateValidityOld, updateValidityNew) &&
+              (!updateValidityOld.includes("") ||
+                !updateValidityNew.includes("")) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">Validity Period:</h5>
+
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th>Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateValidity.map((policy) => {
+                          return updatePolicyValidityOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th>New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateValidity.map((policy) => {
+                          return updatePolicyValidityNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
+                  <br />
+                </>
+              )}
+
+            {action == "update" &&
+              (!isEmpty(updateRowMaskOld) || !isEmpty(updateRowMaskNew)) &&
+              (!updateRowMaskOld.includes("") ||
+                !updateRowMaskNew.includes("")) && (
+                <>
+                  <h5 className="bold wrap-header m-t-sm">
+                    Row Level Filter Policy Items:
+                  </h5>
+
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th>Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateRowMask.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th>New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateRowMask.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
+
+                  <br />
+                </>
+              )}
 
             {action == "update" &&
               !isEmpty(updateMaskPolicy) &&
@@ -2245,18 +2498,35 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Mask Policy Items:
                   </h5>
-                  <Table className="table table-striped  table-bordered w-auto">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
 
-                    {updateMaskPolicy.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateMaskPolicy.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateMaskPolicy.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
                   <br />
                 </>
               )}
@@ -2269,18 +2539,36 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Allow PolicyItems:
                   </h5>
-                  <Table className="table table-striped  table-bordered w-auto">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
 
-                    {updatePolicyItems.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updatePolicyItems.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updatePolicyItems.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
+
                   <br />
                 </>
               )}
@@ -2292,18 +2580,36 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Allow Exception PolicyItems:
                   </h5>
-                  <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
 
-                    {updateException.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateException.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateException.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
+
                   <br />
                 </>
               )}
@@ -2313,18 +2619,35 @@ export const PolicyLogs = ({ data, reportdata }) => {
               !isUndefined(updateDenyPolicy) && (
                 <>
                   <h5 className="bold wrap-header m-t-sm">Deny PolicyItems:</h5>
-                  <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
 
-                    {updateDenyPolicy.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateDenyPolicy.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateDenyPolicy.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
                   <br />
                 </>
               )}
@@ -2336,18 +2659,35 @@ export const PolicyLogs = ({ data, reportdata }) => {
                   <h5 className="bold wrap-header m-t-sm">
                     Deny Exception PolicyItems:
                   </h5>
-                  <Table className="table table-striped  table-bordered  w-auto ">
-                    <thead className="thead-light">
-                      <tr>
-                        <th>Old Value</th>
-                        <th>New Value</th>
-                      </tr>
-                    </thead>
 
-                    {updateDenyException.map((policy) => {
-                      return <tbody>{updatePolicyOldNew(policy)}</tbody>;
-                    })}
-                  </Table>
+                  <Row className="d-flex flex-nowrap">
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">Old Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateDenyException.map((policy) => {
+                          return updatePolicyOld(policy);
+                        })}
+                      </Table>
+                    </Col>
+                    <Col className="d-table" xs={6} md={4}>
+                      <Table className="table table-striped table-bordered w-auto">
+                        <thead className="thead-light">
+                          <tr>
+                            <th className="text-nowrap">New Value</th>
+                          </tr>
+                        </thead>
+
+                        {updateDenyException.map((policy) => {
+                          return updatePolicyNew(policy);
+                        })}
+                      </Table>
+                    </Col>
+                  </Row>
                 </>
               )}
           </div>
@@ -2359,7 +2699,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
             <div className="font-weight-bolder">
-              Policy ID: <Badge variant="info">{objectId}</Badge>
+              Policy ID:{" "}
+              <Badge className="d-inline-flex mr-1" variant="info">
+                {objectId}
+              </Badge>
             </div>
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">
@@ -2372,9 +2715,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
             <div className="font-weight-bolder">Deleted By: {owner} </div>
             <br />
             <h5 className="bold wrap-header m-t-sm">Policy Details:</h5>
-            {/* {maskPolicyItem.length > 0 && (
-              <h5 className="bold wrap-header m-t-sm">Masking Policy Items:</h5>
-            )} */}
+
             <Table className="table table-striped table-bordered w-auto">
               <thead className="thead-light">
                 <tr>
@@ -2405,7 +2746,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Start Date`}</i>
                               {`: ${
                                 !isEmpty(policy.startTime)
@@ -2415,7 +2756,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`End Date`}</i>
                               {`: ${
                                 !isEmpty(policy.endTime) ? policy.endTime : "--"
@@ -2423,7 +2764,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Time Zone`}</i>
                               {`: ${
                                 !isEmpty(policy.timeZone)
@@ -2459,7 +2800,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               {`${policy.type}: ${policy.values.join(", ")}`}
                             </td>
                           </tr>
@@ -2490,7 +2831,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2500,7 +2841,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2510,7 +2851,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.suers)
@@ -2520,7 +2861,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Accesses`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2531,7 +2872,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
 
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Row Level Filter`}</i>
                               {!isEmpty(policy.rowFilterInfo.filterExpr)
                                 ? `: ${policy.rowFilterInfo.filterExpr}`
@@ -2564,7 +2905,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2574,7 +2915,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2584,7 +2925,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2594,7 +2935,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Accesses`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2606,7 +2947,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
                           <tr>
                             {policy.delegateAdmin == true && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Delegate Admin`}</i>
                                 {`: ${
                                   policy.delegateAdmin == true
@@ -2619,7 +2960,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           <tr>
                             {policy.DataMasklabel &&
                               policy.DataMasklabel.length > 0 && (
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Data Mask Types`}</i>
                                   {`: ${policy.DataMasklabel} `}
                                 </td>
@@ -2651,7 +2992,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2661,7 +3002,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2671,7 +3012,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2681,7 +3022,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2692,7 +3033,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) =>
@@ -2702,7 +3043,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -2738,7 +3079,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2748,7 +3089,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2758,7 +3099,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2768,7 +3109,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2779,7 +3120,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) =>
@@ -2789,7 +3130,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -2822,7 +3163,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2832,7 +3173,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2842,7 +3183,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2852,7 +3193,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2863,7 +3204,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) =>
@@ -2873,7 +3214,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -2909,7 +3250,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -2919,7 +3260,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -2929,7 +3270,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -2939,7 +3280,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Permissions`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -2950,7 +3291,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           </tr>
                           <tr>
                             {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Conditions`}</i>
                                 {`: ${policy.conditions.map(
                                   (type) =>
@@ -2960,7 +3301,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             )}
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Delegate Admin`}</i>
                               {`: ${
                                 policy.delegateAdmin == true
@@ -2989,8 +3330,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 Object.keys(JSON.parse(c.previousValue)).map((s, index) => (
                   <tbody key={index}>
                     <tr>
-                      <td className="table-warning">{s}</td>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">{s}</td>
+                      <td className="table-warning policyitem-field">
                         {JSON.parse(c.previousValue)[s]}
                       </td>
                     </tr>
@@ -3044,7 +3385,10 @@ export const PolicyLogs = ({ data, reportdata }) => {
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
             <div className="font-weight-bolder">
-              Policy ID : <Badge variant="info">{objectId}</Badge>
+              Policy ID :{" "}
+              <Badge className="d-inline-flex mr-1" variant="info">
+                {objectId}
+              </Badge>
             </div>
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">
@@ -3087,7 +3431,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Start Date`}</i>
                               {`: ${
                                 !isEmpty(policy.startTime)
@@ -3097,7 +3441,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`End Date`}</i>
                               {`: ${
                                 !isEmpty(policy.endTime) ? policy.endTime : "--"
@@ -3105,7 +3449,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Time Zone`}</i>
                               {`: ${
                                 !isEmpty(policy.timeZone)
@@ -3142,7 +3486,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Roles`}</i>
                               {`: ${
                                 !isEmpty(policy.roles)
@@ -3152,7 +3496,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Groups`}</i>
                               {`: ${
                                 !isEmpty(policy.groups)
@@ -3162,7 +3506,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Users`}</i>
                               {`: ${
                                 !isEmpty(policy.users)
@@ -3172,7 +3516,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            <td className="table-warning">
+                            <td className="table-warning policyitem-field">
                               <i>{`Accesses`}</i>
                               {!isEmpty(policy.accesses)
                                 ? `: ${policy.accesses
@@ -3184,7 +3528,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
 
                           <tr>
                             {policy.delegateAdmin == true && (
-                              <td className="table-warning">
+                              <td className="table-warning policyitem-field">
                                 <i>{`Delegate Admin`}</i>
                                 {`: ${
                                   policy.delegateAdmin == true
@@ -3197,7 +3541,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           <tr>
                             {policy.DataMasklabel &&
                               policy.DataMasklabel.length > 0 && (
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Data Mask Types`}</i>
                                   {`: ${policy.DataMasklabel} `}
                                 </td>
@@ -3231,7 +3575,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       return JSON.parse(policyitem).map((policy) => (
                         <tbody>
                           <tr>
-                            <td className="table-warning">{`${policy.type}: ${policy.values}`}</td>
+                            <td className="table-warning policyitem-field">{`${policy.type}: ${policy.values}`}</td>
                           </tr>
                         </tbody>
                       ));
@@ -3260,7 +3604,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                           <>
                             <tbody>
                               <tr>
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Roles`}</i>
                                   {`: ${
                                     !isEmpty(policy.roles)
@@ -3270,7 +3614,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 </td>
                               </tr>
                               <tr>
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Groups`}</i>
                                   {`: ${
                                     !isEmpty(policy.groups)
@@ -3280,7 +3624,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 </td>
                               </tr>
                               <tr>
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Users`}</i>
                                   {`: ${
                                     !isEmpty(policy.users)
@@ -3290,7 +3634,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                 </td>
                               </tr>
                               <tr>
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Permissions`}</i>
                                   {!isEmpty(policy.accesses)
                                     ? `: ${policy.accesses
@@ -3302,7 +3646,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                               <tr>
                                 {policy.conditions &&
                                   policy.conditions.length > 0 && (
-                                    <td className="table-warning">
+                                    <td className="table-warning policyitem-field">
                                       <i>{`Conditions`}</i>
                                       {`: ${policy.conditions.map(
                                         (type) =>
@@ -3312,7 +3656,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                                   )}
                               </tr>
                               <tr>
-                                <td className="table-warning">
+                                <td className="table-warning policyitem-field">
                                   <i>{`Delegate Admin`}</i>
                                   {`: ${
                                     policy.delegateAdmin == false
@@ -3352,7 +3696,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 return JSON.parse(policyitem).map((policy) => (
                   <tbody>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Roles`}</i>
                         {`: ${
                           !isEmpty(policy.roles)
@@ -3362,7 +3706,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Groups`}</i>
                         {`: ${
                           !isEmpty(policy.groups)
@@ -3372,7 +3716,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Users`}</i>
                         {`: ${
                           !isEmpty(policy.users)
@@ -3382,7 +3726,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Permissions`}</i>
                         {!isEmpty(policy.accesses)
                           ? `: ${policy.accesses
@@ -3393,7 +3737,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </tr>
                     <tr>
                       {policy.conditions && policy.conditions.length > 0 && (
-                        <td className="table-warning">
+                        <td className="table-warning policyitem-field">
                           <i>{`Conditions`}</i>
                           {`: ${policy.conditions.map(
                             (type) => `${type.type} : ${type.values}`
@@ -3402,7 +3746,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       )}
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Delegate Admin`}</i>
                         {`: ${
                           policy.delegateAdmin == true ? "enabled" : "disabled"
@@ -3434,7 +3778,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 return JSON.parse(policyitem).map((policy) => (
                   <tbody>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Roles`}</i>
                         {`: ${
                           !isEmpty(policy.roles)
@@ -3444,7 +3788,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Groups`}</i>
                         {`: ${
                           !isEmpty(policy.groups)
@@ -3454,7 +3798,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Users`}</i>
                         {`: ${
                           !isEmpty(policy.users)
@@ -3464,7 +3808,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Permissions`}</i>
                         {!isEmpty(policy.accesses)
                           ? `: ${policy.accesses
@@ -3475,7 +3819,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </tr>
                     <tr>
                       {policy.conditions && policy.conditions.length > 0 && (
-                        <td className="table-warning">
+                        <td className="table-warning policyitem-field">
                           <i>{`Conditions`}</i>
                           {`: ${policy.conditions.map(
                             (type) => `${type.type} : ${type.values}`
@@ -3484,7 +3828,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       )}
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Delegate Admin`}</i>
                         {`: ${
                           policy.delegateAdmin == true ? "enabled" : "disabled"
@@ -3518,7 +3862,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                 return JSON.parse(policyitem).map((policy) => (
                   <tbody>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Roles`}</i>
                         {`: ${
                           !isEmpty(policy.roles)
@@ -3528,7 +3872,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Groups`}</i>
                         {`: ${
                           !isEmpty(policy.groups)
@@ -3538,7 +3882,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Users`}</i>
                         {`: ${
                           !isEmpty(policy.users)
@@ -3548,7 +3892,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </td>
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Permissions`}</i>
                         {`: ${policy.accesses
                           .map((obj) => obj.type)
@@ -3557,7 +3901,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                     </tr>
                     <tr>
                       {policy.conditions && policy.conditions.length > 0 && (
-                        <td className="table-warning">
+                        <td className="table-warning policyitem-field">
                           <i>{`Conditions:`}</i>
                           {`: ${policy.conditions.map(
                             (type) => `${type.type} : ${type.values}`
@@ -3566,7 +3910,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       )}
                     </tr>
                     <tr>
-                      <td className="table-warning">
+                      <td className="table-warning policyitem-field">
                         <i>{`Delegate Admin`}</i>
                         {`: ${
                           policy.delegateAdmin == true ? "enabled" : "disabled"
