@@ -764,27 +764,6 @@ header {
 .user-agent {
   width: 21%;
 }
-.pagination-btn-first,
-.pagination-btn-next {
-  height: 25px;
-  width: 31px;
-  line-height: 1;
-}
-.pagination-btn-previous {
-  height: 25px;
-  width: 31px;
-  line-height: 1px;
-}
-.pagination-btn-last {
-  height: 25px;
-  width: 31px;
-  line-height: 1px;
-}
-
-.pagination-input {
-  width: 41px;
-  height: 21px;
-}
 
 .operation-text {
   max-width: 22rem;

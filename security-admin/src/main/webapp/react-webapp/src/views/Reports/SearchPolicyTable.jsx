@@ -218,6 +218,7 @@ function SearchPolicyTable(props) {
             <Accordion.Collapse eventKey="0">
               <Card.Body>
                 <XATableLayout
+                  columnHide={false}
                   loading={loader}
                   data={searchPoliciesData}
                   columns={columns}

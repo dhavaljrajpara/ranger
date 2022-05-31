@@ -119,43 +119,39 @@ function XATableLayout({
   return (
     // apply the table props
     <>
-      {
-        <div className="text-right mt-n5">
-          <>
-            {columnHide &&
-              ["Info"].map((variant, index) => (
-                <DropdownButton
-                  className="p-0"
-                  key={index}
-                  menuAlign="right"
-                  as={ButtonGroup}
-                  size="sm"
-                  id={`dropdown-variants-${variant}`}
-                  variant={variant.toLowerCase()}
-                  title="Columns"
-                >
-                  <ul className="list-group">
-                    {allColumns.map((column) => (
-                      <li className="column-list">
-                        <label>
-                          <input
-                            type="checkbox"
-                            {...column.getToggleHiddenProps()}
-                          />
-                          {column.id}
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </DropdownButton>
-              ))}
-          </>
-        </div>
-      }
+      {columnHide &&
+        ["Info"].map((variant, index) => (
+          <div className="text-right mt-n5">
+            <DropdownButton
+              className="p-0"
+              key={index}
+              menuAlign="right"
+              as={ButtonGroup}
+              size="sm"
+              id={`dropdown-variants-${variant}`}
+              variant={variant.toLowerCase()}
+              title="Columns"
+            >
+              <ul className="list-group">
+                {allColumns.map((column) => (
+                  <li className="column-list">
+                    <label>
+                      <input
+                        type="checkbox"
+                        {...column.getToggleHiddenProps()}
+                      />
+                      {column.id}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </DropdownButton>
+          </div>
+        ))}
+
       <div className="row">
         <div className="col-sm-12">
           <div className="table-responsive">
-            <br />
             <Table bordered hover {...getTableProps()}>
               <thead className="thead-light text-center">
                 {
@@ -223,13 +219,6 @@ function XATableLayout({
                           "No data to show!!"
                         </span>
                       )}
-                      {/* {loading && (
-                        <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
-                      )  rows.length === 0 && (
-                        <span className="text-muted" data-cy="tbleDataMsg">
-                          "No data to show!!"
-                        </span>
-                      )} */}
                     </center>
                   </td>
                 </tr>
@@ -245,7 +234,7 @@ function XATableLayout({
                     title="First"
                     onClick={() => gotoPage(0)}
                     disabled={!canPreviousPage}
-                    className="pagination-btn-first mr-1  btn btn-outline-dark btn-sm"
+                    className="pagination-btn-first btn btn-outline-dark btn-sm mr-1"
                   >
                     {"<<"}
                   </button>
