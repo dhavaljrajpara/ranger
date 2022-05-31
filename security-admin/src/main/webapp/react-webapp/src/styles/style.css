@@ -19,6 +19,9 @@ a:active {
   padding: 45px 15px 0 15px;
 }
 
+.form-control {
+  font-size: 0.9rem;
+}
 /* Header */
 .ranger-navbar {
   background-color: none;

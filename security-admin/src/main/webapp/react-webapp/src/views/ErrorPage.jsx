@@ -56,7 +56,7 @@ class ErrorPage extends Component {
                 <div data-id="moreInfo">{this.state.errorInfo}</div>
               </div>
             </div>
-            <div>
+            <div className="mt-2">
               <Button
                 //href="/#/policymanager/resource"
                 size="sm"

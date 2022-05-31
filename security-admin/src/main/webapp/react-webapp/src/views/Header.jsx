@@ -8,6 +8,7 @@ import {
   isSystemAdmin,
   isAuditor
 } from "Utils/XAUtils";
+
 class Header extends Component {
   constructor(props) {
     super(props);
@@ -101,7 +102,7 @@ class Header extends Component {
                 {hasAccessToTab("Reports") && (
                   <>
                     <NavDropdown.Item
-                      href="#/reports"
+                      href="#/reports/userAccess?policyType=0"
                       className="dropdown-item"
                       replace
                     >

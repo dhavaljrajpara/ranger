@@ -1,10 +1,9 @@
-import React, { Component, useState, useRef } from "react";
+import React, { Component, useState, useRef, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Alert,
   Badge,
   Popover,
-  Row,
-  Col,
   OverlayTrigger,
   Tooltip
 } from "react-bootstrap";
@@ -110,7 +109,6 @@ export class AccessMoreLess extends Component {
 
   render() {
     return (
-      // style={{ width: "100%", height: "100px", overflowX: "hidden" }}
       <div>
         {this.state.data.map((key, index) => {
           return (
@@ -210,10 +208,7 @@ export const CustomPopover = ({ title, content, placement, trigger, icon }) => {
         placement={placement}
         overlay={
           <Popover id={`popover-${placement}`}>
-            <Popover.Title as="h3">
-              {title}
-              {/* <i class="pull-right">×</i> */}
-            </Popover.Title>
+            <Popover.Title as="h3">{title}</Popover.Title>
             <Popover.Content>{content}</Popover.Content>
           </Popover>
         }
@@ -264,7 +259,6 @@ export const CustomPopoverOnClick = ({
           </Popover>
         }
       >
-        {/* <i className="{fa-fw fa fa-info-circle} info-icon"></i> */}
         <i
           className={icon}
           onClick={(e) => {
@@ -340,5 +334,10 @@ export const CustomTooltip = ({ placement, content, icon }) => (
     <i className={icon}></i>
   </OverlayTrigger>
 );
+
+export const useQuery = () => {
+  const { search } = useLocation();
+  return useMemo(() => new URLSearchParams(search), [search]);
+};
 
 export { Loader };

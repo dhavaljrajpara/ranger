@@ -541,7 +541,7 @@ export const PathAssociateWithModule = {
     "/service/:serviceId/policies/create/:policyType",
     "/service/:serviceId/policies/:policyId/edit"
   ],
-  Reports: [],
+  Reports: ["/reports/userAccess"],
   Audit: [
     "/reports/audit/bigData",
     "/reports/audit/admin",

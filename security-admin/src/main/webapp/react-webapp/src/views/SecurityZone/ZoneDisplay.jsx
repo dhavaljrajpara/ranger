@@ -135,7 +135,7 @@ class ZoneDisplay extends Component {
           <div>
             <Accordion defaultActiveKey="0">
               <Card>
-                <div className="pull-right border-bottom">
+                <div className="border-bottom">
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="0"
@@ -239,7 +239,7 @@ class ZoneDisplay extends Component {
           <div>
             <Accordion defaultActiveKey="1">
               <Card>
-                <div className="pull-right border-bottom">
+                <div className="border-bottom">
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="1"
@@ -276,7 +276,7 @@ class ZoneDisplay extends Component {
           <div>
             <Accordion defaultActiveKey="2">
               <Card>
-                <div className="pull-right border-bottom">
+                <div className="border-bottom">
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="2"

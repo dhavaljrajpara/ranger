@@ -61,6 +61,9 @@ const KeyCreateComp = lazy(() => import("Views/Encryption/KeyCreate"));
 const AccesLogDetailComp = lazy(() =>
   import("Views/AuditEvent/AccessLogDetail")
 );
+const UserAccessLayoutComp = lazy(() =>
+  import("Views/Reports/UserAccessLayout")
+);
 
 function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
   if (!getUserProfile()) {
@@ -333,6 +336,12 @@ export default class App extends Component {
                       exact
                       path="/reports/audit/eventlog/:eventId"
                       component={AccesLogDetailComp}
+                      {...defaultProps}
+                    />
+                    <AuthRoute
+                      exact
+                      path="/reports/userAccess"
+                      component={UserAccessLayoutComp}
                       {...defaultProps}
                     />
                     <Redirect
