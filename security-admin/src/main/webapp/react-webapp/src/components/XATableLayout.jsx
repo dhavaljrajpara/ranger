@@ -227,9 +227,8 @@ function XATableLayout({
           </div>
           {totalCount > 25 && (
             <div className="row mt-2">
-              <div className="col-md-1"></div>
-              <div className="col-md-11 m-b-sm">
-                <div className="text-left">
+              <div className="col-md-12 m-b-sm">
+                <div className="text-center">
                   <button
                     title="First"
                     onClick={() => gotoPage(0)}

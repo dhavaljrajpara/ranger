@@ -789,3 +789,8 @@ header {
 .validity-field {
   min-width: 16.5em;
 }
+
+/* Report Page */
+.report-page .accordion>.card {
+  overflow: visible;
+}

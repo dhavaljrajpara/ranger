@@ -16,7 +16,6 @@ import AsyncSelect from "react-select/async";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import { filter, find, isEmpty, join, map, sortBy, split } from "lodash";
 import { toast } from "react-toastify";
-import dateFormat from "dateformat";
 import { fetchApi } from "Utils/fetchAPI";
 import { useQuery } from "../../components/CommonComponents";
 import SearchPolicyTable from "./SearchPolicyTable";
@@ -28,9 +27,6 @@ function UserAccessLayout(props) {
   const [serviceDefOpts, setServiceDefOpts] = useState([]);
   const [zoneNameOpts, setZoneNameOpts] = useState([]);
   const [searchParamsObj, setSearchParamsObj] = useState({});
-  const [userNameOpts, setUserNameOpts] = useState([]);
-  const [groupNameOpts, setGroupNameOpts] = useState([]);
-  const [roleNameOpts, setRoleNameOpts] = useState([]);
   const history = useHistory();
   const location = useLocation();
   const searchParams = useQuery();
@@ -121,59 +117,6 @@ function UserAccessLayout(props) {
     return policyLabelsList;
   };
 
-  const fetchUsers = async (inputValue) => {
-    let params = {};
-
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-
-    const usersResp = await fetchApi({
-      url: "xusers/users",
-      params: params
-    });
-
-    return usersResp.data.vXUsers.map(({ name }) => ({
-      label: name,
-      value: name
-    }));
-  };
-
-  const fetchGroups = async (inputValue) => {
-    let params = {};
-
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-
-    const groupsResp = await fetchApi({
-      url: "xusers/groups",
-      params: params
-    });
-    return groupsResp.data.vXGroups.map(({ name }) => ({
-      label: name,
-      value: name
-    }));
-  };
-
-  const fetchRoles = async (inputValue) => {
-    let params = {};
-
-    if (inputValue) {
-      params["name"] = inputValue || "";
-    }
-
-    const rolesResp = await fetchApi({
-      url: "roles/roles",
-      params: params
-    });
-
-    return rolesResp.data.roles.map(({ name }) => ({
-      label: name,
-      value: name
-    }));
-  };
-
   const onSubmit = async (values) => {
     let urlSearchParams = "";
     const searchFields = {};
@@ -216,6 +159,19 @@ function UserAccessLayout(props) {
     if (values.zoneName !== undefined && values.zoneName) {
       urlSearchParams = `${urlSearchParams}&zoneName=${values.zoneName.value}`;
       searchFields.zoneName = values.zoneName.value;
+    }
+
+    if (values.searchByValue !== undefined && values.searchByValue) {
+      if (values.searchBy.value == "searchByUser") {
+        urlSearchParams = `${urlSearchParams}&user=${values.searchByValue.value}`;
+        searchFields.user = values.searchByValue.value;
+      } else if (values.searchBy.value == "searchByRole") {
+        urlSearchParams = `${urlSearchParams}&role=${values.searchByValue.value}`;
+        searchFields.role = values.searchByValue.value;
+      } else {
+        urlSearchParams = `${urlSearchParams}&group=${values.searchByValue.value}`;
+        searchFields.group = values.searchByValue.value;
+      }
     }
 
     history.replace({
@@ -280,6 +236,40 @@ function UserAccessLayout(props) {
       };
     }
 
+    initialSearchFields.searchBy = {
+      value: "searchByGroup",
+      label: "Group"
+    };
+
+    if (searchParams.get("user")) {
+      initialSearchFields.searchBy = {
+        value: "searchByUser",
+        label: "Username"
+      };
+      initialSearchFields.searchByValue = {
+        value: searchParams.get("user"),
+        label: searchParams.get("user")
+      };
+    }
+
+    if (searchParams.get("role")) {
+      initialSearchFields.searchBy = {
+        value: "searchByRole",
+        label: "Rolename"
+      };
+      initialSearchFields.searchByValue = {
+        value: searchParams.get("role"),
+        label: searchParams.get("role")
+      };
+    }
+
+    if (searchParams.get("group")) {
+      initialSearchFields.searchByValue = {
+        value: searchParams.get("group"),
+        label: searchParams.get("group")
+      };
+    }
+
     return initialSearchFields;
   };
 
@@ -310,6 +300,18 @@ function UserAccessLayout(props) {
 
     if (searchParams.get("zoneName")) {
       searchFields.zoneName = searchParams.get("zoneName");
+    }
+
+    if (searchParams.get("user")) {
+      searchFields.user = searchParams.get("user");
+    }
+
+    if (searchParams.get("group")) {
+      searchFields.group = searchParams.get("group");
+    }
+
+    if (searchParams.get("role")) {
+      searchFields.role = searchParams.get("role");
     }
 
     setSearchParamsObj(searchFields);
@@ -367,12 +369,24 @@ function UserAccessLayout(props) {
     link.remove();
   };
 
+  const onChangeSearchBy = (e, input) => {
+    for (const obj in input.value) {
+      delete input.value[obj];
+    }
+
+    input.onChange({ value: e.value, label: e.label });
+  };
+
+  const onChangeCurrentSearchByOpt = (option, input) => {
+    input.onChange(option);
+  };
+
   return (
     <React.Fragment>
       <div className="clearfix">
         <h4 className="wrap-header bold">Reports</h4>
       </div>
-      <div className="wrap">
+      <div className="wrap report-page">
         <Row>
           <Col sm={12}>
             <Accordion defaultActiveKey="0">
@@ -399,7 +413,7 @@ function UserAccessLayout(props) {
                     <Form
                       onSubmit={onSubmit}
                       initialValues={getInitialSearchParams}
-                      render={({ handleSubmit, submitting }) => (
+                      render={({ handleSubmit, submitting, values }) => (
                         <form onSubmit={handleSubmit}>
                           <Row className="form-group">
                             <Col sm={2} className="text-right">
@@ -409,7 +423,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="policyNamePartial">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <input
                                     {...input}
                                     type="text"
@@ -426,7 +440,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="policyType">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <Select
                                     {...input}
                                     isClearable={false}
@@ -453,7 +467,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="serviceType">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <Select
                                     {...input}
                                     isMulti
@@ -472,7 +486,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="polResource">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <input
                                     {...input}
                                     type="text"
@@ -491,7 +505,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="policyLabelsPartial">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <AsyncCreatableSelect
                                     {...input}
                                     defaultOptions
@@ -509,7 +523,7 @@ function UserAccessLayout(props) {
                             </Col>
                             <Col sm={4}>
                               <Field name="zoneName">
-                                {({ input, meta }) => (
+                                {({ input }) => (
                                   <Select
                                     {...input}
                                     isClearable={true}
@@ -521,57 +535,50 @@ function UserAccessLayout(props) {
                               </Field>
                             </Col>
                           </Row>
-                          {/*<Row>
+                          <Row>
                             <Col sm={2} className="text-right">
                               <label className="col-form-label ">
                                 Search By
                               </label>
                             </Col>
-                            <Col sm={4}>
+                            <Col sm={10}>
                               <InputGroup className="mb-3">
                                 <Field name="searchBy">
-                                  {({ input, meta }) => (
+                                  {({ input }) => (
                                     <Select
                                       {...input}
                                       isClearable={false}
                                       options={[
                                         {
                                           value: "searchByGroup",
-                                          label: "Group Name"
+                                          label: "Group"
                                         },
                                         {
                                           value: "searchByUser",
-                                          label: "User Name"
+                                          label: "Username"
                                         },
                                         {
                                           value: "searchByRole",
-                                          label: "Role Name"
+                                          label: "Rolename"
                                         }
                                       ]}
                                       menuPlacement="auto"
                                       placeholder="Select Search By"
+                                      onChange={(e) =>
+                                        onChangeSearchBy(e, input)
+                                      }
                                     />
                                   )}
                                 </Field>
-                                <Field name="testSearchBy">
-                                  {({ input, meta }) => (
-                                    <AsyncSelect
-                                      {...input}
-                                      cacheOptions
-                                      defaultOptions
-                                      isClearable={true}
-                                      loadOptions={fetchUsers}
-                                      components={{
-                                        DropdownIndicator: () => null,
-                                        IndicatorSeparator: () => null
-                                      }}
-                                      placeholder="Select User"
-                                    />
-                                  )}
-                                </Field>
+                                <SearchByAsyncSelect
+                                  searchByOptName={values.searchBy}
+                                  onChange={(opt, input) =>
+                                    onChangeCurrentSearchByOpt(opt, input)
+                                  }
+                                />
                               </InputGroup>
                             </Col>
-                                    </Row>*/}
+                          </Row>
                           <Row>
                             <Col sm={{ span: 10, offset: 2 }}>
                               <Button
@@ -630,3 +637,89 @@ function UserAccessLayout(props) {
 }
 
 export default UserAccessLayout;
+
+function SearchByAsyncSelect(props) {
+  const [searchByOptName, setSearchByOptName] = useState({
+    value: "searchByGroup",
+    label: "Group"
+  });
+
+  useEffect(() => {
+    setSearchByOptName(props.searchByOptName);
+  }, [props.searchByOptName]);
+
+  const onChangeSearchByValue = (option, input) => {
+    if (typeof props.onChange === "function") {
+      props.onChange(option, input);
+    }
+  };
+
+  const customStyles = {
+    valueContainer: () => ({
+      width: 215,
+      height: 35,
+      padding: "6px 8px"
+    })
+  };
+
+  const fetchOpts = async (inputValue) => {
+    let apiUrl = "xusers/groups";
+    let params = {};
+    let optsList = [];
+
+    if (inputValue) {
+      params["name"] = inputValue || "";
+    }
+
+    if (searchByOptName.value == "searchByUser") {
+      apiUrl = "xusers/users";
+    } else if (searchByOptName.value == "searchByRole") {
+      apiUrl = "roles/roles";
+    }
+
+    let serverResp = await fetchApi({
+      url: apiUrl,
+      params: params
+    });
+
+    if (searchByOptName.value == "searchByUser") {
+      optsList = serverResp.data.vXUsers.map(({ name }) => ({
+        label: name,
+        value: name
+      }));
+    } else if (searchByOptName.value == "searchByRole") {
+      optsList = serverResp.data.roles.map(({ name }) => ({
+        label: name,
+        value: name
+      }));
+    } else {
+      optsList = serverResp.data.vXGroups.map(({ name }) => ({
+        label: name,
+        value: name
+      }));
+    }
+
+    return optsList;
+  };
+
+  return (
+    <Field name="searchByValue">
+      {({ input }) => (
+        <AsyncSelect
+          {...input}
+          key={JSON.stringify(searchByOptName)}
+          onChange={(option) => onChangeSearchByValue(option, input)}
+          styles={customStyles}
+          cacheOptions
+          isClearable={true}
+          defaultOptions
+          loadOptions={fetchOpts}
+          components={{
+            DropdownIndicator: () => null,
+            IndicatorSeparator: () => null
+          }}
+        />
+      )}
+    </Field>
+  );
+}

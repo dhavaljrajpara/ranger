@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Accordion, Badge, Card, Col, Row } from "react-bootstrap";
+import {
+  Accordion,
+  Badge,
+  Button,
+  Card,
+  Col,
+  Modal,
+  Row,
+  Table
+} from "react-bootstrap";
+import { isEmpty } from "lodash";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
 
@@ -10,6 +20,15 @@ function SearchPolicyTable(props) {
   const [loader, setLoader] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [pageCount, setPageCount] = React.useState(0);
+  const [policyData, setPolicyData] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const showPolicyConditionModal = (policyData) => {
+    setShowModal(true);
+    setPolicyData(policyData);
+  };
+
+  const hidePolicyConditionModal = () => setShowModal(false);
 
   const fetchSearchPolicies = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -155,41 +174,23 @@ function SearchPolicyTable(props) {
         }
       },
       {
-        Header: "Allow Conditions",
-        Cell: () => {
+        Header: "Policy Conditions",
+        Cell: ({ row: { original } }) => {
           return (
             <div className="text-center">
-              <i className="fa-fw fa fa-plus"></i>
-            </div>
-          );
-        }
-      },
-      {
-        Header: "Allow Exclude",
-        Cell: () => {
-          return (
-            <div className="text-center">
-              <i className="fa-fw fa fa-plus"></i>
-            </div>
-          );
-        }
-      },
-      {
-        Header: "Deny Conditions",
-        Cell: () => {
-          return (
-            <div className="text-center">
-              <i className="fa-fw fa fa-plus"></i>
-            </div>
-          );
-        }
-      },
-      {
-        Header: "Deny Exclude",
-        Cell: () => {
-          return (
-            <div className="text-center">
-              <i className="fa-fw fa fa-plus"></i>
+              <Button
+                variant="outline-dark"
+                size="sm"
+                title="View"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showPolicyConditionModal(original);
+                }}
+              >
+                <div className="text-center">
+                  <i className="fa-fw fa fa-plus"></i>
+                </div>
+              </Button>
             </div>
           );
         }
@@ -231,9 +232,145 @@ function SearchPolicyTable(props) {
             </Accordion.Collapse>
           </Card>
         </Accordion>
+        <Modal show={showModal} onHide={hidePolicyConditionModal} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Policy Condition Details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <PolicyConditionData policyData={policyData} />
+          </Modal.Body>
+        </Modal>
       </Col>
     </Row>
   );
 }
 
 export default SearchPolicyTable;
+
+function PolicyConditionData(props) {
+  const getPolicyData = (policyItem) => {
+    let tableRow = [];
+
+    if (!isEmpty(policyItem)) {
+      tableRow = policyItem.map((items, index) => {
+        return (
+          <tr key={index}>
+            <td className="text-center">
+              {!isEmpty(items.roles)
+                ? items.roles.map((role) => (
+                    <h6 className="d-inline mr-1">
+                      <Badge variant="info" key={role}>
+                        {role}
+                      </Badge>
+                    </h6>
+                  ))
+                : "--"}
+            </td>
+            <td className="text-center">
+              {!isEmpty(items.groups)
+                ? items.groups.map((group) => (
+                    <h6 className="d-inline mr-1">
+                      <Badge variant="info" key={group}>
+                        {group}
+                      </Badge>
+                    </h6>
+                  ))
+                : "--"}
+            </td>
+            <td className="text-center">
+              {!isEmpty(items.users)
+                ? items.users.map((user) => (
+                    <h6 className="d-inline mr-1">
+                      <Badge variant="info" key={user}>
+                        {user}
+                      </Badge>
+                    </h6>
+                  ))
+                : "--"}
+            </td>
+            <td className="text-center">
+              {!isEmpty(items.accesses)
+                ? items.accesses.map((obj) => (
+                    <h6 className="d-inline mr-1">
+                      <Badge
+                        variant="info"
+                        className="d-inline mr-1"
+                        key={obj.type}
+                      >
+                        {obj.type}
+                      </Badge>
+                    </h6>
+                  ))
+                : "--"}
+            </td>
+          </tr>
+        );
+      });
+    } else {
+      tableRow.push(
+        <tr key="no-data">
+          <td className="text-center" colSpan="4">
+            <span className="text-muted">"No data to show!!"</span>
+          </td>
+        </tr>
+      );
+    }
+    return tableRow;
+  };
+
+  return (
+    <React.Fragment>
+      <p className="form-header">Allow Condition</p>
+      <Table bordered size="sm" className="mb-3 table-audit-filter-ready-only">
+        <thead>
+          <tr>
+            <th>Roles</th>
+            <th>Groups</th>
+            <th>Users</th>
+            <th>Accesses</th>
+          </tr>
+        </thead>
+        <tbody>{getPolicyData(props.policyData.policyItems)}</tbody>
+      </Table>
+
+      <p className="form-header">Allow Exclude</p>
+      <Table bordered size="sm" className="mb-3 table-audit-filter-ready-only">
+        <thead>
+          <tr>
+            <th>Roles</th>
+            <th>Groups</th>
+            <th>Users</th>
+            <th>Accesses</th>
+          </tr>
+        </thead>
+        <tbody>{getPolicyData(props.policyData.allowExceptions)}</tbody>
+      </Table>
+
+      <p className="form-header">Deny Conditions</p>
+      <Table bordered size="sm" className="mb-3 table-audit-filter-ready-only">
+        <thead>
+          <tr>
+            <th>Roles</th>
+            <th>Groups</th>
+            <th>Users</th>
+            <th>Accesses</th>
+          </tr>
+        </thead>
+        <tbody>{getPolicyData(props.policyData.denyPolicyItems)}</tbody>
+      </Table>
+
+      <p className="form-header">Deny Exclude </p>
+      <Table bordered size="sm" className="mb-3 table-audit-filter-ready-only">
+        <thead>
+          <tr>
+            <th>Roles</th>
+            <th>Groups</th>
+            <th>Users</th>
+            <th>Accesses</th>
+          </tr>
+        </thead>
+        <tbody>{getPolicyData(props.policyData.denyExceptions)}</tbody>
+      </Table>
+    </React.Fragment>
+  );
+}
