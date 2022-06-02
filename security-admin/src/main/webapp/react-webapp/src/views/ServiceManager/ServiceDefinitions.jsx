@@ -1,9 +1,9 @@
-import React, { Component } from "react";
+import React, { Component, useCallback } from "react";
 import { withRouter } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { filter, map, sortBy, uniq } from "lodash";
+import { filter, map, sortBy, uniq, some, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import {
   isSystemAdmin,
@@ -15,6 +15,7 @@ import {
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 class ServiceDefinitions extends Component {
   constructor(props) {
@@ -24,12 +25,11 @@ class ServiceDefinitions extends Component {
       filterServiceDefs: [],
       services: [],
       filterServices: [],
-      selectedZone: null,
+      selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
       zones: [],
       isTagView: this.props.isTagView,
       showExportModal: false,
       showImportModal: false,
-      isDisabled: true,
       isAdminRole: isSystemAdmin() || isKeyAdmin(),
       isAuditorRole: isAuditor() || isKMSAuditor(),
       isUserRole: isUser(),
@@ -39,10 +39,14 @@ class ServiceDefinitions extends Component {
   }
 
   componentDidMount() {
-    this.fetchServiceDefs();
-    this.fetchServices();
-    this.fetchZones();
+    this.initialFetchResp();
   }
+
+  initialFetchResp = async () => {
+    await this.fetchServiceDefs();
+    await this.fetchServices();
+    await this.fetchZones();
+  };
 
   showExportModal = () => {
     this.setState({ showExportModal: true });
@@ -59,25 +63,10 @@ class ServiceDefinitions extends Component {
   hideImportModal = () => {
     this.setState({ showImportModal: false });
   };
-
-  fetchZones = async () => {
-    let zoneList = [];
-    try {
-      const zonesResp = await fetchApi({
-        url: "zones/zones"
-      });
-      zoneList = zonesResp.data.securityZones || [];
-    } catch (error) {
-      console.error(`Error occurred while fetching Zones! ${error}`);
-    }
-
-    this.setState({
-      zones: sortBy(zoneList, ["name"]),
-      isDisabled: zoneList.length === 0 ? true : false
-    });
-  };
-
   fetchServiceDefs = async () => {
+    this.setState({
+      loader: true
+    });
     let serviceDefsResp;
     let resourceServiceDef;
     let tagServiceDef;
@@ -107,11 +96,34 @@ class ServiceDefinitions extends Component {
       serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef,
       filterServiceDefs: this.state.isTagView
         ? tagServiceDef
-        : resourceServiceDef
+        : resourceServiceDef,
+      loader: false
     });
+  };
+  fetchZones = async () => {
+    this.setState({
+      loader: true
+    });
+    let zoneList = [];
+    try {
+      const zonesResp = await fetchApi({
+        url: "public/v2/api/zone-headers"
+      });
+      zoneList = zonesResp.data;
+    } catch (error) {
+      console.error(`Error occurred while fetching Zones! ${error}`);
+    }
+    this.setState({
+      zones: sortBy(zoneList, ["name"]),
+      loader: false
+    });
+    this.getSelectedZone(this.state.selectedZone);
   };
 
   fetchServices = async () => {
+    this.setState({
+      loader: true
+    });
     let servicesResp;
     let resourceServices;
     let tagServices;
@@ -141,11 +153,11 @@ class ServiceDefinitions extends Component {
   };
 
   getSelectedZone = async (e) => {
-    const { serviceDefs, services, isTagView } = this.state;
-
+    this.setState({
+      loader: true
+    });
     try {
       let zonesResp = [];
-
       if (e && e !== undefined) {
         zonesResp = await fetchApi({
           url: `public/v2/api/zones/${e && e.value}/service-headers`
@@ -159,14 +171,14 @@ class ServiceDefinitions extends Component {
         let zoneServiceNames = map(zonesResp.data, "name");
 
         let zoneServices = zoneServiceNames.map((zoneService) => {
-          return services.filter((service) => {
+          return this.state.services.filter((service) => {
             return service.name === zoneService;
           });
         });
 
         zoneServices = zoneServices.flat();
 
-        if (isTagView) {
+        if (this.state.isTagView) {
           zoneServices = filter(zoneServices, function (zoneService) {
             return zoneService.type === "tag";
           });
@@ -177,24 +189,34 @@ class ServiceDefinitions extends Component {
         }
 
         let zoneServiceDefTypes = uniq(map(zoneServices, "type"));
-
-        let filterZoneServiceDef = zoneServiceDefTypes.map((obj) => {
-          return serviceDefs.find((serviceDef) => {
-            return serviceDef.name == obj;
+        let filterZoneServiceDef;
+        if (!this.state.isTagView) {
+          filterZoneServiceDef = zoneServiceDefTypes.map((obj) => {
+            return this.state.serviceDefs.find((serviceDef) => {
+              return serviceDef.name == obj;
+            });
           });
-        });
-
+        } else {
+          filterZoneServiceDef = this.state.serviceDefs;
+        }
+        let zoneDetails = {};
+        zoneDetails["label"] = e.label;
+        zoneDetails["value"] = e.value;
+        localStorage.setItem("zoneDetails", JSON.stringify(zoneDetails));
         this.setState({
           filterServiceDefs: filterZoneServiceDef,
           filterServices: zoneServices,
-          selectedZone: e.label
+          selectedZone: { label: e.label, value: e.value },
+          loader: false
         });
       } else {
+        localStorage.removeItem("zoneDetails");
         this.props.history.push(this.props.location.pathname);
         this.setState({
-          filterServiceDefs: serviceDefs,
-          filterServices: services,
-          selectedZone: null
+          filterServiceDefs: this.state.serviceDefs,
+          filterServices: this.state.services,
+          selectedZone: "",
+          loader: false
         });
       }
     } catch (error) {
@@ -205,7 +227,6 @@ class ServiceDefinitions extends Component {
   deleteService = async (sid) => {
     console.log("Service Id to delete is ", sid);
     try {
-      const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       await fetchApi({
         url: `plugins/services/${sid}`,
         method: "delete"
@@ -233,13 +254,31 @@ class ServiceDefinitions extends Component {
       }
     };
   };
+  serviceBreadcrumb = () => {
+    let serviceDetails = {};
+    serviceDetails["selectedZone"] = JSON.parse(
+      localStorage.getItem("zoneDetails")
+    );
+    if (some(this.state.serviceDefs, { name: "tag" })) {
+      if (serviceDetails.selectedZone) {
+        return commonBreadcrumb(["TagBasedServiceManager"], serviceDetails);
+      } else {
+        return commonBreadcrumb(["TagBasedServiceManager"]);
+      }
+    } else {
+      if (serviceDetails.selectedZone) {
+        return commonBreadcrumb(["ServiceManager"], serviceDetails);
+      } else {
+        return commonBreadcrumb(["ServiceManager"]);
+      }
+    }
+  };
 
   render() {
     const {
       filterServiceDefs,
       filterServices,
       zones,
-      isDisabled,
       selectedZone,
       showExportModal,
       showImportModal,
@@ -249,6 +288,7 @@ class ServiceDefinitions extends Component {
     } = this.state;
     return (
       <React.Fragment>
+        {this.serviceBreadcrumb()}
         <Row>
           <Col sm={6}>
             <h3 className="wrap-header bold text-left">Service Manager</h3>
@@ -259,7 +299,20 @@ class ServiceDefinitions extends Component {
           <Col sm={2}>
             {!isKMSRole && (
               <Select
-                isDisabled={isDisabled}
+                className={isEmpty(zones) ? "not-allowed" : ""}
+                value={
+                  isEmpty(this.state.selectedZone)
+                    ? ""
+                    : {
+                        label:
+                          this.state.selectedZone &&
+                          this.state.selectedZone.label,
+                        value:
+                          this.state.selectedZone &&
+                          this.state.selectedZone.value
+                      }
+                }
+                isDisabled={isEmpty(zones) ? true : false}
                 onChange={this.getSelectedZone}
                 isClearable
                 components={{
@@ -294,6 +347,7 @@ class ServiceDefinitions extends Component {
                 serviceDef={filterServiceDefs}
                 services={filterServices}
                 zones={zones}
+                zone={selectedZone.label}
                 isParentImport={true}
                 show={showImportModal}
                 onHide={this.hideImportModal}
@@ -314,7 +368,6 @@ class ServiceDefinitions extends Component {
               <ExportPolicy
                 serviceDef={filterServiceDefs}
                 services={filterServices}
-                zone={selectedZone}
                 isParentExport={true}
                 show={showExportModal}
                 onHide={this.hideExportModal}
@@ -338,7 +391,7 @@ class ServiceDefinitions extends Component {
             <Row className="row">
               {filterServiceDefs.map((serviceDef) => (
                 <ServiceDefinition
-                  key={serviceDef.id}
+                  key={serviceDef && serviceDef.id}
                   serviceDefData={serviceDef}
                   servicesData={filterServices.filter(
                     (service) => service.type === serviceDef.name

@@ -5,6 +5,7 @@ import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
 import { reject } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 function Permissions() {
   const [permissionslistData, setPermissions] = useState([]);
@@ -115,8 +116,8 @@ function Permissions() {
 
   return (
     <>
+      {commonBreadcrumb(["ModulePermissions"])}
       <h3 className="wrap-header bold">Permissions</h3>
-
       <div className="wrap">
         <br />
         <XATableLayout

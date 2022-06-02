@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-import { Tab, Tabs, Badge } from "react-bootstrap";
+import { Tab, Tabs, Badge, Row, Col } from "react-bootstrap";
 import Access from "./AccessLogs";
 import Admin from "./AdminLogs";
 import Login_Sessions from "./LoginSessionsLogs";
 import Plugins from "./PluginsLog";
 import Plugin_Status from "./PluginStatusLogs";
 import User_Sync from "./UserSync";
+import moment from "moment-timezone";
 import { AuditFilterEntries } from "Components/CommonComponents";
 
 class AuditLayout extends Component {
@@ -45,6 +46,14 @@ class AuditLayout extends Component {
   render() {
     return (
       <>
+        <div className="mt-n1 mb-2 headerBreadcrumbs">
+          <div className="text-right mt-2">
+            <b>Last Response Time: </b>
+            {moment
+              .tz(moment(), "Asia/Kolkata")
+              .format("DD/MM/YYYY HH:mm:ss A")}
+          </div>
+        </div>
         <h4 className="wrap-header bold">Audit Logs</h4>
         <div className="wrap">
           <Tabs

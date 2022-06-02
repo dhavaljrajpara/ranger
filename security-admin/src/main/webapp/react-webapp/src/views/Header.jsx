@@ -26,6 +26,7 @@ class Header extends Component {
         }
       });
       setUserProfile(null);
+      window.localStorage.clear();
       window.location.replace("login.jsp");
     } catch (error) {
       console.error(`Error occurred while login! ${error}`);

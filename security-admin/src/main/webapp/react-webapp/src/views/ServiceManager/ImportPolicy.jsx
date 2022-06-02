@@ -13,7 +13,8 @@ import {
   map,
   toString,
   split,
-  uniq
+  uniq,
+  isUndefined
 } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 
@@ -281,7 +282,11 @@ class ImportPolicy extends Component {
   render() {
     return (
       <React.Fragment>
-        <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
+        <Modal
+          show={this.props.show}
+          onHide={this.props.onHide}
+          size={!isEmpty(this.props.services) ? "lg" : "md"}
+        >
           <Form
             onSubmit={this.importJsonFile}
             mutators={{
@@ -296,251 +301,276 @@ class ImportPolicy extends Component {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Import Policy </Modal.Title>
+                  <Modal.Title>
+                    {!isEmpty(this.props.services) ? (
+                      isEmpty(this.props.selectedZone) ? (
+                        "Import Policy"
+                      ) : (
+                        "Import Policy For Zone"
+                      )
+                    ) : (
+                      <small>No service found to import policies.</small>
+                    )}
+                  </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                  <React.Fragment>
-                    <Row>
-                      <Col sm={12}>
-                        <div className="form-row">
-                          <Field name="uploadPolicyFile">
-                            {({ input }) => (
-                              <div className="form-group col-sm-6">
-                                <label className="btn btn-sm border">
-                                  Select File :
-                                  <i className="fa-fw fa fa-arrow-circle-o-up"></i>
-                                  <input
-                                    {...input}
-                                    style={{ display: "none" }}
-                                    type="file"
-                                    className="form-control-file"
-                                    accept=" .json "
-                                    onChange={this.handleFileUpload}
-                                  />
+                {!isEmpty(this.props.services) && (
+                  <Modal.Body>
+                    <React.Fragment>
+                      <Row>
+                        <Col sm={12}>
+                          <div className="form-row">
+                            <Field name="uploadPolicyFile">
+                              {({ input }) => (
+                                <div className="form-group col-sm-6">
+                                  <label className="btn btn-sm border">
+                                    Select File :
+                                    <i className="fa-fw fa fa-arrow-circle-o-up"></i>
+                                    <input
+                                      {...input}
+                                      style={{ display: "none" }}
+                                      type="file"
+                                      className="form-control-file"
+                                      accept=" .json "
+                                      onChange={this.handleFileUpload}
+                                    />
+                                  </label>
+                                </div>
+                              )}
+                            </Field>
+                            <div className="form-group col-sm-6 text-center">
+                              <div className="form-check">
+                                <Field
+                                  name="isOverride"
+                                  component="input"
+                                  type="checkbox"
+                                  className="form-check-input"
+                                />
+                                <label className="form-check-label">
+                                  Override Policy
                                 </label>
                               </div>
-                            )}
-                          </Field>
-                          <div className="form-group col-sm-6 text-center">
-                            <div className="form-check">
-                              <Field
-                                name="isOverride"
-                                component="input"
-                                type="checkbox"
-                                className="form-check-input"
-                              />
-                              <label className="form-check-label">
-                                Override Policy
-                              </label>
                             </div>
                           </div>
-                        </div>
-                      </Col>
-                      <Col sm={12}>
-                        {this.state.fileName ? (
-                          <span>
-                            {this.state.fileName}
-                            <label
-                              className="fa fa-fw fa-remove fa-remove-btn"
-                              onClick={() => {
-                                this.removeFile();
-                              }}
-                            ></label>
-                          </span>
-                        ) : (
-                          <span className="ml-1">No File Chosen</span>
-                        )}
-                      </Col>
-                      <Col sm={12}>
-                        {this.state.fileName && this.state.fileNotJson && (
-                          <span className="invalid-field">
-                            Please upload json format file
-                          </span>
-                        )}
-                      </Col>
-                    </Row>
-                    {this.state.fileJsonData &&
-                      !isEmpty(this.state.sourceServicesMap) && (
-                        <React.Fragment>
-                          <hr />
-                          <Row>
-                            <Col sm={12}>
-                              <Alert variant="warning" show={true}>
-                                <i className="fa-fw fa fa-info-circle searchInfo m-r-xs"></i>
-                                All services gets listed on service destination
-                                when Zone destination is blank. When zone is
-                                selected at destination, then only services
-                                associated with that zone will be listed.
-                              </Alert>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col sm={12}>
-                              <p className="font-weight-bold">
-                                Specify Zone Mapping :
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row className="mt-3">
-                            <Col sm={4}>
-                              <div className="col text-center">Source</div>
-                            </Col>
-                            <Col sm={4}>
-                              <div className="col text-center">Destination</div>
-                            </Col>
-                          </Row>
-                          <Row className="mt-3">
-                            <Col sm={4}>
-                              <Field name="sourceZoneName">
-                                {({ input }) => (
-                                  <input
-                                    {...input}
-                                    type="text"
-                                    className="form-control"
-                                    disabled
-                                  />
-                                )}
-                              </Field>
-                            </Col>
-                            <Col sm={1}>To</Col>
-                            <Col sm={4}>
-                              <Select
-                                onChange={this.handleSelectedZone}
-                                isClearable
-                                components={{
-                                  IndicatorSeparator: () => null
+                        </Col>
+                        <Col sm={12}>
+                          {this.state.fileName ? (
+                            <span>
+                              {this.state.fileName}
+                              <label
+                                className="fa fa-fw fa-remove fa-remove-btn"
+                                onClick={() => {
+                                  this.removeFile();
                                 }}
-                                theme={this.Theme}
-                                options={this.props.zones.map((zone) => {
-                                  return {
-                                    value: zone.id,
-                                    label: zone.name
-                                  };
-                                })}
-                                placeholder="No zone selected"
-                              />
-                            </Col>
-                          </Row>
-                          <hr />
-                          <Row>
-                            <Col sm={12}>
-                              <p className="font-weight-bold">
-                                Specify Service Mapping :
-                              </p>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col sm={4}>
-                              <div className="col text-center">Source</div>
-                            </Col>
-                            <Col sm={4}>
-                              <div className="col text-center">Destination</div>
-                            </Col>
-                          </Row>
-                          <FieldArray name="serviceFields">
-                            {({ fields }) =>
-                              fields.map((name, index) => (
-                                <Row className="mt-2" key={name}>
-                                  <Col sm={4}>
-                                    <Field
-                                      name={`${name}.sourceServiceName`}
-                                      validate={this.requiredField}
-                                    >
-                                      {({ input, meta }) => (
-                                        <React.Fragment>
-                                          <Select
-                                            {...input}
-                                            searchable
-                                            isClearable
-                                            options={this.getSourceServiceOptions()}
-                                            menuPlacement="auto"
-                                            placeholder="Enter service name"
-                                          />
-                                          {meta.error && meta.touched && (
-                                            <span className="invalid-field">
-                                              {meta.error}
-                                            </span>
-                                          )}
-                                        </React.Fragment>
-                                      )}
-                                    </Field>
-                                  </Col>
-                                  <Col sm={1}>To</Col>
-                                  <Col sm={4}>
-                                    <Field
-                                      name={`${name}.destServiceName`}
-                                      validate={this.requiredField}
-                                    >
-                                      {({ input, meta }) => (
-                                        <React.Fragment>
-                                          <Select
-                                            {...input}
-                                            searchable
-                                            isClearable
-                                            options={this.getDestServiceOptions()}
-                                            menuPlacement="auto"
-                                            placeholder="Select service name"
-                                          />
-                                          {meta.error && meta.touched && (
-                                            <span className="invalid-field">
-                                              {meta.error}
-                                            </span>
-                                          )}
-                                        </React.Fragment>
-                                      )}
-                                    </Field>
-                                  </Col>
-                                  <Col sm={1}>
-                                    <Button
-                                      className="mt-1"
-                                      variant="danger"
-                                      size="sm"
-                                      title="Remove"
-                                      onClick={() => fields.remove(index)}
-                                    >
-                                      <i className="fa-fw fa fa-remove"></i>
-                                    </Button>
-                                  </Col>
-                                </Row>
-                              ))
-                            }
-                          </FieldArray>
-                          <Row className="mt-3">
-                            <Col sm={2}>
-                              <Button
-                                variant="outline-dark"
-                                size="sm"
-                                onClick={() =>
-                                  addItem("serviceFields", undefined)
-                                }
-                              >
-                                <i className="fa-fw fa fa-plus"></i>
-                              </Button>
-                            </Col>
-                          </Row>
-                        </React.Fragment>
-                      )}
-                    {this.state.fileJsonData &&
-                      isEmpty(this.state.sourceServicesMap) && (
-                        <React.Fragment>
-                          <p className="invalid-field mt-2">
-                            Json file uploaded is invalid.
-                          </p>
-                        </React.Fragment>
-                      )}
-                  </React.Fragment>
-                </Modal.Body>
+                              ></label>
+                            </span>
+                          ) : (
+                            <span className="ml-1">No File Chosen</span>
+                          )}
+                        </Col>
+                        <Col sm={12}>
+                          {this.state.fileName && this.state.fileNotJson && (
+                            <span className="invalid-field">
+                              Please upload json format file
+                            </span>
+                          )}
+                        </Col>
+                      </Row>
+                      {this.state.fileJsonData &&
+                        !isEmpty(this.state.sourceServicesMap) && (
+                          <React.Fragment>
+                            <hr />
+                            <Row>
+                              <Col sm={12}>
+                                <Alert variant="warning" show={true}>
+                                  <i className="fa-fw fa fa-info-circle searchInfo m-r-xs"></i>
+                                  All services gets listed on service
+                                  destination when Zone destination is blank.
+                                  When zone is selected at destination, then
+                                  only services associated with that zone will
+                                  be listed.
+                                </Alert>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col sm={12}>
+                                <p className="font-weight-bold">
+                                  Specify Zone Mapping :
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row className="mt-3">
+                              <Col sm={4}>
+                                <div className="col text-center">Source</div>
+                              </Col>
+                              <Col sm={4}>
+                                <div className="col text-center">
+                                  Destination
+                                </div>
+                              </Col>
+                            </Row>
+                            <Row className="mt-3">
+                              <Col sm={4}>
+                                <Field name="sourceZoneName">
+                                  {({ input }) => (
+                                    <input
+                                      {...input}
+                                      type="text"
+                                      className="form-control"
+                                      disabled
+                                    />
+                                  )}
+                                </Field>
+                              </Col>
+                              <Col sm={1}>To</Col>
+                              <Col sm={4}>
+                                <Select
+                                  onChange={this.handleSelectedZone}
+                                  isClearable
+                                  components={{
+                                    IndicatorSeparator: () => null
+                                  }}
+                                  theme={this.Theme}
+                                  options={this.props.zones.map((zone) => {
+                                    return {
+                                      value: zone.id,
+                                      label: zone.name
+                                    };
+                                  })}
+                                  placeholder="No zone selected"
+                                />
+                              </Col>
+                            </Row>
+                            <hr />
+                            <Row>
+                              <Col sm={12}>
+                                <p className="font-weight-bold">
+                                  Specify Service Mapping :
+                                </p>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col sm={4}>
+                                <div className="col text-center">Source</div>
+                              </Col>
+                              <Col sm={4}>
+                                <div className="col text-center">
+                                  Destination
+                                </div>
+                              </Col>
+                            </Row>
+                            <FieldArray name="serviceFields">
+                              {({ fields }) =>
+                                fields.map((name, index) => (
+                                  <Row className="mt-2" key={name}>
+                                    <Col sm={4}>
+                                      <Field
+                                        name={`${name}.sourceServiceName`}
+                                        validate={this.requiredField}
+                                      >
+                                        {({ input, meta }) => (
+                                          <React.Fragment>
+                                            <Select
+                                              {...input}
+                                              searchable
+                                              isClearable
+                                              options={this.getSourceServiceOptions()}
+                                              menuPlacement="auto"
+                                              placeholder="Enter service name"
+                                            />
+                                            {meta.error && meta.touched && (
+                                              <span className="invalid-field">
+                                                {meta.error}
+                                              </span>
+                                            )}
+                                          </React.Fragment>
+                                        )}
+                                      </Field>
+                                    </Col>
+                                    <Col sm={1}>To</Col>
+                                    <Col sm={4}>
+                                      <Field
+                                        name={`${name}.destServiceName`}
+                                        validate={this.requiredField}
+                                      >
+                                        {({ input, meta }) => (
+                                          <React.Fragment>
+                                            <Select
+                                              {...input}
+                                              searchable
+                                              isClearable
+                                              options={this.getDestServiceOptions()}
+                                              menuPlacement="auto"
+                                              placeholder="Select service name"
+                                            />
+                                            {meta.error && meta.touched && (
+                                              <span className="invalid-field">
+                                                {meta.error}
+                                              </span>
+                                            )}
+                                          </React.Fragment>
+                                        )}
+                                      </Field>
+                                    </Col>
+                                    <Col sm={1}>
+                                      <Button
+                                        className="mt-1"
+                                        variant="danger"
+                                        size="sm"
+                                        title="Remove"
+                                        onClick={() => fields.remove(index)}
+                                      >
+                                        <i className="fa-fw fa fa-remove"></i>
+                                      </Button>
+                                    </Col>
+                                  </Row>
+                                ))
+                              }
+                            </FieldArray>
+                            <Row className="mt-3">
+                              <Col sm={2}>
+                                <Button
+                                  variant="outline-dark"
+                                  size="sm"
+                                  onClick={() =>
+                                    addItem("serviceFields", undefined)
+                                  }
+                                >
+                                  <i className="fa-fw fa fa-plus"></i>
+                                </Button>
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        )}
+                      {this.state.fileJsonData &&
+                        isEmpty(this.state.sourceServicesMap) && (
+                          <React.Fragment>
+                            <p className="invalid-field mt-2">
+                              Json file uploaded is invalid.
+                            </p>
+                          </React.Fragment>
+                        )}
+                    </React.Fragment>
+                  </Modal.Body>
+                )}
                 <Modal.Footer>
-                  <Button variant="secondary" onClick={this.props.onHide}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={isEmpty(this.state.sourceServicesMap)}
-                  >
-                    Import
-                  </Button>
+                  {!isEmpty(this.props.services) ? (
+                    <>
+                      <Button variant="secondary" onClick={this.props.onHide}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        type="submit"
+                        disabled={isEmpty(this.state.sourceServicesMap)}
+                      >
+                        Import
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="primary" onClick={this.props.onHide}>
+                      OK
+                    </Button>
+                  )}
                 </Modal.Footer>
               </form>
             )}

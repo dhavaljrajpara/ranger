@@ -1,13 +1,14 @@
-import React, { useReducer, useCallback, useEffect } from "react";
+import React, { useReducer, useCallback, useEffect, useState } from "react";
 import { Loader } from "Components/CommonComponents";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import XATableLayout from "Components/XATableLayout";
-import { Row, Col, Button, Modal } from "react-bootstrap";
+import { Row, Col, Button, Modal, Breadcrumb } from "react-bootstrap";
 import { fetchApi } from "Utils/fetchAPI";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 function init(props) {
   return {
@@ -24,6 +25,7 @@ function init(props) {
     editshowmodal: false,
     filterdata: null,
     pagecount: 0,
+    kmsservice: {},
     updatetable: moment.now()
   };
 }
@@ -104,6 +106,7 @@ const KeyManager = (props) => {
     editshowmodal,
     pagecount,
     services,
+
     updatetable
   } = keyState;
 
@@ -115,7 +118,7 @@ const KeyManager = (props) => {
     let servicesdata = null;
     try {
       const servicesResp = await fetchApi({
-        url: "plugins/services?name=&serviceType=kms&_=1646198589713"
+        url: "plugins/services?name=&serviceType=kms"
       });
       servicesdata = servicesResp.data.services;
     } catch (error) {
@@ -131,6 +134,7 @@ const KeyManager = (props) => {
       }))
     });
   };
+
   const selconChange = (e) => {
     dispatch({
       type: "SET_ONCHANGE_SERVICE",
@@ -138,6 +142,7 @@ const KeyManager = (props) => {
       loader: false
     });
   };
+
   const handleConfirmClick = () => {
     handleDeleteClick();
 
@@ -242,8 +247,6 @@ const KeyManager = (props) => {
             totalCount: Math.ceil(totalCount / pageSize),
             startIndex: pageIndex * pageSize,
             provider: onchangeval && onchangeval.label
-            // : props.match.params.kmsServiceName == "service"
-            // ? []
           }
         });
         selcservicesdata = selservicesResp.data.vXKeys;
@@ -261,25 +264,8 @@ const KeyManager = (props) => {
     },
     [onchangeval, updatetable]
   );
-  const addKey = async () => {
-    try {
-      await fetchApi({
-        url:
-          props.match.params.kmsManagePage == "edit"
-            ? `plugins/services/name/${props.match.params.kmsServiceName}`
-            : `plugins/services/name/${onchangeval.label}`
-      });
-    } catch (error) {
-      console.error(`Error occurred while fetching Services! ${error}`);
-    }
 
-    try {
-      await fetchApi({
-        url: "plugins/definitions/name/kms"
-      });
-    } catch (error) {
-      console.error(`Error occurred while fetching Definitions! ${error}`);
-    }
+  const addKey = () => {
     history.push({
       pathname:
         props.match.params.kmsManagePage == "edit"
@@ -293,7 +279,6 @@ const KeyManager = (props) => {
       }
     });
   };
-
   const columns = React.useMemo(
     () => [
       {
@@ -375,7 +360,8 @@ const KeyManager = (props) => {
 
   return (
     <div>
-      <h5 className="font-weight-bold">Key Management</h5>
+      {commonBreadcrumb(["Kms"])}
+      <h6 className="font-weight-bold">Key Management</h6>
 
       <div className="wrap">
         <fieldset>
@@ -397,7 +383,7 @@ const KeyManager = (props) => {
         </fieldset>
         <Row className="mb-2">
           <Col md={10}></Col>
-          <Col md={2}>
+          <Col md={2} className="text-right">
             <Button
               className={
                 onchangeval !== undefined ||
@@ -417,18 +403,15 @@ const KeyManager = (props) => {
             </Button>
           </Col>
         </Row>
-
-        {loader ? (
-          <Loader />
-        ) : (
-          <XATableLayout
-            loading={loader}
-            data={keydata}
-            columns={columns}
-            fetchData={selectServices}
-            pageCount={pagecount}
-          />
-        )}
+        <br />
+        <br />
+        <XATableLayout
+          loading={loader}
+          data={keydata}
+          columns={columns}
+          fetchData={selectServices}
+          pageCount={pagecount}
+        />
 
         <Modal show={editshowmodal} onHide={closeEditModal}>
           <Modal.Body>{`Are you sure want to rollover ?`}</Modal.Body>

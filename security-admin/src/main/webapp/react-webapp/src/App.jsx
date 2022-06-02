@@ -125,7 +125,7 @@ export default class App extends Component {
           <Suspense fallback={<Loader />}>
             {!this.state.loader && <HeaderComp />}
             <section className="container-fluid">
-              <div className="row mt-2">
+              {/* <div className="row mt-2">
                 <div className="col-auto mr-auto">
                   <div className="col-auto mr-auto">
                     <Breadcrumb>
@@ -137,7 +137,7 @@ export default class App extends Component {
                   <b>Last Response Time: </b>
                   {new Date().toLocaleString("en-US", { hour12: true })}
                 </div>
-              </div>
+              </div> */}
               <div id="ranger-content">
                 {this.state.loader ? (
                   <Loader />

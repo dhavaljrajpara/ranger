@@ -101,7 +101,14 @@ function User_Sync() {
       },
       {
         Header: "Event Time",
-        accessor: "eventTime"
+        accessor: "eventTime",
+        Cell: (rawValue) => {
+          const date = rawValue.value;
+          const newdate = moment
+            .tz(date, "Asia/Kolkata")
+            .format("MM/DD/YYYY HH:mm:ss A");
+          return newdate;
+        }
       },
       {
         Header: "Sync Details",
@@ -138,7 +145,7 @@ function User_Sync() {
         data={userSyncListingData}
         columns={columns}
         loading={loader}
-        totalCount={entries.totalCount}
+        totalCount={entries && entries.totalCount}
         fetchData={fetchUserSyncInfo}
         pageCount={pageCount}
       />

@@ -1,13 +1,12 @@
 import React, { Component } from "react";
-import Tab from "react-bootstrap/Tab";
-import Nav from "react-bootstrap/Nav";
-import Button from "react-bootstrap/Button";
+import { Tab, Button, Nav } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import UserFormComp from "Views/UserGroupRoleListing/users_details/UserFormComp";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import { UserTypes, RegexValidation } from "Utils/XAEnums";
+import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { toast } from "react-toastify";
 
 const Error = ({ name }) => (
@@ -95,6 +94,10 @@ class AddUserView extends Component {
       />
     ) : (
       <>
+        {commonBreadcrumb(
+          ["Users", "UserEdit"],
+          this.props.match.params.userID
+        )}
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">
             <Nav variant="tabs">

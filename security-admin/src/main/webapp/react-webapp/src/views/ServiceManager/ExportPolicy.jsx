@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Select from "react-select";
-import { has, map, toString } from "lodash";
+import { has, map, toString, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 
@@ -132,57 +132,77 @@ class ExportPolicy extends Component {
     const { isParentExport, serviceOptions, selectedServices } = this.state;
     return (
       <React.Fragment>
-        <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
+        <Modal
+          show={this.props.show}
+          onHide={this.props.onHide}
+          size={!isEmpty(this.props.services) ? "lg" : "md"}
+        >
           <Modal.Header closeButton>
-            <Modal.Title>Export Policy</Modal.Title>
+            <Modal.Title>
+              {!isEmpty(this.props.services) ? (
+                "Export Policy"
+              ) : (
+                <small>No service found to export policies.</small>
+              )}
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            {isParentExport && (
-              <div className="mb-3">
-                <h6 className="bold">Service Type *</h6>
+          {!isEmpty(this.props.services) && (
+            <Modal.Body>
+              {isParentExport && (
+                <div className="mb-3">
+                  <h6 className="bold">Service Type *</h6>
+                  <Select
+                    isMulti
+                    onChange={this.handleServiceDefChange}
+                    components={{
+                      DropdownIndicator: () => null,
+                      IndicatorSeparator: () => null
+                    }}
+                    isClearable={false}
+                    theme={this.Theme}
+                    options={this.serviceDefOptions}
+                    defaultValue={this.serviceDefOptions}
+                    menuPlacement="auto"
+                    placeholder="Select Service Type"
+                  />
+                </div>
+              )}
+
+              <div className="mt-2">
+                <h6 className="bold">Select Service Name *</h6>
                 <Select
                   isMulti
-                  onChange={this.handleServiceDefChange}
+                  onChange={this.handleServiceChange}
                   components={{
                     DropdownIndicator: () => null,
                     IndicatorSeparator: () => null
                   }}
                   isClearable={false}
                   theme={this.Theme}
-                  options={this.serviceDefOptions}
-                  defaultValue={this.serviceDefOptions}
+                  options={serviceOptions}
+                  defaultValue={this.serviceOptions}
+                  value={selectedServices}
                   menuPlacement="auto"
-                  placeholder="Select Service Type"
+                  placeholder="Select Service Name"
                 />
               </div>
-            )}
-
-            <div className="mt-2">
-              <h6 className="bold">Select Service Name *</h6>
-              <Select
-                isMulti
-                onChange={this.handleServiceChange}
-                components={{
-                  DropdownIndicator: () => null,
-                  IndicatorSeparator: () => null
-                }}
-                isClearable={false}
-                theme={this.Theme}
-                options={serviceOptions}
-                defaultValue={this.serviceOptions}
-                value={selectedServices}
-                menuPlacement="auto"
-                placeholder="Select Service Name"
-              />
-            </div>
-          </Modal.Body>
+            </Modal.Body>
+          )}
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.props.onHide}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={this.export}>
-              Export
-            </Button>
+            {!isEmpty(this.props.services) ? (
+              <>
+                <Button variant="secondary" onClick={this.props.onHide}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={this.export}>
+                  Export
+                </Button>
+              </>
+            ) : (
+              <Button variant="primary" onClick={this.props.onHide}>
+                OK
+              </Button>
+            )}
           </Modal.Footer>
         </Modal>
       </React.Fragment>

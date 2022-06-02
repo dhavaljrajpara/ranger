@@ -4,10 +4,9 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, filter, find, values, isEmpty } from "lodash";
+import { groupBy, find, isEmpty, pick } from "lodash";
 import { toast } from "react-toastify";
 import { Loader } from "Components/CommonComponents";
-
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
@@ -16,6 +15,7 @@ import { useParams, useHistory } from "react-router-dom";
 import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 const noneOptions = {
   label: "None",
@@ -530,13 +530,63 @@ export default function AddUpdatePolicyForm() {
     let polType = policyId ? policyData.policyType : policyType;
     history.push(`/service/${serviceId}/policies/${polType}`);
   };
-
+  const policyBreadcrumb = () => {
+    let policyDetails = {};
+    policyDetails["serviceId"] = serviceId;
+    policyDetails["policyType"] = policyId ? policyData.policyType : policyType;
+    policyDetails["serviceName"] = serviceDetails.displayName;
+    policyDetails["selectedZone"] = JSON.parse(
+      localStorage.getItem("zoneDetails")
+    );
+    if (serviceCompDetails.name === "tag") {
+      if (policyDetails.selectedZone) {
+        return commonBreadcrumb(
+          [
+            "TagBasedServiceManager",
+            "ManagePolicies",
+            policyId ? "PolicyEdit" : "PolicyCreate"
+          ],
+          policyDetails
+        );
+      } else {
+        return commonBreadcrumb(
+          [
+            "TagBasedServiceManager",
+            "ManagePolicies",
+            policyId ? "PolicyEdit" : "PolicyCreate"
+          ],
+          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
+        );
+      }
+    } else {
+      if (policyDetails.selectedZone) {
+        return commonBreadcrumb(
+          [
+            "ServiceManager",
+            "ManagePolicies",
+            policyId ? "PolicyEdit" : "PolicyCreate"
+          ],
+          policyDetails
+        );
+      } else {
+        return commonBreadcrumb(
+          [
+            "ServiceManager",
+            "ManagePolicies",
+            policyId ? "PolicyEdit" : "PolicyCreate"
+          ],
+          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
+        );
+      }
+    }
+  };
   return (
     <>
       {loader ? (
         <Loader />
       ) : (
         <div>
+          {policyBreadcrumb()}
           <h5>{`${policyId ? "Edit" : "Create"} Policy`}</h5>
           <div className="wrap">
             <Form

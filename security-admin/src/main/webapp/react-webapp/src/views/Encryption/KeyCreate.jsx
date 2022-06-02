@@ -1,16 +1,32 @@
 import React, { Component } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Button, Table, Row, Col, Breadcrumb } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
+import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
+import { Loader } from "../../components/CommonComponents";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 class KeyCreate extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      service: {},
+      definition: {},
+      loader: true
+    };
   }
+
+  componentDidMount() {
+    this.fetchInitialData();
+  }
+
+  fetchInitialData = async () => {
+    await this.fetchKmsServices();
+    await this.fetchKmsDefinition();
+  };
 
   onSubmit = async (values) => {
     const serviceJson = {};
@@ -42,6 +58,32 @@ class KeyCreate extends Component {
       console.error(`Error occurred while creating Key`);
     }
   };
+  fetchKmsServices = async () => {
+    let serviceResp;
+    try {
+      serviceResp = await fetchApi({
+        url: `plugins/services/name/${this.props.match.params.serviceName}`
+      });
+    } catch (error) {
+      console.error(`Error occurred while fetching Services! ${error}`);
+    }
+    this.setState({ service: serviceResp, loader: false });
+  };
+
+  fetchKmsDefinition = async () => {
+    this.setState({ loader: true });
+    let kmsDefinition;
+    try {
+      kmsDefinition = await fetchApi({
+        url: `plugins/definitions/name/${
+          this.state.service.data && this.state.service.data.type
+        }`
+      });
+    } catch (error) {
+      console.error(`Error occurred while fetching Definitions! ${error}`);
+    }
+    this.setState({ definition: kmsDefinition, loader: false });
+  };
 
   closeForm = () => {
     this.props.history.push(
@@ -50,10 +92,24 @@ class KeyCreate extends Component {
   };
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
-
+  keyCreateBreadcrumb = () => {
+    let serviceDetails = {};
+    serviceDetails["serviceDefId"] =
+      this.state.definition.data && this.state.definition.data.id;
+    serviceDetails["serviceId"] =
+      this.state.service.data && this.state.service.data.id;
+    serviceDetails["serviceName"] = this.props.match.params.serviceName;
+    return commonBreadcrumb(
+      ["Kms", "KmsKeyForService", "KmsKeyCreate"],
+      serviceDetails
+    );
+  };
   render() {
-    return (
+    return this.state.loader ? (
+      <Loader />
+    ) : (
       <div>
+        {this.keyCreateBreadcrumb()}
         <h4 className="wrap-header bold">Key Detail</h4>
         <Form
           onSubmit={this.onSubmit}

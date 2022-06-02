@@ -185,7 +185,7 @@ function Login_Sessions() {
         data={loginSessionListingData}
         columns={columns}
         fetchData={fetchLoginSessionLogsInfo}
-        totalCount={entries.totalCount}
+        totalCount={entries && entries.totalCount}
         loading={loader}
         pageCount={pageCount}
       />

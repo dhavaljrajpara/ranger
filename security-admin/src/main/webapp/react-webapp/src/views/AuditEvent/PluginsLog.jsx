@@ -50,7 +50,14 @@ function Plugins() {
     () => [
       {
         Header: "Export Date ( India Standard Time )",
-        accessor: "createDate"
+        accessor: "createDate",
+        Cell: (rawValue) => {
+          const date = rawValue.value;
+          const newdate = moment
+            .tz(date, "Asia/Kolkata")
+            .format("MM/DD/YYYY HH:mm:ss A");
+          return newdate;
+        }
       },
       {
         Header: "Service Name",
@@ -95,7 +102,7 @@ function Plugins() {
         data={pluginsListingData}
         columns={columns}
         loading={loader}
-        totalCount={entries.totalCount}
+        totalCount={entries && entries.totalCount}
         fetchData={fetchPluginsInfo}
         pageCount={pageCount}
       />

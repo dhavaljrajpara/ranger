@@ -270,7 +270,7 @@ function Admin() {
         data={adminListingData}
         columns={columns}
         fetchData={fetchAdminLogsInfo}
-        totalCount={entries.totalCount}
+        totalCount={entries && entries.totalCount}
         pageCount={pageCount}
         loading={loader}
         getRowProps={(row) => ({

@@ -4,14 +4,14 @@ import PolicyListing from "./PolicyListing";
 import { fetchApi } from "Utils/fetchAPI";
 import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
-import { MoreLess } from "Components/CommonComponents";
+import { commonBreadcrumb } from "../../utils/XAUtils";
+import { pick } from "lodash";
 
 class policyTabView extends Component {
   state = {
     serviceDetails: {},
     componentDefinationDetails: {},
     loader: true
-    // activeKey: "0"
   };
 
   componentDidMount() {
@@ -42,40 +42,79 @@ class policyTabView extends Component {
       pathname: `/service/${this.props.match.params.serviceId}/policies/${tabName}`
     });
   };
-
+  policyBreadcrumb = () => {
+    let policyDetails = {};
+    policyDetails["serviceId"] = this.props.match.params.serviceId;
+    policyDetails["policyType"] = this.props.match.params;
+    policyDetails["serviceName"] = this.state.serviceDetails.displayName;
+    policyDetails["selectedZone"] = JSON.parse(
+      localStorage.getItem("zoneDetails")
+    );
+    if (this.state.componentDefinationDetails.name === "tag") {
+      if (policyDetails.selectedZone) {
+        return commonBreadcrumb(
+          ["TagBasedServiceManager", "ManagePolicies"],
+          policyDetails
+        );
+      } else {
+        return commonBreadcrumb(
+          ["TagBasedServiceManager", "ManagePolicies"],
+          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
+        );
+      }
+    } else {
+      if (policyDetails.selectedZone) {
+        return commonBreadcrumb(
+          ["ServiceManager", "ManagePolicies"],
+          policyDetails
+        );
+      } else {
+        return commonBreadcrumb(
+          ["ServiceManager", "ManagePolicies"],
+          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
+        );
+      }
+    }
+  };
   render() {
-    const { serviceDetails } = this.state;
     const { componentDefinationDetails } = this.state;
-    return (
-      <div className="wrap">
-        {this.state.loader ? (
-          <Loader />
-        ) : isRenderMasking(componentDefinationDetails.dataMaskDef) ||
+    return this.state.loader ? (
+      <Loader />
+    ) : (
+      <>
+        {this.policyBreadcrumb()}
+        <div className="wrap">
+          {isRenderMasking(componentDefinationDetails.dataMaskDef) ||
           isRenderRowFilter(componentDefinationDetails.rowFilterDef) ? (
-          <Tabs
-            id="PolicyListing"
-            className="mb-3"
-            activeKey={this.props.match.params.policyType}
-            onSelect={(k) => this.tabChange(k)}
-          >
-            <Tab eventKey="0" title="Access">
-              {this.props.match.params.policyType == "0" && <PolicyListing />}
-            </Tab>
-            {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
-              <Tab eventKey="1" title="Masking">
-                {this.props.match.params.policyType == "1" && <PolicyListing />}
+            <Tabs
+              id="PolicyListing"
+              className="mb-3"
+              activeKey={this.props.match.params.policyType}
+              onSelect={(k) => this.tabChange(k)}
+            >
+              <Tab eventKey="0" title="Access">
+                {this.props.match.params.policyType == "0" && <PolicyListing />}
               </Tab>
-            )}
-            {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
-              <Tab eventKey="2" title="Row Level Filter">
-                {this.props.match.params.policyType == "2" && <PolicyListing />}
-              </Tab>
-            )}
-          </Tabs>
-        ) : (
-          <PolicyListing />
-        )}
-      </div>
+              {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
+                <Tab eventKey="1" title="Masking">
+                  {this.props.match.params.policyType == "1" && (
+                    <PolicyListing />
+                  )}
+                </Tab>
+              )}
+              {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
+                <Tab eventKey="2" title="Row Level Filter">
+                  {this.props.match.params.policyType == "2" && (
+                    <PolicyListing />
+                  )}
+                </Tab>
+              )}
+            </Tabs>
+          ) : (
+            <PolicyListing />
+          )}
+        </div>
+      </>
     );
   }
 }

@@ -6,12 +6,16 @@ import _, {
   flatMap,
   forEach,
   uniq,
+  has,
+  pick,
   isEmpty,
   isUndefined
 } from "lodash";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import { matchPath } from "react-router";
+import { Breadcrumb } from "react-bootstrap";
+import CustomBreadcrumb from "../views/CustomBreadcrumb";
 // import { includes, map, union, forEach } from "lodash";
 
 export const LoginUser = (role) => {
@@ -836,4 +840,151 @@ export const showGroupsOrUsersOrRolesForPolicy = (
   }
   allTypes = [...allTypes];
   return allTypes;
+};
+
+var links = {
+  ServiceManager: function (zoneName) {
+    return {
+      href: "#/policymanager/resource",
+      text: !isUndefined(zoneName && zoneName.selectedZone)
+        ? `Service Manager : ${zoneName && zoneName.selectedZone.label} zone`
+        : "Service Manager"
+    };
+  },
+  TagBasedServiceManager: function (zoneName) {
+    return {
+      href: "#/policymanager/tag",
+      text: !isUndefined(zoneName && zoneName.selectedZone)
+        ? `Service Manager : ${zoneName && zoneName.selectedZone.label} zone`
+        : "Service Manager"
+    };
+  },
+  ServiceCreate: {
+    href: "#",
+    text: "Create Service"
+  },
+  ServiceEdit: function (serviceDetails) {
+    return {
+      href: `#/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
+      text: "Edit Service"
+    };
+  },
+  ManagePolicies: function (policy) {
+    return {
+      href: `#/service/${policy.serviceId}/policies/${policy.policyType}`,
+      text: `${policy.serviceName} Policies`
+    };
+  },
+  PolicyCreate: {
+    href: "#",
+    text: "Create Policy"
+  },
+  PolicyEdit: {
+    href: "#",
+    text: "Edit Policy"
+  },
+  Users: {
+    href: "#/users/usertab",
+    text: "Users/Groups/Roles"
+  },
+  SecurityZone: function (zoneId) {
+    return {
+      href: isUndefined(zoneId)
+        ? "#/zones/zone/list"
+        : `#/zones/zone/${zoneId}`,
+      text: "Security Zone"
+    };
+  },
+  ZoneCreate: {
+    href: `#/zones/create`,
+    text: "Create Zone"
+  },
+  ZoneEdit: {
+    href: `#`,
+    text: "Edit Zone"
+  },
+  Kms: function (kms) {
+    return {
+      href: isUndefined(kms)
+        ? "#"
+        : `#/kms/keys/edit/manage/${kms.serviceName}`,
+      text: `KMS`
+    };
+  },
+  KmsKeyForService: function (serviceDetails) {
+    return {
+      href: `#/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
+      text: serviceDetails.serviceName
+    };
+  },
+  KmsKeyCreate: function (kms) {
+    return {
+      href: `#/kms/keys/${kms.serviceName}/create`,
+      text: `Key Create`
+    };
+  },
+
+  UserCreate: {
+    href: "#",
+    text: "User Create"
+  },
+  UserEdit: function (userId) {
+    return {
+      href: `#/user/${userId}`,
+      text: "User Edit"
+    };
+  },
+  Groups: {
+    href: "#/users/grouptab",
+    text: "Users/Groups/Roles"
+  },
+  GroupCreate: {
+    href: "#",
+    text: "Group Create"
+  },
+  GroupEdit: function (userId) {
+    return {
+      href: `#/group/${userId}`,
+      text: "Group Edit"
+    };
+  },
+  Roles: {
+    href: "#/users/roletab",
+    text: "Users/Groups/Roles"
+  },
+  RoleCreate: {
+    href: "#",
+    text: "Role Create"
+  },
+  RoleEdit: function (roleId) {
+    return {
+      href: `#/role/${roleId}`,
+      text: "Role Edit"
+    };
+  },
+  ModulePermissions: {
+    href: "#/permissions/models",
+    text: "Permissions"
+  },
+  ModulePermissionEdit: function (permissionData) {
+    return {
+      href: `#/permissions/${permissionData.id}/edit`,
+      text: permissionData.module
+    };
+  }
+};
+
+export const commonBreadcrumb = (type, options) => {
+  let data = [];
+  type.map((obj) => {
+    if (typeof links[obj] == "function") {
+      let filterdata = {};
+      filterdata[obj] = links[obj](options);
+      return data.push(filterdata);
+    }
+    if (typeof links[obj] != "function") {
+      return data.push(pick(links, obj));
+    }
+  });
+  return <CustomBreadcrumb data={data} links={links} type={type} />;
 };

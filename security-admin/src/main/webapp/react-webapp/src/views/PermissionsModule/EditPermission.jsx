@@ -1,14 +1,14 @@
 import { Form, Field } from "react-final-form";
-import { Button, Col, Form as FormB, Row } from "react-bootstrap";
+import { Button, Col, Form as FormB, Row, Table } from "react-bootstrap";
 import React, { useEffect, useReducer } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import { Table } from "react-bootstrap";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import { cloneDeep, find, findIndex } from "lodash";
 import { AccessResult } from "Utils/XAEnums";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 const initialState = {
   loader: true,
@@ -227,8 +227,11 @@ const EditPermission = (props) => {
     <Loader />
   ) : (
     <div>
+      {commonBreadcrumb(
+        ["ModulePermissions", "ModulePermissionEdit"],
+        permissionData
+      )}
       <h3 className="wrap-header bold">Edit Permission</h3>
-
       <div className="wrap non-collapsible">
         <Form
           id="myform2"
@@ -391,6 +394,7 @@ const EditPermission = (props) => {
                                         key={index}
                                       >
                                         <i
+                                          role="button"
                                           className="icon remove fa-fw fa fa-remove"
                                           onClick={(e) => handleRemoveGrp(obj)}
                                         />
@@ -416,6 +420,7 @@ const EditPermission = (props) => {
                                         key={index}
                                       >
                                         <i
+                                          role="button"
                                           className="icon remove fa-fw fa fa-remove"
                                           onClick={(e) => handleRemoveUsr(obj)}
                                         />

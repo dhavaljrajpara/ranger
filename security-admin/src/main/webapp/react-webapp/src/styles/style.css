@@ -791,6 +791,202 @@ header {
 }
 
 /* Report Page */
-.report-page .accordion>.card {
+.report-page .accordion > .card {
   overflow: visible;
+}
+
+.latestResponse {
+  width: 29%;
+  display: inline-block;
+  text-align: right;
+  position: relative;
+  top: -10px;
+}
+
+.breadcrumb {
+  list-style: none;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  background-color: #eeeeee;
+}
+.breadcrumb li {
+  float: left;
+  line-height: 26px;
+  height: 26px;
+}
+
+.breadcrumb li:last-child a {
+  padding-right: 15px;
+}
+.breadcrumb li:first-child a {
+  padding-left: 15px;
+  -webkit-border-radius: 4px 0 0 4px;
+  -moz-border-radius: 4px 0 0 4px;
+  -ms-border-radius: 4px 0 0 4px;
+  -o-border-radius: 4px 0 0 4px;
+  border-radius: 4px 0 0 4px;
+}
+.breadcrumb li a {
+  color: #fff;
+  display: block;
+  background: #0b7fad;
+  text-decoration: none;
+  position: relative;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 10px 0 3px;
+  text-align: center;
+  margin-right: 23px;
+}
+
+.breadcrumb- li:first-child a:before {
+  border: none;
+}
+.breadcrumb li a:before {
+  left: -20px;
+  border-left-color: transparent;
+}
+
+.breadcrumb li a:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  border: 0 solid #0b7fad;
+  border-width: 11px 10px;
+  width: 0;
+  height: 0;
+}
+
+.breadcrumb li a:after {
+  left: 100%;
+  border-color: transparent;
+  border-left-color: #0b7fad;
+}
+.breadcrumb li a:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  border: 0 solid #0b7fad;
+  width: 0;
+  height: 0;
+}
+.trim-containt-breadcrumb {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.r_breadcrumbs {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 42px;
+  z-index: 10;
+  background: #eeeeee;
+  padding-top: 14px;
+  width: 70%;
+  display: inline-block;
+}
+
+.headerBreadcrumbs {
+  position: sticky;
+  top: 42px;
+  z-index: 10;
+  background: #eeeeee;
+  width: 100%;
+  display: inline-block;
+}
+.breadcrumb li.breadcrumb-item.allow_nav {
+  padding: 0;
+}
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(even) a {
+  color: #fff;
+  display: block;
+  background-color: #0a5c7d;
+  text-decoration: none;
+  position: relative;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 10px 0 3px;
+  text-align: center;
+  margin-right: 23px;
+}
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(odd) a {
+  color: #fff;
+  display: block;
+  background-color: #0b7fad;
+  text-decoration: none;
+  position: relative;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 10px 0 3px;
+  text-align: center;
+  margin-right: 23px;
+}
+.breadcrumb li.breadcrumb-item.allow_nav {
+  float: left;
+  line-height: 26px;
+  height: 26px;
+}
+.breadcrumb-item:nth-child(2):before {
+  content: "";
+  padding-right: 0;
+}
+.breadcrumb-item:nth-child(3):before {
+  content: "";
+  padding-right: 0;
+}
+/* Active before */
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(even) a:before {
+  border-color: #0a5c7d;
+  border-left-color: transparent;
+}
+
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(odd) a:before {
+  border-color: #0b7fad;
+  border-left-color: transparent;
+}
+
+.breadcrumb li.breadcrumb-item.allow_nav a:before {
+  left: -20px;
+  border-left-color: transparent;
+}
+.breadcrumb li.breadcrumb-item.allow_nav a:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  border: 0 solid #0b7fad;
+  border-width: 11px 10px;
+  width: 0;
+  height: 0;
+}
+
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(even) a:after {
+  left: 100%;
+  border-color: transparent;
+  border-left-color: #0a5c7d;
+}
+.breadcrumb li.breadcrumb-item.allow_nav:nth-child(odd) a:after {
+  left: 100%;
+  border-color: transparent;
+  border-left-color: #0b7fad;
+}
+.breadcrumb li.breadcrumb-item.allow_nav a:after {
+  border-left-color: #0a5c7d;
+}
+
+.breadcrumb li.breadcrumb-item.allow_nav a:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  border: 0 solid #0b7fad;
+  border-width: 11px 10px;
+  width: 0;
+  height: 0;
+}
+
+.not-allowed {
+  cursor: not-allowed !important;
 }

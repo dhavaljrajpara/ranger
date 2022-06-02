@@ -269,18 +269,32 @@ class ServiceDefinition extends Component {
                     </span>
                     {this.props.isAdminRole && (
                       <span className="float-right">
-                        <Link to={`/service/${serviceDef.id}/create`}>
-                          <i className="fa-fw fa fa-plus"></i>
-                        </Link>
+                        {isEmpty(this.props.selectedZone) ? (
+                          <Link
+                            to={`/service/${serviceDef.id}/create`}
+                            title="Add New Service"
+                          >
+                            <i className="fa-fw fa fa-plus"></i>
+                          </Link>
+                        ) : (
+                          <a
+                            className="not-allowed"
+                            title="Services cannot be added while filtering Security Zones"
+                          >
+                            <i className="fa-fw fa fa-plus"></i>
+                          </a>
+                        )}
                         <a
                           className="text-decoration"
                           onClick={this.showImportModal}
+                          title="Import"
                         >
                           <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
                         </a>
                         <a
                           className="text-decoration"
                           onClick={this.showExportModal}
+                          title="Export"
                         >
                           <i className="fa-fw fa fa-external-link-square"></i>
                         </a>
@@ -290,6 +304,7 @@ class ServiceDefinition extends Component {
                             services={this.props.servicesData}
                             zones={this.props.zones}
                             isParentImport={false}
+                            selectedZone={this.props.selectedZone}
                             show={showImportModal}
                             onHide={this.hideImportModal}
                           />
@@ -298,7 +313,7 @@ class ServiceDefinition extends Component {
                           <ExportPolicy
                             serviceDef={[serviceDef]}
                             services={this.props.servicesData}
-                            zone={this.props.selectedZone}
+                            zone={this.props.selectedZone.label}
                             isParentExport={false}
                             show={showExportModal}
                             onHide={this.hideExportModal}
@@ -323,11 +338,20 @@ class ServiceDefinition extends Component {
                           ></i>
                         )}
                         <Link
-                          to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
+                          to={{
+                            pathname: `/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`,
+                            detail: this.props.selectedZone
+                          }}
                           className="service-name text-info"
                         >
                           {s.displayName !== undefined ? s.displayName : s.name}
                         </Link>
+                        {/* <Link
+                          to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
+                          className="service-name text-info"
+                        >
+                          {s.displayName !== undefined ? s.displayName : s.name}
+                        </Link> */}
                       </span>
                       <span className="float-right">
                         {!this.props.isUserRole && (

@@ -379,7 +379,7 @@ function Plugin_Status() {
         data={pluginStatusListingData}
         columns={columns}
         loading={loader}
-        totalCount={entries.totalCount}
+        totalCount={entries && entries.totalCount}
         fetchData={fetchPluginStatusInfo}
         pageCount={pageCount}
       />
