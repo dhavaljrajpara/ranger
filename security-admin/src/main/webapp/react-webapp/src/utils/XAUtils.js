@@ -144,7 +144,7 @@ export const setTimeStamp = (dateTime) => {
   return !isEmpty(dateTime) ? (
     <span title={formatDateTime}>
       {formatDateTime}
-      <div class="text-muted">
+      <div className="text-muted">
         <small>{moment(formatDateTime).fromNow()}</small>
       </div>
     </span>

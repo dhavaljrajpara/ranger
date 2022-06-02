@@ -1,15 +1,16 @@
-import React, { useMemo } from "react";
-import { Table, Button } from "react-bootstrap";
+import React, { useMemo, useState } from "react";
+import { Table, Button, Badge } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
-import { find, groupBy, isEmpty } from "lodash";
+import { find, groupBy, isEmpty, isObject } from "lodash";
 
 import Editable from "Components/Editable";
 import { RangerPolicyType } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
+import TagBasePermissionItem from "./TagBasePermissionItem";
 
 const noneOptions = {
   label: "None",
@@ -26,14 +27,15 @@ export default function PolicyPermissionItem(props) {
     fetchRolesData,
     formValues
   } = props;
-  const permList = [
-    "Select Roles",
-    "Select Groups",
-    "Select Users",
-    "Permissions"
-  ];
+  // const [showTagPermissionItem, tagPermissionItem] = useState(false);
+  const permList = ["Select Users", "Select Groups", "Select Roles"];
+  if (serviceCompDetails?.policyConditions?.length > 0) {
+    permList.push("Policy Conditions");
+  }
+  permList.push("Permissions");
   if (
-    RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value == formValues.policyType
+    RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value == formValues.policyType &&
+    serviceCompDetails.name !== "tag"
   ) {
     permList.push("DeligateAdmin");
   }
@@ -48,6 +50,7 @@ export default function PolicyPermissionItem(props) {
   ) {
     permList.push("Row Level Filter");
   }
+
   const tableHeader = () => {
     return permList.map((data) => {
       return <th key={data}>{data}</th>;
@@ -117,13 +120,16 @@ export default function PolicyPermissionItem(props) {
   };
 
   const requiredForPermission = (fieldVals, index) => {
-    console.log(fieldVals);
     if (fieldVals && !isEmpty(fieldVals[index])) {
-      let error;
+      let error, accTypes;
       let users = (fieldVals[index]?.users || []).length > 0;
       let grps = (fieldVals[index]?.groups || []).length > 0;
       let roles = (fieldVals[index]?.roles || []).length > 0;
-      let accTypes = (fieldVals[index]?.accesses || []).length > 0;
+      if (fieldVals[index]?.accesses && isObject(fieldVals[index]?.accesses)) {
+        accTypes = (fieldVals[index]?.accesses || {}) !== {};
+      } else {
+        accTypes = (fieldVals[index]?.accesses || []).length > 0;
+      }
       if ((users || grps || roles) && !accTypes) {
         error = "Please select permision item for selected users/groups/roles";
       }
@@ -134,12 +140,27 @@ export default function PolicyPermissionItem(props) {
     }
   };
 
+  const tagAccessTypeDisplayVal = (val) => {
+    return val.map((m, index) => {
+      return (
+        <>
+          <h6 className="d-inline mr-1" key={index}>
+            <Badge variant="info">{m.serviceName.toUpperCase()}</Badge>
+          </h6>
+        </>
+      );
+    });
+  };
+
   return (
     <div>
       <Col sm="12">
         <Table bordered>
           <thead className="thead-light">
-            <tr>{tableHeader()}</tr>
+            <tr>
+              {tableHeader()}
+              <th></th>
+            </tr>
           </thead>
           <tbody>
             <FieldArray name={attrName}>
@@ -153,7 +174,6 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.roles`}
-                              // validate={required}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect
@@ -178,7 +198,6 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.groups`}
-                              // validate={required()}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect
@@ -222,38 +241,127 @@ export default function PolicyPermissionItem(props) {
                           </td>
                         );
                       }
-                      if (colName == "Permissions") {
-                        return (
+                      if (colName == "Policy Conditions") {
+                        return serviceCompDetails?.policyConditions?.length ==
+                          1 ? (
                           <td key={colName}>
                             <Field
                               className="form-control"
-                              name={`${name}.accesses`}
-                              validate={(value, formValues) =>
-                                requiredForPermission(
-                                  formValues[attrName],
-                                  index
-                                )
-                              }
+                              name={`${name}.conditions`}
                               render={({ input, meta }) => (
                                 <div className="table-editable">
                                   <Editable
                                     {...input}
-                                    placement="right"
-                                    type="checkbox"
-                                    options={getAccessTypeOptions()}
-                                    showSelectAll={true}
-                                    selectAllLabel="Select All"
+                                    placement="auto"
+                                    type="select"
+                                    conditionDefVal={
+                                      serviceCompDetails.policyConditions[0]
+                                    }
+                                    selectProps={{ isMulti: true }}
                                   />
-                                  {meta.error && (
-                                    <span className="invalid-field">
-                                      {meta.error}
-                                    </span>
+                                  {meta.touched && meta.error && (
+                                    <span>{meta.error}</span>
+                                  )}
+                                </div>
+                              )}
+                            />
+                          </td>
+                        ) : (
+                          <td key={colName}>
+                            <Field
+                              className="form-control"
+                              name={`${name}.conditions`}
+                              render={({ input, meta }) => (
+                                <div className="table-editable">
+                                  <Editable
+                                    {...input}
+                                    placement="auto"
+                                    type="custom"
+                                    conditionDefVal={
+                                      serviceCompDetails.policyConditions
+                                    }
+                                  />
+                                  {meta.touched && meta.error && (
+                                    <span>{meta.error}</span>
                                   )}
                                 </div>
                               )}
                             />
                           </td>
                         );
+                      }
+                      if (colName == "Permissions") {
+                        if (serviceCompDetails.name == "tag") {
+                          return (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.accesses`}
+                                validate={(value, formValues) =>
+                                  requiredForPermission(
+                                    formValues[attrName],
+                                    index
+                                  )
+                                }
+                                render={({ input, meta }) => (
+                                  <div className="table-editable">
+                                    <TagBasePermissionItem
+                                      options={getAccessTypeOptions()}
+                                      inputVal={input}
+                                    />
+                                    {meta.error && (
+                                      <span className="invalid-field">
+                                        {meta.error}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                              {fields?.value[index]?.accesses?.tableList
+                                .length > 0 ? (
+                                <>
+                                  {tagAccessTypeDisplayVal(
+                                    fields.value[index].accesses.tableList
+                                  )}
+                                </>
+                              ) : (
+                                <>-----</>
+                              )}
+                            </td>
+                          );
+                        } else {
+                          return (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.accesses`}
+                                validate={(value, formValues) =>
+                                  requiredForPermission(
+                                    formValues[attrName],
+                                    index
+                                  )
+                                }
+                                render={({ input, meta }) => (
+                                  <div className="table-editable">
+                                    <Editable
+                                      {...input}
+                                      placement="right"
+                                      type="checkbox"
+                                      options={getAccessTypeOptions()}
+                                      showSelectAll={true}
+                                      selectAllLabel="Select All"
+                                    />
+                                    {meta.error && (
+                                      <span className="invalid-field">
+                                        {meta.error}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          );
+                        }
                       }
                       if (colName == "Select Masking Option") {
                         return (
@@ -302,7 +410,10 @@ export default function PolicyPermissionItem(props) {
                           </td>
                         );
                       }
-                      if (colName == "DeligateAdmin") {
+                      if (
+                        colName == "DeligateAdmin" &&
+                        serviceCompDetails.name !== "tag"
+                      ) {
                         return (
                           <td className="text-center">
                             <Field
@@ -332,7 +443,11 @@ export default function PolicyPermissionItem(props) {
           </tbody>
         </Table>
       </Col>
-      <Button type="button" onClick={() => addPolicyItem(attrName, undefined)}>
+      <Button
+        size="sm"
+        type="button"
+        onClick={() => addPolicyItem(attrName, undefined)}
+      >
         +
       </Button>
     </div>

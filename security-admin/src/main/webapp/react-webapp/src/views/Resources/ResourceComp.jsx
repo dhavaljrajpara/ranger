@@ -236,7 +236,7 @@ export default function ResourceComp(props) {
           />
         </Col>
         {formValues[`resourceName-${levelKey}`] && (
-          <Col sm={4}>
+          <Col sm={5}>
             <Field
               className="form-control"
               name={`value-${levelKey}`}
@@ -278,7 +278,7 @@ export default function ResourceComp(props) {
           </Col>
         )}
         {formValues[`resourceName-${levelKey}`] && (
-          <Col sm={4}>
+          <Col sm={5}>
             <Row>
               {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (
                 <Col sm={4}>

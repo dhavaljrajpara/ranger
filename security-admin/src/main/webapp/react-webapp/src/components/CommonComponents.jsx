@@ -246,7 +246,7 @@ export const CustomPopoverOnClick = ({
             <Popover.Title as="h3">
               {title}
               <i
-                class="pull-right"
+                className="pull-right"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClick();
@@ -299,7 +299,7 @@ export const CustomPopoverTagOnClick = ({
             <Popover.Title as="h3">
               {title}
               <i
-                class="pull-right"
+                className="pull-right"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClick();

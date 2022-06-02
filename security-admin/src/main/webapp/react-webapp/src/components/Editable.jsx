@@ -1,12 +1,23 @@
 import React, { useEffect, useReducer, useRef, useState } from "react";
-import { OverlayTrigger, Popover, Button, Form } from "react-bootstrap";
-import { findIndex } from "lodash";
+import {
+  OverlayTrigger,
+  Popover,
+  Button,
+  Form,
+  Row,
+  Col
+} from "react-bootstrap";
+import { filter, findIndex } from "lodash";
 import { isObject } from "Utils/XAUtils";
+import CreatableSelect from "react-select/creatable";
+import Select from "react-select";
+import { CustomTooltip } from "../components/CommonComponents";
 
 const TYPE_SELECT = "select";
 const TYPE_CHECKBOX = "checkbox";
 const TYPE_INPUT = "input";
 const TYPE_RADIO = "radio";
+const TYPE_CUSTOM = "custom";
 
 const CheckboxComp = (props) => {
   const { options, value = [], valRef, showSelectAll, selectAllLabel } = props;
@@ -113,6 +124,124 @@ const InputboxComp = (props) => {
   );
 };
 
+const CreatableSelectNew = (props) => {
+  const { value, valRef, conditionDefVal, selectProps } = props;
+  const [selectedInputVal, setSelectVal] = useState(value);
+  const handleChange = (e) => {
+    valRef.current = e;
+    setSelectVal(valRef.current);
+  };
+
+  return (
+    <>
+      <Form.Group className="mb-3" controlId="Ip-range">
+        <b>{conditionDefVal.label}:</b>
+        <CreatableSelect
+          {...selectProps}
+          defaultValue={valRef.current == "" ? null : valRef.current}
+          onChange={(e) => handleChange(e)}
+          placeholder="enter expression"
+          width="500px"
+        />
+      </Form.Group>
+    </>
+  );
+};
+
+const CustomCondition = (props) => {
+  const { value, valRef, conditionDefVal, selectProps } = props;
+  const accessedOpt = [
+    { value: "yes", label: "Yes" },
+    { value: "no", label: "No" }
+  ];
+  const [selectedCondVal, setCondSelect] = useState(
+    value?.["accessed-after-expiry"] || value
+  );
+  const [selectedJSCondVal, setJSCondVal] = useState(
+    value?.expression || value
+  );
+  const xyz = (val, key) => {
+    if (!isObject(valRef.current)) {
+      valRef.current = {};
+    }
+    valRef.current[key] = val;
+  };
+  const selectHandleChange = (e, name) => {
+    setCondSelect(e);
+    xyz(e?.value || null, name);
+  };
+  const textAreaHandleChange = (e, name) => {
+    setJSCondVal(e.target.value);
+    xyz(e.target.value, name);
+  };
+  const accessedVal = (val) => {
+    let value = null;
+    if (val) {
+      let opObj = accessedOpt.filter((m) => {
+        if (m.value == val) {
+          return m;
+        }
+      });
+      if (opObj) {
+        value = opObj;
+      }
+    }
+    return value;
+  };
+  return (
+    <>
+      {conditionDefVal?.length > 0 &&
+        conditionDefVal.map((m, index) => {
+          if (m.name == "accessed-after-expiry") {
+            return (
+              <Form.Group className="mb-3">
+                <b>{m.label}:</b>
+                <Select
+                  options={accessedOpt}
+                  isClearable
+                  onChange={(e) => selectHandleChange(e, m.name)}
+                  value={accessedVal(value?.["accessed-after-expiry"])}
+                />
+              </Form.Group>
+            );
+          }
+          if (m.name == "expression") {
+            return (
+              <>
+                <Form.Group className="mb-3">
+                  <Row>
+                    <Col>
+                      <b>{m.label}:</b>
+                      <CustomTooltip
+                        placement="right"
+                        content={
+                          "1. JavaScript Condition Examples :\
+                      country_code == 'USA', time_range >= 900 time_range <= 1800 etc.\
+                      2. Dragging bottom-right corner of javascript condition editor(Textarea) can resizable"
+                        }
+                        icon="fa-fw fa fa-info-circle"
+                      />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={value?.expression || null}
+                        onChange={(e) => textAreaHandleChange(e, m.name)}
+                      />
+                    </Col>
+                  </Row>
+                </Form.Group>
+              </>
+            );
+          }
+        })}
+    </>
+  );
+};
+
 const innitialState = (props) => {
   const { type, selectProps, value } = props;
   let val = value;
@@ -158,7 +287,8 @@ const Editable = (props) => {
     className,
     displayFormat,
     onChange,
-    options = []
+    options = [],
+    conditionDefVal
   } = props;
 
   const initialLoad = useRef(true);
@@ -174,12 +304,20 @@ const Editable = (props) => {
       val = displayFormat(selectVal);
     } else {
       if (type === TYPE_SELECT) {
-        if (props.selectProps && props.selectProps.isMulti) {
-          if (Array.isArray(selectVal) && selectVal.length > 0) {
-            val = selectVal.map((op) => op.value).join();
-          }
+        if (selectVal?.length > 0) {
+          let ipRangVal = selectVal.map(function (m) {
+            return m.value;
+          });
+          val = (
+            <h6 className="d-inline mr-1">
+              {" "}
+              <span className="badge bg-info">
+                {conditionDefVal.label} : {ipRangVal.join(", ")}
+              </span>
+            </h6>
+          );
         } else {
-          val = selectVal.value || "--";
+          val = "--";
         }
       } else if (type === TYPE_CHECKBOX) {
         val =
@@ -208,6 +346,14 @@ const Editable = (props) => {
               <span className="badge bg-info">{selectVal}</span>
             </h6>
           );
+      } else if (type === TYPE_CUSTOM) {
+        if (selectVal?.["accessed-after-expiry"] || selectVal?.expression) {
+          val = `Accessed after expiry_date (yes/no) : ${
+            selectVal?.["accessed-after-expiry"] || null
+          } / Boolean expression : ${selectVal?.expression || null}`;
+        } else {
+          val = "--";
+        }
       } else {
         val = selectVal || "--";
       }
@@ -271,6 +417,20 @@ const Editable = (props) => {
             />
           ) : type === TYPE_INPUT ? (
             <InputboxComp value={value} valRef={selectValRef} />
+          ) : type === TYPE_SELECT ? (
+            <CreatableSelectNew
+              value={value}
+              valRef={selectValRef}
+              conditionDefVal={props.conditionDefVal}
+              selectProps={props.selectProps}
+            />
+          ) : type === TYPE_CUSTOM ? (
+            <CustomCondition
+              value={value}
+              valRef={selectValRef}
+              conditionDefVal={props.conditionDefVal}
+              selectProps={props.selectProps}
+            />
           ) : null}
           <hr />
           <div>

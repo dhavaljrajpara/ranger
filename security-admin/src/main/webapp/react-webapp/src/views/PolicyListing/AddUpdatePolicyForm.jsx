@@ -1,10 +1,19 @@
-import React, { useEffect, useReducer, useRef } from "react";
-import { Form as FormB, Row, Col, Button, Badge } from "react-bootstrap";
+import React, { useEffect, useReducer, useRef, useState } from "react";
+import { Form as FormB, Row, Col, Button, Badge, Modal } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, find, isEmpty, pick } from "lodash";
+import {
+  groupBy,
+  find,
+  isEmpty,
+  pick,
+  filter,
+  values,
+  forIn,
+  isObject
+} from "lodash";
 import { toast } from "react-toastify";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
@@ -13,6 +22,7 @@ import ResourceComp from "../Resources/ResourceComp";
 import PolicyPermissionItem from "../PolicyListing/PolicyPermissionItem";
 import { useParams, useHistory } from "react-router-dom";
 import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
+import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
 import { commonBreadcrumb } from "../../utils/XAUtils";
@@ -61,6 +71,7 @@ export default function AddUpdatePolicyForm() {
   const usersDataRef = useRef(null);
   const grpDataRef = useRef(null);
   const rolesDataRef = useRef(null);
+  const [showModal, policyConditionState] = useState(false);
 
   useEffect(() => {
     fetchInitalData();
@@ -213,27 +224,38 @@ export default function AddUpdatePolicyForm() {
     data.policyType = policyId ? policyData.policyType : policyType;
     data.policyItems =
       policyId && policyData.policyItems.length > 0
-        ? setPolicyItemVal(policyData.policyItems, serviceCompData.accessTypes)
+        ? setPolicyItemVal(
+            policyData.policyItems,
+            serviceCompData.accessTypes,
+            null,
+            serviceCompData.name
+          )
         : [{}];
     data.allowExceptions =
       policyId && policyData.allowExceptions.length > 0
         ? setPolicyItemVal(
             policyData.allowExceptions,
-            serviceCompData.accessTypes
+            serviceCompData.accessTypes,
+            null,
+            serviceCompData.name
           )
         : [{}];
     data.denyPolicyItems =
       policyId && policyData.denyPolicyItems.length > 0
         ? setPolicyItemVal(
             policyData.denyPolicyItems,
-            serviceCompData.accessTypes
+            serviceCompData.accessTypes,
+            null,
+            serviceCompData.name
           )
         : [{}];
     data.denyExceptions =
       policyId && policyData.denyExceptions.length > 0
         ? setPolicyItemVal(
             policyData.denyExceptions,
-            serviceCompData.accessTypes
+            serviceCompData.accessTypes,
+            null,
+            serviceCompData.name
           )
         : [{}];
     data.dataMaskPolicyItems =
@@ -241,14 +263,17 @@ export default function AddUpdatePolicyForm() {
         ? setPolicyItemVal(
             policyData.dataMaskPolicyItems,
             serviceCompData.dataMaskDef.accessTypes,
-            serviceCompData.dataMaskDef.maskTypes
+            serviceCompData.dataMaskDef.maskTypes,
+            serviceCompData.name
           )
         : [{}];
     data.rowFilterPolicyItems =
       policyId && policyData.rowFilterPolicyItems.length > 0
         ? setPolicyItemVal(
             policyData.rowFilterPolicyItems,
-            serviceCompData.rowFilterDef.accessTypes
+            serviceCompData.rowFilterDef.accessTypes,
+            null,
+            serviceCompData.name
           )
         : [{}];
     if (policyId) {
@@ -308,6 +333,14 @@ export default function AddUpdatePolicyForm() {
           data["validitySchedules"].push(obj);
         });
       }
+
+      /*policy condition*/
+      if (policyData?.conditions?.length > 0) {
+        data.conditions = {};
+        for (let val of policyData.conditions) {
+          data.conditions[val.type] = val.values.join(",");
+        }
+      }
     }
     data.isDenyAllElse = policyData?.isDenyAllElse || false;
     return data;
@@ -322,8 +355,21 @@ export default function AddUpdatePolicyForm() {
         if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
           obj.delegateAdmin = key.delegateAdmin;
         }
-        if (key.accesses) {
+        if (key?.accesses && !isObject(key.accesses)) {
           obj.accesses = key.accesses.map(({ value }) => ({
+            type: value,
+            isAllowed: true
+          }));
+        }
+        if (key?.accesses && isObject(key.accesses)) {
+          let accessesData = [];
+          for (let data in key.accesses.tableList) {
+            accessesData = [
+              ...accessesData,
+              ...key.accesses.tableList[data].permission
+            ];
+          }
+          obj.accesses = accessesData.map((value) => ({
             type: value,
             isAllowed: true
           }));
@@ -346,13 +392,26 @@ export default function AddUpdatePolicyForm() {
           obj.dataMaskInfo.dataMaskType = key.dataMaskInfo.value;
           obj.dataMaskInfo.valueExpr = "";
         }
+
+        if (key?.conditions && isObject(key.conditions)) {
+          let condObj = {};
+          obj.conditions = Object.entries(key.conditions).map(
+            ([key, value]) => {
+              return (condObj = {
+                type: key,
+                values: value.split(",")
+              });
+            }
+          );
+        }
+
         policyResourceItem.push(obj);
       }
     }
     return policyResourceItem;
   };
 
-  const setPolicyItemVal = (formData, accessTypes, maskTypes) => {
+  const setPolicyItemVal = (formData, accessTypes, maskTypes, serviceType) => {
     return formData.map((val) => {
       let obj = {},
         accessTypesObj = [];
@@ -360,14 +419,37 @@ export default function AddUpdatePolicyForm() {
       if (val.hasOwnProperty("delegateAdmin")) {
         obj.delegateAdmin = val.delegateAdmin;
       }
-      for (let i = 0; val.accesses.length > i; i++) {
-        accessTypes.map((opt) => {
-          if (val.accesses[i].type == opt.name) {
-            accessTypesObj.push({ label: opt.label, value: opt.name });
-          }
+
+      if (serviceType == "tag") {
+        for (let i = 0; val.accesses.length > i; i++) {
+          accessTypes.map((opt) => {
+            if (val.accesses[i].type == opt.name) {
+              accessTypesObj.push(opt.name);
+            }
+          });
+        }
+        let tableList = [];
+        let tagAccessType = groupBy(accessTypesObj, function (m) {
+          let tagval = m;
+          return tagval.substr(0, tagval.indexOf(":"));
         });
+        for (let tagObjData in tagAccessType) {
+          tableList.push({
+            serviceName: tagObjData,
+            permission: tagAccessType[tagObjData]
+          });
+        }
+        obj["accesses"] = { tableList };
+      } else {
+        for (let i = 0; val.accesses.length > i; i++) {
+          accessTypes.map((opt) => {
+            if (val.accesses[i].type == opt.name) {
+              accessTypesObj.push({ label: opt.label, value: opt.name });
+            }
+          });
+        }
+        obj["accesses"] = accessTypesObj;
       }
-      obj["accesses"] = accessTypesObj;
       if (val.groups.length > 0) {
         obj.groups = val.groups.map((opt) => {
           return { label: opt, value: opt };
@@ -401,6 +483,13 @@ export default function AddUpdatePolicyForm() {
         });
         obj.dataMaskInfo.label = maskDataType.label;
         obj.dataMaskInfo.value = maskDataType.name;
+      }
+      /* Policy Condition*/
+      if (val?.conditions?.length > 0) {
+        obj.conditions = {};
+        for (let data of val.conditions) {
+          obj.conditions[data.type] = data.values.join(",");
+        }
       }
       return obj;
     });
@@ -491,6 +580,20 @@ export default function AddUpdatePolicyForm() {
         }
       });
     }
+
+    /*Policy Condition*/
+    if (values?.conditions) {
+      let condObj = {};
+      data.conditions = Object.entries(values.conditions).map(
+        ([key, value]) => {
+          return (condObj = {
+            type: key,
+            values: value.split(",")
+          });
+        }
+      );
+    }
+
     if (policyId) {
       let dataVal = {
         ...policyData,
@@ -523,8 +626,6 @@ export default function AddUpdatePolicyForm() {
       }
     }
   };
-
-  // const required = (value) => (value ? undefined : "Required");
 
   const closeForm = () => {
     let polType = policyId ? policyData.policyType : policyType;
@@ -617,200 +718,296 @@ export default function AddUpdatePolicyForm() {
                   <fieldset>
                     <p className="formHeader">Policy Details</p>
                   </fieldset>
-                  <Field
-                    className="form-control"
-                    name="policyType"
-                    render={({ input }) => (
+                  <Row>
+                    <Col md={9}>
+                      <Field
+                        className="form-control"
+                        name="policyType"
+                        render={({ input }) => (
+                          <FormB.Group className="mb-3" controlId="policyType">
+                            <FormB.Label column sm={2}>
+                              Policy Type
+                            </FormB.Label>
+                            <h6 className="d-inline mr-1">
+                              <Badge variant="primary">
+                                {
+                                  getEnumElementByValue(
+                                    RangerPolicyType,
+                                    +input.value
+                                  ).label
+                                }
+                              </Badge>
+                            </h6>
+                          </FormB.Group>
+                        )}
+                      />
+                      {policyId && (
+                        <FormB.Group className="mb-3" controlId="policyId">
+                          <FormB.Label column sm={2}>
+                            Policy ID*
+                          </FormB.Label>
+                          <h6 className="d-inline mr-1">
+                            <Badge variant="primary">{policyData.id}</Badge>
+                          </h6>
+                        </FormB.Group>
+                      )}
                       <FormB.Group
                         as={Row}
                         className="mb-3"
-                        controlId="policyType"
+                        controlId="policyNames"
                       >
-                        <FormB.Label column sm={2}>
-                          Policy Type
-                        </FormB.Label>
-                        <Col sm={4}>
-                          <Badge variant="primary">
-                            {
-                              getEnumElementByValue(
-                                RangerPolicyType,
-                                +input.value
-                              ).label
-                            }
-                          </Badge>
-                        </Col>
-                        <Col sm={6}>
-                          <PolicyValidityPeriodComp
-                            addPolicyItem={addPolicyItem}
-                          />
+                        <Field
+                          className="form-control"
+                          name="policyName"
+                          // validate={required}
+                          render={({ input, meta }) => (
+                            <>
+                              <FormB.Label column sm={2}>
+                                Policy Name*
+                              </FormB.Label>
+                              <>
+                                <Col sm={5}>
+                                  <FormB.Control
+                                    {...input}
+                                    placeholder="Policy Name"
+                                    className={
+                                      meta.error && meta.touched
+                                        ? "form-control border border-danger"
+                                        : "form-control"
+                                    }
+                                  />
+                                  {meta.touched && meta.error && (
+                                    <span className="invalid-field">
+                                      {meta.error.text}
+                                    </span>
+                                  )}
+                                </Col>
+                              </>
+                            </>
+                          )}
+                        />
+                        <Col sm={5}>
+                          <Row>
+                            <Col sm={4}>
+                              <Field
+                                className="form-control"
+                                name="isEnabled"
+                                render={({ input }) => (
+                                  <BootstrapSwitchButton
+                                    {...input}
+                                    checked={!(input.value === false)}
+                                    onlabel="Enabled"
+                                    onstyle="primary"
+                                    offlabel="Disabled"
+                                    offstyle="outline-secondary"
+                                    style="w-100"
+                                    size="xs"
+                                    key="isEnabled"
+                                  />
+                                )}
+                              />
+                            </Col>
+                            <Col sm={4}>
+                              <Field
+                                className="form-control"
+                                name="policyPriority"
+                                render={({ input }) => (
+                                  <BootstrapSwitchButton
+                                    {...input}
+                                    checked={input.value}
+                                    onlabel="Override"
+                                    onstyle="primary"
+                                    offlabel="Normal"
+                                    offstyle="outline-secondary"
+                                    style="w-100"
+                                    size="xs"
+                                    key="policyPriority"
+                                  />
+                                )}
+                              />
+                            </Col>
+                          </Row>
                         </Col>
                       </FormB.Group>
-                    )}
-                  />
-                  {policyId && (
-                    <FormB.Group as={Row} className="mb-3" controlId="policyId">
-                      <FormB.Label column sm={2}>
-                        Policy ID*
-                      </FormB.Label>
-                      <Col sm={4}>
-                        <Badge variant="primary">{policyData.id}</Badge>
-                      </Col>
-                    </FormB.Group>
-                  )}
-                  <FormB.Group
-                    as={Row}
-                    className="mb-3"
-                    controlId="policyNames"
-                  >
-                    <Field
-                      className="form-control"
-                      name="policyName"
-                      // validate={required}
-                      render={({ input, meta }) => (
-                        <>
-                          <FormB.Label column sm={2}>
-                            Policy Name*
-                          </FormB.Label>
-                          <>
-                            <Col sm={4}>
+                      <Field
+                        className="form-control"
+                        name="policyLabel"
+                        render={({ input }) => (
+                          <FormB.Group
+                            as={Row}
+                            className="mb-3"
+                            controlId="policyLabel"
+                          >
+                            <FormB.Label column sm={2}>
+                              Policy Label
+                            </FormB.Label>
+                            <Col sm={5}>
+                              <AsyncCreatableSelect
+                                {...input}
+                                defaultOptions
+                                isMulti
+                                loadOptions={fetchPolicyLabel}
+                              />
+                            </Col>
+                          </FormB.Group>
+                        )}
+                      />
+                      <ResourceComp
+                        serviceDetails={serviceDetails}
+                        serviceCompDetails={serviceCompDetails}
+                        formValues={values}
+                        policyType={
+                          policyId ? policyData.policyType : policyType
+                        }
+                        policyItem={true}
+                      />
+                      <Field
+                        className="form-control"
+                        name="description"
+                        render={({ input }) => (
+                          <FormB.Group
+                            as={Row}
+                            className="mb-3"
+                            controlId="description"
+                          >
+                            <FormB.Label column sm={2}>
+                              Description
+                            </FormB.Label>
+                            <Col sm={5}>
                               <FormB.Control
                                 {...input}
-                                placeholder="Policy Name"
-                                className={
-                                  meta.error && meta.touched
-                                    ? "form-control border border-danger"
-                                    : "form-control"
-                                }
+                                as="textarea"
+                                rows={3}
                               />
-                              {meta.touched && meta.error && (
-                                <span className="invalid-field">
-                                  {meta.error.text}
-                                </span>
-                              )}
                             </Col>
-                          </>
-                        </>
-                      )}
-                    />
-                    <Col sm={4}>
-                      <Row>
-                        <Col sm={4}>
-                          <Field
-                            className="form-control"
-                            name="isEnabled"
-                            render={({ input }) => (
+                          </FormB.Group>
+                        )}
+                      />
+                      <Field
+                        className="form-control"
+                        name="isAuditEnabled"
+                        render={({ input }) => (
+                          <FormB.Group
+                            as={Row}
+                            className="mb-3"
+                            controlId="description"
+                          >
+                            <FormB.Label column sm={2}>
+                              Audit Logging*
+                            </FormB.Label>
+                            <Col sm={4}>
                               <BootstrapSwitchButton
                                 {...input}
                                 checked={!(input.value === false)}
-                                onlabel="Enabled"
+                                onlabel="Yes"
                                 onstyle="primary"
-                                offlabel="Disabled"
+                                offlabel="No"
                                 offstyle="outline-secondary"
-                                style="w-100"
                                 size="xs"
-                                key="isEnabled"
+                                key="isAuditEnabled"
                               />
-                            )}
-                          />
-                        </Col>
-                        <Col sm={4}>
-                          <Field
-                            className="form-control"
-                            name="policyPriority"
-                            render={({ input }) => (
-                              <BootstrapSwitchButton
-                                {...input}
-                                checked={input.value}
-                                onlabel="Override"
-                                onstyle="primary"
-                                offlabel="Normal"
-                                offstyle="outline-secondary"
-                                style="w-100"
-                                size="xs"
-                                key="policyPriority"
-                              />
-                            )}
-                          />
-                        </Col>
-                      </Row>
+                            </Col>
+                          </FormB.Group>
+                        )}
+                      />
                     </Col>
-                  </FormB.Group>
-                  <Field
-                    className="form-control"
-                    name="policyLabel"
-                    render={({ input }) => (
-                      <FormB.Group
-                        as={Row}
-                        className="mb-3"
-                        controlId="policyLabel"
-                      >
-                        <FormB.Label column sm={2}>
-                          Policy Label
-                        </FormB.Label>
-                        <Col sm={4}>
-                          <AsyncCreatableSelect
-                            {...input}
-                            defaultOptions
-                            isMulti
-                            loadOptions={fetchPolicyLabel}
-                          />
-                        </Col>
-                      </FormB.Group>
-                    )}
-                  />
-                  <ResourceComp
-                    serviceDetails={serviceDetails}
-                    serviceCompDetails={serviceCompDetails}
-                    formValues={values}
-                    policyType={policyId ? policyData.policyType : policyType}
-                    policyItem={true}
-                  />
-                  <Field
-                    className="form-control"
-                    name="description"
-                    render={({ input }) => (
-                      <FormB.Group
-                        as={Row}
-                        className="mb-3"
-                        controlId="description"
-                      >
-                        <FormB.Label column sm={2}>
-                          Description
-                        </FormB.Label>
-                        <Col sm={4}>
-                          <FormB.Control {...input} as="textarea" rows={3} />
-                        </Col>
-                      </FormB.Group>
-                    )}
-                  />
-                  <Field
-                    className="form-control"
-                    name="isAuditEnabled"
-                    render={({ input }) => (
-                      <FormB.Group
-                        as={Row}
-                        className="mb-3"
-                        controlId="description"
-                      >
-                        <FormB.Label column sm={2}>
-                          Audit Logging*
-                        </FormB.Label>
-                        <Col sm={4}>
-                          <BootstrapSwitchButton
-                            {...input}
-                            checked={!(input.value === false)}
-                            onlabel="Yes"
-                            onstyle="primary"
-                            offlabel="No"
-                            offstyle="outline-secondary"
-                            size="xs"
-                            key="isAuditEnabled"
-                          />
-                        </Col>
-                      </FormB.Group>
-                    )}
-                  />
-                  {/* {conditio == 0 ? <div></div> : condgiotn === 1 ? <div></div> : null : null } */}
+                    {/* -------------------------------------------------------------- */}
+                    <Col md={3}>
+                      <div className="mb-3">
+                        <PolicyValidityPeriodComp
+                          addPolicyItem={addPolicyItem}
+                        />
+                      </div>
+                      <br />
+                      {serviceCompDetails?.policyConditions?.length > 0 && (
+                        <div className="table-responsive">
+                          <table className="table table-bordered condition-group-table">
+                            <thead>
+                              <tr>
+                                <th colSpan="2">
+                                  Policy Conditions ;
+                                  {showModal && (
+                                    <Field
+                                      className="form-control"
+                                      name="conditions"
+                                      render={({ input }) => (
+                                        <PolicyConditionsComp
+                                          policyConditionDetails={
+                                            serviceCompDetails.policyConditions
+                                          }
+                                          inputVal={input}
+                                          showModal={showModal}
+                                          handleCloseModal={
+                                            policyConditionState
+                                          }
+                                        />
+                                      )}
+                                    />
+                                  )}
+                                  <Button
+                                    className="pull-right"
+                                    onClick={() => {
+                                      policyConditionState(true);
+                                    }}
+                                  >
+                                    +
+                                  </Button>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody data-id="conditionData">
+                              <>
+                                {values?.conditions &&
+                                !isEmpty(values.conditions) ? (
+                                  Object.keys(values.conditions).map(
+                                    (keyName, keyIndex) => {
+                                      return (
+                                        <tr>
+                                          <>
+                                            <td>
+                                              <center> {keyName} </center>
+                                            </td>
+                                            <td>
+                                              {isObject(
+                                                values.conditions[keyName]
+                                              ) ? (
+                                                <center>
+                                                  {values.conditions[keyName]
+                                                    .length > 1
+                                                    ? values.conditions[
+                                                        keyName
+                                                      ].map((m) => {
+                                                        return ` ${m.label} `;
+                                                      })
+                                                    : values.conditions[keyName]
+                                                        .label}
+                                                </center>
+                                              ) : (
+                                                <center>
+                                                  {values.conditions[keyName]}
+                                                </center>
+                                              )}
+                                            </td>
+                                          </>
+                                        </tr>
+                                      );
+                                    }
+                                  )
+                                ) : (
+                                  <tr>
+                                    <td>
+                                      <center> No Conditions </center>
+                                    </td>
+                                  </tr>
+                                )}
+                              </>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </Col>
+                  </Row>
+                  {/* ------------------------------------------------- */}
                   {values.policyType == 0 ? (
                     <div>
                       <div>

@@ -466,7 +466,7 @@ function Access() {
                   pathname: `/reports/audit/eventlog/${rowdata.eventId}`
                 }}
               >
-                <i class="fa-fw fa fa-external-link pull-right text-info"></i>
+                <i className="fa-fw fa fa-external-link pull-right text-info"></i>
               </Link>
             </h4>
           </Modal.Title>

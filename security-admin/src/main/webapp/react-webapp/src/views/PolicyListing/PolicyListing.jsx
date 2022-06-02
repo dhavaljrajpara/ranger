@@ -369,6 +369,7 @@ function PolicyListing() {
           <Col sm={12}>
             <div className="pull-right mb-1">
               <Link
+                role="button"
                 to={`/service/${serviceId}/policies/create/${policyType}`}
                 className="btn btn-sm btn-primary mb-2"
               >

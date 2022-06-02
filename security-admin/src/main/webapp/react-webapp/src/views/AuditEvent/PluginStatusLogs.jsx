@@ -63,18 +63,18 @@ function Plugin_Status() {
   const contents = (val) => {
     return (
       <>
-        <ul class="list-inline">
-          <li class="list-inline-item">
+        <ul className="list-inline">
+          <li className="list-inline-item">
             <strong>Last Update: </strong> Last updated time of{" "}
             {val == "Tag" ? "Tag-service" : "policy"}.
           </li>
-          <li class="list-inline-item">
+          <li className="list-inline-item">
             <strong>Download: </strong>
             {val == "Tag"
               ? "Time when tag-based policies sync-up with Ranger."
               : "Time when policy actually downloaded(sync-up with Ranger)."}
           </li>
-          <li class="list-inline-item">
+          <li className="list-inline-item">
             <strong>Active: </strong> Time when{" "}
             {val == "Tag" ? "tag-based" : "policy"} actually in use for
             enforcement.
