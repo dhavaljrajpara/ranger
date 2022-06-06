@@ -19,6 +19,7 @@ import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
 import { useQuery } from "../../components/CommonComponents";
 import SearchPolicyTable from "./SearchPolicyTable";
+import { commonBreadcrumb } from "../../utils/XAUtils";
 
 function UserAccessLayout(props) {
   const [show, setShow] = useState(true);
@@ -383,6 +384,7 @@ function UserAccessLayout(props) {
 
   return (
     <React.Fragment>
+      {commonBreadcrumb(["UserAccessReport"])}
       <div className="clearfix">
         <h4 className="wrap-header bold">Reports</h4>
       </div>

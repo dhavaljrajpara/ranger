@@ -990,3 +990,8 @@ header {
 .not-allowed {
   cursor: not-allowed !important;
 }
+
+.top-scroll {
+  bottom: 3px;
+  right: 5px;
+}

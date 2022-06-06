@@ -3,6 +3,7 @@ import { Button, Nav, Tab } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import { getUserProfile, setUserProfile } from "Utils/appState";
+import { commonBreadcrumb } from "../utils/XAUtils";
 
 class UserProfile extends Component {
   updateUserInfo = async (values) => {
@@ -84,6 +85,7 @@ class UserProfile extends Component {
     const userProps = getUserProfile();
     return (
       <div>
+        {commonBreadcrumb(["UserProfile"])}
         <h4 className="wrap-header bold">User Profile</h4>
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">

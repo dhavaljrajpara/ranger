@@ -3,7 +3,7 @@ import { Router, Route, Switch, Redirect } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ErrorBoundary from "Views/ErrorBoundary";
 import ErrorPage from "./views/ErrorPage";
-import { Loader } from "../src/components/CommonComponents";
+import { CommonScrollButton, Loader } from "../src/components/CommonComponents";
 import history from "Utils/history";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
@@ -379,6 +379,7 @@ export default class App extends Component {
           </Suspense>
         </Router>
         <ToastContainer />
+        <CommonScrollButton />
       </ErrorBoundary>
     );
   }

@@ -5,10 +5,11 @@ import {
   Badge,
   Popover,
   OverlayTrigger,
-  Tooltip
+  Tooltip,
+  Button
 } from "react-bootstrap";
 import { Field } from "react-final-form";
-import { isEmpty, isUndefined } from "lodash";
+import { isEmpty } from "lodash";
 
 const Loader = () => {
   return (
@@ -338,6 +339,42 @@ export const CustomTooltip = ({ placement, content, icon }) => (
 export const useQuery = () => {
   const { search } = useLocation();
   return useMemo(() => new URLSearchParams(search), [search]);
+};
+
+export const CommonScrollButton = () => {
+  const [visible, setVisible] = useState(false);
+
+  const toggleVisible = () => {
+    const scrolled = document.documentElement.scrollTop;
+    if (scrolled > 100) {
+      setVisible(true);
+    } else if (scrolled <= 300) {
+      setVisible(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  };
+
+  window.addEventListener("scroll", toggleVisible);
+
+  return (
+    <Button
+      title="Scroll to top"
+      size="sm"
+      variant="outline-secondary"
+      className={`top-scroll position-fixed ${visible ? "d-inline" : "d-none"}`}
+      onClick={() => {
+        scrollToTop();
+      }}
+    >
+      <i className="fa fa-arrow-up" />
+    </Button>
+  );
 };
 
 export { Loader };

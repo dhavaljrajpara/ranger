@@ -859,6 +859,7 @@ var links = {
         : "Service Manager"
     };
   },
+
   ServiceCreate: {
     href: "#",
     text: "Create Service"
@@ -923,7 +924,10 @@ var links = {
       text: `Key Create`
     };
   },
-
+  UserProfile: {
+    href: "#",
+    text: "User Profile"
+  },
   UserCreate: {
     href: "#",
     text: "User Create"
@@ -971,6 +975,10 @@ var links = {
       href: `#/permissions/${permissionData.id}/edit`,
       text: permissionData.module
     };
+  },
+  UserAccessReport: {
+    href: "#",
+    text: "User Access Report"
   }
 };
 
