@@ -13,6 +13,8 @@ import { commonBreadcrumb } from "../../utils/XAUtils";
 import { Condition, CustomPopover } from "../../components/CommonComponents";
 import {
   difference,
+  flatMap,
+  groupBy,
   keys,
   map,
   find,
@@ -21,6 +23,7 @@ import {
   isEmpty,
   isUndefined,
   has,
+  split,
   without
 } from "lodash";
 
@@ -208,7 +211,11 @@ class ServiceForm extends Component {
           }
 
           if (key === "accessTypes") {
-            obj.accessTypes = map(value, "value");
+            if (serviceDef.name == "tag") {
+              obj.accessTypes = flatMap(map(value.tableList, "permission"));
+            } else {
+              obj.accessTypes = map(value, "value");
+            }
           }
 
           if (key === "users") {
@@ -490,13 +497,28 @@ class ServiceForm extends Component {
         }
 
         if (key === "accessTypes") {
-          obj.accessTypes = value.map((accessType) => {
-            let accessTypeObj = find(serviceDef.accessTypes, [
-              "name",
-              accessType
-            ]);
-            return { value: accessType, label: accessTypeObj.label };
-          });
+          if (serviceDef.name == "tag") {
+            let accessTypes = groupBy(value, function (obj) {
+              return split(obj, ":", 1);
+            });
+            let accessTypeObj = {};
+            accessTypeObj["tableList"] = [];
+            Object.entries(accessTypes).map(([key, values]) =>
+              accessTypeObj["tableList"].push({
+                serviceName: key,
+                permission: values
+              })
+            );
+            obj.accessTypes = accessTypeObj;
+          } else {
+            obj.accessTypes = value.map((accessType) => {
+              let accessTypeObj = find(serviceDef.accessTypes, [
+                "name",
+                accessType
+              ]);
+              return { value: accessType, label: accessTypeObj.label };
+            });
+          }
         }
 
         if (key === "users") {

@@ -207,7 +207,7 @@ class ServiceDefinition extends Component {
               : "--"}
           </td>
           <td>
-            {a.accessTypes !== undefined
+            {a.accessTypes !== undefined && a.accessTypes.length > 0
               ? a.accessTypes.map((accessType) => (
                   <h6 key={accessType}>
                     <Badge variant="primary">{accessType}</Badge>

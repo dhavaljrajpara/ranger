@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Badge, Button, Table } from "react-bootstrap";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
@@ -7,7 +7,8 @@ import AsyncSelect from "react-select/async";
 import Editable from "Components/Editable";
 import CreatableField from "Components/CreatableField";
 import ModalResourceComp from "../Resources/ModalResourceComp";
-import { uniq, map, join, isEmpty, find } from "lodash";
+import { uniq, map, join, isEmpty, find, toUpper } from "lodash";
+import TagBasePermissionItem from "../PolicyListing/TagBasePermissionItem";
 
 export default function ServiceAuditFilter(props) {
   const {
@@ -143,6 +144,16 @@ export default function ServiceAuditFilter(props) {
       label,
       value
     }));
+  };
+
+  const getTagAccessType = (value) => {
+    return value.map((obj, index) => {
+      return (
+        <h6 className="d-inline mr-1" key={index}>
+          <Badge variant="info">{toUpper(obj.serviceName)}</Badge>
+        </h6>
+      );
+    });
   };
 
   const permList = [
@@ -286,26 +297,59 @@ export default function ServiceAuditFilter(props) {
                       );
                     }
                     if (colName == "Permissions") {
-                      return (
-                        <td key={`${name}.accessTypes`} style={{ width: 120 }}>
-                          <Field
-                            className="form-control"
-                            name={`${name}.accessTypes`}
-                            render={({ input, meta }) => (
-                              <div>
-                                <Editable
-                                  {...input}
-                                  placement="right"
-                                  type="checkbox"
-                                  options={getAccessTypeOptions()}
-                                  showSelectAll={true}
-                                  selectAllLabel="Select All"
-                                />
-                              </div>
-                            )}
-                          />
-                        </td>
-                      );
+                      if (serviceDefDetails.name == "tag") {
+                        return (
+                          <td
+                            key={`${name}.accessTypes`}
+                            style={{ width: 120 }}
+                          >
+                            <Field
+                              className="form-control"
+                              name={`${name}.accessTypes`}
+                              render={({ input }) => (
+                                <React.Fragment>
+                                  <div className="table-editable">
+                                    <TagBasePermissionItem
+                                      options={getAccessTypeOptions()}
+                                      inputVal={input}
+                                    />
+                                  </div>
+                                  <div>
+                                    {input.value.tableList !== undefined &&
+                                    input.value.tableList.length > 0
+                                      ? getTagAccessType(input.value.tableList)
+                                      : "----"}
+                                  </div>
+                                </React.Fragment>
+                              )}
+                            />
+                          </td>
+                        );
+                      } else {
+                        return (
+                          <td
+                            key={`${name}.accessTypes`}
+                            style={{ width: 120 }}
+                          >
+                            <Field
+                              className="form-control"
+                              name={`${name}.accessTypes`}
+                              render={({ input }) => (
+                                <div>
+                                  <Editable
+                                    {...input}
+                                    placement="right"
+                                    type="checkbox"
+                                    options={getAccessTypeOptions()}
+                                    showSelectAll={true}
+                                    selectAllLabel="Select All"
+                                  />
+                                </div>
+                              )}
+                            />
+                          </td>
+                        );
+                      }
                     }
                     if (colName == "Roles") {
                       return (
@@ -416,7 +460,7 @@ export default function ServiceAuditFilter(props) {
 
       <ModalResourceComp
         serviceDetails={serviceDetails}
-        serviceCompDetails={serviceDefDetails}
+        serviceDefDetails={serviceDefDetails}
         cancelButtonText="Cancel"
         actionButtonText="Submit"
         handleSave={handleSave}
