@@ -1,5 +1,21 @@
-import React, { useEffect, useReducer, useRef, useState } from "react";
-import { Form as FormB, Row, Col, Button, Badge, Modal } from "react-bootstrap";
+import React, {
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  useContext
+} from "react";
+import {
+  Form as FormB,
+  Row,
+  Col,
+  Button,
+  Badge,
+  Modal,
+  Accordion,
+  Card,
+  Link
+} from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
@@ -26,6 +42,8 @@ import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import { useAccordionToggle } from "react-bootstrap/AccordionToggle";
+import AccordionContext from "react-bootstrap/AccordionContext";
 
 const noneOptions = {
   label: "None",
@@ -355,13 +373,12 @@ export default function AddUpdatePolicyForm() {
         if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
           obj.delegateAdmin = key.delegateAdmin;
         }
-        if (key?.accesses && !isObject(key.accesses)) {
+        if (key?.accesses && serviceCompDetails.name !== "tag") {
           obj.accesses = key.accesses.map(({ value }) => ({
             type: value,
             isAllowed: true
           }));
-        }
-        if (key?.accesses && isObject(key.accesses)) {
+        } else if (key?.accesses && serviceCompDetails.name == "tag") {
           let accessesData = [];
           for (let data in key.accesses.tableList) {
             accessesData = [
@@ -390,7 +407,9 @@ export default function AddUpdatePolicyForm() {
         if (key.dataMaskInfo != "undefined" && key.dataMaskInfo != null) {
           obj.dataMaskInfo = {};
           obj.dataMaskInfo.dataMaskType = key.dataMaskInfo.value;
-          obj.dataMaskInfo.valueExpr = "";
+          if (key?.dataMaskInfo?.valueExpr) {
+            obj.dataMaskInfo.valueExpr = key.dataMaskInfo.valueExpr;
+          }
         }
 
         if (key?.conditions && isObject(key.conditions)) {
@@ -483,6 +502,9 @@ export default function AddUpdatePolicyForm() {
         });
         obj.dataMaskInfo.label = maskDataType.label;
         obj.dataMaskInfo.value = maskDataType.name;
+        if (val?.dataMaskInfo?.valueExpr) {
+          obj.dataMaskInfo.valueExpr = val.dataMaskInfo.valueExpr;
+        }
       }
       /* Policy Condition*/
       if (val?.conditions?.length > 0) {
@@ -681,6 +703,31 @@ export default function AddUpdatePolicyForm() {
       }
     }
   };
+
+  const CustomToggle = ({ children, eventKey, callback }) => {
+    const currentEventKey = useContext(AccordionContext);
+
+    const decoratedOnClick = useAccordionToggle(
+      eventKey,
+      () => callback && callback(eventKey)
+    );
+    const isCurrentEventKey = currentEventKey === eventKey;
+
+    return (
+      <a className="pull-right" role="button" onClick={decoratedOnClick}>
+        {!isCurrentEventKey ? (
+          <span className="wrap-expand">
+            show <i className="fa-fw fa fa-caret-down"></i>
+          </span>
+        ) : (
+          <span className="wrap-collapse">
+            hide <i className="fa-fw fa fa-caret-up"></i>
+          </span>
+        )}
+      </a>
+    );
+  };
+
   return (
     <>
       {loader ? (
@@ -1011,38 +1058,47 @@ export default function AddUpdatePolicyForm() {
                   {values.policyType == 0 ? (
                     <div>
                       <div>
-                        <fieldset>
-                          <p className="formHeader">Allow Conditions:</p>
-                        </fieldset>
-                        <div className="wrap">
-                          <PolicyPermissionItem
-                            serviceDetails={serviceDetails}
-                            serviceCompDetails={serviceCompDetails}
-                            formValues={values}
-                            addPolicyItem={addPolicyItem}
-                            attrName="policyItems"
-                            fetchUsersData={fetchUsersData}
-                            fetchGroupsData={fetchGroupsData}
-                            fetchRolesData={fetchRolesData}
-                          />
-                        </div>
-                        <fieldset>
-                          <p className="formHeader">
-                            Exclude from Allow Conditions:
-                          </p>
-                        </fieldset>
-                        <div className="wrap">
-                          <PolicyPermissionItem
-                            serviceDetails={serviceDetails}
-                            serviceCompDetails={serviceCompDetails}
-                            formValues={values}
-                            addPolicyItem={addPolicyItem}
-                            attrName="allowExceptions"
-                            fetchUsersData={fetchUsersData}
-                            fetchGroupsData={fetchGroupsData}
-                            fetchRolesData={fetchRolesData}
-                          />
-                        </div>
+                        <Accordion defaultActiveKey="0">
+                          <Card>
+                            <p className="wrap-header search-header">
+                              Allow Conditions:{" "}
+                              <CustomToggle eventKey="0"></CustomToggle>
+                            </p>
+                            <Accordion.Collapse eventKey="0">
+                              <Card.Body>
+                                <div className="wrap">
+                                  <PolicyPermissionItem
+                                    serviceDetails={serviceDetails}
+                                    serviceCompDetails={serviceCompDetails}
+                                    formValues={values}
+                                    addPolicyItem={addPolicyItem}
+                                    attrName="policyItems"
+                                    fetchUsersData={fetchUsersData}
+                                    fetchGroupsData={fetchGroupsData}
+                                    fetchRolesData={fetchRolesData}
+                                  />
+                                </div>
+                                <fieldset>
+                                  <p className="formHeader">
+                                    Exclude from Allow Conditions:
+                                  </p>
+                                </fieldset>
+                                <div className="wrap">
+                                  <PolicyPermissionItem
+                                    serviceDetails={serviceDetails}
+                                    serviceCompDetails={serviceCompDetails}
+                                    formValues={values}
+                                    addPolicyItem={addPolicyItem}
+                                    attrName="allowExceptions"
+                                    fetchUsersData={fetchUsersData}
+                                    fetchGroupsData={fetchGroupsData}
+                                    fetchRolesData={fetchRolesData}
+                                  />
+                                </div>
+                              </Card.Body>
+                            </Accordion.Collapse>
+                          </Card>
+                        </Accordion>
                       </div>
                       <Field
                         className="form-control"
@@ -1074,77 +1130,104 @@ export default function AddUpdatePolicyForm() {
                       />
                       <Condition when="isDenyAllElse" is={false}>
                         <div>
-                          <fieldset>
-                            <p className="formHeader">Deny Conditions:</p>
-                          </fieldset>
-                          <div className="wrap">
-                            <PolicyPermissionItem
-                              serviceDetails={serviceDetails}
-                              serviceCompDetails={serviceCompDetails}
-                              formValues={values}
-                              addPolicyItem={addPolicyItem}
-                              attrName="denyPolicyItems"
-                              fetchUsersData={fetchUsersData}
-                              fetchGroupsData={fetchGroupsData}
-                              fetchRolesData={fetchRolesData}
-                            />
-                          </div>
-                          <fieldset>
-                            <p className="formHeader">
-                              Exclude from Allow Conditions:
-                            </p>
-                          </fieldset>
-                          <div className="wrap">
-                            <PolicyPermissionItem
-                              serviceDetails={serviceDetails}
-                              serviceCompDetails={serviceCompDetails}
-                              formValues={values}
-                              addPolicyItem={addPolicyItem}
-                              attrName="denyExceptions"
-                              fetchUsersData={fetchUsersData}
-                              fetchGroupsData={fetchGroupsData}
-                              fetchRolesData={fetchRolesData}
-                            />
-                          </div>
+                          <Accordion defaultActiveKey="0">
+                            <Card>
+                              <p className="wrap-header search-header">
+                                Deny Conditions:
+                                <CustomToggle eventKey="0"></CustomToggle>
+                              </p>
+                              <Accordion.Collapse eventKey="0">
+                                <Card.Body>
+                                  <div className="wrap">
+                                    <PolicyPermissionItem
+                                      serviceDetails={serviceDetails}
+                                      serviceCompDetails={serviceCompDetails}
+                                      formValues={values}
+                                      addPolicyItem={addPolicyItem}
+                                      attrName="denyPolicyItems"
+                                      fetchUsersData={fetchUsersData}
+                                      fetchGroupsData={fetchGroupsData}
+                                      fetchRolesData={fetchRolesData}
+                                    />
+                                  </div>
+                                  <fieldset>
+                                    <p className="formHeader">
+                                      Exclude from Deny Conditions:
+                                    </p>
+                                  </fieldset>
+                                  <div className="wrap">
+                                    <PolicyPermissionItem
+                                      serviceDetails={serviceDetails}
+                                      serviceCompDetails={serviceCompDetails}
+                                      formValues={values}
+                                      addPolicyItem={addPolicyItem}
+                                      attrName="denyExceptions"
+                                      fetchUsersData={fetchUsersData}
+                                      fetchGroupsData={fetchGroupsData}
+                                      fetchRolesData={fetchRolesData}
+                                    />
+                                  </div>
+                                </Card.Body>
+                              </Accordion.Collapse>
+                            </Card>
+                          </Accordion>
                         </div>
                       </Condition>
                     </div>
                   ) : values.policyType == 1 ? (
                     <div>
-                      <fieldset>
-                        <p className="formHeader">Mask Conditions:</p>
-                      </fieldset>
-                      <div className="wrap">
-                        <PolicyPermissionItem
-                          serviceDetails={serviceDetails}
-                          serviceCompDetails={serviceCompDetails}
-                          formValues={values}
-                          addPolicyItem={addPolicyItem}
-                          attrName="dataMaskPolicyItems"
-                          fetchUsersData={fetchUsersData}
-                          fetchGroupsData={fetchGroupsData}
-                          fetchRolesData={fetchRolesData}
-                        />
-                      </div>
+                      <Accordion defaultActiveKey="0">
+                        <Card>
+                          <p className="wrap-header search-header">
+                            Mask Conditions:
+                            <CustomToggle eventKey="0"></CustomToggle>
+                          </p>
+                          <Accordion.Collapse eventKey="0">
+                            <Card.Body>
+                              <div className="wrap">
+                                <PolicyPermissionItem
+                                  serviceDetails={serviceDetails}
+                                  serviceCompDetails={serviceCompDetails}
+                                  formValues={values}
+                                  addPolicyItem={addPolicyItem}
+                                  attrName="dataMaskPolicyItems"
+                                  fetchUsersData={fetchUsersData}
+                                  fetchGroupsData={fetchGroupsData}
+                                  fetchRolesData={fetchRolesData}
+                                />
+                              </div>
+                            </Card.Body>
+                          </Accordion.Collapse>
+                        </Card>
+                      </Accordion>
                     </div>
                   ) : (
                     <div>
                       <div>
-                        <fieldset>
-                          <p className="formHeader">Row Filter Conditions:</p>
-                        </fieldset>
-                        <div className="wrap">
-                          <PolicyPermissionItem
-                            serviceDetails={serviceDetails}
-                            serviceCompDetails={serviceCompDetails}
-                            formValues={values}
-                            addPolicyItem={addPolicyItem}
-                            attrName="rowFilterPolicyItems"
-                            fetchUsersData={fetchUsersData}
-                            fetchGroupsData={fetchGroupsData}
-                            fetchRolesData={fetchRolesData}
-                          />
-                        </div>
+                        <Accordion defaultActiveKey="0">
+                          <Card>
+                            <p className="wrap-header search-header">
+                              Row Filter Conditions:
+                              <CustomToggle eventKey="0"></CustomToggle>
+                            </p>
+                            <Accordion.Collapse eventKey="0">
+                              <Card.Body>
+                                <div className="wrap">
+                                  <PolicyPermissionItem
+                                    serviceDetails={serviceDetails}
+                                    serviceCompDetails={serviceCompDetails}
+                                    formValues={values}
+                                    addPolicyItem={addPolicyItem}
+                                    attrName="rowFilterPolicyItems"
+                                    fetchUsersData={fetchUsersData}
+                                    fetchGroupsData={fetchGroupsData}
+                                    fetchRolesData={fetchRolesData}
+                                  />
+                                </div>
+                              </Card.Body>
+                            </Accordion.Collapse>
+                          </Card>
+                        </Accordion>
                       </div>
                     </div>
                   )}

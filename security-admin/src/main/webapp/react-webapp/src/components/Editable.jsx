@@ -160,7 +160,7 @@ const CustomCondition = (props) => {
   const [selectedJSCondVal, setJSCondVal] = useState(
     value?.expression || value
   );
-  const xyz = (val, key) => {
+  const tagAccessData = (val, key) => {
     if (!isObject(valRef.current)) {
       valRef.current = {};
     }
@@ -168,11 +168,11 @@ const CustomCondition = (props) => {
   };
   const selectHandleChange = (e, name) => {
     setCondSelect(e);
-    xyz(e?.value || null, name);
+    tagAccessData(e?.value || null, name);
   };
   const textAreaHandleChange = (e, name) => {
     setJSCondVal(e.target.value);
-    xyz(e.target.value, name);
+    tagAccessData(e.target.value, name);
   };
   const accessedVal = (val) => {
     let value = null;
@@ -200,7 +200,11 @@ const CustomCondition = (props) => {
                   options={accessedOpt}
                   isClearable
                   onChange={(e) => selectHandleChange(e, m.name)}
-                  value={accessedVal(value?.["accessed-after-expiry"])}
+                  value={
+                    value
+                      ? accessedVal(value?.["accessed-after-expiry"])
+                      : accessedVal(valRef?.current?.["accessed-after-expiry"])
+                  }
                 />
               </Form.Group>
             );

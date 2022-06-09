@@ -215,8 +215,8 @@ export default function TagBasePermissionItem(props) {
                                   <div>
                                     {tagServicePerms[
                                       fields.value[index].serviceName
-                                    ].map((obj) => (
-                                      <h6 className="d-inline">
+                                    ].map((obj, index) => (
+                                      <h6 className="d-inline" key={index}>
                                         <FormB.Group
                                           className="d-inline"
                                           controlId={obj.label}

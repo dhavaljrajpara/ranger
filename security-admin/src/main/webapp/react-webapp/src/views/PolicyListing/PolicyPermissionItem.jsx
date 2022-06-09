@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Table, Button, Badge } from "react-bootstrap";
+import { Table, Button, Badge, Form } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
@@ -151,6 +151,8 @@ export default function PolicyPermissionItem(props) {
       );
     });
   };
+
+  const required = (value) => (value ? undefined : "Required");
 
   return (
     <div>
@@ -379,6 +381,29 @@ export default function PolicyPermissionItem(props) {
                                     showSelectAll={false}
                                     selectAllLabel="Select All"
                                   />
+                                  {fields?.value[index]?.dataMaskInfo?.label ==
+                                    "Custom" && (
+                                    <>
+                                      <Field
+                                        className="form-control"
+                                        name={`${name}.dataMaskInfo.valueExpr`}
+                                        validate={required}
+                                        render={({ input, meta }) => (
+                                          <>
+                                            <Form.Control
+                                              type="text"
+                                              {...input}
+                                              placeholder="Enter masked value or expression..."
+                                              // width="80%"
+                                            />
+                                            {meta.error && (
+                                              <span>{meta.error}</span>
+                                            )}
+                                          </>
+                                        )}
+                                      />
+                                    </>
+                                  )}
                                   {meta.touched && meta.error && (
                                     <span>{meta.error}</span>
                                   )}

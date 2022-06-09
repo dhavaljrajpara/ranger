@@ -5,6 +5,7 @@ import Select from "react-select";
 import { CustomTooltip } from "../../components/CommonComponents";
 import CreatableSelect from "react-select/creatable";
 import { find, omit } from "lodash";
+const esprima = require("esprima");
 
 export default function PolicyConditionsComp(props) {
   const { policyConditionDetails, inputVal, showModal, handleCloseModal } =
@@ -75,6 +76,18 @@ export default function PolicyConditionsComp(props) {
     return value;
   };
 
+  const validater = (values) => {
+    let errors = "";
+    if (values) {
+      try {
+        let t = esprima.parseScript(values);
+      } catch (e) {
+        errors = e.message;
+      }
+    }
+    return errors;
+  };
+
   return (
     <>
       <Modal
@@ -87,11 +100,6 @@ export default function PolicyConditionsComp(props) {
         <Form
           onSubmit={handleSubmit}
           initialValues={formInitialData}
-          validate={(values) => {
-            const errors = {};
-
-            return errors;
-          }}
           render={({ handleSubmit, form, submitting, pristine, values }) => (
             <form onSubmit={handleSubmit}>
               <Modal.Header closeButton>
@@ -143,15 +151,23 @@ export default function PolicyConditionsComp(props) {
                               <Col>
                                 <Field
                                   name={`conditions.${m.name}`}
-                                  render={({ input }) => (
+                                  validate={validater}
+                                  render={({ input, meta }) => (
                                     <>
                                       <FormB.Control
                                         {...input}
+                                        className={
+                                          meta.error
+                                            ? "form-control border border-danger"
+                                            : "form-control"
+                                        }
                                         as="textarea"
                                         rows={3}
                                       />
-                                      {meta.touched && meta.error && (
-                                        <span>{meta.error}</span>
+                                      {meta.error && (
+                                        <span className="invalid-field">
+                                          {meta.error}
+                                        </span>
                                       )}
                                     </>
                                   )}
