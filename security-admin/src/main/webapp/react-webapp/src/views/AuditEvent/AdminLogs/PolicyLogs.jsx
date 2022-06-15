@@ -3052,7 +3052,6 @@ export const PolicyLogs = ({ data, reportdata }) => {
                               } `}
                             </td>
                           </tr>
-                          <br />
                         </tbody>
                       ));
                     })}

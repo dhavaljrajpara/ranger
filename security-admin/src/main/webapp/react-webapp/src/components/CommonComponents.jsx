@@ -1,4 +1,4 @@
-import React, { Component, useState, useRef, useMemo } from "react";
+import React, { Component, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Alert,
@@ -375,6 +375,26 @@ export const CommonScrollButton = () => {
       <i className="fa fa-arrow-up" />
     </Button>
   );
+};
+
+export const scrollToError = (selector) => {
+  return (
+    selector &&
+    selector.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    })
+  );
+};
+
+export const selectCustomStyles = {
+  control: () => {
+    return {
+      border: "4px solid red",
+      borderRadius: "4px",
+      borderWidth: "1px"
+    };
+  }
 };
 
 export { Loader };

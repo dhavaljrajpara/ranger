@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import { Button, Nav, Tab } from "react-bootstrap";
+import { Button, Nav, Tab, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { commonBreadcrumb } from "../utils/XAUtils";
+import { scrollToError } from "../components/CommonComponents";
 
 class UserProfile extends Component {
   updateUserInfo = async (values) => {
@@ -73,7 +74,9 @@ class UserProfile extends Component {
 
   validateUserForm = (values) => {
     const errors = {};
-
+    if (!values.firstName) {
+      errors.firstName = "Required";
+    }
     if (!values.lastName) {
       errors.lastName = "Required";
     }
@@ -113,65 +116,138 @@ class UserProfile extends Component {
                       emailAddress: userProps.emailAddress,
                       userRoleList: userProps.userRoleList[0]
                     }}
-                    render={({ handleSubmit, form, submitting, values }) => (
-                      <form onSubmit={handleSubmit}>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            First Name *
-                          </label>
-                          <div className="col-sm-6">
-                            <Field
-                              name="firstName"
-                              component="input"
-                              type="text"
-                              placeholder="First Name"
-                              className="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            Last Name
-                          </label>
-                          <Field name="lastName">
-                            {({ input, meta }) => (
-                              <React.Fragment>
-                                <div className="col-sm-6">
-                                  <input
-                                    {...input}
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Last Name"
-                                  />
-                                </div>
+                    render={({
+                      handleSubmit,
+                      form,
+                      submitting,
+                      values,
+                      invalid,
+                      errors
+                    }) => (
+                      <form
+                        onSubmit={(event) => {
+                          if (invalid) {
+                            let selector =
+                              document.getElementById("isError") ||
+                              document.querySelector(
+                                `input[name=${Object.keys(errors)[0]}]`
+                              );
+                            scrollToError(selector);
+                          }
+                          handleSubmit(event);
+                        }}
+                      >
+                        <Field name="firstName">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  First Name *
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  type="text"
+                                  name="firstName"
+                                  placeholder="First Name"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "firstName"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
                                 {meta.error && meta.touched && (
-                                  <div className="col-sm-2 invalid-field">
+                                  <span className="invalid-field">
                                     {meta.error}
-                                  </div>
+                                  </span>
                                 )}
-                              </React.Fragment>
-                            )}
-                          </Field>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            Email Address
-                          </label>
-                          <div className="col-sm-6">
-                            <Field
-                              name="emailAddress"
-                              component="input"
-                              type="email"
-                              placeholder="Email Address"
-                              className="form-control"
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            Select Role *
-                          </label>
-                          <div className="col-sm-6">
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
+                        <Field name="lastName">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  Last Name
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  type="text"
+                                  name="lastName"
+                                  placeholder="Last Name"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "lastName"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
+                                {meta.error && meta.touched && (
+                                  <span className="invalid-field">
+                                    {meta.error}
+                                  </span>
+                                )}
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
+                        <Field name="emailAddress">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  Email Address
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  name="emailAddress"
+                                  type="email"
+                                  placeholder="Email Address"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "emailAddress"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
+                                {meta.error && meta.touched && (
+                                  <span className="invalid-field">
+                                    {meta.error}
+                                  </span>
+                                )}
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
+
+                        <Row className="form-group">
+                          <Col xs={3}>
+                            {" "}
+                            <label className="form-label pull-right">
+                              Select Role *
+                            </label>
+                          </Col>
+                          <Col xs={4}>
                             <Field
                               name="userRoleList"
                               component="select"
@@ -184,8 +260,8 @@ class UserProfile extends Component {
                                 Auditor
                               </option>
                             </Field>
-                          </div>
-                        </div>
+                          </Col>
+                        </Row>
 
                         <div className="row form-actions">
                           <div className="col-md-9 offset-md-3">
@@ -217,80 +293,132 @@ class UserProfile extends Component {
                   <Form
                     onSubmit={this.updatePassword}
                     validate={this.validatePasswordForm}
-                    render={({ handleSubmit, form, submitting, values }) => (
-                      <form onSubmit={handleSubmit}>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            Old Password *
-                          </label>
-                          <Field name="oldPassword">
-                            {({ input, meta }) => (
-                              <React.Fragment>
-                                <div className="col-sm-6">
-                                  <input
-                                    {...input}
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Old Password"
-                                  />
-                                </div>
+                    render={({
+                      handleSubmit,
+                      form,
+                      submitting,
+                      values,
+                      invalid,
+                      errors
+                    }) => (
+                      <form
+                        onSubmit={(event) => {
+                          if (invalid) {
+                            let selector =
+                              document.getElementById("isError") ||
+                              document.querySelector(
+                                `input[name=${Object.keys(errors)[0]}]`
+                              );
+                            scrollToError(selector);
+                          }
+                          handleSubmit(event);
+                        }}
+                      >
+                        <Field name="oldPassword">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  Old Password *
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  type="password"
+                                  autoComplete="off"
+                                  name="oldPassword"
+                                  placeholder="Old Password"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "oldPassword"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
                                 {meta.error && meta.touched && (
-                                  <div className="col-sm-2 invalid-field">
+                                  <span className="invalid-field">
                                     {meta.error}
-                                  </div>
+                                  </span>
                                 )}
-                              </React.Fragment>
-                            )}
-                          </Field>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            New Password *
-                          </label>
-                          <Field name="newPassword">
-                            {({ input, meta }) => (
-                              <React.Fragment>
-                                <div className="col-sm-6">
-                                  <input
-                                    {...input}
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="New Password"
-                                  />
-                                </div>
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
+                        <Field name="newPassword">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  New Password *
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  type="password"
+                                  autoComplete="off"
+                                  name="newPassword"
+                                  placeholder="New Password"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "newPassword"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
                                 {meta.error && meta.touched && (
-                                  <div className="col-sm-2 invalid-field">
+                                  <span className="invalid-field">
                                     {meta.error}
-                                  </div>
+                                  </span>
                                 )}
-                              </React.Fragment>
-                            )}
-                          </Field>
-                        </div>
-                        <div className="form-group row">
-                          <label className="col-sm-2 col-form-label text-right">
-                            Re-enter New Password *
-                          </label>
-                          <Field name="reEnterPassword">
-                            {({ input, meta }) => (
-                              <React.Fragment>
-                                <div className="col-sm-6">
-                                  <input
-                                    {...input}
-                                    type="password"
-                                    className="form-control"
-                                    placeholder="Re-enter New Password"
-                                  />
-                                </div>
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
+                        <Field name="reEnterPassword">
+                          {({ input, meta }) => (
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  Re-enter New Password *
+                                </label>
+                              </Col>
+                              <Col xs={4}>
+                                <input
+                                  {...input}
+                                  type="password"
+                                  autoComplete="off"
+                                  name="reEnterPassword"
+                                  placeholder="Re-enter New Password"
+                                  id={
+                                    meta.error && meta.touched
+                                      ? "isError"
+                                      : "reEnterPassword"
+                                  }
+                                  className={
+                                    meta.error && meta.touched
+                                      ? "form-control border-danger"
+                                      : "form-control"
+                                  }
+                                />
                                 {meta.error && meta.touched && (
-                                  <div className="col-sm-2 invalid-field">
+                                  <span className="invalid-field">
                                     {meta.error}
-                                  </div>
+                                  </span>
                                 )}
-                              </React.Fragment>
-                            )}
-                          </Field>
-                        </div>
+                              </Col>
+                            </Row>
+                          )}
+                        </Field>
                         <div className="row form-actions">
                           <div className="col-md-9 offset-md-3">
                             <Button

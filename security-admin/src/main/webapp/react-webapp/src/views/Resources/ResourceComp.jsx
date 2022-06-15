@@ -8,7 +8,6 @@ import { filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType } from "Utils/XAEnums";
-import { FieldError } from "Components/CommonComponents";
 
 const noneOptions = {
   label: "None",

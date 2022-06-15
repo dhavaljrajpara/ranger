@@ -137,10 +137,11 @@ function XATableLayout({
                   <li className="column-list">
                     <label>
                       <input
+                        className="mr-1"
                         type="checkbox"
                         {...column.getToggleHiddenProps()}
                       />
-                      {column.id}
+                      {column.Header}
                     </label>
                   </li>
                 ))}

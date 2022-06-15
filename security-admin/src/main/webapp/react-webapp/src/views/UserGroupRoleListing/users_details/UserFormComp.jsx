@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
-import { FieldError } from "Components/CommonComponents";
+import { FieldError, scrollToError } from "Components/CommonComponents";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { fetchApi } from "Utils/fetchAPI";
@@ -175,7 +175,6 @@ class UserFormComp extends Component {
         label: UserRoles[this.props.userInfo.userRoleList[0]].label,
         value: this.props.userInfo.userRoleList[0]
       };
-      console.log(this.groupNameList);
     } else {
       formValueObj.userRoleList = this.userRoleListData()[0];
     }
@@ -263,149 +262,257 @@ class UserFormComp extends Component {
           onSubmit={this.handleSubmit}
           validate={this.validateForm}
           initialValues={(this.userData(), this.setUserFormData())}
-          render={({ handleSubmit, form, submitting, values, pristine }) => (
+          render={({
+            handleSubmit,
+            form,
+            submitting,
+            values,
+            invalid,
+            errors,
+            pristine
+          }) => (
             <div className="wrap">
-              <form onSubmit={handleSubmit}>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">User Name *</label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="name"
-                      component="input"
-                      placeholder="User Name"
-                      className="form-control"
-                      disabled={this.props.isEditView ? true : false}
-                    />
-                    <FieldError name="name" />
-                  </div>
-                </div>
-                {!this.props.isEditView && (
-                  <div className="form-group row">
-                    <label className="col-sm-2 col-form-label">
-                      New Password *
-                    </label>
-                    <div className="col-sm-6">
-                      <Field
-                        name="password"
-                        type="password"
-                        component="input"
-                        placeholder="Enter New Password"
-                        className="form-control"
-                      />
-                      <FieldError name="password" />
-                    </div>
-                  </div>
-                )}
-                {!this.props.isEditView && (
-                  <div className="form-group row">
-                    <label className="col-sm-2 col-form-label">
-                      Password Confirm *
-                    </label>
-                    <div className="col-sm-6">
-                      <Field
-                        name="passwordConfirm"
-                        type="password"
-                        component="input"
-                        placeholder="Confirm New Password"
-                        className="form-control"
-                      />
-                      <FieldError name="passwordConfirm" />
-                    </div>
-                  </div>
-                )}
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    First Name *
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="firstName"
-                      component="input"
-                      placeholder="First Name"
-                      className="form-control"
-                      disabled={
-                        this.props.isEditView &&
-                        this.props.userInfo &&
-                        this.props.userInfo.userSource ==
-                          UserSource.XA_USER.value
-                          ? true
-                          : false
-                      }
-                    />
-                    <FieldError name="firstName" />
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Last Name</label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="lastName"
-                      component="input"
-                      placeholder="Last Name"
-                      className="form-control"
-                      disabled={
-                        this.props.isEditView &&
-                        this.props.userInfo &&
-                        this.props.userInfo.userSource ==
-                          UserSource.XA_USER.value
-                          ? true
-                          : false
-                      }
-                    />
-                    <FieldError name="lastName" />
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    Email Address
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="emailAddress"
-                      type="email"
-                      component="input"
-                      placeholder="Email Address"
-                      className="form-control"
-                      disabled={
-                        this.props.isEditView &&
-                        this.props.userInfo &&
-                        this.props.userInfo.userSource ==
-                          UserSource.XA_USER.value
-                          ? true
-                          : false
-                      }
-                    />
-                  </div>
-                  <FieldError name="emailAddress" />
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    Select Role *
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="userRoleList"
-                      className="form-control"
-                      render={({ input }) => (
-                        <Select
+              <form
+                onSubmit={(event) => {
+                  if (invalid) {
+                    let selector =
+                      document.getElementById("isError") ||
+                      document.querySelector(
+                        `input[name=${Object.keys(errors)[0]}]`
+                      );
+                    scrollToError(selector);
+                  }
+                  handleSubmit(event);
+                }}
+              >
+                <Field name="name">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          User Name *
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
                           {...input}
-                          options={this.userRoleListData()}
-                          isDisabled={this.disabledUserRoleField()}
-                        ></Select>
-                      )}
-                    ></Field>
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Group</label>
-                  <div className="col-sm-6">
+                          type="text"
+                          name="name"
+                          placeholder="User Name"
+                          id={meta.error && meta.touched ? "isError" : "name"}
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                          disabled={this.props.isEditView ? true : false}
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+                {!this.props.isEditView && (
+                  <Field name="password">
+                    {({ input, meta }) => (
+                      <Row className="form-group">
+                        <Col xs={3}>
+                          <label className="form-label pull-right">
+                            New Password *
+                          </label>
+                        </Col>
+                        <Col xs={4}>
+                          <input
+                            {...input}
+                            type="password"
+                            autoComplete="off"
+                            name="password"
+                            placeholder="Enter New Password"
+                            id={
+                              meta.error && meta.touched
+                                ? "isError"
+                                : "password"
+                            }
+                            className={
+                              meta.error && meta.touched
+                                ? "form-control border-danger"
+                                : "form-control"
+                            }
+                          />
+                          {meta.error && meta.touched && (
+                            <span className="invalid-field">{meta.error}</span>
+                          )}
+                        </Col>
+                      </Row>
+                    )}
+                  </Field>
+                )}
+                {!this.props.isEditView && (
+                  <Field name="passwordConfirm">
+                    {({ input, meta }) => (
+                      <Row className="form-group">
+                        <Col xs={3}>
+                          <label className="form-label pull-right">
+                            Password Confirm *
+                          </label>
+                        </Col>
+                        <Col xs={4}>
+                          <input
+                            {...input}
+                            name="passwordConfirm"
+                            type="password"
+                            autoComplete="off"
+                            placeholder="Confirm New Password"
+                            id={
+                              meta.error && meta.touched
+                                ? "isError"
+                                : "passwordConfirm"
+                            }
+                            className={
+                              meta.error && meta.touched
+                                ? "form-control border-danger"
+                                : "form-control"
+                            }
+                          />
+                          {meta.error && meta.touched && (
+                            <span className="invalid-field">{meta.error}</span>
+                          )}
+                        </Col>
+                      </Row>
+                    )}
+                  </Field>
+                )}
+                <Field name="firstName">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          First Name *
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
+                          {...input}
+                          name="firstName"
+                          type="text"
+                          placeholder="First Name"
+                          id={
+                            meta.error && meta.touched ? "isError" : "firstName"
+                          }
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                          disabled={
+                            this.props.isEditView &&
+                            this.props.userInfo &&
+                            this.props.userInfo.userSource ==
+                              UserSource.XA_USER.value
+                              ? true
+                              : false
+                          }
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+                <Field name="lastName">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Last Name
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
+                          {...input}
+                          name="lastName"
+                          type="text"
+                          placeholder="Last Name"
+                          id={
+                            meta.error && meta.touched ? "isError" : "lastName"
+                          }
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                          disabled={
+                            this.props.isEditView &&
+                            this.props.userInfo &&
+                            this.props.userInfo.userSource ==
+                              UserSource.XA_USER.value
+                              ? true
+                              : false
+                          }
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+                <Field name="emailAddress">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Email Address
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
+                          {...input}
+                          name="emailAddress"
+                          type="email"
+                          placeholder="Email Address"
+                          id={
+                            meta.error && meta.touched
+                              ? "isError"
+                              : "emailAddress"
+                          }
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                          disabled={
+                            this.props.isEditView &&
+                            this.props.userInfo &&
+                            this.props.userInfo.userSource ==
+                              UserSource.XA_USER.value
+                              ? true
+                              : false
+                          }
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+
+                <Row className="form-group">
+                  <Col xs={3}>
+                    <label className="form-label pull-right">Group</label>
+                  </Col>
+                  <Col xs={4}>
                     <Field
                       name="groupIdList"
                       component={this.groupNameList}
                       className="form-control"
                     ></Field>
-                  </div>
-                </div>
+                  </Col>
+                </Row>
                 <div className="row">
                   <div className="col-sm-12">
                     <p className="form-header">Sync Details :</p>

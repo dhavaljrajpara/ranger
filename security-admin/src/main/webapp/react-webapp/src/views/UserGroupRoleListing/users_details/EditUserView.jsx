@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { Tab, Button, Nav } from "react-bootstrap";
+import { Tab, Button, Nav, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import UserFormComp from "Views/UserGroupRoleListing/users_details/UserFormComp";
-import { Loader } from "Components/CommonComponents";
+import { Loader, scrollToError } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import { UserTypes, RegexValidation } from "Utils/XAEnums";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
@@ -87,11 +87,17 @@ class AddUserView extends Component {
     return this.state.loader ? (
       <Loader />
     ) : this.state.userInfo.userSource == UserTypes.USER_EXTERNAL.value ? (
-      <UserFormComp
-        isEditView={true}
-        userID={this.props.match.params.userID}
-        userInfo={this.state.userInfo}
-      />
+      <>
+        {commonBreadcrumb(
+          ["Users", "UserEdit"],
+          this.props.match.params.userID
+        )}
+        <UserFormComp
+          isEditView={true}
+          userID={this.props.match.params.userID}
+          userInfo={this.state.userInfo}
+        />
+      </>
     ) : (
       <>
         {commonBreadcrumb(
@@ -134,40 +140,94 @@ class AddUserView extends Component {
                         form,
                         submitting,
                         values,
+                        invalid,
+                        errors,
                         pristine
                       }) => (
                         <div className="wrap">
-                          <form onSubmit={handleSubmit}>
-                            <div className="form-group row">
-                              <label className="col-sm-2 col-form-label">
-                                New Password *
-                              </label>
-                              <div className="col-sm-6">
-                                <Field
-                                  name="newPassword"
-                                  component="input"
-                                  type="password"
-                                  placeholder="New Password"
-                                  className="form-control"
-                                />
-                                <Error name="newPassword" />
-                              </div>
-                            </div>
-                            <div className="form-group row">
-                              <label className="col-sm-2 col-form-label">
-                                Password Confirm *
-                              </label>
-                              <div className="col-sm-6">
-                                <Field
-                                  name="reEnterPassword"
-                                  component="input"
-                                  type="password"
-                                  placeholder="Re-enter New Password"
-                                  className="form-control"
-                                />
-                                <Error name="reEnterPassword" />
-                              </div>
-                            </div>
+                          <form
+                            onSubmit={(event) => {
+                              if (invalid) {
+                                let selector =
+                                  document.getElementById("isError") ||
+                                  document.querySelector(
+                                    `input[name=${Object.keys(errors)[0]}]`
+                                  );
+                                scrollToError(selector);
+                              }
+                              handleSubmit(event);
+                            }}
+                          >
+                            <Field name="newPassword">
+                              {({ input, meta }) => (
+                                <Row className="form-group">
+                                  <Col xs={3}>
+                                    <label className="form-label pull-right">
+                                      New Password *
+                                    </label>
+                                  </Col>
+                                  <Col xs={4}>
+                                    <input
+                                      {...input}
+                                      type="password"
+                                      autoComplete="off"
+                                      name="newPassword"
+                                      placeholder="New Password"
+                                      id={
+                                        meta.error && meta.touched
+                                          ? "isError"
+                                          : "newPassword"
+                                      }
+                                      className={
+                                        meta.error && meta.touched
+                                          ? "form-control border-danger"
+                                          : "form-control"
+                                      }
+                                    />
+                                    {meta.error && meta.touched && (
+                                      <span className="invalid-field">
+                                        {meta.error}
+                                      </span>
+                                    )}
+                                  </Col>
+                                </Row>
+                              )}
+                            </Field>
+                            <Field name="reEnterPassword">
+                              {({ input, meta }) => (
+                                <Row className="form-group">
+                                  <Col xs={3}>
+                                    <label className="form-label pull-right">
+                                      Password Confirm *
+                                    </label>
+                                  </Col>
+                                  <Col xs={4}>
+                                    <input
+                                      {...input}
+                                      name="reEnterPassword"
+                                      autoComplete="off"
+                                      type="password"
+                                      placeholder="Re-enter New Password"
+                                      id={
+                                        meta.error && meta.touched
+                                          ? "isError"
+                                          : "reEnterPassword"
+                                      }
+                                      className={
+                                        meta.error && meta.touched
+                                          ? "form-control border-danger"
+                                          : "form-control"
+                                      }
+                                    />
+                                    {meta.error && meta.touched && (
+                                      <span className="invalid-field">
+                                        {meta.error}
+                                      </span>
+                                    )}
+                                  </Col>
+                                </Row>
+                              )}
+                            </Field>
                             <div className="row form-actions">
                               <div className="col-md-9 offset-md-3">
                                 <Button

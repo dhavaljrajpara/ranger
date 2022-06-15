@@ -1,13 +1,20 @@
 import React, { Component } from "react";
-import { Button, Form as BForm, Col, Table, Breadcrumb } from "react-bootstrap";
+import {
+  Button,
+  Form as BForm,
+  Col,
+  Row,
+  Table,
+  Breadcrumb
+} from "react-bootstrap";
 import { Form, Field } from "react-final-form";
-import { FieldError } from "Components/CommonComponents";
+import { scrollToError } from "Components/CommonComponents";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import moment from "moment-timezone";
-import { findIndex } from "lodash";
+import { findIndex, isEmpty } from "lodash";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 
@@ -89,6 +96,15 @@ class GroupForm extends Component {
       ...formData
     };
     if (
+      !isEmpty(this.state.selectedUser) ||
+      !isEmpty(this.state.selectedGroup) ||
+      !isEmpty(this.state.selectedRole)
+    ) {
+      return toast.warning(
+        `Please add selected user/group/roles to there respective table else user/group/roles will not be added.`
+      );
+    }
+    if (
       this.props &&
       this.props.match &&
       this.props.match.params &&
@@ -131,7 +147,7 @@ class GroupForm extends Component {
           toast.error(error.response.data.msgDesc);
           this.props.history.push("/users/roletab");
         }
-        console.error(`Error occurred while updating role password! ${error}`);
+        console.error(`Error occurred while updating role! ${error}`);
       }
     }
   };
@@ -281,7 +297,7 @@ class GroupForm extends Component {
           ["Roles", this.props.match.params.roleId ? "RoleEdit" : "RoleCreate"],
           this.props.match.params.roleId
         )}
-        <h4 className="wrap-header bold">Role Form</h4>
+        <h4 className="wrap-header bold">Role Detail</h4>
         <Form
           onSubmit={this.handleSubmit}
           initialValues={this.setRoleFormData()}
@@ -296,34 +312,72 @@ class GroupForm extends Component {
             },
             form,
             submitting,
+            invalid,
+            errors,
             values,
+            fields,
             pristine
           }) => (
             <div className="wrap">
-              <form onSubmit={handleSubmit}>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Role Name *</label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="name"
-                      component="input"
-                      placeholder="Role Name"
-                      className="form-control"
-                    />
-                    <FieldError name="name" />
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Description</label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="description"
-                      component="textarea"
-                      placeholder="Description"
-                      className="form-control"
-                    />
-                  </div>
-                </div>
+              <form
+                onSubmit={(event) => {
+                  if (invalid) {
+                    let selector =
+                      document.getElementById("isError") ||
+                      document.querySelector(
+                        `input[name=${Object.keys(errors)[0]}]`
+                      );
+                    scrollToError(selector);
+                  }
+                  handleSubmit(event);
+                }}
+              >
+                <Field name="name">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Role Name *
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
+                          {...input}
+                          type="text"
+                          name="name"
+                          placeholder="Role Name"
+                          id={meta.error && meta.touched ? "isError" : "name"}
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+                <Field name="description">
+                  {({ input }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Description
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <textarea
+                          {...input}
+                          placeholder="Description"
+                          className="form-control"
+                        />
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
                 <div>
                   <fieldset>
                     <p className="formHeader">Users:</p>

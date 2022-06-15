@@ -1,12 +1,10 @@
 import React, { Component } from "react";
-import { Button, Breadcrumb, Row, Col } from "react-bootstrap";
+import { Button, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
-import { FieldError } from "Components/CommonComponents";
 import { toast } from "react-toastify";
-import moment from "moment-timezone";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { SyncSourceDetails } from "../SyncSourceDetails";
-import { Loader } from "Components/CommonComponents";
+import { Loader, scrollToError } from "Components/CommonComponents";
 
 class GroupForm extends Component {
   constructor(props) {
@@ -47,7 +45,6 @@ class GroupForm extends Component {
   };
 
   handleSubmit = async (formData) => {
-    console.log(formData);
     let groupFormData = {
       ...this.state.groupInfo,
       ...formData
@@ -136,34 +133,75 @@ class GroupForm extends Component {
           onSubmit={this.handleSubmit}
           validate={this.validateForm}
           initialValues={this.setGroupFormData()}
-          render={({ handleSubmit, form, submitting, values, pristine }) => (
+          render={({
+            handleSubmit,
+            form,
+            submitting,
+            invalid,
+            errors,
+            values,
+            pristine
+          }) => (
             <div className="wrap">
-              <form onSubmit={handleSubmit}>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">
-                    Group Name *
-                  </label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="name"
-                      component="input"
-                      placeholder="Group Name"
-                      className="form-control"
-                    />
-                    <FieldError name="name" />
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-2 col-form-label">Description</label>
-                  <div className="col-sm-6">
-                    <Field
-                      name="description"
-                      component="textarea"
-                      placeholder="Description"
-                      className="form-control"
-                    />
-                  </div>
-                </div>
+              <form
+                onSubmit={(event) => {
+                  if (invalid) {
+                    let selector =
+                      document.getElementById("isError") ||
+                      document.querySelector(
+                        `input[name=${Object.keys(errors)[0]}]`
+                      );
+                    scrollToError(selector);
+                  }
+                  handleSubmit(event);
+                }}
+              >
+                <Field name="name">
+                  {({ input, meta }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Group Name *
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <input
+                          {...input}
+                          type="text"
+                          name="name"
+                          placeholder="Group Name"
+                          id={meta.error && meta.touched ? "isError" : "name"}
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
+                        />
+                        {meta.error && meta.touched && (
+                          <span className="invalid-field">{meta.error}</span>
+                        )}
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
+                <Field name="description">
+                  {({ input }) => (
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Description
+                        </label>
+                      </Col>
+                      <Col xs={4}>
+                        <textarea
+                          {...input}
+                          placeholder="Description"
+                          className="form-control"
+                        />
+                      </Col>
+                    </Row>
+                  )}
+                </Field>
                 <div className="row">
                   <div className="col-sm-12">
                     <p className="form-header">Sync Details :</p>

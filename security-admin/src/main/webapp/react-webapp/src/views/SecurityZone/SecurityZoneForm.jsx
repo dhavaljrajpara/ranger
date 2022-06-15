@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Form, Field } from "react-final-form";
+// import createDecorator from "final-form-focus";
 import { Button, Row, Col } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import Select from "react-select";
@@ -13,6 +14,10 @@ import ModalResourceComp from "../Resources/ModalResourceComp";
 import { RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import {
+  scrollToError,
+  selectCustomStyles
+} from "../../components/CommonComponents";
 
 const noneOptions = {
   label: "None",
@@ -38,6 +43,57 @@ const SecurityZoneForm = (props) => {
   useEffect(() => {
     fetchInitalData();
   }, []);
+
+  const validate = (values) => {
+    const errors = {};
+    if (!values.name) {
+      errors.name = {
+        required: true,
+        text: "Required"
+      };
+    } else {
+      if (
+        !RegexValidation.NAME_VALIDATION.regexforNameValidation.test(
+          values.name
+        )
+      ) {
+        errors.name = {
+          text: RegexValidation.NAME_VALIDATION.regexforNameValidationMessage
+        };
+      }
+    }
+
+    if (isEmpty(values.adminUsers) && isEmpty(values.adminUserGroups)) {
+      errors.adminUserGroups = {
+        required: true,
+        text: "Please provide atleast one audit user or group!"
+      };
+      errors.adminUsers = {
+        required: true,
+        text: ""
+      };
+    }
+
+    if (isEmpty(values.auditUsers) && isEmpty(values.auditUserGroups)) {
+      errors.auditUserGroups = {
+        required: true,
+        text: "Please provide atleast one audit user or group!"
+      };
+      errors.auditUsers = {
+        required: true,
+        text: ""
+      };
+    }
+
+    if (isEmpty(values.resourceServices)) {
+      errors.resourceServices = {
+        required: true,
+        text: "Required"
+      };
+    }
+    // scrollToError(selector);
+    return errors;
+  };
 
   const handleClose = () => {
     setModalstate({
@@ -166,6 +222,7 @@ const SecurityZoneForm = (props) => {
 
   const onSubmit = async (values) => {
     let zoneId;
+
     let apiMethod;
     let apiUrl;
     let apiSuccess;
@@ -278,7 +335,6 @@ const SecurityZoneForm = (props) => {
       }
     }
   };
-
   const EditFormData = () => {
     const zoneData = {};
 
@@ -369,7 +425,6 @@ const SecurityZoneForm = (props) => {
 
       zoneData.tableList.push(tableValues);
     }
-
     return zoneData;
   };
 
@@ -558,65 +613,12 @@ const SecurityZoneForm = (props) => {
             mutators={{
               ...arrayMutators
             }}
-            validate={(values) => {
-              const errors = {};
-              if (!values.name) {
-                errors.name = {
-                  required: true,
-                  text: "Required"
-                };
-              } else {
-                if (
-                  !RegexValidation.NAME_VALIDATION.regexforNameValidation.test(
-                    values.name
-                  )
-                ) {
-                  errors.name = {
-                    text: RegexValidation.NAME_VALIDATION
-                      .regexforNameValidationMessage
-                  };
-                }
-              }
-
-              if (
-                isEmpty(values.adminUsers) &&
-                isEmpty(values.adminUserGroups)
-              ) {
-                errors.adminUserGroups = {
-                  required: true,
-                  text: "Please provide atleast one audit user or group!"
-                };
-                errors.adminUsers = {
-                  required: true,
-                  text: ""
-                };
-              }
-
-              if (
-                isEmpty(values.auditUsers) &&
-                isEmpty(values.auditUserGroups)
-              ) {
-                errors.auditUserGroups = {
-                  required: true,
-                  text: "Please provide atleast one audit user or group!"
-                };
-                errors.auditUsers = {
-                  required: true,
-                  text: ""
-                };
-              }
-
-              if (isEmpty(values.resourceServices)) {
-                errors.resourceServices = {
-                  required: true,
-                  text: "Required"
-                };
-              }
-
-              return errors;
-            }}
+            validate={validate}
             render={({
               handleSubmit,
+              dirty,
+              invalid,
+              errors,
               form: {
                 mutators: { push, remove }
               },
@@ -624,7 +626,19 @@ const SecurityZoneForm = (props) => {
             }) => (
               <Row>
                 <Col sm={12}>
-                  <form onSubmit={handleSubmit}>
+                  <form
+                    onSubmit={(event) => {
+                      if (invalid) {
+                        let selector =
+                          document.getElementById("isError") ||
+                          document.querySelector(
+                            `input[name=${Object.keys(errors)[0]}]`
+                          );
+                        scrollToError(selector);
+                      }
+                      handleSubmit(event);
+                    }}
+                  >
                     <p className="form-header">Zone Details:</p>
                     <Field name="name">
                       {({ input, meta }) => (
@@ -638,6 +652,9 @@ const SecurityZoneForm = (props) => {
                             <input
                               {...input}
                               type="text"
+                              id={
+                                meta.error && meta.touched ? "isError" : "name"
+                              }
                               className={
                                 meta.error && meta.touched
                                   ? "form-control border-danger"
@@ -668,8 +685,8 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     </Field>
-
                     <p className="form-header">Zone Administration:</p>
+
                     <Field
                       name="adminUsers"
                       render={({ input, meta }) => (
@@ -682,6 +699,16 @@ const SecurityZoneForm = (props) => {
                           <Col xs={4}>
                             <AsyncSelect
                               {...input}
+                              styles={
+                                meta.error && meta.touched
+                                  ? selectCustomStyles
+                                  : ""
+                              }
+                              id={
+                                meta.error && meta.touched
+                                  ? "isError"
+                                  : "auditUsers"
+                              }
                               cacheOptions
                               defaultOptions
                               loadOptions={fetchUsers}
@@ -709,6 +736,16 @@ const SecurityZoneForm = (props) => {
                           </Col>
                           <Col xs={4}>
                             <AsyncSelect
+                              styles={
+                                meta.error && meta.touched
+                                  ? selectCustomStyles
+                                  : ""
+                              }
+                              id={
+                                meta.error && meta.touched
+                                  ? "isError"
+                                  : "adminUserGroups"
+                              }
                               {...input}
                               defaultOptions
                               loadOptions={fetchGroups}
@@ -742,7 +779,17 @@ const SecurityZoneForm = (props) => {
                           </Col>
                           <Col xs={4}>
                             <AsyncSelect
+                              styles={
+                                meta.error && meta.touched
+                                  ? selectCustomStyles
+                                  : ""
+                              }
                               {...input}
+                              id={
+                                meta.error && meta.touched
+                                  ? "isError"
+                                  : "auditUsers"
+                              }
                               defaultOptions
                               loadOptions={fetchUsers}
                               isMulti
@@ -757,7 +804,6 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-
                     <Field
                       name="auditUserGroups"
                       render={({ input, meta }) => (
@@ -769,7 +815,17 @@ const SecurityZoneForm = (props) => {
                           </Col>
                           <Col xs={4}>
                             <AsyncSelect
+                              styles={
+                                meta.error && meta.touched
+                                  ? selectCustomStyles
+                                  : ""
+                              }
                               {...input}
+                              id={
+                                meta.error && meta.touched
+                                  ? "isError"
+                                  : "auditUserGroups"
+                              }
                               defaultOptions
                               loadOptions={fetchGroups}
                               isMulti
@@ -789,7 +845,6 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-
                     <p className="form-header">Services:</p>
                     <Field
                       name="tagServices"
@@ -817,7 +872,6 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-
                     <Field
                       name="resourceServices"
                       render={({ input, meta }) => (
@@ -830,6 +884,7 @@ const SecurityZoneForm = (props) => {
                           <Col xs={6}>
                             <Select
                               {...input}
+                              id={meta.error && meta.touched ? "isError" : ""}
                               onChange={(values, e) =>
                                 resourceServicesOnChange(
                                   e,
@@ -858,7 +913,6 @@ const SecurityZoneForm = (props) => {
                         </Row>
                       )}
                     />
-
                     <Table striped bordered>
                       <thead>
                         <tr>
@@ -1008,6 +1062,7 @@ const SecurityZoneForm = (props) => {
                       </Col>
                     </Row>
                   </form>
+
                   <ModalResourceComp
                     serviceDetails={resourceService}
                     serviceCompDetails={resourceServiceDef}

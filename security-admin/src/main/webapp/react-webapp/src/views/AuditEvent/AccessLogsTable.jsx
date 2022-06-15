@@ -37,7 +37,7 @@ export const AccessLogsTable = ({ data = {} }) => {
   };
 
   return (
-    <Table striped bordered hover>
+    <Table bordered hover>
       <tbody>
         <tr>
           <td>Audit ID</td>

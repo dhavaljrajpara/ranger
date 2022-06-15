@@ -20,12 +20,16 @@ class ZoneDisplay extends Component {
     this.state = {
       services: [],
       expand: true,
-      show: true,
+      eventKey0: true,
+      eventKey1: true,
+      eventKey2: true,
       showDeleteModal: null,
       isAdminRole: isSystemAdmin() || isKeyAdmin()
     };
     this.expandbtn = this.expandbtn.bind(this);
-    this.showMoreLess = this.showMoreLess.bind(this);
+    this.firstAccordian = this.firstAccordian.bind(this);
+    this.secondAccordian = this.secondAccordian.bind(this);
+    this.thirdAccordian = this.thirdAccordian.bind(this);
     this.closeZoneModal = this.closeZoneModal.bind(this);
   }
 
@@ -65,10 +69,17 @@ class ZoneDisplay extends Component {
     this.setState({ expand: true });
   };
 
-  showMoreLess = () => {
-    this.setState({ show: !this.state.show });
+  firstAccordian = () => {
+    this.setState({ eventKey0: !this.state.eventKey0 });
   };
 
+  secondAccordian = () => {
+    this.setState({ eventKey1: !this.state.eventKey1 });
+  };
+
+  thirdAccordian = () => {
+    this.setState({ eventKey2: !this.state.eventKey2 });
+  };
   render() {
     return (
       <div className="row">
@@ -139,11 +150,11 @@ class ZoneDisplay extends Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="0"
-                    onClick={this.showMoreLess}
+                    onClick={this.firstAccordian}
                     className="border-bottom-0"
                   >
                     Zone Administrations
-                    {this.state.show ? (
+                    {this.state.eventKey0 ? (
                       <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
                     ) : (
                       <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
@@ -243,11 +254,11 @@ class ZoneDisplay extends Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="1"
-                    onClick={this.showMoreLess}
+                    onClick={this.secondAccordian}
                     className="border-bottom-0"
                   >
                     Zone Tag Services
-                    {this.state.show ? (
+                    {this.state.eventKey1 ? (
                       <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
                     ) : (
                       <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
@@ -280,11 +291,11 @@ class ZoneDisplay extends Component {
                   <Accordion.Toggle
                     as={Card.Header}
                     eventKey="2"
-                    onClick={this.showMoreLess}
+                    onClick={this.thirdAccordian}
                     className="border-bottom-0"
                   >
                     Services
-                    {this.state.show ? (
+                    {this.state.eventKey2 ? (
                       <i className="fa fa-angle-up pull-right fa-lg font-weight-bold"></i>
                     ) : (
                       <i className="fa fa-angle-down pull-right fa-lg font-weight-bold"></i>
