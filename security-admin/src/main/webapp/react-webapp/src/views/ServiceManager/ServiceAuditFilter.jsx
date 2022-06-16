@@ -460,7 +460,7 @@ export default function ServiceAuditFilter(props) {
 
       <ModalResourceComp
         serviceDetails={serviceDetails}
-        serviceDefDetails={serviceDefDetails}
+        serviceCompDetails={serviceDefDetails}
         cancelButtonText="Cancel"
         actionButtonText="Submit"
         handleSave={handleSave}

@@ -407,7 +407,7 @@ const KeyManager = (props) => {
         <br />
         <XATableLayout
           loading={loader}
-          data={keydata}
+          data={keydata || []}
           columns={columns}
           fetchData={selectServices}
           pageCount={pagecount}

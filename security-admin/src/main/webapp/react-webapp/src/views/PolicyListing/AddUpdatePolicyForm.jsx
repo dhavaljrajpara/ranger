@@ -11,27 +11,16 @@ import {
   Col,
   Button,
   Badge,
-  Modal,
   Accordion,
-  Card,
-  Link
+  Card
 } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import {
-  groupBy,
-  find,
-  isEmpty,
-  pick,
-  filter,
-  values,
-  forIn,
-  isObject
-} from "lodash";
+import { groupBy, find, isEmpty, pick, isObject } from "lodash";
 import { toast } from "react-toastify";
-import { Loader } from "Components/CommonComponents";
+import { Loader, scrollToError } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
@@ -757,11 +746,26 @@ export default function AddUpdatePolicyForm() {
                 handleSubmit,
                 submitting,
                 values,
+                invalid,
+                errors,
                 form: {
                   mutators: { push: addPolicyItem, pop: removePolicyItem }
                 }
               }) => (
-                <form onSubmit={handleSubmit}>
+                <form
+                  onSubmit={(event) => {
+                    if (invalid) {
+                      let selector =
+                        document.getElementById("isError") ||
+                        document.querySelector(
+                          `input[name=${Object.keys(errors)[0]}]`
+                        ) ||
+                        document.querySelector(`span[class="invalid-field"]`);
+                      scrollToError(selector);
+                    }
+                    handleSubmit(event);
+                  }}
+                >
                   <fieldset>
                     <p className="formHeader">Policy Details</p>
                   </fieldset>
@@ -817,9 +821,14 @@ export default function AddUpdatePolicyForm() {
                                   <FormB.Control
                                     {...input}
                                     placeholder="Policy Name"
+                                    id={
+                                      meta.error && meta.touched
+                                        ? "isError"
+                                        : "name"
+                                    }
                                     className={
                                       meta.error && meta.touched
-                                        ? "form-control border border-danger"
+                                        ? "form-control border-danger"
                                         : "form-control"
                                     }
                                   />
@@ -972,7 +981,7 @@ export default function AddUpdatePolicyForm() {
                             <thead>
                               <tr>
                                 <th colSpan="2">
-                                  Policy Conditions ;
+                                  Policy Conditions :
                                   {showModal && (
                                     <Field
                                       className="form-control"

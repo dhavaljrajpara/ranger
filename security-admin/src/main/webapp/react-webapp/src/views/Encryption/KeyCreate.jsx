@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import { Button, Table, Row, Col, Breadcrumb } from "react-bootstrap";
+import { Button, Table, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
-import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
-import { Loader } from "../../components/CommonComponents";
+import { Loader, scrollToError } from "../../components/CommonComponents";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import { isUndefined, has } from "lodash";
 
 class KeyCreate extends Component {
   constructor(props) {
@@ -30,22 +30,24 @@ class KeyCreate extends Component {
 
   onSubmit = async (values) => {
     const serviceJson = {};
+    let apiError = "Error occurred while creating Key";
     serviceJson.name = values.name;
     serviceJson.cipher = values.cipher;
     serviceJson.length = values.length;
     serviceJson.description = values.description;
     serviceJson.attributes = {};
 
-    for (var key of Object.keys(values.attributes))
-      serviceJson.attributes[values.attributes[key].name] =
-        values.attributes[key].value;
-
+    for (let key of Object.keys(values.attributes))
+      if (!isUndefined(values.attributes[key])) {
+        serviceJson.attributes[values.attributes[key].name] =
+          values.attributes[key].value;
+      }
     try {
       await fetchApi({
         url: "keys/key",
         method: "post",
         params: {
-          provider: this.props.location.state.detail
+          provider: this.props.match.params.serviceName
         },
         data: serviceJson
       });
@@ -55,7 +57,9 @@ class KeyCreate extends Component {
         state: { detail: this.props.location.state.detail }
       });
     } catch (error) {
-      console.error(`Error occurred while creating Key`);
+      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
+        toast.error(apiError + " : " + error.response.data.msgDesc);
+      }
     }
   };
   fetchKmsServices = async () => {
@@ -87,11 +91,19 @@ class KeyCreate extends Component {
 
   closeForm = () => {
     this.props.history.push(
-      `/kms/keys/edit/manage/${this.props.location.state.detail}`
+      `/kms/keys/edit/manage/${this.props.match.params.serviceName}`
     );
   };
-  validateRequired = (isRequired) =>
-    isRequired ? (value) => (value ? undefined : "Required") : () => {};
+  validate = (values) => {
+    const errors = {};
+    if (!values.name) {
+      errors.name = {
+        required: true,
+        text: "Required"
+      };
+    }
+    return errors;
+  };
   keyCreateBreadcrumb = () => {
     let serviceDetails = {};
     serviceDetails["serviceDefId"] =
@@ -116,6 +128,7 @@ class KeyCreate extends Component {
           mutators={{
             ...arrayMutators
           }}
+          validate={this.validate}
           initialValues={{
             attributes: [{ name: "", value: "" }],
             cipher: "AES/CTR/NoPadding",
@@ -126,85 +139,110 @@ class KeyCreate extends Component {
             form,
             submitting,
             pristine,
+            invalid,
+            errors,
             form: {
-              mutators: { push }
+              mutators: { push: addItem }
             }
           }) => (
             <div className="wrap">
-              <form onSubmit={handleSubmit}>
-                <Field name="name" validate={this.validateRequired(true)}>
+              <form
+                onSubmit={(event) => {
+                  if (invalid) {
+                    let selector =
+                      document.getElementById("isError") ||
+                      document.querySelector(
+                        `input[name=${Object.keys(errors)[0]}]`
+                      );
+                    scrollToError(selector);
+                  }
+                  handleSubmit(event);
+                }}
+              >
+                <Field name="name">
                   {({ input, meta }) => (
-                    <div className="form-group row">
-                      <label className="col-sm-3 col-form-label text-right">
-                        Key Name *
-                      </label>
-                      <div className="col-sm-4">
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Key Name *
+                        </label>
+                      </Col>
+                      <Col xs={4}>
                         <input
                           {...input}
+                          name="name"
                           type="text"
-                          className="form-control"
+                          id={meta.error && meta.touched ? "isError" : "name"}
+                          className={
+                            meta.error && meta.touched
+                              ? "form-control border-danger"
+                              : "form-control"
+                          }
                         />
                         {meta.error && meta.touched && (
-                          <span className="invalid-field">{meta.error}</span>
+                          <span className="invalid-field">
+                            {meta.error.text}
+                          </span>
                         )}
-                      </div>
-                    </div>
+                      </Col>
+                    </Row>
                   )}
                 </Field>
 
                 <Field name="cipher">
                   {({ input }) => (
-                    <div className="form-group row">
-                      <label className="col-sm-3 col-form-label text-right">
-                        Cipher
-                      </label>
-                      <div className="col-sm-4">
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">Cipher</label>
+                      </Col>
+                      <Col xs={4}>
                         <input
                           {...input}
                           name="cipher"
                           type="text"
                           className="form-control"
                         />
-                      </div>
-                    </div>
+                      </Col>
+                    </Row>
                   )}
                 </Field>
 
                 <Field name="length">
                   {({ input }) => (
-                    <div className="form-group row">
-                      <label className="col-sm-3 col-form-label text-right">
-                        Length
-                      </label>
-                      <div className="col-sm-4">
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">Length</label>
+                      </Col>
+                      <Col xs={4}>
                         <input
                           {...input}
                           name="length"
                           type="number"
                           className="form-control"
                         />
-                      </div>
-                    </div>
+                      </Col>
+                    </Row>
                   )}
                 </Field>
                 <Field name="description">
                   {({ input }) => (
-                    <div className="form-group row">
-                      <label className="col-sm-3 col-form-label text-right">
-                        Description
-                      </label>
-                      <div className="col-sm-4">
+                    <Row className="form-group">
+                      <Col xs={3}>
+                        <label className="form-label pull-right">
+                          Description
+                        </label>
+                      </Col>
+                      <Col xs={4}>
                         <textarea {...input} className="form-control" />
-                      </div>
-                    </div>
+                      </Col>
+                    </Row>
                   )}
                 </Field>
-
-                <div className="form-group row">
-                  <label className="col-sm-3 col-form-label text-right">
-                    Attributes
-                  </label>
-                  <div className="col-sm-6">
+                <Row className="form-group">
+                  <Col xs={3}>
+                    <label className="form-label pull-right">Attributes</label>
+                  </Col>
+                  <Col xs={6}>
                     <Table bordered size="sm" className="no-bg-color w-75">
                       <thead>
                         <tr>
@@ -249,25 +287,28 @@ class KeyCreate extends Component {
                         </FieldArray>
                       </tbody>
                     </Table>
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label className="col-sm-3 col-form-label text-right"></label>
-                  <div className="col-sm-6">
+                  </Col>
+                </Row>
+                <Row className="form-group">
+                  <Col xs={3}>
+                    <label className="form-label pull-right"></label>
+                  </Col>
+                  <Col xs={6}>
                     <Button
                       variant="outline-secondary"
                       size="sm"
-                      onClick={() => push("attributes", undefined)}
+                      onClick={() => addItem("attributes")}
                     >
                       <i className="fa-fw fa fa-plus"></i>
                     </Button>
-                  </div>
-                </div>
-                <div className="row form-actions">
-                  <div className="col-md-9 offset-md-3">
+                  </Col>
+                </Row>
+                <Row className="form-actions">
+                  <Col sm={{ span: 9, offset: 3 }}>
                     <Button
                       variant="primary"
                       type="submit"
+                      size="sm"
                       disabled={submitting}
                     >
                       Save
@@ -275,16 +316,17 @@ class KeyCreate extends Component {
                     <Button
                       variant="secondary"
                       type="button"
+                      size="sm"
                       onClick={() => {
                         form.reset;
                         this.closeForm();
                       }}
-                      disabled={submitting || pristine}
+                      disabled={submitting}
                     >
                       Cancel
                     </Button>
-                  </div>
-                </div>
+                  </Col>
+                </Row>
               </form>
             </div>
           )}

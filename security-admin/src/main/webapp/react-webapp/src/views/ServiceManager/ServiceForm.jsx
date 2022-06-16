@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Modal, Table } from "react-bootstrap";
+import { Button, Modal, Table, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import arrayMutators from "final-form-arrays";
@@ -10,7 +10,11 @@ import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
 import { commonBreadcrumb } from "../../utils/XAUtils";
-import { Condition, CustomPopover } from "../../components/CommonComponents";
+import {
+  Condition,
+  CustomPopover,
+  scrollToError
+} from "../../components/CommonComponents";
 import {
   difference,
   flatMap,
@@ -577,24 +581,31 @@ class ServiceForm extends Component {
                 validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label">
-                      {configParam.label !== undefined
-                        ? configParam.label
-                        : configParam.name}
-                      {configParam.mandatory ? " * " : ""}
-                    </label>
-                    <div className="col-sm-6">
+                  <Row className="form-group">
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        {configParam.label !== undefined
+                          ? configParam.label
+                          : configParam.name}
+                        {configParam.mandatory ? " * " : ""}
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <input
                         {...input}
                         type="text"
+                        id={
+                          meta.error && meta.touched
+                            ? "isError"
+                            : "configs." + this.configsJson[configParam.name]
+                        }
                         className={
                           meta.error && meta.touched
-                            ? "form-control border border-danger"
+                            ? "form-control border-danger"
                             : "form-control"
                         }
                       />
-                    </div>
+                    </Col>
                     {configInfo.length === 1 && (
                       <span className="d-inline">
                         <CustomPopover
@@ -611,7 +622,7 @@ class ServiceForm extends Component {
                         {meta.error}
                       </div>
                     )}
-                  </div>
+                  </Row>
                 )}
               </Field>
             );
@@ -627,25 +638,32 @@ class ServiceForm extends Component {
                 validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label">
-                      {configParam.label !== undefined
-                        ? configParam.label
-                        : configParam.name}
-                      {configParam.mandatory ? " * " : ""}
-                    </label>
-                    <div className="col-sm-6">
+                  <Row className="form-group">
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        {configParam.label !== undefined
+                          ? configParam.label
+                          : configParam.name}
+                        {configParam.mandatory ? " * " : ""}
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <select
                         {...input}
+                        id={
+                          meta.error && meta.touched
+                            ? "isError"
+                            : "configs." + this.configsJson[configParam.name]
+                        }
                         className={
                           meta.error && meta.touched
-                            ? "form-control border border-danger"
+                            ? "form-control border-danger"
                             : "form-control"
                         }
                       >
                         {this.enumOptions(paramEnum)}
                       </select>
-                    </div>
+                    </Col>
                     {configInfo.length === 1 && (
                       <span className="d-inline">
                         <CustomPopover
@@ -662,7 +680,7 @@ class ServiceForm extends Component {
                         {meta.error}
                       </span>
                     )}
-                  </div>
+                  </Row>
                 )}
               </Field>
             );
@@ -675,25 +693,32 @@ class ServiceForm extends Component {
                 validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label">
-                      {configParam.label !== undefined
-                        ? configParam.label
-                        : configParam.name}
-                      {configParam.mandatory ? " * " : ""}
-                    </label>
-                    <div className="col-sm-6">
+                  <Row className="form-group">
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        {configParam.label !== undefined
+                          ? configParam.label
+                          : configParam.name}
+                        {configParam.mandatory ? " * " : ""}
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <select
                         {...input}
+                        id={
+                          meta.error && meta.touched
+                            ? "isError"
+                            : "configs." + this.configsJson[configParam.name]
+                        }
                         className={
                           meta.error && meta.touched
-                            ? "form-control border border-danger"
+                            ? "form-control border-danger"
                             : "form-control"
                         }
                       >
                         {this.booleanOptions(configParam.subType)}
                       </select>
-                    </div>
+                    </Col>
                     {configInfo.length === 1 && (
                       <span className="d-inline">
                         <CustomPopover
@@ -710,7 +735,7 @@ class ServiceForm extends Component {
                         {meta.error}
                       </span>
                     )}
-                  </div>
+                  </Row>
                 )}
               </Field>
             );
@@ -723,24 +748,32 @@ class ServiceForm extends Component {
                 validate={this.validateRequired(configParam.mandatory)}
               >
                 {({ input, meta }) => (
-                  <div className="form-group row">
-                    <label className="col-sm-3 col-form-label">
-                      {configParam.label !== undefined
-                        ? configParam.label
-                        : configParam.name}
-                      {configParam.mandatory ? " * " : ""}
-                    </label>
-                    <div className="col-sm-6">
+                  <Row className="form-group">
+                    <Col xs={3}>
+                      <label className="form-label pull-right">
+                        {configParam.label !== undefined
+                          ? configParam.label
+                          : configParam.name}
+                        {configParam.mandatory ? " * " : ""}
+                      </label>
+                    </Col>
+                    <Col xs={4}>
                       <input
                         {...input}
                         type="password"
+                        autoComplete="off"
+                        id={
+                          meta.error && meta.touched
+                            ? "isError"
+                            : "configs." + this.configsJson[configParam.name]
+                        }
                         className={
                           meta.error && meta.touched
-                            ? "form-control border border-danger"
+                            ? "form-control border-danger"
                             : "form-control"
                         }
                       />
-                    </div>
+                    </Col>
                     {configInfo.length === 1 && (
                       <span className="d-inline">
                         <CustomPopover
@@ -757,7 +790,7 @@ class ServiceForm extends Component {
                         {meta.error}
                       </span>
                     )}
-                  </div>
+                  </Row>
                 )}
               </Field>
             );
@@ -938,49 +971,72 @@ class ServiceForm extends Component {
                     form,
                     submitting,
                     values,
+                    invalid,
+                    errors,
                     form: {
                       mutators: { push: addItem, pop: removeItem }
                     }
                   }) => (
-                    <form onSubmit={handleSubmit}>
-                      <div className="row">
-                        <div className="col-sm-12">
+                    <form
+                      onSubmit={(event) => {
+                        if (invalid) {
+                          let selector =
+                            document.getElementById("isError") ||
+                            document.querySelector(
+                              `input[name=${Object.keys(errors)[0]}]`
+                            );
+                          scrollToError(selector);
+                        }
+                        handleSubmit(event);
+                      }}
+                    >
+                      <Row>
+                        <Col xs={12}>
                           <p className="form-header">Service Details :</p>
                           <Field
                             name="name"
                             validate={this.validateRequired(true)}
                           >
                             {({ input, meta }) => (
-                              <div className="form-group row">
-                                <label className="col-sm-3 col-form-label">
-                                  Service Name *
-                                </label>
-                                <div className="col-sm-6">
+                              <Row className="form-group">
+                                <Col xs={3}>
+                                  <label className="form-label pull-right">
+                                    Service Name *
+                                  </label>
+                                </Col>
+                                <Col xs={4}>
                                   <input
                                     {...input}
                                     type="text"
+                                    id={
+                                      meta.error && meta.touched
+                                        ? "isError"
+                                        : "name"
+                                    }
                                     className={
                                       meta.error && meta.touched
-                                        ? "form-control border border-danger"
+                                        ? "form-control border-danger"
                                         : "form-control"
                                     }
                                   />
-                                </div>
+                                </Col>
                                 {meta.error && meta.touched && (
                                   <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
-                              </div>
+                              </Row>
                             )}
                           </Field>
                           <Field name="displayName">
                             {({ input, meta }) => (
-                              <div className="form-group row">
-                                <label className="col-sm-3 col-form-label">
-                                  Display Name
-                                </label>
-                                <div className="col-sm-6">
+                              <Row className="form-group">
+                                <Col xs={3}>
+                                  <label className="form-label pull-right">
+                                    Display Name
+                                  </label>
+                                </Col>
+                                <Col xs={4}>
                                   <input
                                     {...input}
                                     type="text"
@@ -990,22 +1046,24 @@ class ServiceForm extends Component {
                                         : "form-control"
                                     }
                                   />
-                                </div>
+                                </Col>
                                 {meta.error && meta.touched && (
                                   <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
-                              </div>
+                              </Row>
                             )}
                           </Field>
                           <Field name="description">
                             {({ input, meta }) => (
-                              <div className="form-group row">
-                                <label className="col-sm-3 col-form-label">
-                                  Description
-                                </label>
-                                <div className="col-sm-6">
+                              <Row className="form-group">
+                                <Col xs={3}>
+                                  <label className="form-label pull-right">
+                                    Description
+                                  </label>
+                                </Col>
+                                <Col xs={4}>
                                   <textarea
                                     {...input}
                                     className={
@@ -1014,48 +1072,61 @@ class ServiceForm extends Component {
                                         : "form-control"
                                     }
                                   />
-                                </div>
+                                </Col>
                                 {meta.error && meta.touched && (
                                   <span className="col-sm-6 offset-sm-3 invalid-field">
                                     {meta.error}
                                   </span>
                                 )}
-                              </div>
+                              </Row>
                             )}
                           </Field>
-                          <div className="form-group row">
-                            <label className="col-sm-3 col-form-label">
-                              Active Status
-                            </label>
-                            <div className="col-sm-3 form-check form-check-inline">
-                              <Field
-                                name="isEnabled"
-                                component="input"
-                                type="radio"
-                                value="true"
-                                className="form-control"
-                              />
-                              <label className="form-check-label">
-                                Enabled
+                          <Row className="form-group">
+                            <Col xs={3}>
+                              <label className="form-label pull-right">
+                                Active Status
                               </label>
-                              <Field
-                                name="isEnabled"
-                                component="input"
-                                type="radio"
-                                value="false"
-                                className="form-control"
-                              />
-                              <label className="form-check-label">
-                                Disabled
-                              </label>
-                            </div>
-                          </div>
+                            </Col>
+                            <Col xs={4}>
+                              <span>
+                                <div className="form-control border-0">
+                                  <div className="form-check form-check-inline">
+                                    <Field
+                                      name="isEnabled"
+                                      component="input"
+                                      type="radio"
+                                      className="form-check-input"
+                                      value="true"
+                                    />
+                                    <label className="form-check-label">
+                                      Enabled
+                                    </label>
+                                  </div>
+                                  <div className="form-check form-check-inline">
+                                    {" "}
+                                    <Field
+                                      name="isEnabled"
+                                      className="form-check-input"
+                                      component="input"
+                                      type="radio"
+                                      value="false"
+                                    />
+                                    <label className="form-check-label">
+                                      Disabled
+                                    </label>
+                                  </div>
+                                </div>
+                              </span>
+                            </Col>
+                          </Row>
                           {this.state.serviceDef.name !== "tag" && (
-                            <div className="form-group row">
-                              <label className="col-sm-3 col-form-label">
-                                Select Tag Service
-                              </label>
-                              <div className="col-sm-6">
+                            <Row className="form-group">
+                              <Col xs={3}>
+                                <label className="form-label pull-right">
+                                  Select Tag Service
+                                </label>
+                              </Col>
+                              <Col xs={4}>
                                 <Field
                                   name="tagService"
                                   component={this.SelectField}
@@ -1068,20 +1139,22 @@ class ServiceForm extends Component {
                                   placeholder="Select Tag Service"
                                   isClearable={true}
                                 />
-                              </div>
-                            </div>
+                              </Col>
+                            </Row>
                           )}
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-sm-12">
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col xs={12}>
                           <p className="form-header">Config Properties :</p>
                           {this.getServiceConfigs(this.state.serviceDef)}
-                          <div className="form-group row">
-                            <label className="col-sm-3 col-form-label">
-                              Add New Configurations
-                            </label>
-                            <div className="col-sm-6">
+                          <Row className="form-group">
+                            <Col xs={3}>
+                              <label className="form-label pull-right">
+                                Add New Configurations
+                              </label>
+                            </Col>
+                            <Col xs={5}>
                               <Table bordered size="sm" className="no-bg-color">
                                 <thead>
                                   <tr>
@@ -1128,9 +1201,9 @@ class ServiceForm extends Component {
                                   </FieldArray>
                                 </tbody>
                               </Table>
-                            </div>
-                          </div>
-                          <div className="form-group row">
+                            </Col>
+                          </Row>
+                          <Row className="form-group">
                             <div className="col-sm-4 offset-sm-3">
                               <Button
                                 variant="outline-dark"
@@ -1142,9 +1215,9 @@ class ServiceForm extends Component {
                                 <i className="fa-fw fa fa-plus"></i>
                               </Button>
                             </div>
-                          </div>
-                        </div>
-                      </div>
+                          </Row>
+                        </Col>
+                      </Row>
                       <div className="row">
                         <div className="col-sm-12">
                           <div className="form-group row form-header p-0">

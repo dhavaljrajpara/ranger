@@ -779,12 +779,12 @@ const SecurityZoneForm = (props) => {
                           </Col>
                           <Col xs={4}>
                             <AsyncSelect
+                              {...input}
                               styles={
                                 meta.error && meta.touched
                                   ? selectCustomStyles
                                   : ""
                               }
-                              {...input}
                               id={
                                 meta.error && meta.touched
                                   ? "isError"
@@ -815,12 +815,12 @@ const SecurityZoneForm = (props) => {
                           </Col>
                           <Col xs={4}>
                             <AsyncSelect
+                              {...input}
                               styles={
                                 meta.error && meta.touched
                                   ? selectCustomStyles
                                   : ""
                               }
-                              {...input}
                               id={
                                 meta.error && meta.touched
                                   ? "isError"
@@ -884,6 +884,11 @@ const SecurityZoneForm = (props) => {
                           <Col xs={6}>
                             <Select
                               {...input}
+                              styles={
+                                meta.error && meta.touched
+                                  ? selectCustomStyles
+                                  : ""
+                              }
                               id={meta.error && meta.touched ? "isError" : ""}
                               onChange={(values, e) =>
                                 resourceServicesOnChange(

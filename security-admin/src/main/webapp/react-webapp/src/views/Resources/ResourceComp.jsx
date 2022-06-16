@@ -8,6 +8,7 @@ import { filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType } from "Utils/XAEnums";
+import { selectCustomStyles } from "../../components/CommonComponents";
 
 const noneOptions = {
   label: "None",
@@ -207,7 +208,7 @@ export default function ResourceComp(props) {
             defaultValue={getResourceLabelOp(levelKey, index)[0]}
             className="form-control"
             name={`resourceName-${levelKey}`}
-            render={({ input }) =>
+            render={({ input, meta }) =>
               formValues[resourceKey] ? (
                 renderResourceSelect(levelKey, index) ? (
                   <>
@@ -248,6 +249,21 @@ export default function ResourceComp(props) {
                 <>
                   <AsyncCreatableSelect
                     {...input}
+                    // styles={
+                    //   formValues &&
+                    //   formValues[`resourceName-${levelKey}`]?.mandatory &&
+                    //   meta.error &&
+                    //   meta.touched &&
+                    //   selectCustomStyles
+                    // }
+                    id={
+                      formValues &&
+                      formValues[`resourceName-${levelKey}`]?.mandatory &&
+                      meta.error &&
+                      meta.touched
+                        ? "isError"
+                        : `value-${levelKey}`
+                    }
                     defaultOptions
                     isMulti
                     isDisabled={

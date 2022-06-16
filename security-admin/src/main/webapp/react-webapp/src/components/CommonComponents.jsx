@@ -381,7 +381,6 @@ export const scrollToError = (selector) => {
   return (
     selector &&
     selector.scrollIntoView({
-      behavior: "smooth",
       block: "center"
     })
   );
