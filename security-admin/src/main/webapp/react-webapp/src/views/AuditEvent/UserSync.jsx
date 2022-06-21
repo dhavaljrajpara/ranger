@@ -1,9 +1,11 @@
 import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge, Modal, Button } from "react-bootstrap";
+import { Badge, Modal, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
 import moment from "moment-timezone";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { map } from "lodash";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
@@ -16,6 +18,7 @@ function User_Sync() {
     syncDteails: {},
     showSyncDetails: false
   });
+  const [searchFilterParams, setSearchFilter] = useState({});
 
   const fetchUserSyncInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -23,15 +26,15 @@ function User_Sync() {
       let logs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
             url: "assets/ugsyncAudits",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           logs = logsResp.data.vxUgsyncAuditInfoList;
           totalCount = logsResp.data.totalCount;
@@ -46,7 +49,7 @@ function User_Sync() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
   const refreshTable = () => {
     setUserSyncLogs([]);
@@ -136,11 +139,56 @@ function User_Sync() {
     ],
     []
   );
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
   return (
     <>
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={[
+              {
+                category: "endDate",
+                label: "End Date",
+                type: "date"
+              },
+              {
+                category: "startDate",
+                label: "Start Date",
+                type: "date"
+              },
+              {
+                category: "syncSource",
+                label: "Sync Source",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "File", label: "File" },
+                    { value: "LDAP/AD", label: "LDAP/AD" },
+                    { value: "Unix", label: "Unix" }
+                  ];
+                }
+              },
+              {
+                category: "userName",
+                label: "User Name",
+                type: "text"
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
+      </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <br />
-      <br />
       <XATableLayout
         data={userSyncListingData}
         columns={columns}

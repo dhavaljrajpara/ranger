@@ -121,7 +121,7 @@ function XATableLayout({
     <>
       {columnHide &&
         ["Info"].map((variant, index) => (
-          <div className="text-right mt-n5">
+          <div className="text-right mb-2 mt-n5">
             <DropdownButton
               className="p-0"
               key={index}

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Badge } from "react-bootstrap";
+import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
 import { ClassTypes, enumValueToLabel } from "../../utils/XAEnums";
@@ -8,11 +8,12 @@ import AdminModal from "./AdminModal";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import OperationAdminModal from "./OperationAdminModal";
 import moment from "moment-timezone";
-import { capitalize, startCase, toLower } from "lodash";
+import { capitalize, map, startCase, toLower } from "lodash";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
-
+  const [searchFilterParams, setSearchFilter] = useState({});
   const [sessionId, setSessionId] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = useState(0);
@@ -20,7 +21,6 @@ function Admin() {
   const [entries, setEntries] = useState([]);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [showrowmodal, setShowRowModal] = useState(false);
-  // const [showview, setShowView] = useState(null);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
 
@@ -29,7 +29,6 @@ function Admin() {
 
   const rowModal = async (row) => {
     const { original = {} } = row;
-    // setShowView(original.objectId);
     original.objectId;
     setShowRowModal(true);
     setRowData(original);
@@ -41,14 +40,14 @@ function Admin() {
       let adminlogs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           logsResp = await fetchApi({
             url: "assets/report",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           adminlogs = logsResp.data.vXTrxLogs;
           totalCount = logsResp.data.totalCount;
@@ -61,7 +60,7 @@ function Admin() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
 
   const refreshTable = () => {
@@ -261,11 +260,84 @@ function Admin() {
     []
   );
 
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
     <>
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={[
+              {
+                category: "action",
+                label: "Actions",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "create", label: "Create" },
+                    { value: "update", label: "Update" },
+                    { value: "delete", label: "Delete" },
+                    { value: "password change", label: "Password Change" },
+                    { value: "EXPORT JSON", label: "Export Json" },
+                    { value: "EXPORT CSV", label: "Export Csv" },
+                    { value: "EXPORT EXCEL", label: "Export Excel" },
+                    { value: "IMPORT END", label: "Import End" },
+                    { value: "IMPORT START", label: "Import Start" },
+                    { value: "Import Create", label: "Import Create" },
+                    { value: "Import Delete", label: "Import Delete" }
+                  ];
+                }
+              },
+              {
+                category: "objectClassType",
+                label: "Audit Type",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "1020", label: "Ranger Policy" },
+                    { value: "1002", label: "Ranger Group" },
+                    { value: "1056", label: "Ranger Security Zone" },
+                    { value: "1030", label: "Ranger Service" },
+                    { value: "1003", label: "Ranger User" },
+                    { value: "2", label: "User Profile" }
+                  ];
+                }
+              },
+              {
+                category: "endDate",
+                label: "End Date",
+                type: "date"
+              },
+              {
+                category: "sessionId",
+                label: "Session ID",
+                type: "text"
+              },
+              {
+                category: "startDate",
+                label: "Start Date",
+                type: "date"
+              },
+              {
+                category: "owner",
+                label: "User",
+                type: "text"
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
+      </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <br />
-      <br />
       <XATableLayout
         data={adminListingData}
         columns={columns}

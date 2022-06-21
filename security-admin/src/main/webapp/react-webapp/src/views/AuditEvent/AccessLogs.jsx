@@ -10,15 +10,29 @@ import {
 } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import AccessLogsTable from "./AccessLogsTable";
-import { isEmpty, isUndefined, capitalize, pick, indexOf } from "lodash";
+import {
+  isEmpty,
+  isUndefined,
+  capitalize,
+  pick,
+  indexOf,
+  map,
+  sortBy,
+  toString,
+  toUpper
+} from "lodash";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
   const [serviceDefs, setServiceDefs] = useState([]);
+  const [services, setServices] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [searchFilterParams, setSearchFilter] = useState({});
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const [updateTable, setUpdateTable] = useState(moment.now());
@@ -32,7 +46,7 @@ function Access() {
   const fetchIdRef = useRef(0);
 
   useEffect(() => {
-    fetchServiceDefs();
+    fetchServiceDefs(), fetchServices(), fetchZones();
   }, []);
 
   const fetchAccessLogsInfo = useCallback(
@@ -41,15 +55,15 @@ function Access() {
       let logs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
+        params["excludeServiceUser"] = checked ? true : false;
         try {
           logsResp = await fetchApi({
             url: "assets/accessAudit",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize,
-              excludeServiceUser: checked ? true : false
-            }
+            params: params
           });
           logs = logsResp.data.vXAccessAudits;
           totalCount = logsResp.data.totalCount;
@@ -62,8 +76,9 @@ function Access() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
+
   const fetchServiceDefs = async () => {
     let serviceDefsResp = [];
     try {
@@ -79,18 +94,51 @@ function Access() {
     setServiceDefs(serviceDefsResp.data.serviceDefs);
     setLoader(false);
   };
+
+  const fetchServices = async () => {
+    let servicesResp = [];
+    try {
+      servicesResp = await fetchApi({
+        url: "plugins/services"
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Services or CSRF headers! ${error}`
+      );
+    }
+
+    setServices(servicesResp.data.services);
+    setLoader(false);
+  };
+
+  const fetchZones = async () => {
+    let zonesResp;
+    try {
+      zonesResp = await fetchApi({
+        url: "zones/zones"
+      });
+    } catch (error) {
+      console.error(`Error occurred while fetching Zones! ${error}`);
+    }
+
+    setZones(sortBy(zonesResp.data.securityZones, ["name"]));
+    setLoader(false);
+  };
+
   const toggleChange = () => {
     setAccessLogs([]);
     setChecked(!checked);
     setLoader(true);
     setUpdateTable(moment.now());
   };
+
   const handleClosePolicyId = () => setPolicyViewModal(false);
   const handleClose = () => setShowRowModal(false);
   const rowModal = (row) => {
     setShowRowModal(true);
     setRowData(row.original);
   };
+
   const openModal = (policyDetails) => {
     let policyParams = pick(policyDetails, [
       "eventTime",
@@ -101,6 +149,7 @@ function Access() {
     setPolicyParamsData(policyParams);
     fetchVersions(policyDetails.policyId);
   };
+
   const fetchVersions = async (policyId) => {
     let versionsResp = {};
     try {
@@ -122,6 +171,7 @@ function Access() {
     );
     setLoader(false);
   };
+
   const refreshTable = () => {
     setAccessLogs([]);
     setLoader(true);
@@ -194,6 +244,7 @@ function Access() {
     }
     return (filterTitle = `${capitalize(title)} Query`);
   };
+
   const previousVer = (e) => {
     if (e.currentTarget.classList.contains("active")) {
       let curr = policyParamsData && policyParamsData.policyVersion;
@@ -209,6 +260,7 @@ function Access() {
     prevVal.isChangeVersion = true;
     setPolicyParamsData(prevVal);
   };
+
   const nextVer = (e) => {
     if (e.currentTarget.classList.contains("active")) {
       let curr = policyParamsData && policyParamsData.policyVersion;
@@ -419,9 +471,161 @@ function Access() {
     ],
     []
   );
+
+  const getServiceDefType = () => {
+    let serviceDefType = [];
+
+    serviceDefType = map(serviceDefs, function (serviceDef) {
+      return {
+        label: toUpper(serviceDef.name),
+        value: toString(serviceDef.id)
+      };
+    });
+
+    return serviceDefType;
+  };
+
+  const getServices = () => {
+    let servicesName = [];
+
+    servicesName = map(services, function (service) {
+      return { label: service.name, value: service.name };
+    });
+
+    return servicesName;
+  };
+
+  const getZones = () => {
+    let zonesName = [];
+
+    zonesName = map(zones, function (zone) {
+      return zone.name;
+    });
+
+    return zonesName;
+  };
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
-    <>
-      <Row>
+    <React.Fragment>
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={[
+              {
+                category: "aclEnforcer",
+                label: "Access Enforcer",
+                type: "text"
+              },
+              {
+                category: "accessType",
+                label: "Access Type",
+                type: "text"
+              },
+              {
+                category: "agentHost",
+                label: "Agent Host Name",
+                type: "text"
+              },
+              {
+                category: "agentId",
+                label: "Application",
+                type: "text"
+              },
+              {
+                category: "eventId",
+                label: "Audit ID",
+                type: "number"
+              },
+              {
+                category: "clientIP",
+                label: "Client IP",
+                type: "text"
+              },
+              {
+                category: "cluster",
+                label: "Cluster Name",
+                type: "text"
+              },
+              {
+                category: "endDate",
+                label: "End Date",
+                type: "date"
+              },
+              {
+                category: "excludeUser",
+                label: "Exclude User",
+                type: "number"
+              },
+              {
+                category: "policyId",
+                label: "Policy ID",
+                type: "text"
+              },
+              {
+                category: "resourcePath",
+                label: "Resource Name",
+                type: "text"
+              },
+              {
+                category: "resourceType",
+                label: "Resource Type",
+                type: "text"
+              },
+              {
+                category: "accessResult",
+                label: "Result",
+                type: "text"
+              },
+              {
+                category: "repoName",
+                label: "Service Name",
+                type: "textoptions",
+                options: getServices
+              },
+              {
+                category: "repoType",
+                label: "Service Type",
+                type: "textoptions",
+                options: getServiceDefType
+              },
+              {
+                category: "startDate",
+                label: "Start Date",
+                type: "date"
+              },
+              {
+                category: "tags",
+                label: "Tags",
+                type: "text"
+              },
+              {
+                category: "requestUser",
+                label: "Users",
+                type: "text"
+              },
+              {
+                category: "zoneName",
+                label: "Zone Name",
+                type: "textoptions",
+                options: getZones
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
+      </Row>
+      <Row className="mb-2">
         <Col sm={2}>
           <span>Exclude Service Users: </span>
           <input
@@ -435,7 +639,6 @@ function Access() {
         </Col>
         <Col sm={9}>
           <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-          <br />
         </Col>
       </Row>
       <XATableLayout
@@ -474,7 +677,6 @@ function Access() {
         <Modal.Body className="overflow-auto p-3 mb-3 mb-md-0 mr-md-3">
           <AccessLogsTable data={rowdata}></AccessLogsTable>
         </Modal.Body>
-
         <Modal.Footer>
           <Button variant="primary" onClick={handleClose}>
             OK
@@ -531,7 +733,7 @@ function Access() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </React.Fragment>
   );
 }
 

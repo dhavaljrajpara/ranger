@@ -1,15 +1,18 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import dateFormat from "dateformat";
-import _, { isUndefined } from "lodash";
+import { isUndefined } from "lodash";
 import { setTimeStamp } from "Utils/XAUtils";
 import {
   CustomPopover,
-  CustomTooltip,
-  Loader
+  CustomTooltip
 } from "../../components/CommonComponents";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { fetchApi } from "Utils/fetchAPI";
+import { map, toUpper } from "lodash";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -18,6 +21,45 @@ function Plugin_Status() {
   const [entries, setEntries] = useState([]);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const fetchIdRef = useRef(0);
+  const [searchFilterParams, setSearchFilter] = useState({});
+  const [serviceDefs, setServiceDefs] = useState([]);
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    fetchServiceDefs(), fetchServices();
+  }, []);
+
+  const fetchServiceDefs = async () => {
+    let serviceDefsResp = [];
+    try {
+      serviceDefsResp = await fetchApi({
+        url: "plugins/definitions"
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
+      );
+    }
+
+    setServiceDefs(serviceDefsResp.data.serviceDefs);
+    setLoader(false);
+  };
+
+  const fetchServices = async () => {
+    let servicesResp = [];
+    try {
+      servicesResp = await fetchApi({
+        url: "plugins/services"
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Services or CSRF headers! ${error}`
+      );
+    }
+
+    setServices(servicesResp.data.services);
+    setLoader(false);
+  };
 
   const fetchPluginStatusInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
@@ -25,15 +67,15 @@ function Plugin_Status() {
       let logs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
             url: "plugins/plugins/info",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           logs = logsResp.data.pluginInfoList;
           totalCount = logsResp.data.totalCount;
@@ -48,7 +90,7 @@ function Plugin_Status() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
   const isDateDifferenceMoreThanHr = (date1, date2) => {
     let diff = (date1 - date2) / 36e5;
@@ -370,11 +412,85 @@ function Plugin_Status() {
     ],
     []
   );
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
+  const getServiceDefType = () => {
+    let serviceDefType = [];
+
+    serviceDefType = map(serviceDefs, function (serviceDef) {
+      return {
+        label: toUpper(serviceDef.name),
+        value: serviceDef.name
+      };
+    });
+
+    return serviceDefType;
+  };
+
+  const getServices = () => {
+    let servicesName = [];
+
+    servicesName = map(services, function (service) {
+      return { label: service.name, value: service.name };
+    });
+
+    return servicesName;
+  };
+
   return (
     <>
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={[
+              {
+                category: "pluginAppType",
+                label: "Application",
+                type: "text"
+              },
+              {
+                category: "clusterName",
+                label: "Cluster Name",
+                type: "text"
+              },
+              {
+                category: "pluginHostName",
+                label: "Host Name",
+                type: "text"
+              },
+              {
+                category: "pluginIpAddress",
+                label: "Plugin IP",
+                type: "text"
+              },
+              {
+                category: "serviceName",
+                label: "Service Name",
+                type: "textoptions",
+                options: getServices
+              },
+              {
+                category: "serviceType",
+                label: "Service Type",
+                type: "textoptions",
+                options: getServiceDefType
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
+      </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <br />
-      <br />
       <XATableLayout
         data={pluginStatusListingData}
         columns={columns}

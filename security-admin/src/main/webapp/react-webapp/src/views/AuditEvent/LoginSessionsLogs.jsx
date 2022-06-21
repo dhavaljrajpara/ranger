@@ -1,5 +1,5 @@
-import React, { Component, useState, useCallback, useRef } from "react";
-import { Badge } from "react-bootstrap";
+import React, { useState, useCallback, useRef } from "react";
+import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuthStatus } from "../../utils/XAEnums";
 import { AuthType } from "../../utils/XAEnums";
@@ -7,7 +7,8 @@ import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
-import { truncate } from "lodash";
+import { map } from "lodash";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
@@ -17,6 +18,7 @@ function Login_Sessions() {
   const [pageCount, setPageCount] = React.useState(0);
   const [entries, setEntries] = useState([]);
   const [updateTable, setUpdateTable] = useState(moment.now());
+  const [searchFilterParams, setSearchFilter] = useState({});
 
   const fetchIdRef = useRef(0);
 
@@ -27,15 +29,15 @@ function Login_Sessions() {
       let logs = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
             url: "xusers/authSessions",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           logs = logsResp.data.vXAuthSessions;
           totalCount = logsResp.data.totalCount;
@@ -50,7 +52,7 @@ function Login_Sessions() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
   const refreshTable = () => {
     setLoginSessionLogs([]);
@@ -176,11 +178,88 @@ function Login_Sessions() {
     ],
     []
   );
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
     <>
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={[
+              {
+                category: "endDate",
+                label: "End Date",
+                type: "date"
+              },
+              {
+                category: "requestIP",
+                label: "IP",
+                type: "text"
+              },
+              {
+                category: "loginId",
+                label: "Login ID  ",
+                type: "text"
+              },
+              {
+                category: "authType",
+                label: "Login Type",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "1", label: "Username/Password" },
+                    { value: "2", label: "Kerberos" },
+                    { value: "3", label: "SingleSignOn" },
+                    { value: "4", label: "Trusted Proxy" }
+                  ];
+                }
+              },
+              {
+                category: "authStatus",
+                label: "Result",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "1", label: "Success" },
+                    { value: "2", label: "Wrong Password" },
+                    { value: "3", label: "Account Disabled" },
+                    { value: "4", label: "Locked" },
+                    { value: "5", label: "Password Expired" },
+                    { value: "6", label: "User not found" }
+                  ];
+                }
+              },
+              {
+                category: "sessionId",
+                label: "Session ID",
+                type: "text"
+              },
+              {
+                category: "startDate",
+                label: "Start Date",
+                type: "date"
+              },
+              {
+                category: "requestUserAgent",
+                label: "User Agent",
+                type: "text"
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
+      </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <br />
-      <br />
       <XATableLayout
         data={loginSessionListingData}
         columns={columns}
