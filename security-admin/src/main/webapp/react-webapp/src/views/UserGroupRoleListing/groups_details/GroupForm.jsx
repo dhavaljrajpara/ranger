@@ -128,7 +128,7 @@ class GroupForm extends Component {
           ],
           this.props.match.params.groupId
         )}
-        <h4 className="wrap-header bold">Group Form</h4>
+        <h4 className="wrap-header bold">Group Detail</h4>
         <Form
           onSubmit={this.handleSubmit}
           validate={this.validateForm}

@@ -81,7 +81,8 @@ function Plugins() {
             .tz(date, "Asia/Kolkata")
             .format("MM/DD/YYYY HH:mm:ss A");
           return newdate;
-        }
+        },
+        width: 240
       },
       {
         Header: "Service Name",
@@ -89,7 +90,14 @@ function Plugins() {
       },
       {
         Header: "Plugin ID",
-        accessor: "agentId"
+        accessor: "agentId",
+        Cell: (rawValue) => {
+          return (
+            <div className="overflow-text">
+              <span title={rawValue.value}>{rawValue.value}</span>
+            </div>
+          );
+        }
       },
       {
         Header: "Plugin IP",
@@ -97,7 +105,8 @@ function Plugins() {
       },
       {
         Header: "Cluster Name",
-        accessor: "clusterName"
+        accessor: "clusterName",
+        width: 100
       },
       {
         Header: "Http Response Code",

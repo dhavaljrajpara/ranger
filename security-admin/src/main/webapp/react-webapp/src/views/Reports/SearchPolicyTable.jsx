@@ -76,7 +76,8 @@ function SearchPolicyTable(props) {
               {rawValue.value}
             </Link>
           );
-        }
+        },
+        width: 50
       },
       {
         Header: "Policy Name",
@@ -86,7 +87,8 @@ function SearchPolicyTable(props) {
         Header: "Policy Label",
         accessor: "policyLabels",
         Cell: (rawValue) => {
-          if (rawValue.value == "") return "--";
+          if (rawValue.value == "")
+            return <div className="text-center">--</div>;
           else {
             let policyLabels = rawValue.value.map((label, index) => (
               <h6 className="d-inline mr-1" key={index}>
@@ -108,7 +110,7 @@ function SearchPolicyTable(props) {
             return keyName.map((key, index) => {
               let val = rawValue.value[key].values;
               return (
-                <div key={index} className="text-center">
+                <div key={index} className="text-center overflow-text">
                   <b>{key}: </b>
                   {val.join()}
                 </div>
@@ -163,7 +165,8 @@ function SearchPolicyTable(props) {
         Header: "Zone Name",
         accessor: "zoneName",
         Cell: (rawValue) => {
-          if (rawValue.value == "") return "--";
+          if (rawValue.value == "")
+            return <div className="text-center">--</div>;
           else {
             return (
               <h6 className="text-center">

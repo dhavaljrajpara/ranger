@@ -72,22 +72,29 @@ export class MoreLess extends Component {
   render() {
     return (
       <>
-        {this.state.data.map((key) => {
-          return (
-            <Badge variant="info" key={key} className="m-1">
-              {key}
-            </Badge>
-          );
-        })}
-        <a onClick={this.handleShowMoreClick}>
-          {this.props.data.length > 4 ? (
-            this.state.show ? (
-              <code className="show-more-less"> + More..</code>
-            ) : (
-              <code className="show-more-less"> - Less..</code>
-            )
-          ) : null}
-        </a>
+        <div className={this.state.show ? "show-less" : "show-more"}>
+          {this.state.data.map((key) => {
+            return (
+              <Badge
+                variant="info"
+                key={key}
+                className="m-1"
+                style={{ alignSelf: "start" }}
+              >
+                {key}
+              </Badge>
+            );
+          })}
+          <a onClick={this.handleShowMoreClick}>
+            {this.props.data.length > 4 ? (
+              this.state.show ? (
+                <code className="show-more-less"> + More..</code>
+              ) : (
+                <code className="show-more-less"> - Less..</code>
+              )
+            ) : null}
+          </a>
+        </div>
       </>
     );
   }

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import XATableLayout from "Components/XATableLayout";
 import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
-import { reject } from "lodash";
+import { isEmpty, reject } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 
@@ -57,41 +57,39 @@ function Permissions() {
             );
           }
           return "--";
-        }
+        },
+        width: 80
       },
       {
         Header: "Groups",
+        accessor: "groupPermList",
         accessor: (raw) => {
           const Groups = raw.groupPermList.map((group) => {
             return group.groupName;
           });
 
-          return (
-            <>
-              <h6>
-                <MoreLess data={Groups} />
-              </h6>
-            </>
+          return !isEmpty(Groups) ? (
+            <MoreLess data={Groups} />
+          ) : (
+            <div className="text-center">--</div>
           );
-        },
-        className: "group"
+        }
+        // maxWidth: 210
       },
       {
         Header: "Users",
+        accessor: "userPermList",
         accessor: (raw) => {
           const Users = raw.userPermList.map((user) => {
             return user.userName;
           });
 
-          return (
-            <>
-              <h6>
-                <MoreLess data={Users} />
-              </h6>
-            </>
+          return !isEmpty(Users) ? (
+            <MoreLess data={Users} />
+          ) : (
+            <div className="text-center">--</div>
           );
-        },
-        className: "user"
+        }
       },
       {
         Header: "Action",
@@ -108,7 +106,8 @@ function Permissions() {
               </Link>
             </div>
           );
-        }
+        },
+        width: 50
       }
     ],
     []

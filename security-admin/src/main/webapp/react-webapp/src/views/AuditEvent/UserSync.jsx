@@ -80,28 +80,47 @@ function User_Sync() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           return (
-            <h6>
-              <Badge variant="success">{rawValue.value}</Badge>
-            </h6>
+            <div className="text-center">
+              <h6>
+                <Badge variant="success">{rawValue.value}</Badge>
+              </h6>
+            </div>
           );
         }
       },
       {
-        Header: "Users",
-        accessor: "noOfNewUsers"
+        Header: "Number Of New",
+        id: "new",
+        columns: [
+          {
+            Header: "Users",
+            accessor: "noOfNewUsers",
+            width: 100
+          },
+          {
+            Header: "Groups",
+            accessor: "noOfNewGroups",
+            width: 100
+          }
+        ]
       },
       {
-        Header: "Groups",
-        accessor: "noOfNewGroups"
+        Header: "Number Of Modified",
+        id: "modified",
+        columns: [
+          {
+            Header: "Users",
+            accessor: "noOfModifiedUsers",
+            width: 100
+          },
+          {
+            Header: "Groups",
+            accessor: "noOfModifiedGroups",
+            width: 100
+          }
+        ]
       },
-      {
-        Header: "Users",
-        accessor: "noOfModifiedUsers"
-      },
-      {
-        Header: "Groups",
-        accessor: "noOfModifiedGroups"
-      },
+
       {
         Header: "Event Time",
         accessor: "eventTime",
@@ -111,7 +130,8 @@ function User_Sync() {
             .tz(date, "Asia/Kolkata")
             .format("MM/DD/YYYY HH:mm:ss A");
           return newdate;
-        }
+        },
+        minWidth: 170
       },
       {
         Header: "Sync Details",
@@ -119,17 +139,19 @@ function User_Sync() {
         Cell: (rawValue, model) => {
           if (rawValue.value) {
             return (
-              <button
-                className="btn btn-outline-dark btn-sm"
-                data-id="syncDetailes"
-                title="Sync Details"
-                id={model.id}
-                onClick={() => {
-                  toggleTableSyncModal(rawValue.value);
-                }}
-              >
-                <i className="fa-fw fa fa-eye"> </i>
-              </button>
+              <div className="text-center">
+                <button
+                  className="btn btn-outline-dark btn-sm"
+                  data-id="syncDetailes"
+                  title="Sync Details"
+                  id={model.id}
+                  onClick={() => {
+                    toggleTableSyncModal(rawValue.value);
+                  }}
+                >
+                  <i className="fa-fw fa fa-eye"> </i>
+                </button>
+              </div>
             );
           } else {
             return " -- ";

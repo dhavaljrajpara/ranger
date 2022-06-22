@@ -35,7 +35,6 @@ class UserGroupRoleListing extends Component {
     return (
       <div>
         {commonBreadcrumb(["Users"])}
-        <h4 className="wrap-header bold">Users/Groups/Roles</h4>
         <div className="wrap">
           <Tabs
             id="userGroupRoleListing"

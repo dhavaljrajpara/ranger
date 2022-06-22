@@ -1007,7 +1007,7 @@ const SecurityZoneForm = (props) => {
                                                 )
                                               )
                                             : ""}
-                                          <div className="resource-list min-width-150">
+                                          <div>
                                             <Button
                                               title="add"
                                               className="btn btn-mini pull-left"

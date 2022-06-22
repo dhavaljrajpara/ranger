@@ -1,7 +1,7 @@
 body {
   background: #eee;
   font-family: "Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
-  font-size: 14px;
+  font-size: 13px;
 }
 
 a {
@@ -394,7 +394,6 @@ table.no-bg-color thead tr th:first-child {
 .resource-text {
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 250px;
   flex: 1;
   padding-right: 12px;
 }
@@ -403,6 +402,7 @@ table.no-bg-color thead tr th:first-child {
 .show-more-less {
   color: #0b7fad;
   font-size: 12px;
+  font-size: 70%;
   cursor: pointer;
 }
 
@@ -757,15 +757,11 @@ header {
   overflow: auto;
 }
 
-.user,
-.group {
-  width: 35%;
-}
 .user-agent {
   width: 21%;
 }
 
-.operation-text {
+.overflow-text {
   max-width: 22rem;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -1306,4 +1302,52 @@ header {
 
 .datepicker__input:focus {
   outline: none;
+}
+
+.resizer {
+  display: inline-block;
+  background: #dee2e6;
+  width: 3px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(50%);
+  z-index: 1;
+  touch-action: none;
+  
+}
+
+.resizeable-icon {
+  position: absolute;
+  bottom: 0;
+  font-size: 10px;
+  cursor: se-resize;
+  right: 0;
+  transform: rotate(90deg);
+  
+}
+
+.react-table {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+}
+
+.show-more {
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-size: 1rem;
+  max-height: 100px;
+  overflow-y: auto;
+  
+}
+
+.show-less {
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-size: 1rem;
+  height: "auto";
+  
 }

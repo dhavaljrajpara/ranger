@@ -1,6 +1,12 @@
 import React, { forwardRef, useEffect, useRef } from "react";
-import { useTable, usePagination, useRowSelect } from "react-table";
-import { Table, Dropdown, ButtonGroup, Button } from "react-bootstrap";
+import {
+  useTable,
+  usePagination,
+  useRowSelect,
+  useResizeColumns,
+  useFlexLayout
+} from "react-table";
+import { Table, ButtonGroup, Button } from "react-bootstrap";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import { Loader } from "Components/CommonComponents";
 const IndeterminateCheckbox = forwardRef(
@@ -35,6 +41,7 @@ function XATableLayout({
   pageCount: controlledPageCount,
   rowSelectOp,
   columnHide,
+  columnResizable,
   totalCount,
   pagination,
   getRowProps = () => ({})
@@ -66,6 +73,8 @@ function XATableLayout({
       pageCount: controlledPageCount
     },
     usePagination,
+    useResizeColumns,
+    useFlexLayout,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => {
@@ -88,10 +97,11 @@ function XATableLayout({
             // The cell can use the individual row's getToggleRowSelectedProps method
             // to the render a checkbox
             Cell: ({ row }) => (
-              <div>
+              <div className="text-center">
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
               </div>
-            )
+            ),
+            width: 40
           };
           if (rowSelectOp && rowSelectOp.position === "first") {
             cols.push(selectionCol, ...columns);
@@ -166,9 +176,29 @@ function XATableLayout({
                           // Apply the header cell props
                           <th
                             {...column.getHeaderProps([
-                              { className: column.className }
+                              {
+                                className: column.className
+                              }
                             ])}
                           >
+                            {columnResizable && !column.disableResizing && (
+                              <>
+                                <div
+                                  className="fa fa-expand"
+                                  aria-hidden="true"
+                                  {...column.getResizerProps([
+                                    { className: "resizer" }
+                                  ])}
+                                  onClick={(event) => event.stopPropagation()}
+                                />
+                                <i
+                                  className="fa fa-expand resizeable-icon"
+                                  aria-hidden="true"
+                                  {...column.getResizerProps()}
+                                />
+                              </>
+                            )}
+
                             {
                               // Render the header
                               column.render("Header")
@@ -195,7 +225,10 @@ function XATableLayout({
                           row.cells.map((cell) => {
                             // Apply the cell props
                             return (
-                              <td {...cell.getCellProps()}>
+                              <td
+                                {...cell.getCellProps()}
+                                className="react-table"
+                              >
                                 {
                                   cell.render("Cell")
                                   // Render the cell contents

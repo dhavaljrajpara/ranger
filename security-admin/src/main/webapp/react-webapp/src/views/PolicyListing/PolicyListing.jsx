@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { pick, indexOf, isUndefined } from "lodash";
+import { pick, indexOf, isUndefined, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
 import { showGroupsOrUsersOrRolesForPolicy } from "Utils/XAUtils";
@@ -193,7 +193,8 @@ function PolicyListing() {
               {rawValue.value}
             </Link>
           );
-        }
+        },
+        width: 70
       },
       {
         Header: "Policy Name",
@@ -214,7 +215,8 @@ function PolicyListing() {
             ));
             return policyLabels;
           }
-        }
+        },
+        width: 100
       },
       {
         Header: "Status",
@@ -232,7 +234,8 @@ function PolicyListing() {
                 <Badge variant="danger">Disabled</Badge>
               </h6>
             );
-        }
+        },
+        width: 100
       },
       {
         Header: "Audit Logging",
@@ -250,73 +253,59 @@ function PolicyListing() {
                 <Badge variant="danger">Disabled</Badge>
               </h6>
             );
-        }
+        },
+        width: 110
       },
       {
         Header: "Roles",
         accessor: "roles",
         Cell: (rawValue) => {
-          if (rawValue) {
-            let rolesData = showGroupsOrUsersOrRolesForPolicy(
-              "roles",
-              rawValue.row.original,
-              policyType
-            );
-            return rolesData.length > 0 ? (
-              <h6>
-                <MoreLess data={rolesData} />
-              </h6>
-            ) : (
-              "--"
-            );
-          } else {
-            return "--";
-          }
-        }
+          let rolesData = showGroupsOrUsersOrRolesForPolicy(
+            "roles",
+            rawValue.row.original,
+            policyType
+          );
+          return !isEmpty(rolesData) ? (
+            <MoreLess data={rolesData} />
+          ) : (
+            <div className="text-center">--</div>
+          );
+        },
+        minWidth: 190
       },
       {
         Header: "Groups",
         accessor: "groups",
         Cell: (rawValue) => {
-          if (rawValue) {
-            let groupsData = showGroupsOrUsersOrRolesForPolicy(
-              "groups",
-              rawValue.row.original,
-              policyType
-            );
-            return groupsData.length > 0 ? (
-              <h6>
-                <MoreLess data={groupsData} />
-              </h6>
-            ) : (
-              "--"
-            );
-          } else {
-            return "--";
-          }
-        }
+          let groupsData = showGroupsOrUsersOrRolesForPolicy(
+            "groups",
+            rawValue.row.original,
+            policyType
+          );
+          return !isEmpty(groupsData) ? (
+            <MoreLess data={groupsData} />
+          ) : (
+            <div className="text-center">--</div>
+          );
+        },
+        minWidth: 190
       },
       {
         Header: "Users",
         accessor: "users",
         Cell: (rawValue) => {
-          if (rawValue) {
-            let usersData = showGroupsOrUsersOrRolesForPolicy(
-              "users",
-              rawValue.row.original,
-              policyType
-            );
-            return usersData.length > 0 ? (
-              <h6>
-                <MoreLess data={usersData} />
-              </h6>
-            ) : (
-              "--"
-            );
-          } else {
-            return "--";
-          }
-        }
+          let usersData = showGroupsOrUsersOrRolesForPolicy(
+            "users",
+            rawValue.row.original,
+            policyType
+          );
+          return !isEmpty(usersData) ? (
+            <MoreLess data={usersData} />
+          ) : (
+            <div className="text-center">--</div>
+          );
+        },
+        minWidth: 190
       },
       {
         Header: "Actions",

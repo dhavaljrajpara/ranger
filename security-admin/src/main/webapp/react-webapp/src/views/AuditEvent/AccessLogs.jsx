@@ -284,11 +284,12 @@ function Access() {
         accessor: "policyId",
         Cell: (rawValue) => {
           return rawValue.value == -1 ? (
-            "--"
+            <div className="text-center">--</div>
           ) : (
-            <>
+            <div className="text-center">
               <a
                 role="button"
+                title={rawValue.value}
                 className="text-primary"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -297,45 +298,65 @@ function Access() {
               >
                 {rawValue.value}
               </a>
-            </>
+            </div>
           );
-        }
+        },
+        width: 70,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Policy Version",
         accessor: "policyVersion",
         Cell: (rawValue) => {
-          return rawValue.value !== undefined ? rawValue.value : "--";
-        }
+          return rawValue.value !== undefined ? (
+            <div className="text-center">{rawValue.value}</div>
+          ) : (
+            <div className="text-center">--</div>
+          );
+        },
+        width: 110,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Event Time",
         accessor: "eventTime",
         Cell: (rawValue) => {
           return dateFormat(rawValue.value, "mm/dd/yyyy h:MM:ss TT");
-        }
+        },
+        width: 160,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Application",
-        accessor: "agentId"
+        accessor: "agentId",
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "User",
-        accessor: "requestUser"
+        accessor: "requestUser",
+        width: 120,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Service (Name / Type)",
         accessor: (s) => (
           <div>
-            <div className="text-center" title={s.repoDisplayName}>
+            <div className="text-left" title={s.repoDisplayName}>
               {s.repoDisplayName}
             </div>
-            <div className="bt-1 text-center" title={s.serviceTypeDisplayName}>
-              {" "}
+            <div className="bt-1 text-left" title={s.serviceTypeDisplayName}>
               {s.serviceTypeDisplayName}
             </div>
           </div>
-        )
+        ),
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Resource (Name / Type)",
@@ -366,11 +387,15 @@ function Access() {
               <div className="text-center">--</div>
             )}
           </>
-        )
+        ),
+        minWidth: 180
       },
       {
         Header: "Access Type",
-        accessor: "accessType"
+        accessor: "accessType",
+        width: 130,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Permission",
@@ -381,7 +406,10 @@ function Access() {
               <Badge variant="info">{rawValue.value}</Badge>
             </h6>
           );
-        }
+        },
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Result",
@@ -399,23 +427,44 @@ function Access() {
                 <Badge variant="danger">Denied</Badge>
               </h6>
             );
-        }
+        },
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Access Enforcer",
-        accessor: "aclEnforcer"
+        accessor: "aclEnforcer",
+        width: 120,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Agent Host Name",
-        accessor: "agentHost"
+        accessor: "agentHost",
+        Cell: (rawValue) => {
+          if (!isUndefined(rawValue.value) || !isEmpty(rawValue.value)) {
+            return rawValue.value;
+          } else return "--";
+        },
+        width: 150,
+
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Client IP",
-        accessor: "clientIP"
+        accessor: "clientIP",
+        width: 110,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Cluster Name",
-        accessor: "clusterName"
+        accessor: "clusterName",
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Zone Name",
@@ -427,12 +476,18 @@ function Access() {
                 <Badge bg="dark">{rawValue.value}</Badge>
               </h6>
             );
-          } else return "--";
-        }
+          } else return <div className="text-center">--</div>;
+        },
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Event Count",
-        accessor: "eventCount"
+        accessor: "eventCount",
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       },
       {
         Header: "Tags",
@@ -457,7 +512,7 @@ function Access() {
               return tag.type;
             });
           } else {
-            return "--";
+            return <div className="text-center">--</div>;
           }
           return (
             <>
@@ -466,7 +521,10 @@ function Access() {
               </h6>
             </>
           );
-        }
+        },
+        width: 100,
+        disableResizing: true,
+        getResizerProps: () => {}
       }
     ],
     []
@@ -655,6 +713,7 @@ function Access() {
           }
         })}
         columnHide={true}
+        columnResizable={true}
       />
       <Modal show={showrowmodal} size="lg" onHide={handleClose}>
         <Modal.Header closeButton>

@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { Loader } from "Components/CommonComponents";
+import { MoreLess } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
 import moment from "moment-timezone";
+import { isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import {
@@ -118,61 +119,45 @@ function Roles() {
             );
           }
           return "--";
-        }
+        },
+        width: 100
       },
 
       {
         Header: "Users",
         accessor: "users",
         accessor: (raw) => {
-          if (raw.users && raw.users.length > 0) {
-            let usersList = _.map(raw.users, "name");
-            return usersList.map((u, index) => {
-              return (
-                <h6 className="d-inline mr-1" key={index}>
-                  <Badge variant="info">{u}</Badge>
-                </h6>
-              );
-            });
-          } else {
-            return "--";
-          }
+          let usersList = _.map(raw.users, "name");
+          return !isEmpty(usersList) ? (
+            <MoreLess data={usersList} />
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       },
       {
         Header: "Groups",
         accessor: "groups",
         accessor: (raw) => {
-          if (raw.groups && raw.groups.length > 0) {
-            let groupsList = _.map(raw.groups, "name");
-            return groupsList.map((g, index) => {
-              return (
-                <h6 className="d-inline mr-1" key={index}>
-                  <Badge variant="info">{g}</Badge>
-                </h6>
-              );
-            });
-          } else {
-            return "--";
-          }
+          let groupsList = _.map(raw.groups, "name");
+          return !isEmpty(groupsList) ? (
+            <MoreLess data={groupsList} />
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       },
       {
         Header: "Roles",
         accessor: "roles",
         accessor: (raw) => {
-          if (raw.roles && raw.roles.length > 0) {
-            let rolesList = _.map(raw.roles, "name");
-            return rolesList.map((r, index) => {
-              return (
-                <h6 className="d-inline mr-1" key={index}>
-                  <Badge variant="info">{r}</Badge>
-                </h6>
-              );
-            });
-          } else {
-            return "--";
-          }
+          let rolesList = _.map(raw.roles, "name");
+
+          return !isEmpty(rolesList) ? (
+            <MoreLess data={rolesList} />
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       }
     ],
@@ -203,7 +188,6 @@ function Roles() {
           </Col>
         )}
       </Row>
-      <br />
       <div>
         <XATableLayout
           data={roleListingData}

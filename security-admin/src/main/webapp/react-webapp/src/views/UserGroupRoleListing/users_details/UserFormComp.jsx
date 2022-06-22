@@ -257,7 +257,7 @@ class UserFormComp extends Component {
   render() {
     return (
       <>
-        <h4 className="wrap-header bold">User Form</h4>
+        <h4 className="wrap-header bold">User Detail</h4>
         <Form
           onSubmit={this.handleSubmit}
           validate={this.validateForm}

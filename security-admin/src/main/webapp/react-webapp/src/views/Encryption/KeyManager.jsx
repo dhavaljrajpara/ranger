@@ -329,7 +329,7 @@ const KeyManager = (props) => {
         accessor: "action",
         Cell: (rawValue) => {
           return (
-            <>
+            <div className="text-center">
               <Button
                 className="btn btn-outline-dark btn-sm m-r-5"
                 size="sm"
@@ -350,7 +350,7 @@ const KeyManager = (props) => {
               >
                 <i className="fa-fw fa fa-trash"></i>
               </Button>
-            </>
+            </div>
           );
         }
       }
@@ -403,8 +403,7 @@ const KeyManager = (props) => {
             </Button>
           </Col>
         </Row>
-        <br />
-        <br />
+
         <XATableLayout
           loading={loader}
           data={keydata || []}

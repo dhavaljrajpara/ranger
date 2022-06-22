@@ -185,21 +185,25 @@ function Groups() {
           if (rawValue.value !== null && rawValue.value !== undefined) {
             if (rawValue.value == GroupSource.XA_PORTAL_GROUP.value)
               return (
-                <h6>
-                  <Badge variant="success">
-                    {GroupTypes.GROUP_INTERNAL.label}
-                  </Badge>
-                </h6>
+                <div className="text-center">
+                  <h6>
+                    <Badge variant="success">
+                      {GroupTypes.GROUP_INTERNAL.label}
+                    </Badge>
+                  </h6>
+                </div>
               );
             else
               return (
-                <h6>
-                  <Badge variant="warning">
-                    {GroupTypes.GROUP_EXTERNAL.label}
-                  </Badge>
-                </h6>
+                <div className="text-center">
+                  <h6>
+                    <Badge variant="warning">
+                      {GroupTypes.GROUP_EXTERNAL.label}
+                    </Badge>
+                  </h6>
+                </div>
               );
-          } else return "--";
+          } else return <div className="text-center">--</div>;
         }
       },
       {
@@ -208,11 +212,13 @@ function Groups() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <h6>
-                <Badge variant="success">{rawValue.value} </Badge>
-              </h6>
+              <div className="text-center">
+                <h6>
+                  <Badge variant="success">{rawValue.value} </Badge>
+                </h6>
+              </div>
             );
-          } else return "--";
+          } else return <div className="text-center">--</div>;
         }
       },
       {
@@ -222,21 +228,25 @@ function Groups() {
           if (rawValue) {
             if (rawValue.value == VisibilityStatus.STATUS_VISIBLE.value)
               return (
-                <h6>
-                  <Badge variant="success">
-                    {VisibilityStatus.STATUS_VISIBLE.label}
-                  </Badge>
-                </h6>
+                <div className="text-center">
+                  <h6>
+                    <Badge variant="success">
+                      {VisibilityStatus.STATUS_VISIBLE.label}
+                    </Badge>
+                  </h6>
+                </div>
               );
             else
               return (
-                <h6>
-                  <Badge variant="info">
-                    {VisibilityStatus.STATUS_HIDDEN.label}
-                  </Badge>
-                </h6>
+                <div className="text-center">
+                  <h6>
+                    <Badge variant="info">
+                      {VisibilityStatus.STATUS_HIDDEN.label}
+                    </Badge>
+                  </h6>
+                </div>
               );
-          } else return "--";
+          } else return <div className="text-center">--</div>;
         }
       },
       {
@@ -244,16 +254,18 @@ function Groups() {
         accessor: "member",
         Cell: (rawValue) => {
           return (
-            <button
-              className="btn btn-outline-dark btn-sm"
-              title="View Users"
-              data-js="showUserList"
-              onClick={() => {
-                showGroupAssociateUser(rawValue.row.original.id);
-              }}
-            >
-              <i className="fa-fw fa fa-group"> </i>
-            </button>
+            <div className="text-center">
+              <button
+                className="btn btn-outline-dark btn-sm"
+                title="View Users"
+                data-js="showUserList"
+                onClick={() => {
+                  showGroupAssociateUser(rawValue.row.original.id);
+                }}
+              >
+                <i className="fa-fw fa fa-group"> </i>
+              </button>
+            </div>
           );
         }
       },
@@ -263,23 +275,26 @@ function Groups() {
         Cell: (rawValue, model) => {
           if (rawValue.value) {
             return (
-              <button
-                className="btn btn-outline-dark btn-sm"
-                data-id="syncDetailes"
-                data-for="group"
-                title="Sync Details"
-                id={model.id}
-                onClick={() => {
-                  toggleGroupSyncModal(rawValue.value);
-                }}
-              >
-                <i className="fa-fw fa fa-eye"> </i>
-              </button>
+              <div className="text-center">
+                <button
+                  className="btn btn-outline-dark btn-sm"
+                  data-id="syncDetailes"
+                  data-for="group"
+                  title="Sync Details"
+                  id={model.id}
+                  onClick={() => {
+                    toggleGroupSyncModal(rawValue.value);
+                  }}
+                >
+                  <i className="fa-fw fa fa-eye"> </i>
+                </button>
+              </div>
             );
           } else {
-            return " -- ";
+            return <div className="text-center">--</div>;
           }
-        }
+        },
+        width: 80
       }
     ],
     []

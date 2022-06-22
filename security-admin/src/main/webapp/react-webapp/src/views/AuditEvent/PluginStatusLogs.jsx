@@ -162,7 +162,14 @@ function Plugin_Status() {
       },
       {
         Header: "Host Name",
-        accessor: "hostName"
+        accessor: "hostName",
+        Cell: (rawValue) => {
+          return (
+            <div className="overflow-text">
+              <span title={rawValue.value}>{rawValue.value}</span>
+            </div>
+          );
+        }
       },
       {
         Header: "Plugin IP",
@@ -185,7 +192,8 @@ function Plugin_Status() {
             accessor: "lastPolicyUpdateTime",
             Cell: ({ row: { original } }) => {
               return setTimeStamp(original.info.lastPolicyUpdateTime);
-            }
+            },
+            minWidth: 170
           },
           {
             Header: "Download",
@@ -239,7 +247,8 @@ function Plugin_Status() {
                 }
               }
               return setTimeStamp(original.info.policyDownloadTime);
-            }
+            },
+            minWidth: 170
           },
           {
             Header: "Active",
@@ -290,7 +299,8 @@ function Plugin_Status() {
                 }
               }
               return setTimeStamp(original.info.policyActivationTime);
-            }
+            },
+            minWidth: 170
           }
         ]
       },
@@ -303,7 +313,8 @@ function Plugin_Status() {
             accessor: "lastTagUpdateTime",
             Cell: ({ row: { original } }) => {
               return setTimeStamp(original.info.lastTagUpdateTime);
-            }
+            },
+            minWidth: 170
           },
           {
             Header: "Download",
@@ -354,7 +365,8 @@ function Plugin_Status() {
                 }
               }
               return setTimeStamp(original.info.tagDownloadTime);
-            }
+            },
+            minWidth: 170
           },
           {
             Header: "Active",
@@ -405,7 +417,8 @@ function Plugin_Status() {
                 }
               }
               return setTimeStamp(original.info.tagActivationTime);
-            }
+            },
+            minWidth: 170
           }
         ]
       }

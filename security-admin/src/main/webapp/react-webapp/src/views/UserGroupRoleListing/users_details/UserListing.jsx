@@ -17,7 +17,7 @@ import {
   UserTypes,
   VisibilityStatus
 } from "Utils/XAEnums";
-import { Loader } from "Components/CommonComponents";
+import { MoreLess } from "Components/CommonComponents";
 import { useHistory, Link } from "react-router-dom";
 import qs from "qs";
 
@@ -31,6 +31,7 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
+import { isEmpty } from "lodash";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 
 function Users() {
@@ -191,8 +192,9 @@ function Users() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return rawValue.value;
-          } else return "--";
-        }
+          } else return <div className="text-center">--</div>;
+        },
+        width: 220
       },
       {
         Header: "Role",
@@ -201,13 +203,14 @@ function Users() {
           if (rawValue.value && rawValue.value.length > 0) {
             let role = rawValue.value[0];
             return (
-              <h6>
+              <h6 className="text-center">
                 <Badge variant="info">{UserRoles[role].label} </Badge>
               </h6>
             );
           }
-          return "--";
-        }
+          return <div className="textt-center">--</div>;
+        },
+        width: 100
       },
       {
         Header: "User Source",
@@ -216,7 +219,7 @@ function Users() {
           if (rawValue.value !== null && rawValue.value !== undefined) {
             if (rawValue.value == UserSource.XA_PORTAL_USER.value)
               return (
-                <h6>
+                <h6 className="text-center">
                   <Badge variant="success">
                     {UserTypes.USER_INTERNAL.label}
                   </Badge>
@@ -224,7 +227,7 @@ function Users() {
               );
             else
               return (
-                <h6>
+                <h6 className="text-center">
                   <Badge variant="warning">
                     {UserTypes.USER_EXTERNAL.label}
                   </Badge>
@@ -237,29 +240,36 @@ function Users() {
         Header: "Sync Source",
         accessor: "syncSource",
         Cell: (rawValue) => {
-          if (rawValue.value) {
-            return (
-              <h6>
-                <Badge variant="success">{rawValue.value} </Badge>
-              </h6>
-            );
-          } else return "--";
+          return rawValue.value ? (
+            <h6 className="text-center">
+              <Badge variant="success">{rawValue.value} </Badge>
+            </h6>
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       },
       {
         Header: "Groups",
         accessor: "groupNameList",
         Cell: (rawValue) => {
-          if (rawValue.value && rawValue.value.length > 0) {
-            return rawValue.value.map((name, index) => {
-              return (
-                <h6 className="d-inline mr-1" key={index}>
-                  <Badge variant="info">{name}</Badge>
+          const Groups = rawValue.value.map((group) => {
+            return group;
+          });
+
+          return (
+            <div className="overflow-auto">
+              {!isEmpty(Groups) ? (
+                <h6>
+                  <MoreLess data={Groups} />
                 </h6>
-              );
-            });
-          } else return "--";
-        }
+              ) : (
+                <div className="text-center">--</div>
+              )}
+            </div>
+          );
+        },
+        width: 200
       },
       {
         Header: "Visibility",
@@ -268,7 +278,7 @@ function Users() {
           if (rawValue) {
             if (rawValue.value == VisibilityStatus.STATUS_VISIBLE.value)
               return (
-                <h6>
+                <h6 className="text-center">
                   <Badge variant="success">
                     {VisibilityStatus.STATUS_VISIBLE.label}
                   </Badge>
@@ -276,13 +286,13 @@ function Users() {
               );
             else
               return (
-                <h6>
+                <h6 className="text-center">
                   <Badge variant="info">
                     {VisibilityStatus.STATUS_HIDDEN.label}
                   </Badge>
                 </h6>
               );
-          } else return "--";
+          } else return <div className="text-center">--</div>;
         }
       },
       {
@@ -291,21 +301,23 @@ function Users() {
         Cell: (rawValue, model) => {
           if (rawValue.value) {
             return (
-              <button
-                className="btn btn-outline-dark btn-sm"
-                data-id="syncDetailes"
-                data-for="users"
-                title="Sync Details"
-                id={model.id}
-                onClick={() => {
-                  toggleUserSyncModal(rawValue.value);
-                }}
-              >
-                <i className="fa-fw fa fa-eye"> </i>
-              </button>
+              <div className="text-center">
+                <button
+                  className="btn btn-outline-dark btn-sm "
+                  data-id="syncDetailes"
+                  data-for="users"
+                  title="Sync Details"
+                  id={model.id}
+                  onClick={() => {
+                    toggleUserSyncModal(rawValue.value);
+                  }}
+                >
+                  <i className="fa-fw fa fa-eye"> </i>
+                </button>
+              </div>
             );
           } else {
-            return " -- ";
+            return <div className="text-center">--</div>;
           }
         }
       }
@@ -368,7 +380,6 @@ function Users() {
           </Col>
         )}
       </Row>
-      <br />
       <div>
         <XATableLayout
           data={userListingData}

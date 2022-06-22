@@ -247,7 +247,7 @@ export default function ServiceAuditFilter(props) {
                             name={`${name}.resources`}
                             render={({ input }) => (
                               <React.Fragment>
-                                <div className="resource-list min-width-150">
+                                <div>
                                   <div className="resource-group">
                                     {getResourceData(input.value)}
                                   </div>

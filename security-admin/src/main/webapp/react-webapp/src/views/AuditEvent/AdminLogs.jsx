@@ -157,10 +157,9 @@ function Admin() {
                   Role {action}d <strong>{objectname}</strong>
                 </span>
               );
-            return <div className="operation-text">{operation}</div>;
+            return <div className="overflow-text">{operation}</div>;
           }
-        },
-        className: "w-25"
+        }
       },
       {
         Header: "Audit Type",

@@ -87,7 +87,8 @@ function Login_Sessions() {
           } else {
             return <div className="text-center">--</div>;
           }
-        }
+        },
+        width: 70
       },
       {
         Header: "Login ID",
@@ -98,7 +99,8 @@ function Login_Sessions() {
           } else {
             return "--";
           }
-        }
+        },
+        width: 80
       },
       {
         Header: "Result",
@@ -131,7 +133,8 @@ function Login_Sessions() {
             }
           });
           return html;
-        }
+        },
+        width: 100
       },
       {
         Header: "Login Type",
@@ -156,7 +159,7 @@ function Login_Sessions() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <div className="resource-text" title={rawValue.value}>
+              <div className="overflow-text" title={rawValue.value}>
                 {rawValue.value}
               </div>
             );
@@ -173,7 +176,8 @@ function Login_Sessions() {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
           return newdate;
-        }
+        },
+        width: 180
       }
     ],
     []
