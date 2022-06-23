@@ -3,12 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { pick, indexOf, isUndefined, isEmpty } from "lodash";
+import { pick, indexOf, isUndefined, isEmpty, map } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
 import { showGroupsOrUsersOrRolesForPolicy } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
@@ -25,6 +26,7 @@ function PolicyListing() {
   const [policyParamsData, setPolicyParamsData] = useState(null);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchFilterParams, setSearchFilter] = useState({});
 
   let { serviceId, policyType } = useParams();
 
@@ -37,15 +39,15 @@ function PolicyListing() {
       let policyData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
+        params["policyType"] = policyType;
         try {
           const policyResp = await fetchApi({
             url: `plugins/policies/service/${serviceId}`,
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize,
-              policyType: policyType
-            }
+            params: params
           });
           policyData = policyResp.data.policies;
           totalCount = policyResp.data.totalCount;
@@ -58,7 +60,7 @@ function PolicyListing() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
   const fetchServiceDefs = async () => {
     let serviceDefsResp = [];
@@ -350,12 +352,67 @@ function PolicyListing() {
     ],
     []
   );
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
     <React.Fragment>
       <h4 className="wrap-header bold">List of Policies </h4>
       <div className="wrap policy-listing">
         <Row>
-          <Col sm={12}>
+          <Col sm={10}>
+            <StructuredFilter
+              options={[
+                {
+                  category: "group",
+                  label: "Group Name",
+                  type: "text"
+                },
+                {
+                  category: "policyLabelsPartial",
+                  label: "Policy Label",
+                  type: "text"
+                },
+                {
+                  category: "policyNamePartial:",
+                  label: "Policy Name",
+                  type: "text"
+                },
+                {
+                  category: "role",
+                  label: "Role Name",
+                  type: "text"
+                },
+                {
+                  category: "isEnabled",
+                  label: "Status",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "true", label: "Enabled" },
+                      { value: "false", label: "Disabled" }
+                    ];
+                  }
+                },
+                {
+                  category: "user",
+                  label: "User Name",
+                  type: "text"
+                }
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </Col>
+          <Col sm={2}>
             <div className="pull-right mb-1">
               <Link
                 role="button"

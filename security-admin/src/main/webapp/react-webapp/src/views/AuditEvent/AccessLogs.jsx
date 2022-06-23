@@ -617,7 +617,7 @@ function Access() {
               {
                 category: "endDate",
                 label: "End Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "excludeUser",

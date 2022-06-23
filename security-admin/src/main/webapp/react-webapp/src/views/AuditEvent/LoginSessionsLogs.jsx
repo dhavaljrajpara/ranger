@@ -202,7 +202,7 @@ function Login_Sessions() {
               {
                 category: "endDate",
                 label: "End Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "requestIP",
@@ -250,7 +250,7 @@ function Login_Sessions() {
               {
                 category: "startDate",
                 label: "Start Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "requestUserAgent",

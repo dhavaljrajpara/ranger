@@ -161,7 +161,7 @@ function Plugins() {
               {
                 category: "endDate",
                 label: "End Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "httpRetCode",
@@ -187,7 +187,7 @@ function Plugins() {
               {
                 category: "startDate",
                 label: "Start Date",
-                type: "date"
+                type: "text"
               }
             ]}
             onTokenAdd={updateSearchFilter}

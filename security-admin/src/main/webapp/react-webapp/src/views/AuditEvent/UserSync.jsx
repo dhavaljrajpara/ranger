@@ -180,12 +180,12 @@ function User_Sync() {
               {
                 category: "endDate",
                 label: "End Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "startDate",
                 label: "Start Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "syncSource",

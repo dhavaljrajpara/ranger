@@ -24,6 +24,8 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
+import { map } from "lodash";
+import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Groups() {
   let history = useHistory();
@@ -40,21 +42,22 @@ function Groups() {
     showSyncDetails: false
   });
   const [showAssociateUserModal, setAssociateUserModal] = useState(false);
+  const [searchFilterParams, setSearchFilter] = useState({});
 
   const fetchGroupInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
       let groupData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           const groupResp = await fetchApi({
             url: "xusers/groups",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           groupData = groupResp.data.vXGroups;
           totalCount = groupResp.data.totalCount;
@@ -67,7 +70,7 @@ function Groups() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
 
   const handleDeleteBtnClick = () => {
@@ -326,13 +329,68 @@ function Groups() {
       showAssociateUserDetails: false
     });
   };
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
     <>
       <h4 className="wrap-header font-weight-bold">Group List</h4>
-      <Row className="mb-4 text-right">
-        <Col md={7}></Col>
+      <Row className="mb-4">
+        <Col md={9}>
+          <StructuredFilter
+            options={[
+              {
+                category: "name",
+                label: "Group Name",
+                type: "text"
+              },
+              {
+                category: "groupSource",
+                label: "Group Source",
+                options: () => {
+                  return [
+                    { value: "0", label: "Internal" },
+                    { value: "1", label: "External" }
+                  ];
+                }
+              },
+              {
+                category: "syncSource",
+                label: "Sync Source",
+                type: "textoptions",
+                options: () => {
+                  return [
+                    { value: "File", label: "File" },
+                    { value: "LDAP/AD", label: "LDAP/AD" },
+                    { value: "Unix", label: "Unix" }
+                  ];
+                }
+              },
+              {
+                category: "isVisible",
+                label: "Visibility",
+                options: () => {
+                  return [
+                    { value: "0", label: "Hidden" },
+                    { value: "1", label: "Visible" }
+                  ];
+                }
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (
-          <Col md={5}>
+          <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addGroup}>
               Add Group
             </Button>

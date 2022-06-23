@@ -313,7 +313,7 @@ function Admin() {
               {
                 category: "endDate",
                 label: "End Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "sessionId",
@@ -323,7 +323,7 @@ function Admin() {
               {
                 category: "startDate",
                 label: "Start Date",
-                type: "date"
+                type: "text"
               },
               {
                 category: "owner",

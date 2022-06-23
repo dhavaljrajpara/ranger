@@ -60,12 +60,7 @@ var TypeaheadSelector = createReactClass({
         </TypeaheadOption>
       );
     }, this);
-    return (
-      <ul className={classList}>
-        <li className="header">{this.props.header}</li>
-        {results}
-      </ul>
-    );
+    return <ul className={classList}>{results}</ul>;
   },
 
   setSelectionIndex: function (index) {

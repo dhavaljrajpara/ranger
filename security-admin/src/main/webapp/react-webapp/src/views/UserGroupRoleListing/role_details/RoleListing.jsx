@@ -14,6 +14,8 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
+import { map } from "lodash";
+import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Roles() {
   let history = useHistory();
@@ -25,21 +27,22 @@ function Roles() {
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
   const [updateTable, setUpdateTable] = useState(moment.now());
+  const [searchFilterParams, setSearchFilter] = useState({});
 
   const fetchRoleInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
       let roleData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
+      let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["pageSize"] = pageSize;
+        params["startIndex"] = pageIndex * pageSize;
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           const roleResp = await fetchApi({
             url: "roles/lookup/roles",
-            params: {
-              pageSize: pageSize,
-              startIndex: pageIndex * pageSize
-            }
+            params: params
           });
           roleData = roleResp.data.roles;
           totalCount = roleResp.data.totalCount;
@@ -52,7 +55,7 @@ function Roles() {
         setLoader(false);
       }
     },
-    [updateTable]
+    [updateTable, searchFilterParams]
   );
   const handleDeleteBtnClick = () => {
     if (selectedRows.current.length > 0) {
@@ -166,13 +169,46 @@ function Roles() {
   const addRole = () => {
     history.push("/roles/create");
   };
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+    });
+    setSearchFilter(searchFilter);
+  };
+
   return (
     <div>
       <h4 className="wrap-header font-weight-bold">Role List</h4>
       <Row className="mb-4">
-        <Col md={7}></Col>
+        <Col md={9}>
+          <StructuredFilter
+            options={[
+              {
+                category: "groupNamePartial",
+                label: "Group Name",
+                type: "text"
+              },
+              {
+                category: "roleNamePartial",
+                label: "Role Name",
+                type: "text"
+              },
+              {
+                category: "userNamePartial",
+                label: "User Name",
+                type: "text"
+              }
+            ]}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
+        </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (
-          <Col md={5} className="text-right">
+          <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addRole}>
               Add Role
             </Button>
