@@ -1,6 +1,6 @@
 import React from "react";
 import { getUserProfile, setUserProfile } from "Utils/appState";
-import { UserRoles, PathAssociateWithModule } from "Utils/XAEnums";
+import { UserRoles, PathAssociateWithModule, QueryParams } from "Utils/XAEnums";
 import _, {
   filter,
   flatMap,
@@ -13,8 +13,6 @@ import _, {
 } from "lodash";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
-import { matchPath } from "react-router";
-import { Breadcrumb } from "react-bootstrap";
 import CustomBreadcrumb from "../views/CustomBreadcrumb";
 // import { includes, map, union, forEach } from "lodash";
 
@@ -995,4 +993,25 @@ export const commonBreadcrumb = (type, options) => {
     }
   });
   return <CustomBreadcrumb data={data} links={links} type={type} />;
+};
+
+/* PolicyListing QuerParams Name */
+
+export const QueryParamsName = (id) => {
+  if (id == QueryParams.PolicyListing.id.columnName) {
+    return QueryParams.PolicyListing.id.queryParamName;
+  }
+  if (id == QueryParams.PolicyListing.name.columnName) {
+    return QueryParams.PolicyListing.name.queryParamName;
+  }
+};
+
+/* QueryParams for sorting */
+
+export const getTableSortBy = (sortArr = []) => {
+  return sortArr.map(({ id }) => id).join(",");
+};
+
+export const getTableSortType = (sortArr = []) => {
+  return sortArr.map(({ desc }) => (desc ? "desc" : "asc")).join(",");
 };

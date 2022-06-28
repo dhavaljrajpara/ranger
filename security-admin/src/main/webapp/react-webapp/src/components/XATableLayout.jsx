@@ -4,11 +4,12 @@ import {
   usePagination,
   useRowSelect,
   useResizeColumns,
-  useFlexLayout
+  useFlexLayout,
+  useSortBy
 } from "react-table";
-import { Table, ButtonGroup, Button } from "react-bootstrap";
+import { Table, ButtonGroup } from "react-bootstrap";
 import DropdownButton from "react-bootstrap/DropdownButton";
-import { Loader } from "Components/CommonComponents";
+
 const IndeterminateCheckbox = forwardRef(
   ({ indeterminate, chkType, ...rest }, ref) => {
     const defaultRef = useRef();
@@ -41,9 +42,11 @@ function XATableLayout({
   pageCount: controlledPageCount,
   rowSelectOp,
   columnHide,
+  columnSort,
+  clientSideSorting,
   columnResizable,
   totalCount,
-  pagination,
+  defaultSort = [],
   getRowProps = () => ({})
 }) {
   const {
@@ -62,30 +65,37 @@ function XATableLayout({
     getToggleHideAllColumnsProps,
     canNextPage,
     pageOptions,
-    state: { pageIndex, pageSize, selectedRowIds },
+    state: { pageIndex, pageSize, sortBy },
     selectedFlatRows
   } = useTable(
     {
       columns,
       data,
-      initialState: { pageIndex: 0, pageSize: 25 }, // Pass our hoisted table state
+      initialState: {
+        pageIndex: 0,
+        pageSize: 25,
+        sortBy: defaultSort || []
+      },
       manualPagination: true,
-      pageCount: controlledPageCount
+      manualSortBy: !clientSideSorting && true,
+      disableSortBy: !columnSort,
+      pageCount: controlledPageCount,
+      autoResetPage: false
     },
-    usePagination,
+
     useResizeColumns,
     useFlexLayout,
+    useSortBy,
+    usePagination,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => {
         let cols = [];
 
         if (rowSelectOp) {
-          // Let's make a column for selection
           const selectionCol = {
             id: "selection",
-            // The header can use the table's getToggleAllRowsSelectedProps method
-            // to render a checkbox
+
             Header: ({ getToggleAllPageRowsSelectedProps }) => (
               <div>
                 <IndeterminateCheckbox
@@ -94,8 +104,7 @@ function XATableLayout({
                 />
               </div>
             ),
-            // The cell can use the individual row's getToggleRowSelectedProps method
-            // to the render a checkbox
+
             Cell: ({ row }) => (
               <div className="text-center">
                 <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
@@ -117,8 +126,8 @@ function XATableLayout({
   );
 
   useEffect(() => {
-    fetchData({ pageIndex, pageSize });
-  }, [fetchData, pageIndex, pageSize]);
+    fetchData({ pageIndex, pageSize, sortBy });
+  }, [fetchData, pageIndex, pageSize, !clientSideSorting && sortBy]);
 
   useEffect(() => {
     if (rowSelectOp) {
@@ -165,82 +174,68 @@ function XATableLayout({
           <div className="table-responsive">
             <Table bordered hover {...getTableProps()}>
               <thead className="thead-light text-center">
-                {
-                  // Loop over the header rows
-                  headerGroups.map((headerGroup) => (
-                    // Apply the header row props
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                      {
-                        // Loop over the headers in each row
-                        headerGroup.headers.map((column) => (
-                          // Apply the header cell props
-                          <th
-                            {...column.getHeaderProps([
-                              {
-                                className: column.className
-                              }
-                            ])}
-                          >
-                            {columnResizable && !column.disableResizing && (
-                              <>
-                                <div
-                                  className="fa fa-expand"
-                                  aria-hidden="true"
-                                  {...column.getResizerProps([
-                                    { className: "resizer" }
-                                  ])}
-                                  onClick={(event) => event.stopPropagation()}
-                                />
-                                <i
-                                  className="fa fa-expand resizeable-icon"
-                                  aria-hidden="true"
-                                  {...column.getResizerProps()}
-                                />
-                              </>
-                            )}
-
-                            {
-                              // Render the header
-                              column.render("Header")
-                            }
-                          </th>
-                        ))
-                      }
-                    </tr>
-                  ))
-                }
-              </thead>
-              {/* Apply the table body props */}
-              <tbody {...getTableBodyProps()}>
-                {
-                  // Loop over the table rows
-                  rows.map((row) => {
-                    // Prepare the row for display
-                    prepareRow(row);
-                    return (
-                      // Apply the row props
-                      <tr {...row.getRowProps(getRowProps(row))}>
-                        {
-                          // Loop over the rows cells
-                          row.cells.map((cell) => {
-                            // Apply the cell props
-                            return (
-                              <td
-                                {...cell.getCellProps()}
-                                className="react-table"
-                              >
-                                {
-                                  cell.render("Cell")
-                                  // Render the cell contents
-                                }
-                              </td>
-                            );
-                          })
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th
+                        {...column.getHeaderProps([
+                          {
+                            className: column.className
+                          }
+                        ])}
+                        {...column.getHeaderProps(
+                          column.getSortByToggleProps()
+                        )}
+                        title={undefined}
+                        onClick={() =>
+                          columnSort &&
+                          column.toggleSortBy &&
+                          column.toggleSortBy(!column.isSortedDesc)
                         }
-                      </tr>
-                    );
-                  })
-                }
+                      >
+                        {columnResizable && !column.disableResizing && (
+                          <>
+                            <div
+                              className="fa fa-expand"
+                              aria-hidden="true"
+                              {...column.getResizerProps([
+                                { className: "resizer" }
+                              ])}
+                              onClick={(event) => event.stopPropagation()}
+                            />
+                            <i
+                              className="fa fa-expand resizeable-icon"
+                              aria-hidden="true"
+                              {...column.getResizerProps()}
+                            />
+                          </>
+                        )}
+
+                        {column.render("Header")}
+                        {columnSort && column.isSorted && (
+                          <span>{column.isSortedDesc ? " ▼" : " ▲"}</span>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+
+              <tbody {...getTableBodyProps()}>
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps(getRowProps(row))}>
+                      {row.cells.map((cell) => {
+                        return (
+                          <td {...cell.getCellProps()} className="react-table">
+                            {cell.render("Cell")}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
 
                 <tr>
                   <td colSpan={columns.length + 1}>

@@ -606,3 +606,12 @@ export const DefStatus = {
     }
   }
 };
+
+/* PolicyListing QuerParams Name */
+
+export const QueryParams = {
+  PolicyListing: {
+    id: { columnName: "id", queryParamName: "policyId" },
+    name: { columnName: "name", queryParamName: "policyName" }
+  }
+};

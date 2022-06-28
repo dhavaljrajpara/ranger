@@ -6,7 +6,10 @@ import { toast } from "react-toastify";
 import { pick, indexOf, isUndefined, isEmpty, map } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
-import { showGroupsOrUsersOrRolesForPolicy } from "Utils/XAUtils";
+import {
+  showGroupsOrUsersOrRolesForPolicy,
+  QueryParamsName
+} from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
@@ -34,8 +37,20 @@ function PolicyListing() {
     fetchServiceDefs();
   }, []);
 
+  const getTableSortBy = (sortArr = []) => {
+    return sortArr
+      .map(({ id }) => {
+        return QueryParamsName(id);
+      })
+      .join(",");
+  };
+
+  const getTableSortType = (sortArr = []) => {
+    return sortArr.map(({ desc }) => (desc ? "desc" : "asc")).join(",");
+  };
+
   const fetchPolicyInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let policyData = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
@@ -44,6 +59,10 @@ function PolicyListing() {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
         params["policyType"] = policyType;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           const policyResp = await fetchApi({
             url: `plugins/policies/service/${serviceId}`,
@@ -196,7 +215,7 @@ function PolicyListing() {
             </Link>
           );
         },
-        width: 70
+        width: 90
       },
       {
         Header: "Policy Name",
@@ -218,7 +237,8 @@ function PolicyListing() {
             return policyLabels;
           }
         },
-        width: 100
+        width: 100,
+        disableSortBy: true
       },
       {
         Header: "Status",
@@ -237,7 +257,8 @@ function PolicyListing() {
               </h6>
             );
         },
-        width: 100
+        width: 100,
+        disableSortBy: true
       },
       {
         Header: "Audit Logging",
@@ -256,7 +277,8 @@ function PolicyListing() {
               </h6>
             );
         },
-        width: 110
+        width: 110,
+        disableSortBy: true
       },
       {
         Header: "Roles",
@@ -273,7 +295,8 @@ function PolicyListing() {
             <div className="text-center">--</div>
           );
         },
-        minWidth: 190
+        minWidth: 190,
+        disableSortBy: true
       },
       {
         Header: "Groups",
@@ -290,7 +313,8 @@ function PolicyListing() {
             <div className="text-center">--</div>
           );
         },
-        minWidth: 190
+        minWidth: 190,
+        disableSortBy: true
       },
       {
         Header: "Users",
@@ -307,7 +331,8 @@ function PolicyListing() {
             <div className="text-center">--</div>
           );
         },
-        minWidth: 190
+        minWidth: 190,
+        disableSortBy: true
       },
       {
         Header: "Actions",
@@ -347,7 +372,8 @@ function PolicyListing() {
               </Button>
             </div>
           );
-        }
+        },
+        disableSortBy: true
       }
     ],
     []
@@ -433,6 +459,7 @@ function PolicyListing() {
             pagination
             pageCount={pageCount}
             loading={loader}
+            columnSort={true}
           />
         </>
       </div>

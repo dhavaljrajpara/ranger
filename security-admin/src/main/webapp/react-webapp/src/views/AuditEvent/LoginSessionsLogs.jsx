@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { AuthStatus } from "../../utils/XAEnums";
-import { AuthType } from "../../utils/XAEnums";
+import { AuthStatus, AuthType } from "../../utils/XAEnums";
 import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import { map } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
@@ -19,12 +19,11 @@ function Login_Sessions() {
   const [entries, setEntries] = useState([]);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [searchFilterParams, setSearchFilter] = useState({});
-
   const fetchIdRef = useRef(0);
 
   const handleClose = () => setShowModal(false);
   const fetchLoginSessionLogsInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let logsResp = [];
       let logs = [];
       let totalCount = 0;
@@ -33,6 +32,10 @@ function Login_Sessions() {
       if (fetchId === fetchIdRef.current) {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
@@ -53,6 +56,18 @@ function Login_Sessions() {
       }
     },
     [updateTable, searchFilterParams]
+  );
+  // const getDefaultSort = () => {
+  //   return [{ id: "id", desc: true }];
+  // };
+  const getDefaultSort = React.useMemo(
+    () => [
+      {
+        id: "id",
+        desc: true
+      }
+    ],
+    []
   );
   const refreshTable = () => {
     setLoginSessionLogs([]);
@@ -88,7 +103,7 @@ function Login_Sessions() {
             return <div className="text-center">--</div>;
           }
         },
-        width: 70
+        width: 90
       },
       {
         Header: "Login ID",
@@ -100,7 +115,8 @@ function Login_Sessions() {
             return "--";
           }
         },
-        width: 80
+        width: 100,
+        disableSortBy: true
       },
       {
         Header: "Result",
@@ -134,7 +150,8 @@ function Login_Sessions() {
           });
           return html;
         },
-        width: 100
+        width: 100,
+        disableSortBy: true
       },
       {
         Header: "Login Type",
@@ -147,11 +164,13 @@ function Login_Sessions() {
             }
           });
           return label;
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "IP",
-        accessor: "requestIP"
+        accessor: "requestIP",
+        disableSortBy: true
       },
       {
         Header: "User Agent",
@@ -167,7 +186,7 @@ function Login_Sessions() {
             return <div className="text-center">--</div>;
           }
         },
-        className: "user-agent"
+        disableSortBy: true
       },
       {
         Header: "Login Time ( India Standard Time )",
@@ -177,7 +196,8 @@ function Login_Sessions() {
           const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
           return newdate;
         },
-        width: 180
+        width: 180,
+        disableSortBy: true
       }
     ],
     []
@@ -271,6 +291,8 @@ function Login_Sessions() {
         totalCount={entries && entries.totalCount}
         loading={loader}
         pageCount={pageCount}
+        columnSort={true}
+        defaultSort={getDefaultSort}
       />
       <AdminModal
         show={showmodal}

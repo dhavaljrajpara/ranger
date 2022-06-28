@@ -26,6 +26,7 @@ import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
@@ -50,7 +51,7 @@ function Access() {
   }, []);
 
   const fetchAccessLogsInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let logsResp = [];
       let logs = [];
       let totalCount = 0;
@@ -60,6 +61,10 @@ function Access() {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
         params["excludeServiceUser"] = checked ? true : false;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           logsResp = await fetchApi({
             url: "assets/accessAudit",
@@ -301,7 +306,7 @@ function Access() {
             </div>
           );
         },
-        width: 70,
+        width: 90,
         disableResizing: true,
         getResizerProps: () => {}
       },
@@ -317,6 +322,7 @@ function Access() {
         },
         width: 110,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -334,6 +340,7 @@ function Access() {
         accessor: "agentId",
         width: 100,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -356,38 +363,48 @@ function Access() {
           </div>
         ),
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
         Header: "Resource (Name / Type)",
-        accessor: (r) => (
-          <>
-            <div style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}>
-              <div className="pull-left resource-text" title={r.resourcePath}>
-                {r.resourcePath}
-              </div>
+        accessor: "resourceType",
+        Cell: (r) => {
+          return (
+            <>
+              <div style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}>
+                <div
+                  className="pull-left resource-text"
+                  title={r.row.original.resourcePath}
+                >
+                  {r.row.original.resourcePath}
+                </div>
 
-              <div>
-                {!isEmpty(r.requestData) && (
-                  <CustomPopoverOnClick
-                    icon="fa-fw fa fa-table "
-                    title={rsrctitle(r.serviceType)}
-                    content={rsrcContent(r.requestData)}
-                    placement="left"
-                    trigger={["click", "focus"]}
-                  ></CustomPopoverOnClick>
-                )}
+                <div>
+                  {!isEmpty(r.row.original.requestData) && (
+                    <CustomPopoverOnClick
+                      icon="fa-fw fa fa-table "
+                      title={rsrctitle(r.row.original.serviceType)}
+                      content={rsrcContent(r.row.original.requestData)}
+                      placement="left"
+                      trigger={["click", "focus"]}
+                    ></CustomPopoverOnClick>
+                  )}
+                </div>
               </div>
-            </div>
-            {!isEmpty(r.resourcePath) ? (
-              <div className="bt-1 text-center" title={r.resourceType}>
-                {r.resourceType}
-              </div>
-            ) : (
-              <div className="text-center">--</div>
-            )}
-          </>
-        ),
+              {!isEmpty(r.row.original.resourcePath) ? (
+                <div
+                  className="bt-1 text-center"
+                  title={r.row.original.resourceType}
+                >
+                  {r.row.original.resourceType}
+                </div>
+              ) : (
+                <div className="text-center">--</div>
+              )}
+            </>
+          );
+        },
         minWidth: 180
       },
       {
@@ -430,6 +447,7 @@ function Access() {
         },
         width: 100,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -448,8 +466,8 @@ function Access() {
           } else return "--";
         },
         width: 150,
-
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -464,6 +482,7 @@ function Access() {
         accessor: "clusterName",
         width: 100,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -487,6 +506,7 @@ function Access() {
         accessor: "eventCount",
         width: 100,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       },
       {
@@ -524,6 +544,7 @@ function Access() {
         },
         width: 100,
         disableResizing: true,
+        disableSortBy: true,
         getResizerProps: () => {}
       }
     ],
@@ -714,6 +735,7 @@ function Access() {
         })}
         columnHide={true}
         columnResizable={true}
+        columnSort={true}
       />
       <Modal show={showrowmodal} size="lg" onHide={handleClose}>
         <Modal.Header closeButton>

@@ -757,10 +757,6 @@ header {
   overflow: auto;
 }
 
-.user-agent {
-  width: 21%;
-}
-
 .overflow-text {
   max-width: 22rem;
   text-overflow: ellipsis;
@@ -1315,7 +1311,6 @@ header {
   transform: translateX(50%);
   z-index: 1;
   touch-action: none;
-  
 }
 
 .resizeable-icon {
@@ -1325,14 +1320,12 @@ header {
   cursor: se-resize;
   right: 0;
   transform: rotate(90deg);
-  
 }
 
 .react-table {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  
 }
 
 .show-more {
@@ -1341,7 +1334,6 @@ header {
   font-size: 1rem;
   max-height: 100px;
   overflow-y: auto;
-  
 }
 
 .show-less {
@@ -1349,5 +1341,4 @@ header {
   flex-wrap: wrap;
   font-size: 1rem;
   height: "auto";
-  
 }

@@ -3,9 +3,10 @@ import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
+import { map } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { fetchApi } from "Utils/fetchAPI";
-import { map } from "lodash";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 
 function Plugins() {
   const [pluginsListingData, setPluginsLogs] = useState([]);
@@ -38,7 +39,7 @@ function Plugins() {
   };
 
   const fetchPluginsInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let logsResp = [];
       let logs = [];
       let totalCount = 0;
@@ -47,6 +48,10 @@ function Plugins() {
       if (fetchId === fetchIdRef.current) {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           logsResp = await fetchApi({
             url: "assets/exportAudit",
@@ -65,6 +70,7 @@ function Plugins() {
     },
     [updateTable, searchFilterParams]
   );
+
   const refreshTable = () => {
     setPluginsLogs([]);
     setLoader(true);
@@ -86,7 +92,8 @@ function Plugins() {
       },
       {
         Header: "Service Name",
-        accessor: "repositoryName"
+        accessor: "repositoryName",
+        disableSortBy: true
       },
       {
         Header: "Plugin ID",
@@ -97,16 +104,19 @@ function Plugins() {
               <span title={rawValue.value}>{rawValue.value}</span>
             </div>
           );
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "Plugin IP",
-        accessor: "clientIP"
+        accessor: "clientIP",
+        disableSortBy: true
       },
       {
         Header: "Cluster Name",
         accessor: "clusterName",
-        width: 100
+        width: 100,
+        disableSortBy: true
       },
       {
         Header: "Http Response Code",
@@ -117,16 +127,26 @@ function Plugins() {
               <Badge variant="success">{rawValue.value}</Badge>
             </h6>
           );
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "Status",
-        accessor: "syncStatus"
+        accessor: "syncStatus",
+        disableSortBy: true
       }
     ],
     []
   );
-
+  const getDefaultSort = React.useMemo(
+    () => [
+      {
+        id: "createDate",
+        desc: true
+      }
+    ],
+    []
+  );
   const updateSearchFilter = (filter) => {
     console.log("PRINT Filter : ", filter);
     let searchFilter = {};
@@ -203,6 +223,8 @@ function Plugins() {
         totalCount={entries && entries.totalCount}
         fetchData={fetchPluginsInfo}
         pageCount={pageCount}
+        columnSort={true}
+        defaultSort={getDefaultSort}
       />
     </>
   );

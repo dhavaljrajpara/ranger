@@ -10,6 +10,7 @@ import OperationAdminModal from "./OperationAdminModal";
 import moment from "moment-timezone";
 import { capitalize, map, startCase, toLower } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -35,7 +36,7 @@ function Admin() {
   };
 
   const fetchAdminLogsInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let logsResp = [];
       let adminlogs = [];
       let totalCount = 0;
@@ -44,6 +45,10 @@ function Admin() {
       if (fetchId === fetchIdRef.current) {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           logsResp = await fetchApi({
             url: "assets/report",
@@ -159,7 +164,8 @@ function Admin() {
               );
             return <div className="overflow-text">{operation}</div>;
           }
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "Audit Type",
@@ -168,11 +174,20 @@ function Admin() {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
           return Object.values(audittype.label);
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "User",
-        accessor: "owner"
+        accessor: "owner",
+        Cell: (rawValue) => {
+          return rawValue.value !== undefined ? (
+            <div className="text-center">{rawValue.value}</div>
+          ) : (
+            <div className="text-center">--</div>
+          );
+        },
+        disableSortBy: true
       },
       {
         Header: "Date ( India Standard Time )",
@@ -228,7 +243,8 @@ function Admin() {
             );
           }
           return operation;
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "Session ID",
@@ -253,7 +269,8 @@ function Admin() {
           } else {
             return <div className="text-center">--</div>;
           }
-        }
+        },
+        disableSortBy: true
       }
     ],
     []
@@ -268,7 +285,15 @@ function Admin() {
     });
     setSearchFilter(searchFilter);
   };
-
+  const getDefaultSort = React.useMemo(
+    () => [
+      {
+        id: "createDate",
+        desc: true
+      }
+    ],
+    []
+  );
   return (
     <>
       <Row className="mb-2">
@@ -344,6 +369,8 @@ function Admin() {
         totalCount={entries && entries.totalCount}
         pageCount={pageCount}
         loading={loader}
+        columnSort={true}
+        defaultSort={getDefaultSort}
         getRowProps={(row) => ({
           onClick: () => rowModal(row)
         })}

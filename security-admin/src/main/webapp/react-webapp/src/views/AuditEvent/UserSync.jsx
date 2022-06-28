@@ -6,6 +6,7 @@ import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
 import moment from "moment-timezone";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { map } from "lodash";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
@@ -21,7 +22,7 @@ function User_Sync() {
   const [searchFilterParams, setSearchFilter] = useState({});
 
   const fetchUserSyncInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, sortBy }) => {
       let logsResp = [];
       let logs = [];
       let totalCount = 0;
@@ -30,6 +31,10 @@ function User_Sync() {
       if (fetchId === fetchIdRef.current) {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
+        if (sortBy.length > 0) {
+          params["sortBy"] = getTableSortBy(sortBy);
+          params["sortType"] = getTableSortType(sortBy);
+        }
         try {
           const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
@@ -68,12 +73,21 @@ function User_Sync() {
       showSyncDetails: false
     });
   };
-
+  const getDefaultSort = React.useMemo(
+    () => [
+      {
+        id: "eventTime",
+        desc: true
+      }
+    ],
+    []
+  );
   const columns = React.useMemo(
     () => [
       {
         Header: "User Name",
-        accessor: "userName"
+        accessor: "userName",
+        disableSortBy: true
       },
       {
         Header: "Sync Source",
@@ -86,7 +100,8 @@ function User_Sync() {
               </h6>
             </div>
           );
-        }
+        },
+        disableSortBy: true
       },
       {
         Header: "Number Of New",
@@ -94,13 +109,17 @@ function User_Sync() {
         columns: [
           {
             Header: "Users",
+
             accessor: "noOfNewUsers",
-            width: 100
+            width: 100,
+            disableSortBy: true
           },
           {
             Header: "Groups",
+
             accessor: "noOfNewGroups",
-            width: 100
+            width: 100,
+            disableSortBy: true
           }
         ]
       },
@@ -111,12 +130,14 @@ function User_Sync() {
           {
             Header: "Users",
             accessor: "noOfModifiedUsers",
-            width: 100
+            width: 100,
+            disableSortBy: true
           },
           {
             Header: "Groups",
             accessor: "noOfModifiedGroups",
-            width: 100
+            width: 100,
+            disableSortBy: true
           }
         ]
       },
@@ -131,7 +152,8 @@ function User_Sync() {
             .format("MM/DD/YYYY HH:mm:ss A");
           return newdate;
         },
-        minWidth: 170
+        minWidth: 170,
+        sortable: true
       },
       {
         Header: "Sync Details",
@@ -156,7 +178,8 @@ function User_Sync() {
           } else {
             return " -- ";
           }
-        }
+        },
+        disableSortBy: true
       }
     ],
     []
@@ -218,6 +241,8 @@ function User_Sync() {
         totalCount={entries && entries.totalCount}
         fetchData={fetchUserSyncInfo}
         pageCount={pageCount}
+        columnSort={true}
+        defaultSort={getDefaultSort}
       />
       <Modal
         show={showTableSyncDetails && showTableSyncDetails.showSyncDetails}

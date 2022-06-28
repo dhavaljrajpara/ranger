@@ -56,7 +56,6 @@ function Plugin_Status() {
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
-
     setServices(servicesResp.data.services);
     setLoader(false);
   };
@@ -72,7 +71,6 @@ function Plugin_Status() {
         params["pageSize"] = pageSize;
         params["startIndex"] = pageIndex * pageSize;
         try {
-          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
           logsResp = await fetchApi({
             url: "plugins/plugins/info",
             params: params
@@ -150,11 +148,24 @@ function Plugin_Status() {
     () => [
       {
         Header: "Service Name",
-        accessor: "serviceName"
+        accessor: "serviceName",
+        sortMethod: (a, b) => {
+          if (a.length === b.length) {
+            return a > b ? 1 : -1;
+          }
+          return a.length > b.length ? 1 : -1;
+        }
       },
       {
         Header: "Service Type",
-        accessor: "serviceType"
+        accessor: "serviceType",
+        Cell: (rawValue) => {
+          return (
+            <div className="overflow-text">
+              <span title={rawValue.value}>{rawValue.value}</span>
+            </div>
+          );
+        }
       },
       {
         Header: "Application",
@@ -193,7 +204,7 @@ function Plugin_Status() {
             Cell: ({ row: { original } }) => {
               return setTimeStamp(original.info.lastPolicyUpdateTime);
             },
-            minWidth: 170
+            minWidth: 190
           },
           {
             Header: "Download",
@@ -248,7 +259,7 @@ function Plugin_Status() {
               }
               return setTimeStamp(original.info.policyDownloadTime);
             },
-            minWidth: 170
+            minWidth: 190
           },
           {
             Header: "Active",
@@ -300,7 +311,7 @@ function Plugin_Status() {
               }
               return setTimeStamp(original.info.policyActivationTime);
             },
-            minWidth: 170
+            minWidth: 190
           }
         ]
       },
@@ -314,7 +325,7 @@ function Plugin_Status() {
             Cell: ({ row: { original } }) => {
               return setTimeStamp(original.info.lastTagUpdateTime);
             },
-            minWidth: 170
+            minWidth: 190
           },
           {
             Header: "Download",
@@ -366,7 +377,7 @@ function Plugin_Status() {
               }
               return setTimeStamp(original.info.tagDownloadTime);
             },
-            minWidth: 170
+            minWidth: 190
           },
           {
             Header: "Active",
@@ -418,7 +429,7 @@ function Plugin_Status() {
               }
               return setTimeStamp(original.info.tagActivationTime);
             },
-            minWidth: 170
+            minWidth: 190
           }
         ]
       }
@@ -511,6 +522,8 @@ function Plugin_Status() {
         totalCount={entries && entries.totalCount}
         fetchData={fetchPluginStatusInfo}
         pageCount={pageCount}
+        columnSort={true}
+        clientSideSorting={true}
       />
     </>
   );
