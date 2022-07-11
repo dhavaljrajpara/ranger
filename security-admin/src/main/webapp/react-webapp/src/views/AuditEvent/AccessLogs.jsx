@@ -597,11 +597,11 @@ function Access() {
 
   return (
     <React.Fragment>
-      <Row className="mb-2 pd-15">
-        <Col className="searchbox-border">
-          <span>
-            <StructuredFilter
-              options={[
+      <Row className="mb-2">
+        <Col sm={12}>
+          <StructuredFilter
+            options={sortBy(
+              [
                 {
                   category: "aclEnforcer",
                   label: "Access Enforcer",
@@ -700,11 +700,12 @@ function Access() {
                   type: "textoptions",
                   options: getZones
                 }
-              ]}
-              onTokenAdd={updateSearchFilter}
-              onTokenRemove={updateSearchFilter}
-            />
-          </span>
+              ],
+              ["label"]
+            )}
+            onTokenAdd={updateSearchFilter}
+            onTokenRemove={updateSearchFilter}
+          />
           <span className="info-icon">
             <CustomTooltip
               placement="left"
