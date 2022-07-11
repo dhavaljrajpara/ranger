@@ -97,7 +97,7 @@ export const OperationAdminModal = ({ onHide, show, data = {} }) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="primary" onClick={onHide}>
+        <Button variant="primary" className="btn-mini" onClick={onHide}>
           OK
         </Button>
       </Modal.Footer>

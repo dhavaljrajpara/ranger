@@ -168,27 +168,27 @@ class ServiceDefinition extends Component {
     auditFilters.map((a, index) =>
       tableRow.push(
         <tr key={index}>
-          <td>
+          <td className="text-center">
             {a.isAudited == true ? (
               <h6>
-                <Badge variant="primary">Yes</Badge>
+                <Badge variant="info">Yes</Badge>
               </h6>
             ) : (
               <h6>
-                <Badge variant="primary">No</Badge>
+                <Badge variant="info">No</Badge>
               </h6>
             )}
           </td>
-          <td>
+          <td className="text-center">
             {a.accessResult !== undefined ? (
               <h6>
-                <Badge variant="primary">{a.accessResult}</Badge>
+                <Badge variant="info">{a.accessResult}</Badge>
               </h6>
             ) : (
               "--"
             )}
           </td>
-          <td>
+          <td className="text-center">
             {a.resources !== undefined ? (
               <div className="resource-grp">
                 {this.getFilterResources(a.resources)}
@@ -197,47 +197,47 @@ class ServiceDefinition extends Component {
               "--"
             )}
           </td>
-          <td>
+          <td className="text-center">
             {a.actions !== undefined
               ? a.actions.map((action) => (
                   <h6 key={action}>
-                    <Badge variant="primary">{action}</Badge>
+                    <Badge variant="info">{action}</Badge>
                   </h6>
                 ))
               : "--"}
           </td>
-          <td>
+          <td className="text-center">
             {a.accessTypes !== undefined && a.accessTypes.length > 0
               ? a.accessTypes.map((accessType) => (
                   <h6 key={accessType}>
-                    <Badge variant="primary">{accessType}</Badge>
+                    <Badge variant="info">{accessType}</Badge>
                   </h6>
                 ))
               : "--"}
           </td>
-          <td>
+          <td className="text-center">
             {a.users !== undefined
               ? a.users.map((user) => (
                   <h6 key={user}>
-                    <Badge variant="primary">{user}</Badge>
+                    <Badge variant="info">{user}</Badge>
                   </h6>
                 ))
               : "--"}
           </td>
-          <td>
+          <td className="text-center">
             {a.groups !== undefined
               ? a.groups.map((group) => (
                   <h6 key={group}>
-                    <Badge variant="primary">{group}</Badge>
+                    <Badge variant="info">{group}</Badge>
                   </h6>
                 ))
               : "--"}
           </td>
-          <td>
+          <td className="text-center">
             {a.roles !== undefined
               ? a.roles.map((role) => (
                   <h6 key={role}>
-                    <Badge variant="primary">{role}</Badge>
+                    <Badge variant="info">{role}</Badge>
                   </h6>
                 ))
               : "--"}
@@ -357,8 +357,7 @@ class ServiceDefinition extends Component {
                         {!this.props.isUserRole && (
                           <Button
                             variant="outline-dark"
-                            size="sm"
-                            className="m-r-5"
+                            className="m-r-5   btn btn-mini"
                             title="View"
                             onClick={() => {
                               this.showViewModal(s.id);
@@ -370,7 +369,7 @@ class ServiceDefinition extends Component {
                         <Modal
                           show={this.state.showView === s.id}
                           onHide={this.hideViewModal}
-                          size="xl"
+                          size="lg"
                         >
                           <Modal.Header closeButton>
                             <Modal.Title>Service Details</Modal.Title>
@@ -399,7 +398,7 @@ class ServiceDefinition extends Component {
                                       <td>Active Status</td>
                                       <td>
                                         <h6>
-                                          <Badge variant="primary">
+                                          <Badge variant="info">
                                             {s.isEnabled
                                               ? `Enabled`
                                               : `Disabled`}
@@ -412,7 +411,7 @@ class ServiceDefinition extends Component {
                                       <td>
                                         {s.tagService ? (
                                           <h6>
-                                            <Badge variant="primary">
+                                            <Badge variant="info">
                                               {s.tagService}
                                             </Badge>
                                           </h6>
@@ -462,6 +461,7 @@ class ServiceDefinition extends Component {
                           <Modal.Footer>
                             <Button
                               variant="primary"
+                              className="btn-fnt btn-mini"
                               onClick={this.hideViewModal}
                             >
                               OK
@@ -471,16 +471,17 @@ class ServiceDefinition extends Component {
                         {this.props.isAdminRole && (
                           <React.Fragment>
                             <Link
-                              className="btn btn-outline-dark btn-sm m-r-5"
+                              className="btn btn-mini m-r-5"
                               title="Edit"
                               to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
                             >
                               <i className="fa-fw fa fa-edit"></i>
                             </Link>
                             <Button
-                              variant="danger"
-                              size="sm"
+                              // variant="danger"
+                              // size="sm"
                               title="Delete"
+                              className="btn btn-mini btn-danger"
                               onClick={() => {
                                 this.showDeleteModal(s.id);
                               }}

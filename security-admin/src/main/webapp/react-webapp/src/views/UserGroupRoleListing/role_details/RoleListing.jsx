@@ -205,12 +205,13 @@ function Roles() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
+            placeholder="Search for your roles..."
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (
           <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addRole}>
-              Add Role
+              Add New Role
             </Button>
             <Button
               className="ml-2"

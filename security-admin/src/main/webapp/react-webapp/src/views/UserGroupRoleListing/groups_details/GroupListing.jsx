@@ -387,12 +387,13 @@ function Groups() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
+            placeholder="Search for your groups..."
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (
           <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addGroup}>
-              Add Group
+              Add New Group
             </Button>
             <DropdownButton
               title="Set Visibility"

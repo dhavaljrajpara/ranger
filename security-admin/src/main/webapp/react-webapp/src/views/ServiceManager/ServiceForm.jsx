@@ -1187,6 +1187,7 @@ class ServiceForm extends Component {
                                             <Button
                                               variant="danger"
                                               size="sm"
+                                              className="btn-mini"
                                               title="Remove"
                                               onClick={() =>
                                                 fields.remove(index)
@@ -1207,7 +1208,7 @@ class ServiceForm extends Component {
                             <div className="col-sm-4 offset-sm-3">
                               <Button
                                 variant="outline-dark"
-                                size="sm"
+                                className="btn-mini btn-fnt"
                                 onClick={() =>
                                   addItem("customConfigs", undefined)
                                 }
@@ -1267,6 +1268,7 @@ class ServiceForm extends Component {
                           <Button
                             variant="primary"
                             type="submit"
+                            className="btn-fnt"
                             size="sm"
                             disabled={submitting}
                           >
@@ -1277,6 +1279,7 @@ class ServiceForm extends Component {
                           <Button
                             variant="secondary"
                             type="button"
+                            className="btn-fnt"
                             size="sm"
                             onClick={() =>
                               this.props.history.push(
@@ -1292,6 +1295,7 @@ class ServiceForm extends Component {
                             <Button
                               variant="danger"
                               type="button"
+                              className="btn-fnt"
                               size="sm"
                               onClick={() => {
                                 this.showDeleteModal();

@@ -314,49 +314,158 @@ const Editable = (props) => {
           });
           val = (
             <h6 className="d-inline mr-1">
-              {" "}
-              <span className="badge bg-info">
+              <span className="editable-edit-text">
                 {conditionDefVal.label} : {ipRangVal.join(", ")}
               </span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-pencil"></i>
+              </Button>
             </h6>
           );
         } else {
-          val = "--";
+          val = (
+            <div className="text-center">
+              <span className="editable-add-text">Add Conditions</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+                s
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
+            </div>
+          );
         }
       } else if (type === TYPE_CHECKBOX) {
         val =
-          selectVal && selectVal.length > 0
-            ? selectVal.map((op, index) => (
-                <h6 key={index}>
+          selectVal && selectVal.length > 0 ? (
+            <>
+              {selectVal.map((op, index) => (
+                <h6 className="d-inline mr-1 editable-edit-text " key={index}>
                   <span className="badge bg-info">{op.label}</span>
                 </h6>
-              ))
-            : "--";
+              ))}
+              <div>
+                <Button
+                  className="mg-10 btn-mini"
+                  variant="outline-dark"
+                  size="sm"
+                  type="button"
+                >
+                  <i className="fa-fw fa fa-pencil"></i>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <span className="editable-add-text">Add Permission</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
+            </div>
+          );
       } else if (type === TYPE_INPUT) {
         val =
-          (
-            <h6>
-              <span className="badge bg-info">{selectVal}</span>{" "}
+          selectVal && selectVal !== "" ? (
+            <h6 className="d-inline mr-1 editable-edit-text ">
+              <span className="badge bg-info">{selectVal}</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-pencil"></i>
+              </Button>
             </h6>
-          ) || "--";
+          ) : (
+            <div className="text-center">
+              <span className="editable-add-text">Add Row Filter</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
+            </div>
+          );
       } else if (type === TYPE_RADIO) {
         val =
           selectVal && selectVal.label ? (
-            <h6>
+            <h6 className="d-inline mr-1 editable-edit-text ">
               <span className="badge bg-info">{selectVal.label}</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-pencil"></i>
+              </Button>
             </h6>
           ) : (
-            <h6>
-              <span className="badge bg-info">{selectVal}</span>
-            </h6>
+            <div className="text-center">
+              <span className="editable-add-text">Select Masking Option</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
+            </div>
           );
       } else if (type === TYPE_CUSTOM) {
         if (selectVal?.["accessed-after-expiry"] || selectVal?.expression) {
-          val = `Accessed after expiry_date (yes/no) : ${
-            selectVal?.["accessed-after-expiry"] || null
-          } / Boolean expression : ${selectVal?.expression || null}`;
+          val = (
+            <h6>
+              <div className="badge badge-dark">
+                {`Accessed after expiry_date (yes/no) : ${
+                  selectVal?.["accessed-after-expiry"] || null
+                } `}
+              </div>
+              <div className="editable-label">{`Boolean expression : ${
+                selectVal?.expression || null
+              }`}</div>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-pencil"></i>
+              </Button>
+            </h6>
+          );
         } else {
-          val = "--";
+          val = (
+            <div className="text-center">
+              <span className="editable-add-text">Add Conditions</span>
+              <Button
+                className="mg-10 btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
+            </div>
+          );
         }
       } else {
         val = selectVal || "--";
@@ -399,60 +508,59 @@ const Editable = (props) => {
   };
 
   const popoverComp = (
-    <div>
-      <Popover id="popover-basic" className="editable-popover">
-        <Popover.Title>
-          {type === TYPE_CHECKBOX ? "Select" : "Enter"}
-        </Popover.Title>
-        <Popover.Content>
-          {type === TYPE_CHECKBOX ? (
-            <CheckboxComp
-              value={value}
-              options={options}
-              valRef={selectValRef}
-              showSelectAll={props.showSelectAll}
-              selectAllLabel={props.selectAllLabel}
-            />
-          ) : type === TYPE_RADIO ? (
-            <RadioBtnComp
-              value={value}
-              options={options}
-              valRef={selectValRef}
-            />
-          ) : type === TYPE_INPUT ? (
-            <InputboxComp value={value} valRef={selectValRef} />
-          ) : type === TYPE_SELECT ? (
-            <CreatableSelectNew
-              value={value}
-              valRef={selectValRef}
-              conditionDefVal={props.conditionDefVal}
-              selectProps={props.selectProps}
-            />
-          ) : type === TYPE_CUSTOM ? (
-            <CustomCondition
-              value={value}
-              valRef={selectValRef}
-              conditionDefVal={props.conditionDefVal}
-              selectProps={props.selectProps}
-            />
-          ) : null}
-          <hr />
-          <div>
-            <Button
-              variant="success"
-              size="sm"
-              onClick={handleApply}
-              className="mr-2"
-            >
-              <i className="fa fa-fw fa-check"></i>
-            </Button>
-            <Button variant="danger" size="sm" onClick={handleClose}>
-              <i className="fa fa-fw fa-close"></i>
-            </Button>
-          </div>
-        </Popover.Content>
-      </Popover>
-    </div>
+    <Popover id="popover-basic" className="editable-popover">
+      <Popover.Title>
+        {type === TYPE_CHECKBOX ? "Select" : "Enter"}
+      </Popover.Title>
+      <Popover.Content>
+        {type === TYPE_CHECKBOX ? (
+          <CheckboxComp
+            value={value}
+            options={options}
+            valRef={selectValRef}
+            showSelectAll={props.showSelectAll}
+            selectAllLabel={props.selectAllLabel}
+          />
+        ) : type === TYPE_RADIO ? (
+          <RadioBtnComp value={value} options={options} valRef={selectValRef} />
+        ) : type === TYPE_INPUT ? (
+          <InputboxComp value={value} valRef={selectValRef} />
+        ) : type === TYPE_SELECT ? (
+          <CreatableSelectNew
+            value={value}
+            valRef={selectValRef}
+            conditionDefVal={props.conditionDefVal}
+            selectProps={props.selectProps}
+          />
+        ) : type === TYPE_CUSTOM ? (
+          <CustomCondition
+            value={value}
+            valRef={selectValRef}
+            conditionDefVal={props.conditionDefVal}
+            selectProps={props.selectProps}
+          />
+        ) : null}
+        <hr />
+        <div>
+          <Button
+            variant="success"
+            size="sm"
+            onClick={handleApply}
+            className="mr-2 btn-mini"
+          >
+            <i className="fa fa-fw fa-check"></i>
+          </Button>
+          <Button
+            className="btn-mini"
+            variant="danger"
+            size="sm"
+            onClick={handleClose}
+          >
+            <i className="fa fa-fw fa-close"></i>
+          </Button>
+        </div>
+      </Popover.Content>
+    </Popover>
   );
 
   const handleClick = (e) => {
@@ -467,12 +575,14 @@ const Editable = (props) => {
   return (
     <div ref={popoverRef}>
       <OverlayTrigger
-        show={show}
+        // show={show}
         target={target}
         trigger="click"
         placement={placement}
         overlay={popoverComp}
         container={popoverRef.current}
+        rootClose={true}
+        rootCloseEvent="click"
       >
         <div className={`editable ${className || ""}`} onClick={handleClick}>
           {displayValue()}

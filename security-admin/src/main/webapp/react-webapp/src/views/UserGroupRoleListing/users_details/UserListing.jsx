@@ -439,12 +439,13 @@ function Users() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
+            placeholder="Search for your users..."
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (
           <Col sm={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addUser}>
-              Add User
+              Add New User
             </Button>
             <DropdownButton
               title="Set Visibility"

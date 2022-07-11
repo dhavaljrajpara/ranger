@@ -224,6 +224,7 @@ class GroupForm extends Component {
                     <Button
                       variant="primary"
                       type="submit"
+                      className="btn-mini"
                       size="sm"
                       disabled={this.state.groupType === 1 ? true : submitting}
                     >
@@ -232,6 +233,7 @@ class GroupForm extends Component {
                     <Button
                       variant="secondary"
                       type="button"
+                      className="btn-mini"
                       size="sm"
                       onClick={() => {
                         form.reset;

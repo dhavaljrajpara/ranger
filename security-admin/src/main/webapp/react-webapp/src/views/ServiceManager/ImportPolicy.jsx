@@ -555,19 +555,28 @@ class ImportPolicy extends Component {
                 <Modal.Footer>
                   {!isEmpty(this.props.services) ? (
                     <>
-                      <Button variant="secondary" onClick={this.props.onHide}>
+                      <Button
+                        variant="secondary"
+                        className="btn-mini"
+                        onClick={this.props.onHide}
+                      >
                         Cancel
                       </Button>
                       <Button
                         variant="primary"
                         type="submit"
+                        className="btn-mini"
                         disabled={isEmpty(this.state.sourceServicesMap)}
                       >
                         Import
                       </Button>
                     </>
                   ) : (
-                    <Button variant="primary" onClick={this.props.onHide}>
+                    <Button
+                      variant="primary"
+                      className="btn-mini"
+                      onClick={this.props.onHide}
+                    >
                       OK
                     </Button>
                   )}

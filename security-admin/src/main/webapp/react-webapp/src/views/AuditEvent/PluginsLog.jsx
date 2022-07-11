@@ -169,8 +169,8 @@ function Plugins() {
 
   return (
     <>
-      <Row className="mb-2">
-        <Col sm={12}>
+      <Row className="mb-2 pd-15">
+        <Col sm={12} className="searchbox-border">
           <StructuredFilter
             options={[
               {

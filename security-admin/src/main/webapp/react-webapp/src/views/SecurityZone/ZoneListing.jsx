@@ -222,12 +222,12 @@ class ZoneListing extends Component {
               ) : this.state.selectedZone === null ? (
                 <Row className="justify-content-md-center">
                   <Col md="auto">
-                    <img
-                      alt="Avatar"
-                      className="w-50 p-3 d-block mx-auto"
-                      src={noZoneImage}
-                    />
                     <div className="pt-5 pr-5">
+                      <img
+                        alt="Avatar"
+                        className="w-50 p-3 d-block mx-auto"
+                        src={noZoneImage}
+                      />
                       {this.state.isAdminRole && (
                         <Link
                           to={{

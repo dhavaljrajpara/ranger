@@ -203,7 +203,7 @@ export default function ResourceComp(props) {
         controlId="policyName"
         key={`Resource-${levelKey}`}
       >
-        <Col sm={2}>
+        <Col sm={3}>
           <Field
             defaultValue={getResourceLabelOp(levelKey, index)[0]}
             className="form-control"
@@ -211,12 +211,12 @@ export default function ResourceComp(props) {
             render={({ input, meta }) =>
               formValues[resourceKey] ? (
                 renderResourceSelect(levelKey, index) ? (
-                  <>
+                  <span className="pull-right fnt-14">
                     <FormB.Label>
                       {getResourceLabelOp(levelKey, index)[0]["label"]}
                     </FormB.Label>
                     <RenderValidateField name={`resourceName-${levelKey}`} />
-                  </>
+                  </span>
                 ) : (
                   <>
                     <Select
@@ -236,7 +236,7 @@ export default function ResourceComp(props) {
           />
         </Col>
         {formValues[`resourceName-${levelKey}`] && (
-          <Col sm={5}>
+          <Col sm={4}>
             <Field
               className="form-control"
               name={`value-${levelKey}`}
@@ -293,7 +293,7 @@ export default function ResourceComp(props) {
           </Col>
         )}
         {formValues[`resourceName-${levelKey}`] && (
-          <Col sm={5}>
+          <Col sm={4}>
             <Row>
               {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (
                 <Col sm={4}>

@@ -22,8 +22,8 @@ export const AdminModal = (props) => {
       const authResp = await fetchApi({
         url: "xusers/authSessions",
         params: {
-          id: props.data,
-        },
+          id: props.data
+        }
       });
       authlogs = authResp.data.vXAuthSessions;
       setAuthSession(authlogs);
@@ -121,7 +121,7 @@ export const AdminModal = (props) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="primary" onClick={props.onHide}>
+        <Button variant="primary" className="btn-mini" onClick={props.onHide}>
           OK
         </Button>
       </Modal.Footer>

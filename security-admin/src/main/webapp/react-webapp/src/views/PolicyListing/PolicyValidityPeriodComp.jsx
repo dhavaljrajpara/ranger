@@ -60,13 +60,13 @@ export default function PolicyValidityPeriodComp(props) {
         onClick={handleBtnClick}
         variant="primary"
         size="sm"
-        className="pull-right"
+        className="pull-right btn-fnt"
       >
-        Add Validity Period
+        <i className="fa fa-clock-o"></i> Add Validity Period
       </Button>
       <Modal show={showModal} size="lg" onHide={toggleModal} backdrop="static">
         <Modal.Header closeButton>
-          <Modal.Title>Validity Period</Modal.Title>
+          <Modal.Title>Policy Validity Period</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Table bordered>
@@ -157,6 +157,7 @@ export default function PolicyValidityPeriodComp(props) {
                         <Button
                           variant="danger"
                           size="sm"
+                          className="btn-mini"
                           title="Remove"
                           onClick={() => fields.remove(index)}
                         >
@@ -171,9 +172,10 @@ export default function PolicyValidityPeriodComp(props) {
           </Table>
           <Button
             type="button"
+            className="btn-mini"
             onClick={() => addPolicyItem("validitySchedules", undefined)}
           >
-            +
+            <i className="fa-fw fa fa-plus"></i>
           </Button>
         </Modal.Body>
         <Modal.Footer>

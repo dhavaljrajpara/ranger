@@ -191,15 +191,15 @@ class ExportPolicy extends Component {
           <Modal.Footer>
             {!isEmpty(this.props.services) ? (
               <>
-                <Button variant="secondary" onClick={this.props.onHide}>
+                <Button variant="secondary" className="btn-mini" onClick={this.props.onHide}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={this.export}>
+                <Button variant="primary" className="btn-mini" onClick={this.export}>
                   Export
                 </Button>
               </>
             ) : (
-              <Button variant="primary" onClick={this.props.onHide}>
+              <Button variant="primary" className="btn-mini" onClick={this.props.onHide}>
                 OK
               </Button>
             )}

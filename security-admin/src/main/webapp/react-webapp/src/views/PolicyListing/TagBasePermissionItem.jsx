@@ -104,22 +104,55 @@ export default function TagBasePermissionItem(props) {
     return formData;
   };
 
+  const tagAccessTypeDisplayVal = (val) => {
+    return val.map((m, index) => {
+      return (
+        <>
+          <h6 className="d-inline mr-1" key={index}>
+            <Badge variant="info">{m.serviceName.toUpperCase()}</Badge>
+          </h6>
+        </>
+      );
+    });
+  };
+
   return (
     <>
-      <Button
-        className="pull-right"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          tagPermissionItem(true);
-        }}
-      >
-        +
-      </Button>
+      {inputVal?.value?.tableList?.length > 0 ? (
+        <Button
+          className="mg-10"
+          size="sm"
+          variant="outline-dark"
+          onClick={(e) => {
+            e.stopPropagation();
+            tagPermissionItem(true);
+          }}
+        >
+          <i className="fa-fw fa fa-pencil"></i>
+        </Button>
+      ) : (
+        <div className="text-center">
+          <span className="editable-add-text">Add Permissions</span>
+          <div>
+            <Button
+              size="sm"
+              className="mg-10"
+              variant="outline-dark"
+              onClick={(e) => {
+                e.stopPropagation();
+                tagPermissionItem(true);
+              }}
+            >
+              <i className="fa-fw fa fa-plus"></i>
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Modal
         show={showTagPermissionItem}
         onHide={handleClose}
-        size="xl"
+        size="lg"
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >
@@ -169,10 +202,10 @@ export default function TagBasePermissionItem(props) {
                 <Table striped bordered>
                   <thead>
                     <tr>
-                      <th className="p-3 mb-2 bg-white text-dark  align-middle text-center">
+                      <th className="bg-white text-dark  align-middle text-center">
                         Component
                       </th>
-                      <th className="p-3 mb-2 bg-white text-dark align-middle text-center">
+                      <th className="bg-white text-dark align-middle text-center">
                         Permission
                       </th>
                     </tr>
@@ -249,11 +282,15 @@ export default function TagBasePermissionItem(props) {
                 </Table>
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button
+                  variant="secondary"
+                  className="btn-mini"
+                  onClick={handleClose}
+                >
                   Close
                 </Button>
 
-                <Button title="Save" type="submit">
+                <Button title="Save" className="btn-mini" type="submit">
                   Save
                 </Button>
               </Modal.Footer>

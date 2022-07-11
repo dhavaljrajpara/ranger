@@ -286,62 +286,94 @@ class ServiceDefinitions extends Component {
       isUserRole,
       isKMSRole
     } = this.state;
+    const customStyles = {
+      control: (provided) => ({
+        ...provided,
+
+        minHeight: "27px",
+        height: "27px"
+      }),
+      indicatorsContainer: (provided) => ({
+        ...provided,
+        height: "27px"
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        marginBottom: "20px"
+      })
+    };
     return (
       <React.Fragment>
         {this.serviceBreadcrumb()}
         <Row>
-          <Col sm={6}>
-            <h3 className="wrap-header bold text-left">Service Manager</h3>
+          <Col sm={5}>
+            <h5 className="wrap-header bold  pd-b-10">Service Manager</h5>
           </Col>
-          <Col sm={2} className="text-right">
-            {!isKMSRole && <b className="align-middle"> Security Zone: </b>}
-          </Col>
-          <Col sm={2}>
+          <Col sm={7} className="text-right">
             {!isKMSRole && (
-              <Select
-                className={isEmpty(zones) ? "not-allowed" : ""}
-                value={
-                  isEmpty(this.state.selectedZone)
-                    ? ""
-                    : {
-                        label:
-                          this.state.selectedZone &&
-                          this.state.selectedZone.label,
-                        value:
-                          this.state.selectedZone &&
-                          this.state.selectedZone.value
-                      }
-                }
-                isDisabled={isEmpty(zones) ? true : false}
-                onChange={this.getSelectedZone}
-                isClearable
-                components={{
-                  IndicatorSeparator: () => null
-                }}
-                theme={this.Theme}
-                options={zones.map((zone) => {
-                  return {
-                    value: zone.id,
-                    label: zone.name
-                  };
-                })}
-                menuPlacement="auto"
-                placeholder="Select Zone Name"
-              />
+              <div
+                className="body bold  pd-b-10"
+                style={{ display: "inline-block" }}
+              >
+                Security Zone:
+              </div>
             )}
-          </Col>
-          <Col sm={2} className="text-right">
+            {!isKMSRole && (
+              <div
+                style={{
+                  display: "inline-block",
+                  width: "220px",
+                  textAlign: "left",
+                  verticalAlign: "middle",
+                  cursor: "not-allowed"
+                }}
+                className="mg-l-5"
+              >
+                <Select
+                  className={isEmpty(zones) ? "not-allowed" : ""}
+                  styles={customStyles}
+                  value={
+                    isEmpty(this.state.selectedZone)
+                      ? ""
+                      : {
+                          label:
+                            this.state.selectedZone &&
+                            this.state.selectedZone.label,
+                          value:
+                            this.state.selectedZone &&
+                            this.state.selectedZone.value
+                        }
+                  }
+                  isDisabled={isEmpty(zones) ? true : false}
+                  onChange={this.getSelectedZone}
+                  isClearable
+                  components={{
+                    IndicatorSeparator: () => null
+                  }}
+                  theme={this.Theme}
+                  options={zones.map((zone) => {
+                    return {
+                      value: zone.id,
+                      label: zone.name
+                    };
+                  })}
+                  menuPlacement="auto"
+                  placeholder="Select Zone Name"
+                />
+              </div>
+            )}
             {isAdminRole && (
               <Button
                 variant="outline-secondary"
                 size="sm"
-                className="mr-2"
+                className="ml-2 btn-mini "
                 onClick={this.showImportModal}
               >
                 <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
                 Import
               </Button>
             )}
+
             {filterServiceDefs.length > 0 && showImportModal && (
               <ImportPolicy
                 serviceDef={filterServiceDefs}
@@ -357,7 +389,7 @@ class ServiceDefinitions extends Component {
               <Button
                 variant="outline-secondary"
                 size="sm"
-                className="pull-right"
+                className="ml-2 btn-mini "
                 onClick={this.showExportModal}
               >
                 <i className="fa fa-fw fa-external-link-square" />

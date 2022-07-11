@@ -7,8 +7,8 @@ export function SyncSourceDetails(props) {
       <Table bordered size="sm">
         <thead className="thead-light">
           <tr>
-            <th className="renderable">Name</th>
-            <th className="renderable">Value</th>
+            <th className=" text-center">Name</th>
+            <th className=" text-center">Value</th>
           </tr>
         </thead>
         <tbody>
@@ -25,8 +25,8 @@ export function SyncSourceDetails(props) {
       <Table bordered size="sm">
         <thead className="thead-light">
           <tr>
-            <th>Name</th>
-            <th>Value</th>
+            <th className=" text-center">Name</th>
+            <th className=" text-center">Value</th>
           </tr>
         </thead>
         <tbody>

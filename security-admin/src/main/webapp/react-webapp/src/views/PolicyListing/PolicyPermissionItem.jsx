@@ -157,7 +157,7 @@ export default function PolicyPermissionItem(props) {
   return (
     <div>
       <Col sm="12">
-        <Table bordered>
+        <Table bordered className="plcypermissiontable">
           <thead className="thead-light">
             <tr>
               {tableHeader()}
@@ -296,6 +296,18 @@ export default function PolicyPermissionItem(props) {
                         if (serviceCompDetails.name == "tag") {
                           return (
                             <td key={colName}>
+                              {fields?.value[index]?.accesses?.tableList
+                                .length > 0 ? (
+                                <h6 className="d-inline mr-1 mb-1">
+                                  <span className="editable-edit-text">
+                                    {tagAccessTypeDisplayVal(
+                                      fields.value[index].accesses.tableList
+                                    )}
+                                  </span>
+                                </h6>
+                              ) : (
+                                <></>
+                              )}
                               <Field
                                 className="form-control"
                                 name={`${name}.accesses`}
@@ -312,23 +324,13 @@ export default function PolicyPermissionItem(props) {
                                       inputVal={input}
                                     />
                                     {meta.error && (
-                                      <span className="invalid-field">
+                                      <div className="invalid-field">
                                         {meta.error}
-                                      </span>
+                                      </div>
                                     )}
                                   </div>
                                 )}
                               />
-                              {fields?.value[index]?.accesses?.tableList
-                                .length > 0 ? (
-                                <>
-                                  {tagAccessTypeDisplayVal(
-                                    fields.value[index].accesses.tableList
-                                  )}
-                                </>
-                              ) : (
-                                <>-----</>
-                              )}
                             </td>
                           );
                         } else {
@@ -347,7 +349,7 @@ export default function PolicyPermissionItem(props) {
                                   <div className="table-editable">
                                     <Editable
                                       {...input}
-                                      placement="right"
+                                      placement="auto"
                                       type="checkbox"
                                       options={getAccessTypeOptions()}
                                       showSelectAll={true}
@@ -375,7 +377,7 @@ export default function PolicyPermissionItem(props) {
                                 <div className="table-editable">
                                   <Editable
                                     {...input}
-                                    placement="right"
+                                    placement="auto"
                                     type="radio"
                                     options={getMaskingAccessTypeOptions()}
                                     showSelectAll={false}
@@ -423,7 +425,7 @@ export default function PolicyPermissionItem(props) {
                                 <div className="table-editable">
                                   <Editable
                                     {...input}
-                                    placement="right"
+                                    placement="auto"
                                     type="input"
                                   />
                                   {meta.touched && meta.error && (
@@ -469,11 +471,11 @@ export default function PolicyPermissionItem(props) {
         </Table>
       </Col>
       <Button
-        size="sm"
+        className="btn btn-mini"
         type="button"
         onClick={() => addPolicyItem(attrName, undefined)}
       >
-        +
+        <i className="fa-fw fa fa-plus"></i>{" "}
       </Button>
     </div>
   );

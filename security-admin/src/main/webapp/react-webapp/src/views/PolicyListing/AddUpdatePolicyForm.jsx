@@ -11,8 +11,7 @@ import {
   Col,
   Button,
   Badge,
-  Accordion,
-  Card
+  Accordion
 } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
@@ -770,36 +769,59 @@ export default function AddUpdatePolicyForm() {
                     <p className="formHeader">Policy Details</p>
                   </fieldset>
                   <Row>
-                    <Col md={9}>
-                      <Field
-                        className="form-control"
-                        name="policyType"
-                        render={({ input }) => (
-                          <FormB.Group className="mb-3" controlId="policyType">
-                            <FormB.Label column sm={2}>
-                              Policy Type
-                            </FormB.Label>
-                            <h6 className="d-inline mr-1">
-                              <Badge variant="primary">
-                                {
-                                  getEnumElementByValue(
-                                    RangerPolicyType,
-                                    +input.value
-                                  ).label
-                                }
-                              </Badge>
-                            </h6>
-                          </FormB.Group>
-                        )}
-                      />
+                    <Col md={8}>
+                      <FormB.Group
+                        as={Row}
+                        className="mb-3"
+                        controlId="policyType"
+                      >
+                        <Field
+                          className="form-control"
+                          name="policyType"
+                          render={({ input }) => (
+                            <>
+                              <FormB.Label column sm={3}>
+                                <span className="pull-right fnt-14">
+                                  Policy Type
+                                </span>
+                              </FormB.Label>
+                              <Col sm={5}>
+                                <h6 className="d-inline mr-1">
+                                  <Badge
+                                    variant="primary"
+                                    style={{ verticalAlign: "sub" }}
+                                  >
+                                    {
+                                      getEnumElementByValue(
+                                        RangerPolicyType,
+                                        +input.value
+                                      ).label
+                                    }
+                                  </Badge>
+                                </h6>
+                              </Col>
+                            </>
+                          )}
+                        />
+                      </FormB.Group>
                       {policyId && (
-                        <FormB.Group className="mb-3" controlId="policyId">
-                          <FormB.Label column sm={2}>
-                            Policy ID*
+                        <FormB.Group
+                          as={Row}
+                          className="mb-3"
+                          controlId="policyId"
+                        >
+                          <FormB.Label column sm={3}>
+                            <span className="pull-right fnt-14">
+                              Policy ID*
+                            </span>
                           </FormB.Label>
-                          <h6 className="d-inline mr-1">
-                            <Badge variant="primary">{policyData.id}</Badge>
-                          </h6>
+                          <Col sm={5}>
+                            <h6 className="d-inline mr-1">
+                              <span style={{ verticalAlign: "sub" }}>
+                                <Badge variant="primary">{policyData.id}</Badge>
+                              </span>
+                            </h6>
+                          </Col>
                         </FormB.Group>
                       )}
                       <FormB.Group
@@ -813,11 +835,13 @@ export default function AddUpdatePolicyForm() {
                           // validate={required}
                           render={({ input, meta }) => (
                             <>
-                              <FormB.Label column sm={2}>
-                                Policy Name*
+                              <FormB.Label column sm={3}>
+                                <span className="pull-right fnt-14">
+                                  Policy Name*
+                                </span>
                               </FormB.Label>
                               <>
-                                <Col sm={5}>
+                                <Col sm={4}>
                                   <FormB.Control
                                     {...input}
                                     placeholder="Policy Name"
@@ -851,6 +875,7 @@ export default function AddUpdatePolicyForm() {
                                 render={({ input }) => (
                                   <BootstrapSwitchButton
                                     {...input}
+                                    className="abcd"
                                     checked={!(input.value === false)}
                                     onlabel="Enabled"
                                     onstyle="primary"
@@ -894,10 +919,12 @@ export default function AddUpdatePolicyForm() {
                             className="mb-3"
                             controlId="policyLabel"
                           >
-                            <FormB.Label column sm={2}>
-                              Policy Label
+                            <FormB.Label column sm={3}>
+                              <span className="pull-right fnt-14">
+                                Policy Label
+                              </span>
                             </FormB.Label>
-                            <Col sm={5}>
+                            <Col sm={4}>
                               <AsyncCreatableSelect
                                 {...input}
                                 defaultOptions
@@ -926,8 +953,10 @@ export default function AddUpdatePolicyForm() {
                             className="mb-3"
                             controlId="description"
                           >
-                            <FormB.Label column sm={2}>
-                              Description
+                            <FormB.Label column sm={3}>
+                              <span className="pull-right fnt-14">
+                                Description
+                              </span>
                             </FormB.Label>
                             <Col sm={5}>
                               <FormB.Control
@@ -948,28 +977,32 @@ export default function AddUpdatePolicyForm() {
                             className="mb-3"
                             controlId="description"
                           >
-                            <FormB.Label column sm={2}>
-                              Audit Logging*
+                            <FormB.Label column sm={3}>
+                              <span className="pull-right fnt-14">
+                                Audit Logging*
+                              </span>
                             </FormB.Label>
-                            <Col sm={4}>
-                              <BootstrapSwitchButton
-                                {...input}
-                                checked={!(input.value === false)}
-                                onlabel="Yes"
-                                onstyle="primary"
-                                offlabel="No"
-                                offstyle="outline-secondary"
-                                size="xs"
-                                key="isAuditEnabled"
-                              />
+                            <Col sm={5}>
+                              <span style={{ verticalAlign: "sub" }}>
+                                <BootstrapSwitchButton
+                                  {...input}
+                                  checked={!(input.value === false)}
+                                  onlabel="Yes"
+                                  onstyle="primary"
+                                  offlabel="No"
+                                  offstyle="outline-secondary"
+                                  size="xs"
+                                  key="isAuditEnabled"
+                                />
+                              </span>
                             </Col>
                           </FormB.Group>
                         )}
                       />
                     </Col>
                     {/* -------------------------------------------------------------- */}
-                    <Col md={3}>
-                      <div className="mb-3">
+                    <Col md={4}>
+                      <div className="mb-4">
                         <PolicyValidityPeriodComp
                           addPolicyItem={addPolicyItem}
                         />
@@ -1001,12 +1034,12 @@ export default function AddUpdatePolicyForm() {
                                     />
                                   )}
                                   <Button
-                                    className="pull-right"
+                                    className="pull-right btn btn-mini"
                                     onClick={() => {
                                       policyConditionState(true);
                                     }}
                                   >
-                                    +
+                                    <i className="fa-fw fa fa-plus"></i>
                                   </Button>
                                 </th>
                               </tr>
@@ -1068,45 +1101,48 @@ export default function AddUpdatePolicyForm() {
                     <div>
                       <div>
                         <Accordion defaultActiveKey="0">
-                          <Card>
-                            <p className="wrap-header search-header">
-                              Allow Conditions:{" "}
-                              <CustomToggle eventKey="0"></CustomToggle>
-                            </p>
-                            <Accordion.Collapse eventKey="0">
-                              <Card.Body>
-                                <div className="wrap">
-                                  <PolicyPermissionItem
-                                    serviceDetails={serviceDetails}
-                                    serviceCompDetails={serviceCompDetails}
-                                    formValues={values}
-                                    addPolicyItem={addPolicyItem}
-                                    attrName="policyItems"
-                                    fetchUsersData={fetchUsersData}
-                                    fetchGroupsData={fetchGroupsData}
-                                    fetchRolesData={fetchRolesData}
-                                  />
-                                </div>
-                                <fieldset>
-                                  <p className="formHeader">
-                                    Exclude from Allow Conditions:
-                                  </p>
-                                </fieldset>
-                                <div className="wrap">
-                                  <PolicyPermissionItem
-                                    serviceDetails={serviceDetails}
-                                    serviceCompDetails={serviceCompDetails}
-                                    formValues={values}
-                                    addPolicyItem={addPolicyItem}
-                                    attrName="allowExceptions"
-                                    fetchUsersData={fetchUsersData}
-                                    fetchGroupsData={fetchGroupsData}
-                                    fetchRolesData={fetchRolesData}
-                                  />
-                                </div>
-                              </Card.Body>
-                            </Accordion.Collapse>
-                          </Card>
+                          <>
+                            <>
+                              <p className="formHeader">
+                                Allow Conditions:{" "}
+                                <CustomToggle eventKey="0"></CustomToggle>
+                              </p>
+                              <Accordion.Collapse eventKey="0">
+                                <>
+                                  <div className="wrap">
+                                    <PolicyPermissionItem
+                                      serviceDetails={serviceDetails}
+                                      serviceCompDetails={serviceCompDetails}
+                                      formValues={values}
+                                      addPolicyItem={addPolicyItem}
+                                      attrName="policyItems"
+                                      fetchUsersData={fetchUsersData}
+                                      fetchGroupsData={fetchGroupsData}
+                                      fetchRolesData={fetchRolesData}
+                                    />
+                                  </div>
+                                  <fieldset>
+                                    <p className="wrap-header search-header">
+                                      <i className="fa-fw fa fa-exclamation-triangle fa-fw fa fa-1 text-color-red"></i>
+                                      Exclude from Allow Conditions:
+                                    </p>
+                                  </fieldset>
+                                  <div className="wrap">
+                                    <PolicyPermissionItem
+                                      serviceDetails={serviceDetails}
+                                      serviceCompDetails={serviceCompDetails}
+                                      formValues={values}
+                                      addPolicyItem={addPolicyItem}
+                                      attrName="allowExceptions"
+                                      fetchUsersData={fetchUsersData}
+                                      fetchGroupsData={fetchGroupsData}
+                                      fetchRolesData={fetchRolesData}
+                                    />
+                                  </div>
+                                </>
+                              </Accordion.Collapse>
+                            </>
+                          </>
                         </Accordion>
                       </div>
                       <Field
@@ -1122,17 +1158,19 @@ export default function AddUpdatePolicyForm() {
                               Deny All Other Accesses: *
                             </FormB.Label>
                             <Col sm={1}>
-                              <BootstrapSwitchButton
-                                {...input}
-                                checked={input.value}
-                                onlabel="True"
-                                onstyle="primary"
-                                offlabel="False"
-                                offstyle="outline-secondary"
-                                size="xs"
-                                style="w-100"
-                                key="isDenyAllElse"
-                              />
+                              <span style={{ verticalAlign: "sub" }}>
+                                <BootstrapSwitchButton
+                                  {...input}
+                                  checked={input.value}
+                                  onlabel="True"
+                                  onstyle="primary"
+                                  offlabel="False"
+                                  offstyle="outline-secondary"
+                                  size="xs"
+                                  style="w-100"
+                                  key="isDenyAllElse"
+                                />
+                              </span>
                             </Col>
                           </FormB.Group>
                         )}
@@ -1140,13 +1178,13 @@ export default function AddUpdatePolicyForm() {
                       <Condition when="isDenyAllElse" is={false}>
                         <div>
                           <Accordion defaultActiveKey="0">
-                            <Card>
-                              <p className="wrap-header search-header">
+                            <>
+                              <p className="formHeader">
                                 Deny Conditions:
                                 <CustomToggle eventKey="0"></CustomToggle>
                               </p>
                               <Accordion.Collapse eventKey="0">
-                                <Card.Body>
+                                <>
                                   <div className="wrap">
                                     <PolicyPermissionItem
                                       serviceDetails={serviceDetails}
@@ -1160,7 +1198,8 @@ export default function AddUpdatePolicyForm() {
                                     />
                                   </div>
                                   <fieldset>
-                                    <p className="formHeader">
+                                    <p className="wrap-header search-header">
+                                      <i className="fa-fw fa fa-exclamation-triangle fa-fw fa fa-1 text-color-red"></i>
                                       Exclude from Deny Conditions:
                                     </p>
                                   </fieldset>
@@ -1176,9 +1215,9 @@ export default function AddUpdatePolicyForm() {
                                       fetchRolesData={fetchRolesData}
                                     />
                                   </div>
-                                </Card.Body>
+                                </>
                               </Accordion.Collapse>
-                            </Card>
+                            </>
                           </Accordion>
                         </div>
                       </Condition>
@@ -1186,13 +1225,13 @@ export default function AddUpdatePolicyForm() {
                   ) : values.policyType == 1 ? (
                     <div>
                       <Accordion defaultActiveKey="0">
-                        <Card>
-                          <p className="wrap-header search-header">
+                        <>
+                          <p className="formHeader">
                             Mask Conditions:
                             <CustomToggle eventKey="0"></CustomToggle>
                           </p>
                           <Accordion.Collapse eventKey="0">
-                            <Card.Body>
+                            <>
                               <div className="wrap">
                                 <PolicyPermissionItem
                                   serviceDetails={serviceDetails}
@@ -1205,22 +1244,22 @@ export default function AddUpdatePolicyForm() {
                                   fetchRolesData={fetchRolesData}
                                 />
                               </div>
-                            </Card.Body>
+                            </>
                           </Accordion.Collapse>
-                        </Card>
+                        </>
                       </Accordion>
                     </div>
                   ) : (
                     <div>
                       <div>
                         <Accordion defaultActiveKey="0">
-                          <Card>
+                          <>
                             <p className="wrap-header search-header">
                               Row Filter Conditions:
                               <CustomToggle eventKey="0"></CustomToggle>
                             </p>
                             <Accordion.Collapse eventKey="0">
-                              <Card.Body>
+                              <>
                                 <div className="wrap">
                                   <PolicyPermissionItem
                                     serviceDetails={serviceDetails}
@@ -1233,9 +1272,9 @@ export default function AddUpdatePolicyForm() {
                                     fetchRolesData={fetchRolesData}
                                   />
                                 </div>
-                              </Card.Body>
+                              </>
                             </Accordion.Collapse>
-                          </Card>
+                          </>
                         </Accordion>
                       </div>
                     </div>

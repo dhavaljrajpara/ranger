@@ -89,9 +89,9 @@ export default function ServiceAuditFilter(props) {
                 {join(map(resourceData[`value-${level}`], "value"), ", ")}
               </span>
             </div>
-            <div className="pull-right ml-3">
+            <div>
               {resourceData[`isRecursiveSupport-${level}`] !== undefined && (
-                <h6>
+                <h6 className="text-center">
                   {resourceData[`isRecursiveSupport-${level}`] ? (
                     <span className="badge badge-dark">Recursive</span>
                   ) : (
@@ -100,7 +100,7 @@ export default function ServiceAuditFilter(props) {
                 </h6>
               )}
               {resourceData[`isExcludesSupport-${level}`] !== undefined && (
-                <h6>
+                <h6 className="text-center">
                   {resourceData[`isExcludesSupport-${level}`] ? (
                     <span className="badge badge-dark">Include</span>
                   ) : (
@@ -110,13 +110,13 @@ export default function ServiceAuditFilter(props) {
               )}
               {recursiveSupported !== undefined &&
                 resourceData[`isRecursiveSupport-${level}`] === undefined && (
-                  <h6>
+                  <h6 className="text-center">
                     <span className="badge badge-dark">Recursive</span>
                   </h6>
                 )}
               {excludesSupported !== undefined &&
                 resourceData[`isExcludesSupport-${level}`] === undefined && (
-                  <h6>
+                  <h6 className="text-center">
                     <span className="badge badge-dark">Include</span>
                   </h6>
                 )}
@@ -215,7 +215,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Access Result") {
                       return (
-                        <td key={colName} style={{ width: 200 }}>
+                        <td key={colName} width="150px">
                           <Field
                             className="form-control"
                             name={`${name}.accessResult`}
@@ -242,7 +242,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Resources") {
                       return (
-                        <td key={`${name}.resources`} style={{ width: 170 }}>
+                        <td key={`${name}.resources`} width="210px">
                           <Field
                             name={`${name}.resources`}
                             render={({ input }) => (
@@ -253,7 +253,7 @@ export default function ServiceAuditFilter(props) {
                                   </div>
 
                                   <Button
-                                    className="mr-1"
+                                    className="mr-1 btn-mini"
                                     variant="primary"
                                     size="sm"
                                     onClick={() => renderResourcesModal(input)}
@@ -263,7 +263,7 @@ export default function ServiceAuditFilter(props) {
                                     ></i>
                                   </Button>
                                   <Button
-                                    className="mr-1"
+                                    className="mr-1 btn-mini"
                                     variant="danger"
                                     size="sm"
                                     onClick={() => handleRemove(input)}
@@ -279,7 +279,11 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Operations") {
                       return (
-                        <td key={`${name}.actions`} style={{ width: 180 }}>
+                        <td
+                          className="mx-w-210"
+                          key={`${name}.actions`}
+                          width="210px"
+                        >
                           <Field
                             className="form-control"
                             name={`${name}.actions`}
@@ -299,27 +303,28 @@ export default function ServiceAuditFilter(props) {
                     if (colName == "Permissions") {
                       if (serviceDefDetails.name == "tag") {
                         return (
-                          <td
-                            key={`${name}.accessTypes`}
-                            style={{ width: 120 }}
-                          >
+                          <td key={`${name}.accessTypes`} width="100px">
                             <Field
                               className="form-control"
                               name={`${name}.accessTypes`}
                               render={({ input }) => (
                                 <React.Fragment>
-                                  <div className="table-editable">
-                                    <TagBasePermissionItem
-                                      options={getAccessTypeOptions()}
-                                      inputVal={input}
-                                    />
-                                  </div>
-                                  <div>
-                                    {input.value.tableList !== undefined &&
-                                    input.value.tableList.length > 0
-                                      ? getTagAccessType(input.value.tableList)
-                                      : "----"}
-                                  </div>
+                                  <span className="d-inline mr-1 ">
+                                    <h6 className="editable-edit-text">
+                                      {input.value.tableList !== undefined &&
+                                      input.value.tableList.length > 0 ? (
+                                        getTagAccessType(input.value.tableList)
+                                      ) : (
+                                        <></>
+                                      )}
+                                    </h6>
+                                    <div>
+                                      <TagBasePermissionItem
+                                        options={getAccessTypeOptions()}
+                                        inputVal={input}
+                                      />
+                                    </div>
+                                  </span>
                                 </React.Fragment>
                               )}
                             />
@@ -327,10 +332,7 @@ export default function ServiceAuditFilter(props) {
                         );
                       } else {
                         return (
-                          <td
-                            key={`${name}.accessTypes`}
-                            style={{ width: 120 }}
-                          >
+                          <td key={`${name}.accessTypes`} width="100px">
                             <Field
                               className="form-control"
                               name={`${name}.accessTypes`}
@@ -353,7 +355,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Roles") {
                       return (
-                        <td key={`${name}.roles`} style={{ width: 200 }}>
+                        <td key={`${name}.roles`} width="150px">
                           <Field
                             className="form-control"
                             name={`${name}.roles`}
@@ -379,7 +381,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Groups") {
                       return (
-                        <td key={`${name}.groups`} style={{ width: 200 }}>
+                        <td key={`${name}.groups`} width="150px">
                           <Field
                             className="form-control"
                             name={`${name}.groups`}
@@ -405,7 +407,7 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Users") {
                       return (
-                        <td key={`${name}.users`} style={{ width: 200 }}>
+                        <td key={`${name}.users`} width="250px">
                           <Field
                             className="form-control"
                             name={`${name}.users`}
@@ -452,6 +454,7 @@ export default function ServiceAuditFilter(props) {
       <Button
         variant="outline-dark"
         size="sm"
+        className="btn-fnt"
         type="button"
         onClick={() => addAuditFilter("auditFilters", undefined)}
       >

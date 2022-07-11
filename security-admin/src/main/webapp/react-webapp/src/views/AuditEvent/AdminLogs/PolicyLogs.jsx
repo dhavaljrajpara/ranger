@@ -1722,7 +1722,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         objectClassType == ClassTypes.CLASS_TYPE_RANGER_POLICY.value && (
           <div>
             <div className="font-weight-bolder">
-              Policy ID :{" "}
+              Policy ID :
               <Badge className="d-inline-flex mr-1" variant="info">
                 {objectId}
               </Badge>
@@ -3385,9 +3385,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
           <div>
             <div className="font-weight-bolder">
               Policy ID :{" "}
-              <Badge className="d-inline-flex mr-1" variant="info">
+              {/* <Badge className="d-inline-flex mr-1" variant="info">
                 {objectId}
-              </Badge>
+              </Badge> */}
             </div>
             <div className="font-weight-bolder">Policy Name: {objectName}</div>
             <div className="font-weight-bolder">

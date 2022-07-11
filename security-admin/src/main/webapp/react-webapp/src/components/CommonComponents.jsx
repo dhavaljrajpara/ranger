@@ -338,7 +338,7 @@ export const CustomPopoverTagOnClick = ({
 export const CustomTooltip = ({ placement, content, icon }) => (
   <OverlayTrigger
     placement={placement}
-    overlay={<Tooltip id={`tooltip-${placement}`}>{content}</Tooltip>}
+    overlay={<Popover id={`tooltip-${placement}`}>{content}</Popover>}
   >
     <i className={icon}></i>
   </OverlayTrigger>

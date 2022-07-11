@@ -13,6 +13,7 @@ import {
 import { MoreLess } from "Components/CommonComponents";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import { CustomTooltip } from "../../components/CommonComponents";
 
 function PolicyListing() {
   const [policyListingData, setPolicyData] = useState([]);
@@ -292,7 +293,7 @@ function PolicyListing() {
           return !isEmpty(rolesData) ? (
             <MoreLess data={rolesData} />
           ) : (
-            <div className="text-center">--</div>
+            <div>--</div>
           );
         },
         minWidth: 190,
@@ -310,7 +311,7 @@ function PolicyListing() {
           return !isEmpty(groupsData) ? (
             <MoreLess data={groupsData} />
           ) : (
-            <div className="text-center">--</div>
+            <div>--</div>
           );
         },
         minWidth: 190,
@@ -328,7 +329,7 @@ function PolicyListing() {
           return !isEmpty(usersData) ? (
             <MoreLess data={usersData} />
           ) : (
-            <div className="text-center">--</div>
+            <div>--</div>
           );
         },
         minWidth: 190,
@@ -343,7 +344,7 @@ function PolicyListing() {
               <Button
                 variant="outline-dark"
                 size="sm"
-                className="m-r-5"
+                className="m-r-5 btn-mini"
                 title="View"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -353,7 +354,7 @@ function PolicyListing() {
                 <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
               </Button>
               <Link
-                className="btn btn-outline-dark btn-sm m-r-5"
+                className="btn btn-outline-dark btn-sm m-r-5 btn-mini"
                 title="Edit"
                 to={`/service/${serviceId}/policies/${original.id}/edit`}
               >
@@ -362,7 +363,7 @@ function PolicyListing() {
               <Button
                 variant="danger"
                 size="sm"
-                className="m-r-5"
+                className="m-r-5 btn-mini"
                 title="Delete"
                 onClick={() =>
                   toggleConfirmModalForDelete(original.id, original.name)
@@ -437,13 +438,79 @@ function PolicyListing() {
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
             />
+            <span className="info-icon pd-10">
+              <CustomTooltip
+                placement="bottom"
+                content={
+                  <>
+                    <p
+                      className="pd-5 text-center"
+                      style={{ margin: "0", borderBottom: "1px solid #d6d6d6" }}
+                    >
+                      Search Filter Hints
+                    </p>
+
+                    <div className="pd-10">
+                      <span>
+                        {" "}
+                        Wildcard searches ( for example using * or ? ) are not
+                        currently supported.
+                      </span>
+                      <div>
+                        <span>
+                          <b>Group Name : </b>
+                        </span>
+                        <span>Name of Group.</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>Policy Name : </b>
+                        </span>
+                        <span>Enter name of policy.</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>Status : </b>
+                        </span>
+                        <span>Status of Policy Enable/Disable.</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>User Name : </b>
+                        </span>
+                        <span>Name of User.</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>Role Name : </b>
+                        </span>
+                        <span>Name of Role.</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>Policy Label : </b>
+                        </span>
+                        <span>Label of policy</span>
+                      </div>
+                      <div>
+                        <span>
+                          <b>TAG : </b>
+                        </span>
+                        <span>Tag Name.</span>
+                      </div>
+                    </div>
+                  </>
+                }
+                icon="fa-fw fa fa-info-circle"
+              />
+            </span>
           </Col>
           <Col sm={2}>
             <div className="pull-right mb-1">
               <Link
                 role="button"
                 to={`/service/${serviceId}/policies/create/${policyType}`}
-                className="btn btn-sm btn-primary mb-2"
+                className="btn btn-sm btn-primary mb-2 btn-fnt"
               >
                 Add New Policy
               </Link>
