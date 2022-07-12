@@ -195,42 +195,44 @@ function User_Sync() {
     setSearchFilter(searchFilter);
   };
   return (
-    <>
-      <Row className="mb-2 pd-15">
-        <Col sm={12} className="searchbox-border">
-          <StructuredFilter
-            options={[
-              {
-                category: "endDate",
-                label: "End Date",
-                type: "text"
-              },
-              {
-                category: "startDate",
-                label: "Start Date",
-                type: "text"
-              },
-              {
-                category: "syncSource",
-                label: "Sync Source",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "File", label: "File" },
-                    { value: "LDAP/AD", label: "LDAP/AD" },
-                    { value: "Unix", label: "Unix" }
-                  ];
+    <div className="wrap">
+      <Row className="mb-2">
+        <Col sm={12}>
+          <div className="searchbox-border">
+            <StructuredFilter
+              options={[
+                {
+                  category: "endDate",
+                  label: "End Date",
+                  type: "text"
+                },
+                {
+                  category: "startDate",
+                  label: "Start Date",
+                  type: "text"
+                },
+                {
+                  category: "syncSource",
+                  label: "Sync Source",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "File", label: "File" },
+                      { value: "LDAP/AD", label: "LDAP/AD" },
+                      { value: "Unix", label: "Unix" }
+                    ];
+                  }
+                },
+                {
+                  category: "userName",
+                  label: "User Name",
+                  type: "text"
                 }
-              },
-              {
-                category: "userName",
-                label: "User Name",
-                type: "text"
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </div>
         </Col>
       </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
@@ -267,7 +269,7 @@ function User_Sync() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 }
 

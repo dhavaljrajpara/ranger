@@ -596,154 +596,158 @@ function Access() {
   };
 
   return (
-    <React.Fragment>
+    <div className="wrap">
       <Row className="mb-2">
         <Col sm={12}>
-          <StructuredFilter
-            options={sortBy(
-              [
-                {
-                  category: "aclEnforcer",
-                  label: "Access Enforcer",
-                  type: "text"
-                },
-                {
-                  category: "accessType",
-                  label: "Access Type",
-                  type: "text"
-                },
-                {
-                  category: "agentHost",
-                  label: "Agent Host Name",
-                  type: "text"
-                },
-                {
-                  category: "agentId",
-                  label: "Application",
-                  type: "text"
-                },
-                {
-                  category: "eventId",
-                  label: "Audit ID",
-                  type: "number"
-                },
-                {
-                  category: "clientIP",
-                  label: "Client IP",
-                  type: "text"
-                },
-                {
-                  category: "cluster",
-                  label: "Cluster Name",
-                  type: "text"
-                },
-                {
-                  category: "endDate",
-                  label: "End Date",
-                  type: "text"
-                },
-                {
-                  category: "excludeUser",
-                  label: "Exclude User",
-                  type: "number"
-                },
-                {
-                  category: "policyId",
-                  label: "Policy ID",
-                  type: "text"
-                },
-                {
-                  category: "resourcePath",
-                  label: "Resource Name",
-                  type: "text"
-                },
-                {
-                  category: "resourceType",
-                  label: "Resource Type",
-                  type: "text"
-                },
-                {
-                  category: "accessResult",
-                  label: "Result",
-                  type: "text"
-                },
-                {
-                  category: "repoName",
-                  label: "Service Name",
-                  type: "textoptions",
-                  options: getServices
-                },
-                {
-                  category: "repoType",
-                  label: "Service Type",
-                  type: "textoptions",
-                  options: getServiceDefType
-                },
-                {
-                  category: "startDate",
-                  label: "Start Date",
-                  type: "date"
-                },
-                {
-                  category: "tags",
-                  label: "Tags",
-                  type: "text"
-                },
-                {
-                  category: "requestUser",
-                  label: "Users",
-                  type: "text"
-                },
-                {
-                  category: "zoneName",
-                  label: "Zone Name",
-                  type: "textoptions",
-                  options: getZones
-                }
-              ],
-              ["label"]
-            )}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
-          <span className="info-icon">
-            <CustomTooltip
-              placement="left"
-              content={
-                <p className="pd-10" style={{ fontSize: "small" }}>
-                  Wildcard searches( for example using * or ? ) are not
-                  currently supported.
-                  <br /> <b>Access Enforcer :</b> Search by access enforcer
-                  name.
-                  <br />
-                  <b> Access Type :</b> Search by access Type like READ_EXECUTE,
-                  WRITE_EXECUTE.
-                  <br />
-                  <b>Client IP :</b> Search by IP address from where resource
-                  was accessed.
-                  <br />
-                  <b>Cluster Name : </b> Name of cluster <br />
-                  <b>Zone Name :</b> Name of Zone. <br />
-                  <b>End Date :</b> Set end date. <br />
-                  <b>Resource Name :</b> Resource name.
-                  <br /> <b>Resource Type :</b> Search by resource type based on
-                  component. eg. path in HDFS, database ,table in Hive.
-                  <br />
-                  <b> Result :</b> Search by access result i.e Allowed/Denied
-                  logs.
-                  <br /> <b> Service Name :</b> Name of service.
-                  <br /> <b> Service Type :</b> Select type of service.
-                  <br /> <b> Start Date :</b> Set start date.
-                  <br /> <b> User :</b> Name of User.
-                  <br /> <b> Exclude User :</b> Name of User.
-                  <br /> <b> Application :</b> Application.
-                  <br /> <b> Tags :</b> Tag Name.
-                  <br /> <b> Permission :</b> Permission
-                </p>
-              }
-              icon="fa-fw fa fa-info-circle"
+          <div className="searchbox-border">
+            <StructuredFilter
+              key="access-log-search-filter"
+              options={sortBy(
+                [
+                  {
+                    category: "repoType",
+                    label: "Service Type",
+                    type: "textoptions",
+                    options: getServiceDefType
+                  },
+                  {
+                    category: "aclEnforcer",
+                    label: "Access Enforcer",
+                    type: "text"
+                  },
+                  {
+                    category: "accessType",
+                    label: "Access Type",
+                    type: "text"
+                  },
+                  {
+                    category: "agentHost",
+                    label: "Agent Host Name",
+                    type: "text"
+                  },
+                  {
+                    category: "agentId",
+                    label: "Application",
+                    type: "text"
+                  },
+                  {
+                    category: "eventId",
+                    label: "Audit ID",
+                    type: "number"
+                  },
+                  {
+                    category: "clientIP",
+                    label: "Client IP",
+                    type: "text"
+                  },
+                  {
+                    category: "cluster",
+                    label: "Cluster Name",
+                    type: "text"
+                  },
+                  {
+                    category: "endDate",
+                    label: "End Date",
+                    type: "text"
+                  },
+                  {
+                    category: "excludeUser",
+                    label: "Exclude User",
+                    type: "number"
+                  },
+                  {
+                    category: "policyId",
+                    label: "Policy ID",
+                    type: "text"
+                  },
+                  {
+                    category: "resourcePath",
+                    label: "Resource Name",
+                    type: "text"
+                  },
+                  {
+                    category: "resourceType",
+                    label: "Resource Type",
+                    type: "text"
+                  },
+                  {
+                    category: "accessResult",
+                    label: "Result",
+                    type: "text"
+                  },
+                  {
+                    category: "repoName",
+                    label: "Service Name",
+                    type: "textoptions",
+                    options: getServices
+                  },
+                  {
+                    category: "startDate",
+                    label: "Start Date",
+                    type: "date"
+                  },
+                  {
+                    category: "tags",
+                    label: "Tags",
+                    type: "text"
+                  },
+                  {
+                    category: "requestUser",
+                    label: "Users",
+                    type: "text"
+                  },
+                  {
+                    category: "zoneName",
+                    label: "Zone Name",
+                    type: "textoptions",
+                    options: getZones
+                  }
+                ],
+                ["label"]
+              )}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
             />
-          </span>
+
+            <span className="info-icon">
+              <CustomTooltip
+                placement="left"
+                content={
+                  <p className="pd-10" style={{ fontSize: "small" }}>
+                    Wildcard searches( for example using * or ? ) are not
+                    currently supported.
+                    <br /> <b>Access Enforcer :</b> Search by access enforcer
+                    name.
+                    <br />
+                    <b> Access Type :</b> Search by access Type like
+                    READ_EXECUTE, WRITE_EXECUTE.
+                    <br />
+                    <b>Client IP :</b> Search by IP address from where resource
+                    was accessed.
+                    <br />
+                    <b>Cluster Name : </b> Name of cluster <br />
+                    <b>Zone Name :</b> Name of Zone. <br />
+                    <b>End Date :</b> Set end date. <br />
+                    <b>Resource Name :</b> Resource name.
+                    <br /> <b>Resource Type :</b> Search by resource type based
+                    on component. eg. path in HDFS, database ,table in Hive.
+                    <br />
+                    <b> Result :</b> Search by access result i.e Allowed/Denied
+                    logs.
+                    <br /> <b> Service Name :</b> Name of service.
+                    <br /> <b> Service Type :</b> Select type of service.
+                    <br /> <b> Start Date :</b> Set start date.
+                    <br /> <b> User :</b> Name of User.
+                    <br /> <b> Exclude User :</b> Name of User.
+                    <br /> <b> Application :</b> Application.
+                    <br /> <b> Tags :</b> Tag Name.
+                    <br /> <b> Permission :</b> Permission
+                  </p>
+                }
+                icon="fa-fw fa fa-info-circle"
+              />
+            </span>
+          </div>
         </Col>
       </Row>
       <Row className="mb-2">
@@ -806,7 +810,6 @@ function Access() {
           </Button>
         </Modal.Footer>
       </Modal>
-
       <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Policy Details</Modal.Title>
@@ -856,7 +859,7 @@ function Access() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </React.Fragment>
+    </div>
   );
 }
 

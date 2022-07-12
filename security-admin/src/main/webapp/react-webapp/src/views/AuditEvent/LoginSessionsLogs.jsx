@@ -214,73 +214,75 @@ function Login_Sessions() {
   };
 
   return (
-    <>
-      <Row className="mb-2 pd-15">
-        <Col sm={12} className="searchbox-border">
-          <StructuredFilter
-            options={[
-              {
-                category: "endDate",
-                label: "End Date",
-                type: "text"
-              },
-              {
-                category: "requestIP",
-                label: "IP",
-                type: "text"
-              },
-              {
-                category: "loginId",
-                label: "Login ID  ",
-                type: "text"
-              },
-              {
-                category: "authType",
-                label: "Login Type",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "1", label: "Username/Password" },
-                    { value: "2", label: "Kerberos" },
-                    { value: "3", label: "SingleSignOn" },
-                    { value: "4", label: "Trusted Proxy" }
-                  ];
+    <div className="wrap">
+      <Row className="mb-2">
+        <Col sm={12}>
+          <div className="searchbox-border">
+            <StructuredFilter
+              options={[
+                {
+                  category: "endDate",
+                  label: "End Date",
+                  type: "text"
+                },
+                {
+                  category: "requestIP",
+                  label: "IP",
+                  type: "text"
+                },
+                {
+                  category: "loginId",
+                  label: "Login ID  ",
+                  type: "text"
+                },
+                {
+                  category: "authType",
+                  label: "Login Type",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "1", label: "Username/Password" },
+                      { value: "2", label: "Kerberos" },
+                      { value: "3", label: "SingleSignOn" },
+                      { value: "4", label: "Trusted Proxy" }
+                    ];
+                  }
+                },
+                {
+                  category: "authStatus",
+                  label: "Result",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "1", label: "Success" },
+                      { value: "2", label: "Wrong Password" },
+                      { value: "3", label: "Account Disabled" },
+                      { value: "4", label: "Locked" },
+                      { value: "5", label: "Password Expired" },
+                      { value: "6", label: "User not found" }
+                    ];
+                  }
+                },
+                {
+                  category: "sessionId",
+                  label: "Session ID",
+                  type: "text"
+                },
+                {
+                  category: "startDate",
+                  label: "Start Date",
+                  type: "text"
+                },
+                {
+                  category: "requestUserAgent",
+                  label: "User Agent",
+                  type: "text"
                 }
-              },
-              {
-                category: "authStatus",
-                label: "Result",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "1", label: "Success" },
-                    { value: "2", label: "Wrong Password" },
-                    { value: "3", label: "Account Disabled" },
-                    { value: "4", label: "Locked" },
-                    { value: "5", label: "Password Expired" },
-                    { value: "6", label: "User not found" }
-                  ];
-                }
-              },
-              {
-                category: "sessionId",
-                label: "Session ID",
-                type: "text"
-              },
-              {
-                category: "startDate",
-                label: "Start Date",
-                type: "text"
-              },
-              {
-                category: "requestUserAgent",
-                label: "User Agent",
-                type: "text"
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </div>
         </Col>
       </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
@@ -299,7 +301,7 @@ function Login_Sessions() {
         data={sessionId}
         onHide={handleClose}
       ></AdminModal>
-    </>
+    </div>
   );
 }
 

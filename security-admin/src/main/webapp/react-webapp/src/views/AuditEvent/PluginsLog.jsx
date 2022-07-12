@@ -168,51 +168,53 @@ function Plugins() {
   };
 
   return (
-    <>
-      <Row className="mb-2 pd-15">
-        <Col sm={12} className="searchbox-border">
-          <StructuredFilter
-            options={[
-              {
-                category: "cluster",
-                label: "Cluster Name",
-                type: "text"
-              },
-              {
-                category: "endDate",
-                label: "End Date",
-                type: "text"
-              },
-              {
-                category: "httpRetCode",
-                label: "Http Response Code",
-                type: "text"
-              },
-              {
-                category: "agentId",
-                label: "Plugin ID",
-                type: "text"
-              },
-              {
-                category: "clientIP",
-                label: "Plugin IP",
-                type: "text"
-              },
-              {
-                category: "repositoryName",
-                label: "Service Name",
-                type: "textoptions",
-                options: getServices
-              },
-              {
-                category: "startDate",
-                label: "Start Date",
-                type: "text"
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
+    <div className="wrap">
+      <Row className="mb-2">
+        <Col sm={12}>
+          <div className="searchbox-border">
+            <StructuredFilter
+              options={[
+                {
+                  category: "cluster",
+                  label: "Cluster Name",
+                  type: "text"
+                },
+                {
+                  category: "endDate",
+                  label: "End Date",
+                  type: "text"
+                },
+                {
+                  category: "httpRetCode",
+                  label: "Http Response Code",
+                  type: "text"
+                },
+                {
+                  category: "agentId",
+                  label: "Plugin ID",
+                  type: "text"
+                },
+                {
+                  category: "clientIP",
+                  label: "Plugin IP",
+                  type: "text"
+                },
+                {
+                  category: "repositoryName",
+                  label: "Service Name",
+                  type: "textoptions",
+                  options: getServices
+                },
+                {
+                  category: "startDate",
+                  label: "Start Date",
+                  type: "text"
+                }
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </div>
         </Col>
       </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
@@ -226,7 +228,7 @@ function Plugins() {
         columnSort={true}
         defaultSort={getDefaultSort}
       />
-    </>
+    </div>
   );
 }
 

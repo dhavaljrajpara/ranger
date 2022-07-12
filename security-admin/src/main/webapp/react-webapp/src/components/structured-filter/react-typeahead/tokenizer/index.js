@@ -4,7 +4,7 @@ import KeyEvent from "../keyevent";
 var Typeahead = require("../typeahead").default;
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
-import { map } from "lodash";
+import { find, map } from "lodash";
 var classNames = require("classnames");
 /**
  * A typeahead that, when an option is selected, instead of simply filling
@@ -52,7 +52,10 @@ var TypeaheadTokenizer = createReactClass({
       let categoryLabel = this._getFilterCategoryLabel(selected.category);
       let categoryValue = selected.value;
       if (this.state.category == "") {
-        categoryValue = this._getFilterCategoryLabel(selected.value);
+        categoryValue = this._getFilterCategoryLabelForOption(
+          selected.category,
+          selected.value
+        );
       }
       return (
         <Token
@@ -210,6 +213,24 @@ var TypeaheadTokenizer = createReactClass({
     return filterCategory;
   },
 
+  _getFilterCategoryLabelForOption: function (selectedCategory, selectedValue) {
+    for (var i = 0; i < this.props.options.length; i++) {
+      if (this.props.options[i].category == selectedCategory) {
+        if (
+          this.props.options[i].options !== undefined &&
+          this.props.options[i].options().length > 0
+        ) {
+          let option = find(this.props.options[i].options(), {
+            value: selectedValue
+          });
+          return option.label;
+        }
+      }
+    }
+
+    return selectedValue;
+  },
+
   render: function () {
     var classes = {};
     classes[this.props.customClasses.typeahead] =
@@ -224,7 +245,7 @@ var TypeaheadTokenizer = createReactClass({
           {this._renderTokens()}
 
           <div className="filter-input-group">
-            <div className="filter-category">
+            <div className="filter-category text-uppercase mr-2">
               {this._getFilterCategoryLabel(this.state.category)}
             </div>
 

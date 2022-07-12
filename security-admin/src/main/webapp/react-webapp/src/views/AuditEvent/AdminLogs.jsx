@@ -295,70 +295,73 @@ function Admin() {
     []
   );
   return (
-    <>
-      <Row className="mb-2 pd-15">
-        <Col sm={12} className="searchbox-border">
-          <StructuredFilter
-            options={[
-              {
-                category: "action",
-                label: "Actions",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "create", label: "Create" },
-                    { value: "update", label: "Update" },
-                    { value: "delete", label: "Delete" },
-                    { value: "password change", label: "Password Change" },
-                    { value: "EXPORT JSON", label: "Export Json" },
-                    { value: "EXPORT CSV", label: "Export Csv" },
-                    { value: "EXPORT EXCEL", label: "Export Excel" },
-                    { value: "IMPORT END", label: "Import End" },
-                    { value: "IMPORT START", label: "Import Start" },
-                    { value: "Import Create", label: "Import Create" },
-                    { value: "Import Delete", label: "Import Delete" }
-                  ];
+    <div className="wrap">
+      <Row className="mb-2">
+        <Col sm={12}>
+          <div className="searchbox-border">
+            <StructuredFilter
+              key="admin-log-search-filter"
+              options={[
+                {
+                  category: "action",
+                  label: "Actions",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "create", label: "Create" },
+                      { value: "update", label: "Update" },
+                      { value: "delete", label: "Delete" },
+                      { value: "password change", label: "Password Change" },
+                      { value: "EXPORT JSON", label: "Export Json" },
+                      { value: "EXPORT CSV", label: "Export Csv" },
+                      { value: "EXPORT EXCEL", label: "Export Excel" },
+                      { value: "IMPORT END", label: "Import End" },
+                      { value: "IMPORT START", label: "Import Start" },
+                      { value: "Import Create", label: "Import Create" },
+                      { value: "Import Delete", label: "Import Delete" }
+                    ];
+                  }
+                },
+                {
+                  category: "objectClassType",
+                  label: "Audit Type",
+                  type: "textoptions",
+                  options: () => {
+                    return [
+                      { value: "1020", label: "Ranger Policy" },
+                      { value: "1002", label: "Ranger Group" },
+                      { value: "1056", label: "Ranger Security Zone" },
+                      { value: "1030", label: "Ranger Service" },
+                      { value: "1003", label: "Ranger User" },
+                      { value: "2", label: "User Profile" }
+                    ];
+                  }
+                },
+                {
+                  category: "endDate",
+                  label: "End Date",
+                  type: "text"
+                },
+                {
+                  category: "sessionId",
+                  label: "Session ID",
+                  type: "text"
+                },
+                {
+                  category: "startDate",
+                  label: "Start Date",
+                  type: "text"
+                },
+                {
+                  category: "owner",
+                  label: "User",
+                  type: "text"
                 }
-              },
-              {
-                category: "objectClassType",
-                label: "Audit Type",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "1020", label: "Ranger Policy" },
-                    { value: "1002", label: "Ranger Group" },
-                    { value: "1056", label: "Ranger Security Zone" },
-                    { value: "1030", label: "Ranger Service" },
-                    { value: "1003", label: "Ranger User" },
-                    { value: "2", label: "User Profile" }
-                  ];
-                }
-              },
-              {
-                category: "endDate",
-                label: "End Date",
-                type: "text"
-              },
-              {
-                category: "sessionId",
-                label: "Session ID",
-                type: "text"
-              },
-              {
-                category: "startDate",
-                label: "Start Date",
-                type: "text"
-              },
-              {
-                category: "owner",
-                label: "User",
-                type: "text"
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </div>
         </Col>
       </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
@@ -388,7 +391,7 @@ function Admin() {
           onHide={handleClosed}
         ></OperationAdminModal>
       }
-    </>
+    </div>
   );
 }
 

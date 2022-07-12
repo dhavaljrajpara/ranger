@@ -471,47 +471,49 @@ function Plugin_Status() {
   };
 
   return (
-    <>
-      <Row className="mb-2 pd-15">
-        <Col sm={12} className="searchbox-border">
-          <StructuredFilter
-            options={[
-              {
-                category: "pluginAppType",
-                label: "Application",
-                type: "text"
-              },
-              {
-                category: "clusterName",
-                label: "Cluster Name",
-                type: "text"
-              },
-              {
-                category: "pluginHostName",
-                label: "Host Name",
-                type: "text"
-              },
-              {
-                category: "pluginIpAddress",
-                label: "Plugin IP",
-                type: "text"
-              },
-              {
-                category: "serviceName",
-                label: "Service Name",
-                type: "textoptions",
-                options: getServices
-              },
-              {
-                category: "serviceType",
-                label: "Service Type",
-                type: "textoptions",
-                options: getServiceDefType
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-          />
+    <div className="wrap">
+      <Row className="mb-2">
+        <Col sm={12}>
+          <div className="searchbox-border">
+            <StructuredFilter
+              options={[
+                {
+                  category: "pluginAppType",
+                  label: "Application",
+                  type: "text"
+                },
+                {
+                  category: "clusterName",
+                  label: "Cluster Name",
+                  type: "text"
+                },
+                {
+                  category: "pluginHostName",
+                  label: "Host Name",
+                  type: "text"
+                },
+                {
+                  category: "pluginIpAddress",
+                  label: "Plugin IP",
+                  type: "text"
+                },
+                {
+                  category: "serviceName",
+                  label: "Service Name",
+                  type: "textoptions",
+                  options: getServices
+                },
+                {
+                  category: "serviceType",
+                  label: "Service Type",
+                  type: "textoptions",
+                  options: getServiceDefType
+                }
+              ]}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+            />
+          </div>
         </Col>
       </Row>
       <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
@@ -525,7 +527,7 @@ function Plugin_Status() {
         columnSort={true}
         clientSideSorting={true}
       />
-    </>
+    </div>
   );
 }
 

@@ -16,8 +16,13 @@ var Token = createReactClass({
   render: function () {
     return (
       <div className="typeahead-token">
-        {this.props.categoryLabel} {this.props.children["operator"]} "
-        {this.props.categoryValue}"{this._makeCloseButton()}
+        <span className="typeahead-token-label text-uppercase mr-2 font-weight-bold">
+          {this.props.categoryLabel}
+        </span>
+        <span className="typeahead-token-value">
+          {this.props.categoryValue}
+        </span>
+        {this._makeCloseButton()}
       </div>
     );
   },
@@ -28,7 +33,7 @@ var Token = createReactClass({
     }
     return (
       <a
-        className="typeahead-token-close"
+        className="typeahead-token-close ml-1"
         href="#"
         onClick={function (event) {
           this.props.onRemove(this.props.children);
