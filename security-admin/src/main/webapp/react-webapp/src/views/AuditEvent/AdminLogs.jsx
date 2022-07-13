@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useLocation, useHistory } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
@@ -8,9 +9,10 @@ import AdminModal from "./AdminModal";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import OperationAdminModal from "./OperationAdminModal";
 import moment from "moment-timezone";
-import { capitalize, map, startCase, toLower } from "lodash";
+import { capitalize, find, map, startCase, sortBy, toLower } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
+import { useQuery } from "../../components/CommonComponents";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -24,6 +26,8 @@ function Admin() {
   const [showrowmodal, setShowRowModal] = useState(false);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
+  const history = useHistory();
+  const searchParams = useQuery();
 
   const handleClose = () => setShowModal(false);
   const handleClosed = () => setShowRowModal(false);
@@ -276,15 +280,6 @@ function Admin() {
     []
   );
 
-  const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
-
-    map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
-    });
-    setSearchFilter(searchFilter);
-  };
   const getDefaultSort = React.useMemo(
     () => [
       {
@@ -294,6 +289,108 @@ function Admin() {
     ],
     []
   );
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter : ", filter);
+    let searchFilter = {};
+    let searchFilterUrlParam = {};
+
+    map(filter, function (obj) {
+      searchFilter[obj.category] = obj.value;
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+      } else {
+        searchParams.set(searchFilterObj.urlLabel, obj.value);
+      }
+    });
+    setSearchFilter(searchFilter);
+
+    for (const searchParam of searchParams.entries()) {
+      const [param, value] = searchParam;
+      if (searchFilterUrlParam[param] !== undefined) {
+        searchParams.set(param, value);
+      } else {
+        searchParams.delete(param);
+      }
+    }
+
+    history.replace({
+      pathname: "/reports/audit/admin",
+      search: searchParams.toString()
+    });
+  };
+
+  const searchFilterOption = [
+    {
+      category: "action",
+      label: "Actions",
+      urlLabel: "actions",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "create", label: "Create" },
+          { value: "update", label: "Update" },
+          { value: "delete", label: "Delete" },
+          { value: "password change", label: "Password Change" },
+          { value: "EXPORT JSON", label: "Export Json" },
+          { value: "EXPORT CSV", label: "Export Csv" },
+          { value: "EXPORT EXCEL", label: "Export Excel" },
+          { value: "IMPORT END", label: "Import End" },
+          { value: "IMPORT START", label: "Import Start" },
+          { value: "Import Create", label: "Import Create" },
+          { value: "Import Delete", label: "Import Delete" }
+        ];
+      }
+    },
+    {
+      category: "objectClassType",
+      label: "Audit Type",
+      urlLabel: "actions",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "1020", label: "Ranger Policy" },
+          { value: "1002", label: "Ranger Group" },
+          { value: "1056", label: "Ranger Security Zone" },
+          { value: "1030", label: "Ranger Service" },
+          { value: "1003", label: "Ranger User" },
+          { value: "2", label: "User Profile" }
+        ];
+      }
+    },
+    {
+      category: "endDate",
+      label: "End Date",
+      urlLabel: "endDate",
+      type: "text"
+    },
+    {
+      category: "sessionId",
+      label: "Session ID",
+      urlLabel: "sessionId",
+      type: "text"
+    },
+    {
+      category: "startDate",
+      label: "Start Date",
+      urlLabel: "startDate",
+      type: "text"
+    },
+    {
+      category: "owner",
+      label: "User",
+      urlLabel: "user",
+      type: "text"
+    }
+  ];
+
   return (
     <div className="wrap">
       <Row className="mb-2">
@@ -301,65 +398,11 @@ function Admin() {
           <div className="searchbox-border">
             <StructuredFilter
               key="admin-log-search-filter"
-              options={[
-                {
-                  category: "action",
-                  label: "Actions",
-                  type: "textoptions",
-                  options: () => {
-                    return [
-                      { value: "create", label: "Create" },
-                      { value: "update", label: "Update" },
-                      { value: "delete", label: "Delete" },
-                      { value: "password change", label: "Password Change" },
-                      { value: "EXPORT JSON", label: "Export Json" },
-                      { value: "EXPORT CSV", label: "Export Csv" },
-                      { value: "EXPORT EXCEL", label: "Export Excel" },
-                      { value: "IMPORT END", label: "Import End" },
-                      { value: "IMPORT START", label: "Import Start" },
-                      { value: "Import Create", label: "Import Create" },
-                      { value: "Import Delete", label: "Import Delete" }
-                    ];
-                  }
-                },
-                {
-                  category: "objectClassType",
-                  label: "Audit Type",
-                  type: "textoptions",
-                  options: () => {
-                    return [
-                      { value: "1020", label: "Ranger Policy" },
-                      { value: "1002", label: "Ranger Group" },
-                      { value: "1056", label: "Ranger Security Zone" },
-                      { value: "1030", label: "Ranger Service" },
-                      { value: "1003", label: "Ranger User" },
-                      { value: "2", label: "User Profile" }
-                    ];
-                  }
-                },
-                {
-                  category: "endDate",
-                  label: "End Date",
-                  type: "text"
-                },
-                {
-                  category: "sessionId",
-                  label: "Session ID",
-                  type: "text"
-                },
-                {
-                  category: "startDate",
-                  label: "Start Date",
-                  type: "text"
-                },
-                {
-                  category: "owner",
-                  label: "User",
-                  type: "text"
-                }
-              ]}
+              placeholder="Search for your access logs..."
+              options={sortBy(searchFilterOption, ["label"])}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
             />
           </div>
         </Col>

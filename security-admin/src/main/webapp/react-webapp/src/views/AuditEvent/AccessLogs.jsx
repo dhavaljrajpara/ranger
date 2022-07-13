@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import { useLocation, useHistory } from "react-router-dom";
 import { Badge, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import dateFormat from "dateformat";
@@ -11,6 +12,7 @@ import {
 import moment from "moment-timezone";
 import AccessLogsTable from "./AccessLogsTable";
 import {
+  find,
   isEmpty,
   isUndefined,
   capitalize,
@@ -28,6 +30,7 @@ import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 import { CustomTooltip } from "../../components/CommonComponents";
+import { useQuery } from "../../components/CommonComponents";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
@@ -46,6 +49,8 @@ function Access() {
   const [checked, setChecked] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const fetchIdRef = useRef(0);
+  const history = useHistory();
+  const searchParams = useQuery();
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices(), fetchZones();
@@ -579,7 +584,7 @@ function Access() {
     let zonesName = [];
 
     zonesName = map(zones, function (zone) {
-      return zone.name;
+      return { label: zone.name, value: zone.name };
     });
 
     return zonesName;
@@ -588,12 +593,159 @@ function Access() {
   const updateSearchFilter = (filter) => {
     console.log("PRINT Filter : ", filter);
     let searchFilter = {};
+    let searchFilterUrlParam = {};
 
     map(filter, function (obj) {
       searchFilter[obj.category] = obj.value;
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+      } else {
+        searchParams.set(searchFilterObj.urlLabel, obj.value);
+      }
     });
     setSearchFilter(searchFilter);
+
+    for (const searchParam of searchParams.entries()) {
+      const [param, value] = searchParam;
+      if (searchFilterUrlParam[param] !== undefined) {
+        searchParams.set(param, value);
+      } else {
+        searchParams.delete(param);
+      }
+    }
+
+    history.replace({
+      pathname: "/reports/audit/bigData",
+      search: searchParams.toString()
+    });
   };
+
+  const searchFilterOption = [
+    {
+      category: "aclEnforcer",
+      label: "Access Enforcer",
+      urlLabel: "accessEnforcer",
+      type: "text"
+    },
+    {
+      category: "accessType",
+      label: "Access Type",
+      urlLabel: "accessType",
+      type: "text"
+    },
+    {
+      category: "agentHost",
+      label: "Agent Host Name",
+      urlLabel: "agentHost",
+      type: "text"
+    },
+    {
+      category: "agentId",
+      label: "Application",
+      urlLabel: "application",
+      type: "text"
+    },
+    {
+      category: "eventId",
+      label: "Audit ID",
+      urlLabel: "eventId",
+      type: "number"
+    },
+    {
+      category: "clientIP",
+      label: "Client IP",
+      urlLabel: "clientIP",
+      type: "text"
+    },
+    {
+      category: "cluster",
+      label: "Cluster Name",
+      urlLabel: "clusterName",
+      type: "text"
+    },
+    {
+      category: "endDate",
+      label: "End Date",
+      urlLabel: "endDate",
+      type: "date"
+    },
+    {
+      category: "excludeUser",
+      label: "Exclude User",
+      urlLabel: "excludeUser",
+      type: "number"
+    },
+    {
+      category: "policyId",
+      label: "Policy ID",
+      urlLabel: "policyID",
+      type: "text"
+    },
+    {
+      category: "resourcePath",
+      label: "Resource Name",
+      urlLabel: "resourceName",
+      type: "text"
+    },
+    {
+      category: "resourceType",
+      label: "Resource Type",
+      urlLabel: "resourceType",
+      type: "text"
+    },
+    {
+      category: "accessResult",
+      label: "Result",
+      urlLabel: "result",
+      type: "text"
+    },
+    {
+      category: "repoName",
+      label: "Service Name",
+      urlLabel: "serviceName",
+      type: "textoptions",
+      options: getServices
+    },
+    {
+      category: "repoType",
+      label: "Service Type",
+      urlLabel: "serviceType",
+      type: "textoptions",
+      options: getServiceDefType
+    },
+    {
+      category: "startDate",
+      label: "Start Date",
+      urlLabel: "startDate",
+      type: "date"
+    },
+    {
+      category: "tags",
+      label: "Tags",
+      urlLabel: "tags",
+      type: "text"
+    },
+    {
+      category: "requestUser",
+      label: "Users",
+      urlLabel: "user",
+      type: "text"
+    },
+    {
+      category: "zoneName",
+      label: "Zone Name",
+      urlLabel: "zoneName",
+      type: "textoptions",
+      options: getZones
+    }
+  ];
 
   return (
     <div className="wrap">
@@ -602,111 +754,11 @@ function Access() {
           <div className="searchbox-border">
             <StructuredFilter
               key="access-log-search-filter"
-              options={sortBy(
-                [
-                  {
-                    category: "repoType",
-                    label: "Service Type",
-                    type: "textoptions",
-                    options: getServiceDefType
-                  },
-                  {
-                    category: "aclEnforcer",
-                    label: "Access Enforcer",
-                    type: "text"
-                  },
-                  {
-                    category: "accessType",
-                    label: "Access Type",
-                    type: "text"
-                  },
-                  {
-                    category: "agentHost",
-                    label: "Agent Host Name",
-                    type: "text"
-                  },
-                  {
-                    category: "agentId",
-                    label: "Application",
-                    type: "text"
-                  },
-                  {
-                    category: "eventId",
-                    label: "Audit ID",
-                    type: "number"
-                  },
-                  {
-                    category: "clientIP",
-                    label: "Client IP",
-                    type: "text"
-                  },
-                  {
-                    category: "cluster",
-                    label: "Cluster Name",
-                    type: "text"
-                  },
-                  {
-                    category: "endDate",
-                    label: "End Date",
-                    type: "text"
-                  },
-                  {
-                    category: "excludeUser",
-                    label: "Exclude User",
-                    type: "number"
-                  },
-                  {
-                    category: "policyId",
-                    label: "Policy ID",
-                    type: "text"
-                  },
-                  {
-                    category: "resourcePath",
-                    label: "Resource Name",
-                    type: "text"
-                  },
-                  {
-                    category: "resourceType",
-                    label: "Resource Type",
-                    type: "text"
-                  },
-                  {
-                    category: "accessResult",
-                    label: "Result",
-                    type: "text"
-                  },
-                  {
-                    category: "repoName",
-                    label: "Service Name",
-                    type: "textoptions",
-                    options: getServices
-                  },
-                  {
-                    category: "startDate",
-                    label: "Start Date",
-                    type: "date"
-                  },
-                  {
-                    category: "tags",
-                    label: "Tags",
-                    type: "text"
-                  },
-                  {
-                    category: "requestUser",
-                    label: "Users",
-                    type: "text"
-                  },
-                  {
-                    category: "zoneName",
-                    label: "Zone Name",
-                    type: "textoptions",
-                    options: getZones
-                  }
-                ],
-                ["label"]
-              )}
+              placeholder="Search for your access audits..."
+              options={sortBy(searchFilterOption, ["label"])}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
             />
 
             <span className="info-icon">

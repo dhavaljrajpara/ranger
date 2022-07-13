@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useLocation, useHistory } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
@@ -12,7 +13,8 @@ import {
 } from "../../components/CommonComponents";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { fetchApi } from "Utils/fetchAPI";
-import { map, toUpper } from "lodash";
+import { find, map, sortBy, toUpper } from "lodash";
+import { useQuery } from "../../components/CommonComponents";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -24,6 +26,8 @@ function Plugin_Status() {
   const [searchFilterParams, setSearchFilter] = useState({});
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
+  const history = useHistory();
+  const searchParams = useQuery();
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices();
@@ -440,11 +444,38 @@ function Plugin_Status() {
   const updateSearchFilter = (filter) => {
     console.log("PRINT Filter : ", filter);
     let searchFilter = {};
+    let searchFilterUrlParam = {};
 
     map(filter, function (obj) {
       searchFilter[obj.category] = obj.value;
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+      } else {
+        searchParams.set(searchFilterObj.urlLabel, obj.value);
+      }
     });
     setSearchFilter(searchFilter);
+
+    for (const searchParam of searchParams.entries()) {
+      const [param, value] = searchParam;
+      if (searchFilterUrlParam[param] !== undefined) {
+        searchParams.set(param, value);
+      } else {
+        searchParams.delete(param);
+      }
+    }
+
+    history.replace({
+      pathname: "/reports/audit/pluginStatus",
+      search: searchParams.toString()
+    });
   };
 
   const getServiceDefType = () => {
@@ -470,48 +501,59 @@ function Plugin_Status() {
     return servicesName;
   };
 
+  const searchFilterOption = [
+    {
+      category: "pluginAppType",
+      label: "Application",
+      urlLabel: "applicationType",
+      type: "text"
+    },
+    {
+      category: "clusterName",
+      label: "Cluster Name",
+      urlLabel: "clusterName",
+      type: "text"
+    },
+    {
+      category: "pluginHostName",
+      label: "Host Name",
+      urlLabel: "hostName",
+      type: "text"
+    },
+    {
+      category: "pluginIpAddress",
+      label: "Plugin IP",
+      urlLabel: "agentIp",
+      type: "text"
+    },
+    {
+      category: "serviceName",
+      label: "Service Name",
+      urlLabel: "serviceName",
+      type: "textoptions",
+      options: getServices
+    },
+    {
+      category: "serviceType",
+      label: "Service Type",
+      urlLabel: "serviceType",
+      type: "textoptions",
+      options: getServiceDefType
+    }
+  ];
+
   return (
     <div className="wrap">
       <Row className="mb-2">
         <Col sm={12}>
           <div className="searchbox-border">
             <StructuredFilter
-              options={[
-                {
-                  category: "pluginAppType",
-                  label: "Application",
-                  type: "text"
-                },
-                {
-                  category: "clusterName",
-                  label: "Cluster Name",
-                  type: "text"
-                },
-                {
-                  category: "pluginHostName",
-                  label: "Host Name",
-                  type: "text"
-                },
-                {
-                  category: "pluginIpAddress",
-                  label: "Plugin IP",
-                  type: "text"
-                },
-                {
-                  category: "serviceName",
-                  label: "Service Name",
-                  type: "textoptions",
-                  options: getServices
-                },
-                {
-                  category: "serviceType",
-                  label: "Service Type",
-                  type: "textoptions",
-                  options: getServiceDefType
-                }
-              ]}
+              key="plugin-status-log-search-filter"
+              placeholder="Search for your plugin status..."
+              options={sortBy(searchFilterOption, ["label"])}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
             />
           </div>
         </Col>

@@ -166,7 +166,7 @@ export const AuditFilterEntries = (props) => {
       : 0;
   };
   return (
-    <div className="row text-right mb-2">
+    <div className="row text-right mb-3">
       <div className="col-sm-12">
         Last Updated Time:&nbsp;
         <h6 className="d-inline">

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useLocation, useHistory } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuthStatus, AuthType } from "../../utils/XAEnums";
@@ -6,9 +7,10 @@ import AdminModal from "./AdminModal";
 import dateFormat from "dateformat";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
-import { map } from "lodash";
+import { find, map, sortBy } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
+import { useQuery } from "../../components/CommonComponents";
 
 function Login_Sessions() {
   const [loginSessionListingData, setLoginSessionLogs] = useState([]);
@@ -20,6 +22,8 @@ function Login_Sessions() {
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [searchFilterParams, setSearchFilter] = useState({});
   const fetchIdRef = useRef(0);
+  const history = useHistory();
+  const searchParams = useQuery();
 
   const handleClose = () => setShowModal(false);
   const fetchLoginSessionLogsInfo = useCallback(
@@ -206,12 +210,108 @@ function Login_Sessions() {
   const updateSearchFilter = (filter) => {
     console.log("PRINT Filter : ", filter);
     let searchFilter = {};
+    let searchFilterUrlParam = {};
 
     map(filter, function (obj) {
       searchFilter[obj.category] = obj.value;
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+      } else {
+        searchParams.set(searchFilterObj.urlLabel, obj.value);
+      }
     });
     setSearchFilter(searchFilter);
+
+    for (const searchParam of searchParams.entries()) {
+      const [param, value] = searchParam;
+      if (searchFilterUrlParam[param] !== undefined) {
+        searchParams.set(param, value);
+      } else {
+        searchParams.delete(param);
+      }
+    }
+
+    history.replace({
+      pathname: "/reports/audit/loginSession",
+      search: searchParams.toString()
+    });
   };
+
+  const searchFilterOption = [
+    {
+      category: "endDate",
+      label: "End Date",
+      urlLabel: "endDate",
+      type: "text"
+    },
+    {
+      category: "requestIP",
+      label: "IP",
+      urlLabel: "requestIP",
+      type: "text"
+    },
+    {
+      category: "loginId",
+      label: "Login ID  ",
+      urlLabel: "loginID",
+      type: "text"
+    },
+    {
+      category: "authType",
+      label: "Login Type",
+      urlLabel: "loginType",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "1", label: "Username/Password" },
+          { value: "2", label: "Kerberos" },
+          { value: "3", label: "SingleSignOn" },
+          { value: "4", label: "Trusted Proxy" }
+        ];
+      }
+    },
+    {
+      category: "authStatus",
+      label: "Result",
+      urlLabel: "result",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "1", label: "Success" },
+          { value: "2", label: "Wrong Password" },
+          { value: "3", label: "Account Disabled" },
+          { value: "4", label: "Locked" },
+          { value: "5", label: "Password Expired" },
+          { value: "6", label: "User not found" }
+        ];
+      }
+    },
+    {
+      category: "sessionId",
+      label: "Session ID",
+      urlLabel: "sessionID",
+      type: "text"
+    },
+    {
+      category: "startDate",
+      label: "Start Date",
+      urlLabel: "startDate",
+      type: "text"
+    },
+    {
+      category: "requestUserAgent",
+      label: "User Agent",
+      urlLabel: "userAgent",
+      type: "text"
+    }
+  ];
 
   return (
     <div className="wrap">
@@ -219,68 +319,12 @@ function Login_Sessions() {
         <Col sm={12}>
           <div className="searchbox-border">
             <StructuredFilter
-              options={[
-                {
-                  category: "endDate",
-                  label: "End Date",
-                  type: "text"
-                },
-                {
-                  category: "requestIP",
-                  label: "IP",
-                  type: "text"
-                },
-                {
-                  category: "loginId",
-                  label: "Login ID  ",
-                  type: "text"
-                },
-                {
-                  category: "authType",
-                  label: "Login Type",
-                  type: "textoptions",
-                  options: () => {
-                    return [
-                      { value: "1", label: "Username/Password" },
-                      { value: "2", label: "Kerberos" },
-                      { value: "3", label: "SingleSignOn" },
-                      { value: "4", label: "Trusted Proxy" }
-                    ];
-                  }
-                },
-                {
-                  category: "authStatus",
-                  label: "Result",
-                  type: "textoptions",
-                  options: () => {
-                    return [
-                      { value: "1", label: "Success" },
-                      { value: "2", label: "Wrong Password" },
-                      { value: "3", label: "Account Disabled" },
-                      { value: "4", label: "Locked" },
-                      { value: "5", label: "Password Expired" },
-                      { value: "6", label: "User not found" }
-                    ];
-                  }
-                },
-                {
-                  category: "sessionId",
-                  label: "Session ID",
-                  type: "text"
-                },
-                {
-                  category: "startDate",
-                  label: "Start Date",
-                  type: "text"
-                },
-                {
-                  category: "requestUserAgent",
-                  label: "User Agent",
-                  type: "text"
-                }
-              ]}
+              key="login-session-search-filter"
+              placeholder="Search for your login sessions..."
+              options={sortBy(searchFilterOption, ["label"])}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
             />
           </div>
         </Col>

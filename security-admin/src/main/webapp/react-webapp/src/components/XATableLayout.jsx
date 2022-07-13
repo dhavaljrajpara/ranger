@@ -138,36 +138,34 @@ function XATableLayout({
   return (
     // apply the table props
     <>
-      {columnHide &&
-        ["Info"].map((variant, index) => (
-          <div className="text-right mb-2 mt-n5">
-            <DropdownButton
-              className="p-0"
-              key={index}
-              menuAlign="right"
-              as={ButtonGroup}
-              size="sm"
-              id={`dropdown-variants-${variant}`}
-              variant={variant.toLowerCase()}
-              title="Columns"
-            >
-              <ul className="list-group">
-                {allColumns.map((column) => (
-                  <li className="column-list">
-                    <label>
-                      <input
-                        className="mr-1"
-                        type="checkbox"
-                        {...column.getToggleHiddenProps()}
-                      />
-                      {column.Header}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </DropdownButton>
-          </div>
-        ))}
+      {columnHide && (
+        <div className="text-right mb-2 mt-n5">
+          <DropdownButton
+            className="p-0"
+            menuAlign="right"
+            as={ButtonGroup}
+            size="sm"
+            id="dropdown-variants-info"
+            variant="info"
+            title="Columns"
+          >
+            <ul className="list-group">
+              {allColumns.map((column, index) => (
+                <li className="column-list" key={`col-${index}`}>
+                  <label>
+                    <input
+                      className="mr-1"
+                      type="checkbox"
+                      {...column.getToggleHiddenProps()}
+                    />
+                    {column.Header}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </DropdownButton>
+        </div>
+      )}
 
       <div className="row">
         <div className="col-sm-12">
