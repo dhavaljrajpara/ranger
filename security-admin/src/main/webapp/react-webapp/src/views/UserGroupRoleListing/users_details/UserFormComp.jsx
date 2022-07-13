@@ -12,6 +12,7 @@ import { UserRoles, UserSource } from "Utils/XAEnums";
 import { getUserProfile } from "Utils/appState";
 import _ from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
+import withRouter from "Hooks/withRouter";
 
 class UserFormComp extends Component {
   constructor(props) {
@@ -46,14 +47,14 @@ class UserFormComp extends Component {
           data: userFormData
         });
         toast.success("User updated successfully!!");
-        self.location.hash = "#/users/usertab";
+        this.props.navigate("/users/usertab");
       } catch (error) {
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          self.location.hash = "#/users/usertab";
+          this.props.navigate("/users/usertab");
         }
         console.error(`Error occurred while creating user`);
       }
@@ -65,21 +66,21 @@ class UserFormComp extends Component {
           data: userFormData
         });
         toast.success("User created successfully!!");
-        self.location.hash = "#/users/usertab";
+        this.props.navigate("/users/usertab");
       } catch (error) {
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          self.location.hash = "#/users/usertab";
+          this.props.navigate("/users/usertab");
         }
         console.error(`Error occurred while creating user`);
       }
     }
   };
   closeForm = () => {
-    self.location.hash = "#/users/usertab";
+    this.props.navigate("/users/usertab");
   };
   groupNameList = ({ input, ...rest }) => {
     const loadOptions = async (inputValue, callback) => {
@@ -560,4 +561,4 @@ class UserFormComp extends Component {
   }
 }
 
-export default UserFormComp;
+export default withRouter(UserFormComp);

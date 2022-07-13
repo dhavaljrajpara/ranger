@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Form, Field } from "react-final-form";
 // import createDecorator from "final-form-focus";
 import { Button, Row, Col } from "react-bootstrap";
-import { useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import { fetchApi } from "Utils/fetchAPI";
@@ -18,14 +18,22 @@ import {
   scrollToError,
   selectCustomStyles
 } from "../../components/CommonComponents";
+import usePrompt from "Hooks/usePrompt";
 
 const noneOptions = {
   label: "None",
   value: "none"
 };
 
+const PromtDialog = (props) => {
+  const { isDirtyField, isUnblock } = props;
+  usePrompt("Are you sure you want to leave", isDirtyField && !isUnblock);
+  return null;
+};
+
 const SecurityZoneForm = (props) => {
-  const history = useHistory();
+  const navigate = useNavigate();
+  const params = useParams();
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
   const [zone, setZone] = useState({});
@@ -39,6 +47,7 @@ const SecurityZoneForm = (props) => {
     inputval: null,
     index: 0
   });
+  const [preventUnBlock, setPreventUnblock] = useState(false);
 
   useEffect(() => {
     fetchInitalData();
@@ -154,8 +163,8 @@ const SecurityZoneForm = (props) => {
   const fetchZones = async () => {
     let zoneResp;
 
-    if (props.match.params.zoneId !== undefined) {
-      let zoneId = props.match.params.zoneId;
+    if (params.zoneId !== undefined) {
+      let zoneId = params.zoneId;
 
       try {
         zoneResp = await fetchApi({
@@ -230,8 +239,8 @@ const SecurityZoneForm = (props) => {
     let zoneData = {};
     let zoneResp;
 
-    if (props.match.params.zoneId !== undefined) {
-      zoneId = props.match.params.zoneId;
+    if (params.zoneId !== undefined) {
+      zoneId = params.zoneId;
       apiMethod = "put";
       apiUrl = `/zones/zones/${zoneId}`;
       apiSuccess = "updated";
@@ -314,12 +323,14 @@ const SecurityZoneForm = (props) => {
         });
       }
     }
-    if (props.match.params.zoneId) {
+    if (params.zoneId) {
       zoneData = {
         ...zone,
         ...zoneData
       };
     }
+
+    setPreventUnblock(true);
     try {
       zoneResp = await fetchApi({
         url: apiUrl,
@@ -327,7 +338,7 @@ const SecurityZoneForm = (props) => {
         data: zoneData
       });
       toast.success(`Success! Service zone ${apiSuccess} succesfully`);
-      history.push(`/zones/zone/${zoneResp.data.id}`);
+      navigate(`/zones/zone/${zoneResp.data.id}`);
     } catch (error) {
       console.error(`Error occurred while ${apiError} Zone`);
       if (error.response !== undefined && has(error.response, "data.msgDesc")) {
@@ -581,13 +592,13 @@ const SecurityZoneForm = (props) => {
       {commonBreadcrumb(
         [
           "SecurityZone",
-          props.match.params.zoneId !== undefined ? "ZoneEdit" : "ZoneCreate"
+          params.zoneId !== undefined ? "ZoneEdit" : "ZoneCreate"
         ],
-        props.match.params.zoneId
+        params.zoneId
       )}
       <div className="clearfix">
         <h4 className="wrap-header bold">
-          {props.match.params.zoneId !== undefined ? `Edit` : `Create`} Zone
+          {params.zoneId !== undefined ? `Edit` : `Create`} Zone
         </h4>
       </div>
       <div className="wrap">
@@ -607,9 +618,7 @@ const SecurityZoneForm = (props) => {
             onSubmit={onSubmit}
             keepDirtyOnReinitialize={true}
             initialValuesEqual={() => true}
-            initialValues={
-              props.match.params.zoneId !== undefined && EditFormData()
-            }
+            initialValues={params.zoneId !== undefined && EditFormData()}
             mutators={{
               ...arrayMutators
             }}
@@ -625,6 +634,7 @@ const SecurityZoneForm = (props) => {
               submitting
             }) => (
               <Row>
+                <PromtDialog isDirtyField={dirty} isUnblock={preventUnBlock} />
                 <Col sm={12}>
                   <form
                     onSubmit={(event) => {
@@ -1059,7 +1069,8 @@ const SecurityZoneForm = (props) => {
                           type="button"
                           size="sm"
                           onClick={() => {
-                            props.history.goBack();
+                            setPreventUnblock(true);
+                            navigate(-1);
                           }}
                         >
                           Cancel

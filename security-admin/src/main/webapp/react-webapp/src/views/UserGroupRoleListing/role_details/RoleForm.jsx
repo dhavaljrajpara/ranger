@@ -17,6 +17,7 @@ import moment from "moment-timezone";
 import { findIndex, isEmpty } from "lodash";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
+import withRouter from "Hooks/withRouter";
 
 class GroupForm extends Component {
   constructor(props) {
@@ -29,13 +30,8 @@ class GroupForm extends Component {
     };
   }
   componentDidMount = () => {
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.roleId
-    ) {
-      this.fetchRoleData(this.props.match.params.roleId);
+    if (this?.props?.params?.roleID) {
+      this.fetchRoleData(this.props.params.roleID);
     } else {
       this.setState({
         loader: false
@@ -72,12 +68,12 @@ class GroupForm extends Component {
       return findIndex(this.state.selectedRole, data) === -1;
     }
   };
-  fetchRoleData = async (roleId) => {
+  fetchRoleData = async (roleID) => {
     let roleRespData;
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       roleRespData = await fetchApi({
-        url: "roles/roles/" + roleId
+        url: "roles/roles/" + roleID
       });
     } catch (error) {
       console.error(
@@ -104,16 +100,11 @@ class GroupForm extends Component {
         `Please add selected user/group/roles to there respective table else user/group/roles will not be added.`
       );
     }
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.roleId
-    ) {
+    if (this?.props?.params?.roleID) {
       try {
         const { fetchApi } = await import("Utils/fetchAPI");
         const userEdit = await fetchApi({
-          url: `roles/roles/${this.props.match.params.roleId}`,
+          url: `roles/roles/${this.props.params.roleID}`,
           method: "put",
           data: roleFormData
         });
@@ -263,12 +254,7 @@ class GroupForm extends Component {
   };
   setRoleFormData = () => {
     let formValueObj = {};
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.roleId
-    ) {
+    if (this?.props?.params?.roleID) {
       console.log(this.props);
 
       if (this.state && this.state.roleInfo) {
@@ -294,8 +280,8 @@ class GroupForm extends Component {
     ) : (
       <>
         {commonBreadcrumb(
-          ["Roles", this.props.match.params.roleId ? "RoleEdit" : "RoleCreate"],
-          this.props.match.params.roleId
+          ["Roles", this.props.params.roleID ? "RoleEdit" : "RoleCreate"],
+          this.props.params.roleID
         )}
         <h4 className="wrap-header bold">Role Detail</h4>
         <Form
@@ -684,4 +670,4 @@ class GroupForm extends Component {
   }
 }
 
-export default GroupForm;
+export default withRouter(GroupForm);

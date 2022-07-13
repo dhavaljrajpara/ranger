@@ -18,7 +18,7 @@ import {
   VisibilityStatus
 } from "Utils/XAEnums";
 import { MoreLess } from "Components/CommonComponents";
-import { useHistory, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import qs from "qs";
 
 import { fetchApi } from "Utils/fetchAPI";
@@ -36,7 +36,7 @@ import { getUserAccessRoleList } from "Utils/XAUtils";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Users() {
-  let history = useHistory();
+  const navigate = useNavigate();
   const [loader, setLoader] = useState(true);
   const [userListingData, setUserData] = useState([]);
   const [pageCount, setPageCount] = React.useState(0);
@@ -331,10 +331,11 @@ function Users() {
     []
   );
   const addUser = () => {
-    history.push({
-      pathname: "/user/create",
-      state: history
-    });
+    navigate("/user/create");
+    // history.push({
+    //   pathname: "/user/create",
+    //   state: history
+    // });
   };
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);

@@ -1,5 +1,5 @@
 import React, { Component, useCallback } from "react";
-import { withRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -12,6 +12,9 @@ import {
   isKMSAuditor,
   isUser
 } from "Utils/XAUtils";
+
+import withRouter from "Hooks/withRouter";
+
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
@@ -164,9 +167,10 @@ class ServiceDefinitions extends Component {
         });
 
         zonesResp &&
-          this.props.history.replace({
-            search: `?securityZone=${e.label}`
-          });
+          this.props.navigate(
+            `${this.props.location.pathname}?securityZone=${e.label}`,
+            { replace: true }
+          );
 
         let zoneServiceNames = map(zonesResp.data, "name");
 
@@ -211,7 +215,7 @@ class ServiceDefinitions extends Component {
         });
       } else {
         localStorage.removeItem("zoneDetails");
-        this.props.history.push(this.props.location.pathname);
+        this.props.navigate(this.props.location.pathname);
         this.setState({
           filterServiceDefs: this.state.serviceDefs,
           filterServices: this.state.services,

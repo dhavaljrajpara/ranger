@@ -52,7 +52,8 @@ module.exports = {
       Views: commonPaths.viewPath,
       Images: commonPaths.imagePath,
       Utils: commonPaths.utilsPath,
-      Components: commonPaths.componentsPath
+      Components: commonPaths.componentsPath,
+      Hooks: commonPaths.hooksPath
     }
   },
   plugins: [

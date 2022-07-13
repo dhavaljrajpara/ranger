@@ -1,12 +1,8 @@
 import React, { Component } from "react";
 import { Tab, Tabs, Badge, Row, Col } from "react-bootstrap";
-import Access from "./AccessLogs";
-import Admin from "./AdminLogs";
-import Login_Sessions from "./LoginSessionsLogs";
-import Plugins from "./PluginsLog";
-import Plugin_Status from "./PluginStatusLogs";
-import User_Sync from "./UserSync";
 import moment from "moment-timezone";
+import withRouter from "Hooks/withRouter";
+import { Outlet } from "react-router-dom";
 import { AuditFilterEntries } from "Components/CommonComponents";
 
 class AuditLayout extends Component {
@@ -18,23 +14,26 @@ class AuditLayout extends Component {
   }
 
   tabChange = (tabName) => {
-    this.props.history.replace({
-      pathname: `/reports/audit/${tabName}`
-    });
+    this.setState({ activeKey: tabName });
+    this.props.navigate(`/reports/audit/${tabName}`, { replace: true });
   };
 
   activeTab = () => {
     let activeTabVal;
-    if (this.props && this.props.match && this.props.match.path) {
-      if (this.props.match.path == "/reports/audit/bigData") {
+    if (this.props?.location?.pathname) {
+      if (this.props.location.pathname == "/reports/audit/bigData") {
         activeTabVal = "bigData";
-      } else if (this.props.match.path == "/reports/audit/admin") {
+      } else if (this.props.location.pathname == "/reports/audit/admin") {
         activeTabVal = "admin";
-      } else if (this.props.match.path == "/reports/audit/loginSession") {
+      } else if (
+        this.props.location.pathname == "/reports/audit/loginSession"
+      ) {
         activeTabVal = "loginSession";
-      } else if (this.props.match.path == "/reports/audit/agent") {
+      } else if (this.props.location.pathname == "/reports/audit/agent") {
         activeTabVal = "agent";
-      } else if (this.props.match.path == "/reports/audit/pluginStatus") {
+      } else if (
+        this.props.location.pathname == "/reports/audit/pluginStatus"
+      ) {
         activeTabVal = "pluginStatus";
       } else {
         activeTabVal = "userSync";
@@ -45,31 +44,22 @@ class AuditLayout extends Component {
 
   render() {
     return (
-      <Tabs
-        id="AuditLayout"
-        activeKey={this.state.activeKey}
-        onSelect={(tabKey) => this.tabChange(tabKey)}
-        className="mt-5"
-      >
-        <Tab eventKey="bigData" title="Access">
-          {this.state.activeKey == "bigData" && <Access />}
-        </Tab>
-        <Tab eventKey="admin" title="Admin">
-          {this.state.activeKey == "admin" && <Admin />}
-        </Tab>
-        <Tab eventKey="loginSession" title="Login Sessions">
-          {this.state.activeKey == "loginSession" && <Login_Sessions />}
-        </Tab>
-        <Tab eventKey="agent" title="Plugins">
-          {this.state.activeKey == "agent" && <Plugins />}
-        </Tab>
-        <Tab eventKey="pluginStatus" title="Plugin Status">
-          {this.state.activeKey == "pluginStatus" && <Plugin_Status />}
-        </Tab>
-        <Tab eventKey="userSync" title="User Sync">
-          {this.state.activeKey == "userSync" && <User_Sync />}
-        </Tab>
-      </Tabs>
+      <>
+        <Tabs
+          id="AuditLayout"
+          activeKey={this.state.activeKey}
+          onSelect={(tabKey) => this.tabChange(tabKey)}
+          className="mt-5"
+        >
+          <Tab eventKey="bigData" title="Access" />
+          <Tab eventKey="admin" title="Admin" />
+          <Tab eventKey="loginSession" title="Login Sessions" />
+          <Tab eventKey="agent" title="Plugins" />
+          <Tab eventKey="pluginStatus" title="Plugin Status" />
+          <Tab eventKey="userSync" title="User Sync" />
+        </Tabs>
+        <Outlet />
+      </>
     );
   }
 }

@@ -51,7 +51,7 @@ class ExportPolicy extends Component {
       "/service/plugins/policies/exportJson?serviceName=" +
       serviceNameList +
       "&checkPoliciesExists=false" +
-      (zoneName !== null ? "&zoneName=" + zoneName : "");
+      (zoneName ? "&zoneName=" + zoneName : "");
 
     const link = document.createElement("a");
 
@@ -100,15 +100,16 @@ class ExportPolicy extends Component {
 
     let exportResp;
     let serviceNameList = toString(map(this.state.selectedServices, "value"));
-
+    let exportParams = {};
+    exportParams["serviceName"] = serviceNameList;
+    exportParams["checkPoliciesExists"] = true;
+    if (this.props.zone) {
+      exportParams["zoneName"] = this.props.zone;
+    }
     try {
       exportResp = await fetchApi({
         url: "/plugins/policies/exportJson",
-        params: {
-          serviceName: serviceNameList,
-          checkPoliciesExists: true,
-          zoneName: this.props.zone
-        }
+        params: { ...exportParams }
       });
 
       if (exportResp.status === 200) {

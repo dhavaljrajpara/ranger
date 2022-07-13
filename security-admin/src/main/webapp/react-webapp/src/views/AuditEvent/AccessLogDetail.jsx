@@ -5,8 +5,10 @@ import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import { isEmpty, pick } from "lodash";
 import { Loader } from "Components/CommonComponents";
+import { useParams } from "react-router-dom";
 
 function AccessLogDetail(props) {
+  const params = useParams();
   const [access, setAccess] = useState([]);
   const [serviceDefs, setServiceDefs] = useState([]);
   // const [policyParamsData, setPolicyParamsData] = useState(null);
@@ -39,7 +41,7 @@ function AccessLogDetail(props) {
       accessResp = await fetchApi({
         url: `assets/accessAudit`,
         params: {
-          eventId: props.match.params.eventId
+          eventId: params.eventId
         }
       });
     } catch (error) {
@@ -64,7 +66,7 @@ function AccessLogDetail(props) {
       ) : (
         <>
           <h4>
-            {props.match.params.eventId !== undefined
+            {params.eventId !== undefined
               ? "Ranger – audit log"
               : "Audit Access Log Detail"}
           </h4>

@@ -242,7 +242,7 @@ a:active {
   width: 120px;
 }
 
-.ranger-navbar .navbar-nav>a {
+.ranger-navbar .navbar-nav > a {
   color: #fff !important;
   display: block;
   line-height: 22px;
@@ -266,7 +266,7 @@ a:active {
   padding: 9px 15px;
 }
 
-.login-id>i {
+.login-id > i {
   margin-right: 5px;
 }
 
@@ -487,7 +487,7 @@ div#center div.letter_container_7 {
   text-align: center !important;
 }
 
-.table-editable .editable~div {
+.table-editable .editable ~ div {
   z-index: 1060;
 }
 
@@ -608,12 +608,12 @@ table.no-bg-color thead tr th:first-child {
 }
 
 /* XA Table */
-.table-responsive>.table>thead>tr>th,
-.table-responsive>.table>tbody>tr>th,
-.table-responsive>.table>tfoot>tr>th,
-.table-responsive>.table>thead>tr>td,
-.table-responsive>.table>tbody>tr>td,
-.table-responsive>.table>tfoot>tr>td {
+.table-responsive > .table > thead > tr > th,
+.table-responsive > .table > tbody > tr > th,
+.table-responsive > .table > tfoot > tr > th,
+.table-responsive > .table > thead > tr > td,
+.table-responsive > .table > tbody > tr > td,
+.table-responsive > .table > tfoot > tr > td {
   white-space: nowrap;
 }
 
@@ -732,7 +732,7 @@ header {
   text-decoration: none;
 }
 
-.zone-listing li+li {
+.zone-listing li + li {
   border-top: 1px #adadad dashed;
 }
 
@@ -867,14 +867,14 @@ header {
   border-color: transparent !important;
 }
 
-.nav-tabs>a:hover {
+.nav-tabs > a:hover {
   background: #ffffff;
   color: #444;
 }
 
-.nav-tabs>a,
-.nav-tabs>a:focus,
-.nav-tabs>a:active {
+.nav-tabs > a,
+.nav-tabs > a:focus,
+.nav-tabs > a:active {
   background: none;
   border: 1px solid transparent;
   color: #999999;
@@ -882,9 +882,9 @@ header {
   margin-bottom: -1px;
 }
 
-.nav-tabs>a,
-.nav-tabs>a:focus,
-.nav-tabs>a:active {
+.nav-tabs > a,
+.nav-tabs > a:focus,
+.nav-tabs > a:active {
   background: none;
   border: 1px solid transparent;
   color: #999999;
@@ -1085,7 +1085,7 @@ header {
 }
 
 /* Report Page */
-.report-page .accordion>.card {
+.report-page .accordion > .card {
   overflow: visible;
 }
 
@@ -1721,4 +1721,9 @@ header {
 
 .switch-off {
   padding-left: 20px !important;
+}
+
+.ranger-navbar .dropdown-item.active,
+.ranger-navbar .dropdown-item:active {
+  background-color: #0b7fad;
 }

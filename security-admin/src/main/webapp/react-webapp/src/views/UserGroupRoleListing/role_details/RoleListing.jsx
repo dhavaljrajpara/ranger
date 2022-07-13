@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { MoreLess } from "Components/CommonComponents";
-import { useHistory, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import { isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
@@ -18,7 +18,7 @@ import { map } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Roles() {
-  let history = useHistory();
+  const navigate = useNavigate();
   const [roleListingData, setRoleData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
@@ -167,7 +167,7 @@ function Roles() {
     []
   );
   const addRole = () => {
-    history.push("/roles/create");
+    navigate("/roles/create");
   };
 
   const updateSearchFilter = (filter) => {

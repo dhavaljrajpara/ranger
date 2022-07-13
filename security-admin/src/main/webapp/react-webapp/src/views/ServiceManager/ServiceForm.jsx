@@ -6,6 +6,7 @@ import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
+
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
@@ -30,6 +31,8 @@ import {
   split,
   without
 } from "lodash";
+
+import withRouter from "Hooks/withRouter";
 
 class ServiceForm extends Component {
   constructor(props) {
@@ -77,8 +80,8 @@ class ServiceForm extends Component {
     let apiSuccess;
     let apiError;
 
-    if (this.props.match.params.serviceId !== undefined) {
-      serviceId = this.props.match.params.serviceId;
+    if (this.props.params.serviceId !== undefined) {
+      serviceId = this.props.params.serviceId;
       apiMethod = "put";
       apiUrl = `plugins/services/${serviceId}`;
       apiSuccess = "updated";
@@ -97,7 +100,7 @@ class ServiceForm extends Component {
         data: this.getServiceConfigsToSave(values)
       });
       toast.success(`Successfully ${apiSuccess} the service`);
-      this.props.history.push(
+      this.props.navigate(
         this.state.serviceDef.name === "tag"
           ? "/policymanager/tag"
           : "/policymanager/resource"
@@ -105,7 +108,7 @@ class ServiceForm extends Component {
     } catch (error) {
       if (error.response !== undefined && has(error.response, "data.msgDesc")) {
         toast.error(apiError + " : " + error.response.data.msgDesc);
-        this.props.history.push(
+        this.props.navigate(
           this.state.serviceDef.name === "tag"
             ? "/policymanager/tag"
             : "/policymanager/resource"
@@ -117,8 +120,8 @@ class ServiceForm extends Component {
   getServiceConfigsToSave = (values) => {
     const serviceJson = {};
 
-    if (this.props.match.params.serviceId !== undefined) {
-      serviceJson["id"] = this.props.match.params.serviceId;
+    if (this.props.params.serviceId !== undefined) {
+      serviceJson["id"] = this.props.params.serviceId;
     }
 
     serviceJson["name"] = values.name;
@@ -251,7 +254,7 @@ class ServiceForm extends Component {
     const serviceJson = this.initialValuesObj;
     let serviceDefResp;
     let serviceDef;
-    let serviceDefId = this.props.match.params.serviceDefId;
+    let serviceDefId = this.props.params.serviceDefId;
 
     try {
       serviceDefResp = await fetchApi({
@@ -268,7 +271,7 @@ class ServiceForm extends Component {
     if (serviceDef.resources !== undefined) {
       for (const obj of serviceDef.resources) {
         if (
-          this.props.match.params.serviceId === undefined &&
+          this.props.params.serviceId === undefined &&
           obj.lookupSupported !== undefined &&
           obj.lookupSupported
         ) {
@@ -291,7 +294,7 @@ class ServiceForm extends Component {
     if (
       auditFilters &&
       auditFilters !== undefined &&
-      this.props.match.params.serviceId === undefined
+      this.props.params.serviceId === undefined
     ) {
       auditFilters = JSON.parse(auditFilters.defaultValue.replace(/'/g, '"'));
       console.log(
@@ -313,17 +316,17 @@ class ServiceForm extends Component {
     this.setState({
       serviceDef: serviceDef,
       createInitialValues: serviceJson,
-      loader: this.props.match.params.serviceId !== undefined ? true : false
+      loader: this.props.params.serviceId !== undefined ? true : false
     });
 
-    if (this.props.match.params.serviceId !== undefined) {
+    if (this.props.params.serviceId !== undefined) {
       this.fetchService();
     }
   };
 
   fetchService = async () => {
     let serviceResp;
-    let serviceId = this.props.match.params.serviceId;
+    let serviceId = this.props.params.serviceId;
     try {
       serviceResp = await fetchApi({
         url: `plugins/services/${serviceId}`
@@ -376,7 +379,7 @@ class ServiceForm extends Component {
     if (
       editAuditFilters &&
       editAuditFilters !== undefined &&
-      this.props.match.params.serviceId !== undefined
+      this.props.params.serviceId !== undefined
     ) {
       editAuditFilters = JSON.parse(editAuditFilters.replace(/'/g, '"'));
       console.log(
@@ -429,7 +432,7 @@ class ServiceForm extends Component {
         method: "delete"
       });
       toast.success("Successfully deleted the service");
-      this.props.history.push("/policymanager/resource");
+      this.props.navigate("/policymanager/resource");
     } catch (error) {
       console.error(
         `Error occurred while deleting Service id - ${serviceId}!  ${error}`
@@ -906,12 +909,12 @@ class ServiceForm extends Component {
   ServiceDefnBreadcrumb = () => {
     let serviceDetails = {};
     serviceDetails["serviceDefId"] = this.state.serviceDef.id;
-    serviceDetails["serviceId"] = this.props.match.params.serviceId;
+    serviceDetails["serviceId"] = this.props.params.serviceId;
     if (this.state.serviceDef.name === "tag") {
       return commonBreadcrumb(
         [
           "TagBasedServiceManager",
-          this.props.match.params.serviceId !== undefined
+          this.props.params.serviceId !== undefined
             ? "ServiceEdit"
             : "ServiceCreate"
         ],
@@ -921,7 +924,7 @@ class ServiceForm extends Component {
       return commonBreadcrumb(
         [
           "ServiceManager",
-          this.props.match.params.serviceId !== undefined
+          this.props.params.serviceId !== undefined
             ? "ServiceEdit"
             : "ServiceCreate"
         ],
@@ -935,9 +938,7 @@ class ServiceForm extends Component {
         {this.ServiceDefnBreadcrumb()}
         <div className="clearfix">
           <h4 className="wrap-header bold">
-            {this.props.match.params.serviceId !== undefined
-              ? `Edit`
-              : `Create`}{" "}
+            {this.props.params.serviceId !== undefined ? `Edit` : `Create`}{" "}
             Service
           </h4>
         </div>
@@ -962,7 +963,7 @@ class ServiceForm extends Component {
                     ...arrayMutators
                   }}
                   initialValues={
-                    this.props.match.params.serviceId !== undefined
+                    this.props.params.serviceId !== undefined
                       ? this.state.editInitialValues
                       : this.state.createInitialValues
                   }
@@ -1272,7 +1273,7 @@ class ServiceForm extends Component {
                             size="sm"
                             disabled={submitting}
                           >
-                            {this.props.match.params.serviceId !== undefined
+                            {this.props.params.serviceId !== undefined
                               ? `Save`
                               : `Add`}
                           </Button>
@@ -1282,7 +1283,7 @@ class ServiceForm extends Component {
                             className="btn-fnt"
                             size="sm"
                             onClick={() =>
-                              this.props.history.push(
+                              this.props.navigate(
                                 this.state.serviceDef.name === "tag"
                                   ? "/policymanager/tag"
                                   : "/policymanager/resource"
@@ -1291,7 +1292,7 @@ class ServiceForm extends Component {
                           >
                             Cancel
                           </Button>
-                          {this.props.match.params.serviceId !== undefined && (
+                          {this.props.params.serviceId !== undefined && (
                             <Button
                               variant="danger"
                               type="button"
@@ -1305,7 +1306,7 @@ class ServiceForm extends Component {
                             </Button>
                           )}
                         </div>
-                        {this.props.match.params.serviceId !== undefined && (
+                        {this.props.params.serviceId !== undefined && (
                           <Modal
                             show={this.state.showDelete}
                             onHide={this.hideDeleteModal}
@@ -1331,7 +1332,7 @@ class ServiceForm extends Component {
                                 title="Yes"
                                 onClick={() =>
                                   this.deleteService(
-                                    this.props.match.params.serviceId
+                                    this.props.params.serviceId
                                   )
                                 }
                               >
@@ -1353,4 +1354,4 @@ class ServiceForm extends Component {
   }
 }
 
-export default ServiceForm;
+export default withRouter(ServiceForm);

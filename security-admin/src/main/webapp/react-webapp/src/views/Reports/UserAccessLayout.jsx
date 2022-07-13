@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Accordion,
   Button,
@@ -28,7 +28,7 @@ function UserAccessLayout(props) {
   const [serviceDefOpts, setServiceDefOpts] = useState([]);
   const [zoneNameOpts, setZoneNameOpts] = useState([]);
   const [searchParamsObj, setSearchParamsObj] = useState({});
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = useQuery();
 
@@ -175,9 +175,8 @@ function UserAccessLayout(props) {
       }
     }
 
-    history.replace({
-      pathname: "/reports/userAccess",
-      search: `?${urlSearchParams}`
+    navigate(`/reports/userAccess?${urlSearchParams}`, {
+      replace: true
     });
 
     setFilterServiceDefs(serviceDefsList);

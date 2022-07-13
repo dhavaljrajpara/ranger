@@ -24,7 +24,7 @@ import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType, getEnumElementByValue } from "Utils/XAEnums";
 import ResourceComp from "../Resources/ResourceComp";
 import PolicyPermissionItem from "../PolicyListing/PolicyPermissionItem";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
 import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
@@ -32,6 +32,7 @@ import moment from "moment";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import { useAccordionToggle } from "react-bootstrap/AccordionToggle";
 import AccordionContext from "react-bootstrap/AccordionContext";
+import usePrompt from "Hooks/usePrompt";
 
 const noneOptions = {
   label: "None",
@@ -70,7 +71,7 @@ const Condition = ({ when, is, children }) => (
 
 export default function AddUpdatePolicyForm() {
   let { serviceId, policyType, policyId } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [policyState, dispatch] = useReducer(reducer, initialState);
   const { loader, serviceDetails, serviceCompDetails, policyData, formData } =
     policyState;
@@ -78,6 +79,7 @@ export default function AddUpdatePolicyForm() {
   const grpDataRef = useRef(null);
   const rolesDataRef = useRef(null);
   const [showModal, policyConditionState] = useState(false);
+  // usePrompt("Leave screen?", true);
 
   useEffect(() => {
     fetchInitalData();
@@ -616,7 +618,7 @@ export default function AddUpdatePolicyForm() {
           data: dataVal
         });
         toast.success("Policy updated successfully!!");
-        history.push(`/service/${serviceId}/policies/${policyData.policyType}`);
+        navigate(`/service/${serviceId}/policies/${policyData.policyType}`);
       } catch (error) {
         toast.error("Failed to save policy form!!");
         console.error(`Error while saving policy form!!! ${error}`);
@@ -629,7 +631,7 @@ export default function AddUpdatePolicyForm() {
           data
         });
         toast.success("Policy save successfully!!");
-        history.push(`/service/${serviceId}/policies/${policyType}`);
+        navigate(`/service/${serviceId}/policies/${policyType}`);
       } catch (error) {
         toast.error("Failed to save policy form!!");
         console.error(`Error while saving policy form!!! ${error}`);
@@ -639,7 +641,7 @@ export default function AddUpdatePolicyForm() {
 
   const closeForm = () => {
     let polType = policyId ? policyData.policyType : policyType;
-    history.push(`/service/${serviceId}/policies/${polType}`);
+    navigate(`/service/${serviceId}/policies/${polType}`);
   };
   const policyBreadcrumb = () => {
     let policyDetails = {};

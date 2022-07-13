@@ -12,7 +12,7 @@ import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
-import { useHistory, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
@@ -28,7 +28,7 @@ import { map } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Groups() {
-  let history = useHistory();
+  const navigate = useNavigate();
   const [groupListingData, setGroupData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -303,7 +303,7 @@ function Groups() {
     []
   );
   const addGroup = () => {
-    history.push("/group/create");
+    navigate("/group/create");
   };
   const toggleGroupSyncModal = (raw) => {
     setGroupSyncdetails({

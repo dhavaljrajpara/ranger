@@ -8,6 +8,7 @@ import { fetchApi } from "Utils/fetchAPI";
 import { UserTypes, RegexValidation } from "Utils/XAEnums";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { toast } from "react-toastify";
+import withRouter from "Hooks/withRouter";
 
 const Error = ({ name }) => (
   <Field name={name}>
@@ -50,12 +51,12 @@ class AddUserView extends Component {
     };
     try {
       const passwdResp = await fetchApi({
-        url: `xusers/secure/users/${this.props.match.params.userID}`,
+        url: `xusers/secure/users/${this.props.params.userID}`,
         method: "PUT",
         data: userDetails
       });
       toast.success("User password change successfully!!");
-      this.props.history.push("/users/usertab");
+      this.props.navigate("/users/usertab");
     } catch (error) {
       console.error(`Error occurred while updating user password! ${error}`);
     }
@@ -77,10 +78,10 @@ class AddUserView extends Component {
     });
   };
   componentDidMount = () => {
-    this.fetchUserData(this.props.match.params.userID);
+    this.fetchUserData(this.props.params.userID);
   };
   closeForm = () => {
-    this.props.history.push("/users/usertab");
+    this.props.navigate("/users/usertab");
   };
   render() {
     const userProps = getUserProfile();
@@ -88,22 +89,16 @@ class AddUserView extends Component {
       <Loader />
     ) : this.state.userInfo.userSource == UserTypes.USER_EXTERNAL.value ? (
       <>
-        {commonBreadcrumb(
-          ["Users", "UserEdit"],
-          this.props.match.params.userID
-        )}
+        {commonBreadcrumb(["Users", "UserEdit"], this.props.params.userID)}
         <UserFormComp
           isEditView={true}
-          userID={this.props.match.params.userID}
+          userID={this.props.params.userID}
           userInfo={this.state.userInfo}
         />
       </>
     ) : (
       <>
-        {commonBreadcrumb(
-          ["Users", "UserEdit"],
-          this.props.match.params.userID
-        )}
+        {commonBreadcrumb(["Users", "UserEdit"], this.props.params.userID)}
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">
             <Nav variant="tabs">
@@ -123,7 +118,7 @@ class AddUserView extends Component {
                 <Tab.Pane eventKey="edit-basic-info">
                   <UserFormComp
                     isEditView={true}
-                    userID={this.props.match.params.userID}
+                    userID={this.props.params.userID}
                     userInfo={this.state.userInfo}
                   />
                 </Tab.Pane>
@@ -266,4 +261,4 @@ class AddUserView extends Component {
   }
 }
 
-export default AddUserView;
+export default withRouter(AddUserView);

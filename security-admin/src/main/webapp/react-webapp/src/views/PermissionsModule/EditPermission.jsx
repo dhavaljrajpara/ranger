@@ -1,7 +1,7 @@
 import { Form, Field } from "react-final-form";
 import { Button, Col, Form as FormB, Row, Table } from "react-bootstrap";
 import React, { useEffect, useReducer } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import AsyncSelect from "react-select/async";
@@ -43,7 +43,7 @@ function reducer(state, action) {
 }
 const EditPermission = (props) => {
   let { permissionId } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [permissionState, dispatch] = useReducer(reducer, initialState);
   const { loader, permissionData, selectedGrp, selectedUsr } = permissionState;
 
@@ -103,7 +103,7 @@ const EditPermission = (props) => {
         data: formData
       });
 
-      history.push("/permissions/models");
+      navigate("/permissions/models");
       toast.success("Success! Module Permissions updated successfully");
     } catch (error) {
       console.error(`Error occurred while fetching Policies ! ${error}`);
@@ -462,7 +462,7 @@ const EditPermission = (props) => {
                   size="sm"
                   type="button"
                   onClick={() => {
-                    props.history.push(`/permissions/models`);
+                    navigate(`/permissions/models`);
                   }}
                 >
                   Cancel

@@ -1,12 +1,13 @@
-import React, { Component } from "react";
-import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import rangerLogo from "Images/ranger_logo.png";
+import React, { Component } from "react";
+import { Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Link, NavLink } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import {
-  isKeyAdmin,
   hasAccessToTab,
-  isSystemAdmin,
-  isAuditor
+  isAuditor,
+  isKeyAdmin,
+  isSystemAdmin
 } from "Utils/XAUtils";
 
 class Header extends Component {
@@ -14,6 +15,7 @@ class Header extends Component {
     super(props);
     this.state = {};
   }
+
   handleLogout = async (e) => {
     e.preventDefault();
     try {
@@ -32,8 +34,10 @@ class Header extends Component {
       console.error(`Error occurred while login! ${error}`);
     }
   };
+
   render() {
     const userProps = getUserProfile();
+
     const loginId = (
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
@@ -41,16 +45,19 @@ class Header extends Component {
           userProps?.loginId.slice(1)}
       </span>
     );
+
     const accessManager = (
       <span>
         <i className="fa fa-fw fa-shield"></i> Access Manager
       </span>
     );
+
     const encryption = (
       <span>
         <i className="fa fa-fw fa-lock"></i> Encryption
       </span>
     );
+
     const settings = (
       <span>
         <i className="fa-fw fa fa-gear"></i> Settings
@@ -58,7 +65,7 @@ class Header extends Component {
     );
 
     return (
-      <>
+      <React.Fragment>
         <Navbar
           fixed="top"
           expand="lg"
@@ -67,72 +74,48 @@ class Header extends Component {
           collapseOnSelect
         >
           <Navbar.Brand
-            href="#/policymanager/resource"
+            to="/policymanager/resource"
             className="navbar-brand logo"
+            as={Link}
           >
             <img src={rangerLogo} alt="Ranger logo" />
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="mr-auto">
-              <NavDropdown title={accessManager} className="topnav_menu">
+              <NavDropdown title={accessManager}>
                 {hasAccessToTab("Resource Based Policies") && (
-                  <>
-                    <NavDropdown.Item
-                      href="#/policymanager/resource"
-                      className="dropdown-item"
-                      replace
-                    >
-                      <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
-                      Policies
-                    </NavDropdown.Item>
-                  </>
+                  <NavDropdown.Item to="/policymanager/resource" as={NavLink}>
+                    <i className="fa fa-fw fa-file m-r-xs"></i> Resource Based
+                    Policies
+                  </NavDropdown.Item>
                 )}
                 {hasAccessToTab("Tag Based Policies") && (
-                  <>
-                    <NavDropdown.Item
-                      href="#/policymanager/tag"
-                      className="dropdown-item"
-                      replace
-                    >
-                      <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based
-                      Policies
-                    </NavDropdown.Item>
-                  </>
+                  <NavDropdown.Item to="/policymanager/tag" as={NavLink}>
+                    <i className="fa fa-fw fa-tags m-r-xs"></i> Tag Based
+                    Policies
+                  </NavDropdown.Item>
                 )}
                 {hasAccessToTab("Reports") && (
-                  <>
-                    <NavDropdown.Item
-                      href="#/reports/userAccess?policyType=0"
-                      className="dropdown-item"
-                      replace
-                    >
-                      <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
-                    </NavDropdown.Item>
-                  </>
+                  <NavDropdown.Item
+                    to="/reports/userAccess?policyType=0"
+                    as={NavLink}
+                  >
+                    <i className="fa fa-fw fa-file-text m-r-xs"></i> Reports
+                  </NavDropdown.Item>
                 )}
               </NavDropdown>
               {hasAccessToTab("Audit") && (
-                <>
-                  <Nav.Link
-                    href="#/reports/audit/bigData"
-                    className="nav-link topnav_menu"
-                    replace
-                  >
-                    <i className="fa fa-fw fa-file-o"></i>
-                    Audit
-                  </Nav.Link>
-                </>
+                <Nav.Link to="/reports/audit/bigData" as={NavLink}>
+                  <i className="fa fa-fw fa-file-o"></i>
+                  Audit
+                </Nav.Link>
               )}
 
               {hasAccessToTab("Security Zone") && (
-                <>
+                <React.Fragment>
                   {!isKeyAdmin() && (
-                    <Nav.Link
-                      href="#/zones/zone/list"
-                      className="nav-link topnav_menu"
-                      replace
-                    >
+                    <Nav.Link to="/zones/zone/list" as={NavLink}>
                       <span className="zone-icon fa-stack fa-lg">
                         <i className="fa fa-square-o fa-stack-2x"></i>
                         <i className="fa fa-bolt fa-stack-1x"></i>
@@ -140,22 +123,21 @@ class Header extends Component {
                       {` Security Zone `}
                     </Nav.Link>
                   )}
-                </>
+                </React.Fragment>
               )}
               {hasAccessToTab("Key Manager") && (
-                <>
+                <React.Fragment>
                   {isKeyAdmin() && (
                     <NavDropdown title={encryption}>
                       <NavDropdown.Item
-                        href="#/kms/keys/new/manage/service"
-                        className="dropdown-item"
-                        replace
+                        to="/kms/keys/new/manage/service"
+                        as={NavLink}
                       >
                         <i className="fa fa-fw fa-key m-r-xs"></i> Key Manager
                       </NavDropdown.Item>
                     </NavDropdown>
                   )}
-                </>
+                </React.Fragment>
               )}
               <>
                 {(hasAccessToTab("Users/Groups") ||
@@ -163,26 +145,16 @@ class Header extends Component {
                   isSystemAdmin()) && (
                   <NavDropdown title={settings}>
                     {hasAccessToTab("Users/Groups") && (
-                      <NavDropdown.Item
-                        href="#/users/usertab"
-                        className="dropdown-item"
-                        replace
-                      >
+                      <NavDropdown.Item to="/users/usertab" as={NavLink}>
                         <i className="fa-fw fa fa-group m-r-xs"></i>
                         Users/Groups/Roles
                       </NavDropdown.Item>
                     )}
                     {(isAuditor() || isSystemAdmin()) && (
-                      <>
-                        <NavDropdown.Item
-                          href="#/permissions/models"
-                          className="dropdown-item"
-                          replace
-                        >
-                          <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
-                          Permissions
-                        </NavDropdown.Item>
-                      </>
+                      <NavDropdown.Item to="/permissions/models" as={NavLink}>
+                        <i className="fa-fw fa fa-file-o m-r-xs"></i>{" "}
+                        Permissions
+                      </NavDropdown.Item>
                     )}
                   </NavDropdown>
                 )}
@@ -190,18 +162,13 @@ class Header extends Component {
             </Nav>
             <Nav>
               <NavDropdown title={loginId} id="user-dropdown" alignRight>
-                <NavDropdown.Item
-                  href="#/userprofile"
-                  className="dropdown-item"
-                  replace
-                >
+                <NavDropdown.Item to="/userprofile" as={NavLink}>
                   <i className="fa fa-user"></i> Profile
                 </NavDropdown.Item>
                 <NavDropdown.Item
-                  href="#/logout"
+                  to="/logout"
                   onClick={this.handleLogout}
-                  className="dropdown-item"
-                  replace
+                  as={NavLink}
                 >
                   <i className="fa fa-power-off"></i> Logout
                 </NavDropdown.Item>
@@ -209,7 +176,7 @@ class Header extends Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-      </>
+      </React.Fragment>
     );
   }
 }

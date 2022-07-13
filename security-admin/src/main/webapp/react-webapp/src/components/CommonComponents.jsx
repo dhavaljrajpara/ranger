@@ -1,4 +1,4 @@
-import React, { Component, useState, useMemo } from "react";
+import React, { Component, useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Alert,
@@ -354,11 +354,7 @@ export const CommonScrollButton = () => {
 
   const toggleVisible = () => {
     const scrolled = document.documentElement.scrollTop;
-    if (scrolled > 100) {
-      setVisible(true);
-    } else if (scrolled <= 300) {
-      setVisible(false);
-    }
+    setVisible(scrolled > 100);
   };
 
   const scrollToTop = () => {
@@ -368,7 +364,9 @@ export const CommonScrollButton = () => {
     });
   };
 
-  window.addEventListener("scroll", toggleVisible);
+  useEffect(() => {
+    window.addEventListener("scroll", toggleVisible);
+  }, []);
 
   return (
     <Button
@@ -376,9 +374,7 @@ export const CommonScrollButton = () => {
       size="sm"
       variant="outline-secondary"
       className={`top-scroll position-fixed ${visible ? "d-inline" : "d-none"}`}
-      onClick={() => {
-        scrollToTop();
-      }}
+      onClick={scrollToTop}
     >
       <i className="fa fa-arrow-up" />
     </Button>

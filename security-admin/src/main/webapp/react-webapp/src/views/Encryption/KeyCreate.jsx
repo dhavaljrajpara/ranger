@@ -8,6 +8,7 @@ import { fetchApi } from "Utils/fetchAPI";
 import { Loader, scrollToError } from "../../components/CommonComponents";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import { isUndefined, has } from "lodash";
+import withRouter from "Hooks/withRouter";
 
 class KeyCreate extends Component {
   constructor(props) {
@@ -47,15 +48,15 @@ class KeyCreate extends Component {
         url: "keys/key",
         method: "post",
         params: {
-          provider: this.props.match.params.serviceName
+          provider: this.props.params.serviceName
         },
         data: serviceJson
       });
       toast.success(`Success! Key created succesfully`);
-      this.props.history.push({
-        pathname: `/kms/keys/edit/manage/${this.props.location.state.detail}`,
-        state: { detail: this.props.location.state.detail }
-      });
+      this.props.navigate(
+        `/kms/keys/edit/manage/${this.props.location.state.detail}`,
+        { state: { detail: this.props.location.state.detail } }
+      );
     } catch (error) {
       if (error.response !== undefined && has(error.response, "data.msgDesc")) {
         toast.error(apiError + " : " + error.response.data.msgDesc);
@@ -66,7 +67,7 @@ class KeyCreate extends Component {
     let serviceResp;
     try {
       serviceResp = await fetchApi({
-        url: `plugins/services/name/${this.props.match.params.serviceName}`
+        url: `plugins/services/name/${this.props.params.serviceName}`
       });
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
@@ -90,8 +91,8 @@ class KeyCreate extends Component {
   };
 
   closeForm = () => {
-    this.props.history.push(
-      `/kms/keys/edit/manage/${this.props.match.params.serviceName}`
+    this.props.navigate(
+      `/kms/keys/edit/manage/${this.props.params.serviceName}`
     );
   };
   validate = (values) => {
@@ -110,7 +111,7 @@ class KeyCreate extends Component {
       this.state.definition.data && this.state.definition.data.id;
     serviceDetails["serviceId"] =
       this.state.service.data && this.state.service.data.id;
-    serviceDetails["serviceName"] = this.props.match.params.serviceName;
+    serviceDetails["serviceName"] = this.props.params.serviceName;
     return commonBreadcrumb(
       ["Kms", "KmsKeyForService", "KmsKeyCreate"],
       serviceDetails
@@ -336,4 +337,4 @@ class KeyCreate extends Component {
   }
 }
 
-export default KeyCreate;
+export default withRouter(KeyCreate);

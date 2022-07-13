@@ -1,6 +1,6 @@
 import React, { useReducer, useCallback, useEffect, useState } from "react";
 import { Loader } from "Components/CommonComponents";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import XATableLayout from "Components/XATableLayout";
@@ -92,9 +92,10 @@ function reducer(state, action) {
 }
 
 const KeyManager = (props) => {
-  const history = useHistory();
+  const navigate = useNavigate();
+  const params = useParams();
 
-  const [keyState, dispatch] = useReducer(reducer, props.match.params, init);
+  const [keyState, dispatch] = useReducer(reducer, params, init);
 
   const {
     loader,
@@ -266,18 +267,19 @@ const KeyManager = (props) => {
   );
 
   const addKey = () => {
-    history.push({
-      pathname:
-        props.match.params.kmsManagePage == "edit"
-          ? `/kms/keys/${props.match.params.kmsServiceName}/create`
-          : `/kms/keys/${onchangeval.label}/create`,
-      state: {
-        detail:
-          props.match.params.kmsManagePage == "edit"
-            ? props.match.params.kmsServiceName
-            : onchangeval.label
+    navigate(
+      params.kmsManagePage == "edit"
+        ? `/kms/keys/${params.kmsServiceName}/create`
+        : `/kms/keys/${onchangeval.label}/create`,
+      {
+        state: {
+          detail:
+            params.kmsManagePage == "edit"
+              ? params.kmsServiceName
+              : onchangeval.label
+        }
       }
-    });
+    );
   };
   const columns = React.useMemo(
     () => [
@@ -386,14 +388,12 @@ const KeyManager = (props) => {
           <Col md={2} className="text-right">
             <Button
               className={
-                onchangeval !== undefined ||
-                props.match.params.kmsManagePage == "edit"
+                onchangeval !== undefined || params.kmsManagePage == "edit"
                   ? ""
                   : "button-disabled"
               }
               disabled={
-                onchangeval != undefined ||
-                props.match.params.kmsManagePage == "edit"
+                onchangeval != undefined || params.kmsManagePage == "edit"
                   ? false
                   : true
               }

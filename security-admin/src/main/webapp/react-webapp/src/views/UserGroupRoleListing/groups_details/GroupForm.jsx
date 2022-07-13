@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import { Loader, scrollToError } from "Components/CommonComponents";
+import withRouter from "Hooks/withRouter";
+import usePrompt from "Hooks/usePrompt";
 
 class GroupForm extends Component {
   constructor(props) {
@@ -12,25 +14,20 @@ class GroupForm extends Component {
     this.state = { loader: true };
   }
   componentDidMount = () => {
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.groupId
-    ) {
-      this.fetchGroupData(this.props.match.params.groupId);
+    if (this?.props?.params?.groupID) {
+      this.fetchGroupData(this.props.params.groupID);
     } else {
       this.setState({
         loader: false
       });
     }
   };
-  fetchGroupData = async (groupId) => {
+  fetchGroupData = async (groupID) => {
     let groupRespData;
     try {
       const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
       groupRespData = await fetchApi({
-        url: "xusers/secure/groups/" + groupId
+        url: "xusers/secure/groups/" + groupID
       });
     } catch (error) {
       console.error(
@@ -49,16 +46,11 @@ class GroupForm extends Component {
       ...this.state.groupInfo,
       ...formData
     };
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.groupId
-    ) {
+    if (this?.props?.params?.groupID) {
       try {
         const { fetchApi } = await import("Utils/fetchAPI");
         const userEdit = await fetchApi({
-          url: `xusers/secure/groups/${this.props.match.params.groupId}`,
+          url: `xusers/secure/groups/${this.props.params.groupID}`,
           method: "put",
           data: groupFormData
         });
@@ -77,14 +69,14 @@ class GroupForm extends Component {
           data: formData
         });
         toast.success("Group created successfully!!");
-        this.props.history.push("/users/grouptab");
+        this.props.navigate("/users/grouptab");
       } catch (error) {
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(`Group creation failed!! ${error.response.data.msgDesc}`);
-          this.props.history.push("/users/grouptab");
+          this.props.navigate("/users/grouptab");
         }
         console.error(`Error occurred while updating user password! ${error}`);
       }
@@ -92,13 +84,8 @@ class GroupForm extends Component {
   };
   setGroupFormData = () => {
     let formValueObj = {};
-    if (
-      this.props &&
-      this.props.match &&
-      this.props.match.params &&
-      this.props.match.params.groupId
-    ) {
-      if (this.state && this.state.groupInfo) {
+    if (this?.props?.params?.groupID) {
+      if (this?.state?.groupInfo) {
         formValueObj.name = this.state.groupInfo.name;
         formValueObj.description = this.state.groupInfo.description;
       }
@@ -106,7 +93,7 @@ class GroupForm extends Component {
     return formValueObj;
   };
   closeForm = () => {
-    this.props.history.push("/users/grouptab");
+    this.props.navigate("/users/grouptab");
   };
   validateForm = (values) => {
     const errors = {};
@@ -122,11 +109,8 @@ class GroupForm extends Component {
     ) : (
       <div>
         {commonBreadcrumb(
-          [
-            "Groups",
-            this.props.match.params.groupId ? "GroupEdit" : "GroupCreate"
-          ],
-          this.props.match.params.groupId
+          ["Groups", this.props.params.groupID ? "GroupEdit" : "GroupCreate"],
+          this.props.params.groupID
         )}
         <h4 className="wrap-header bold">Group Detail</h4>
         <Form
@@ -140,7 +124,8 @@ class GroupForm extends Component {
             invalid,
             errors,
             values,
-            pristine
+            pristine,
+            dirty
           }) => (
             <div className="wrap">
               <form
@@ -253,4 +238,4 @@ class GroupForm extends Component {
   }
 }
 
-export default GroupForm;
+export default withRouter(GroupForm);

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, Component } from "react";
-import { Router, Route, Switch, Redirect } from "react-router-dom";
+import { Route, Routes, HashRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ErrorBoundary from "Views/ErrorBoundary";
 import ErrorPage from "./views/ErrorPage";
@@ -9,7 +9,7 @@ import { getUserProfile, setUserProfile } from "Utils/appState";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import { hasAccessToPath } from "Utils/XAUtils";
 
-const HeaderComp = lazy(() => import("Views/Header"));
+import LayoutComp from "Views/Layout";
 const HomeComp = lazy(() => import("Views/Home"));
 const ServiceFormComp = lazy(() => import("Views/ServiceManager/ServiceForm"));
 const UserProfileComp = lazy(() => import("Views/UserProfile"));
@@ -17,21 +17,18 @@ const ZoneListingComp = lazy(() => import("Views/SecurityZone/ZoneListing"));
 const SecurityZoneFormComp = lazy(() =>
   import("Views/SecurityZone/SecurityZoneForm")
 );
-const UserListingComp = lazy(() =>
+const UserGroupRoleListing = lazy(() =>
   import("Views/UserGroupRoleListing/UserGroupRoleListing")
+);
+const UserListingComp = lazy(() =>
+  import("Views/UserGroupRoleListing/users_details/UserListing")
 );
 const GroupListingComp = lazy(() =>
-  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+  import("Views/UserGroupRoleListing/groups_details/GroupListing")
 );
 const RoleListingComp = lazy(() =>
-  import("Views/UserGroupRoleListing/UserGroupRoleListing")
+  import("Views/UserGroupRoleListing/role_details/RoleListing")
 );
-const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const AdminLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const LoginSessionsLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const PluginsLog = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const PluginStatusLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
-const UserSyncLogs = lazy(() => import("Views/AuditEvent/AuditLayout"));
 const UserForm = lazy(() =>
   import("Views/UserGroupRoleListing/users_details/AddUserView")
 );
@@ -44,12 +41,22 @@ const GroupForm = lazy(() =>
 const RoleForm = lazy(() =>
   import("Views/UserGroupRoleListing/role_details/RoleForm")
 );
-const PermissionsComp = lazy(() =>
-  import("Views/PermissionsModule/Permissions")
-);
+const Permissions = lazy(() => import("Views/PermissionsModule/Permissions"));
 const EditPermissionComp = lazy(() =>
   import("Views/PermissionsModule/EditPermission")
 );
+const AuditLayout = lazy(() => import("Views/AuditEvent/AuditLayout"));
+const AccessLogs = lazy(() => import("Views/AuditEvent/AccessLogs"));
+const AdminLogs = lazy(() => import("Views/AuditEvent/AdminLogs"));
+const LoginSessionsLogs = lazy(() =>
+  import("Views/AuditEvent/LoginSessionsLogs")
+);
+const PluginsLog = lazy(() => import("Views/AuditEvent/PluginsLog"));
+const PluginStatusLogs = lazy(() =>
+  import("Views/AuditEvent/PluginStatusLogs")
+);
+const UserSyncLogs = lazy(() => import("Views/AuditEvent/UserSync"));
+
 const PolicyListingTabView = lazy(() =>
   import("Views/PolicyListing/PolicyListingTabView")
 );
@@ -64,27 +71,6 @@ const AccesLogDetailComp = lazy(() =>
 const UserAccessLayoutComp = lazy(() =>
   import("Views/Reports/UserAccessLayout")
 );
-
-function AuthRoute({ path, component: Comp, userProfile, compProps, ...rest }) {
-  if (!getUserProfile()) {
-    window.location.replace("login.jsp");
-    return;
-  }
-  return (
-    <Route
-      {...rest}
-      exact
-      render={(routeProps) => {
-        return hasAccessToPath(path) ? (
-          <ErrorPage {...routeProps} {...compProps} errorCode="401"></ErrorPage>
-        ) : (
-          <Comp {...routeProps} {...compProps} {...rest} />
-        );
-      }}
-    />
-  );
-}
-
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -121,263 +107,142 @@ export default class App extends Component {
     const defaultProps = { userProfile };
     return (
       <ErrorBoundary history={history}>
-        <Router history={history}>
-          <Suspense fallback={<Loader />}>
-            {!this.state.loader && <HeaderComp />}
-            <section className="container-fluid">
-              {/* <div className="row mt-2">
-                <div className="col-auto mr-auto">
-                  <div className="col-auto mr-auto">
-                    <Breadcrumb>
-                      <Breadcrumb.Item href="#"></Breadcrumb.Item>
-                    </Breadcrumb>
-                  </div>
-                </div>
-                <div className="col-auto">
-                  <b>Last Response Time: </b>
-                  {new Date().toLocaleString("en-US", { hour12: true })}
-                </div>
-              </div> */}
-              <div id="ranger-content">
-                {this.state.loader ? (
-                  <Loader />
-                ) : (
-                  <Switch>
-                    <AuthRoute
-                      exact
-                      path="/policymanager/resource"
-                      component={HomeComp}
-                      userProfile={userProfile}
-                      compProps={{ isTagView: false, key: "resourceHomeComp" }}
-                      {...defaultProps}
+        <Suspense fallback={<Loader />}>
+          {this.state.loader ? (
+            <Loader />
+          ) : (
+            <HashRouter>
+              <Routes>
+                <Route path="/" element={<LayoutComp />}>
+                  {/*RANGER UI HOME Page*/}
+                  <Route path="/policymanager">
+                    <Route
+                      path="resource"
+                      element={
+                        <HomeComp isTagView={false} key="resourceHomeComp" />
+                      }
                     />
-                    <AuthRoute
-                      exact
-                      path="/userprofile"
-                      component={UserProfileComp}
-                      {...defaultProps}
+                    <Route
+                      path="tag"
+                      element={<HomeComp isTagView={true} key="tagHomeComp" />}
                     />
-                    <AuthRoute
-                      exact
-                      path="/service/:serviceDefId/create"
-                      component={ServiceFormComp}
-                      {...defaultProps}
+                  </Route>
+                  <Route
+                    path="/reports/userAccess"
+                    element={<UserAccessLayoutComp />}
+                  />
+                  <Route path="/service">
+                    {/* SERVICE MANAGER */}
+                    <Route path=":serviceDefId">
+                      {/* SERVICE CREATE */}
+                      <Route path="create" element={<ServiceFormComp />} />
+                      {/* SERVICE EDIT */}
+                      <Route path="edit">
+                        <Route
+                          path=":serviceId"
+                          element={<ServiceFormComp />}
+                        />
+                      </Route>
+                    </Route>
+                    {/* POLICY MANAGER */}
+                    <Route path=":serviceId">
+                      <Route path="policies">
+                        {/* POLICY LISTING */}
+                        <Route
+                          path=":policyType"
+                          element={<PolicyListingTabView />}
+                        />
+                        {/* POLICY CREATE */}
+                        <Route path="create">
+                          <Route
+                            path=":policyType"
+                            element={<AddUpdatePolicyForm />}
+                          />
+                        </Route>
+                        {/* POLICY EDIT */}
+                        <Route path=":policyId">
+                          <Route
+                            path="edit"
+                            element={<AddUpdatePolicyForm />}
+                          />
+                        </Route>
+                      </Route>
+                    </Route>
+                  </Route>
+                  {/* AUDIT LOGS  */}
+                  <Route path="/reports/audit" element={<AuditLayout />}>
+                    <Route path="bigData" element={<AccessLogs />} />
+                    <Route path="admin" element={<AdminLogs />} />
+                    <Route
+                      path="loginSession"
+                      element={<LoginSessionsLogs />}
                     />
-                    <AuthRoute
-                      exact
-                      path="/service/:serviceDefId/edit/:serviceId"
-                      component={ServiceFormComp}
-                      {...defaultProps}
+                    <Route path="agent" element={<PluginsLog />} />
+                    <Route path="pluginStatus" element={<PluginStatusLogs />} />
+                    <Route path="userSync" element={<UserSyncLogs />} />
+                  </Route>
+                  {/* AUDIT LOGS DETAILS VIEW */}
+                  <Route
+                    path="/reports/audit/eventlog/:eventId"
+                    element={<AccesLogDetailComp />}
+                  ></Route>
+                  {/* USER/GROUP/ROLE LISTING*/}
+                  <Route path="/users" element={<UserGroupRoleListing />}>
+                    <Route path="usertab" element={<UserListingComp />} />
+                    <Route path="grouptab" element={<GroupListingComp />} />
+                    <Route path="roletab" element={<RoleListingComp />} />
+                  </Route>
+                  {/* USER CREATE / EDIT */}
+                  <Route path="/user">
+                    <Route path="create" element={<UserForm />} />
+                    <Route path=":userID" element={<EditUserView />} />
+                  </Route>
+                  {/* GROUP CREATE / EDIT */}
+                  <Route path="/group">
+                    <Route path="create" element={<GroupForm />} />
+                    <Route path=":groupID" element={<GroupForm />} />
+                  </Route>
+                  {/* ROLE CREATE / EDIT */}
+                  <Route path="/role">
+                    <Route path="create" element={<RoleForm />} />
+                    <Route path=":roleID" element={<RoleForm />} />
+                  </Route>
+                  {/* PERMISSION */}
+                  <Route path="/permissions">
+                    <Route path="models" element={<Permissions />} />
+                    <Route
+                      path=":permissionId/edit"
+                      element={<EditPermissionComp />}
                     />
-                    <AuthRoute
-                      exact
-                      path="/service/:serviceId/policies/:policyType"
-                      component={PolicyListingTabView}
-                      {...defaultProps}
+                  </Route>
+                  {/* ZONE LISTING / CREATE / EDIT */}
+                  <Route path="/zones">
+                    <Route path="zone/list" element={<ZoneListingComp />} />
+                    <Route path="zone/:zoneId" element={<ZoneListingComp />} />
+                    <Route path="create" element={<SecurityZoneFormComp />} />
+                    <Route
+                      path="edit/:zoneId"
+                      element={<SecurityZoneFormComp />}
                     />
-                    <AuthRoute
-                      path="/policymanager/tag"
-                      component={HomeComp}
-                      userProfile={userProfile}
-                      compProps={{ isTagView: true, key: "tagHomeComp" }}
-                      {...defaultProps}
-                    ></AuthRoute>
-                    <AuthRoute
-                      exact
-                      path="/service/:serviceId/policies/create/:policyType"
-                      component={AddUpdatePolicyForm}
-                      {...defaultProps}
+                  </Route>
+                  {/* ENCRYPTION KEY LISTING / CREATE*/}
+                  <Route path="/kms/keys">
+                    <Route
+                      path=":kmsManagePage/manage/:kmsServiceName"
+                      element={<EncryptionComp />}
                     />
-                    <AuthRoute
-                      exact
-                      path="/service/:serviceId/policies/:policyId/edit"
-                      component={AddUpdatePolicyForm}
-                      {...defaultProps}
+                    <Route
+                      path=":serviceName/create"
+                      element={<KeyCreateComp />}
                     />
-                    <AuthRoute
-                      exact
-                      path="/zones/zone/list"
-                      component={ZoneListingComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/zones/zone/:zoneId"
-                      component={ZoneListingComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/zones/create"
-                      component={SecurityZoneFormComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/zones/edit/:zoneId"
-                      component={SecurityZoneFormComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/users/usertab"
-                      component={UserListingComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/user/create"
-                      component={UserForm}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/user/:userID"
-                      component={EditUserView}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/users/grouptab"
-                      component={GroupListingComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/group/create"
-                      component={GroupForm}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/group/:groupId"
-                      component={GroupForm}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/users/roletab"
-                      component={RoleListingComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/roles/create"
-                      component={RoleForm}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/role/:roleId"
-                      component={RoleForm}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/permissions/models"
-                      component={PermissionsComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/kms/keys/:kmsManagePage/manage/:kmsServiceName"
-                      component={EncryptionComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/kms/keys/:serviceName/create"
-                      component={KeyCreateComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/permissions/:permissionId/edit"
-                      component={EditPermissionComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/bigData"
-                      component={AuditLayout}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/admin"
-                      component={AdminLogs}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/loginSession"
-                      component={LoginSessionsLogs}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/agent"
-                      component={PluginsLog}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/pluginStatus"
-                      component={PluginStatusLogs}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/userSync"
-                      component={UserSyncLogs}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/audit/eventlog/:eventId"
-                      component={AccesLogDetailComp}
-                      {...defaultProps}
-                    />
-                    <AuthRoute
-                      exact
-                      path="/reports/userAccess"
-                      component={UserAccessLayoutComp}
-                      {...defaultProps}
-                    />
-                    <Redirect
-                      exact
-                      from="/"
-                      to="/policymanager/resource"
-                    ></Redirect>
-                    <AuthRoute
-                      exact
-                      path="*"
-                      history={history}
-                      errorCode="404"
-                      component={ErrorPage}
-                      {...defaultProps}
-                    />
-                  </Switch>
-                )}
-              </div>
-              <footer>
-                <div className="main-footer">
-                  <div className="pull-left copy-right-text">
-                    <p className="text-left">
-                      <a
-                        target="_blank"
-                        href="http://www.apache.org/licenses/LICENSE-2.0"
-                        rel="noopener noreferrer"
-                      >
-                        Licensed under the Apache License, Version 2.0
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </footer>
-            </section>
-          </Suspense>
-        </Router>
+                  </Route>
+                  {/* USER PROFILE */}
+                  <Route path="/userprofile" element={<UserProfileComp />} />
+                </Route>
+              </Routes>
+            </HashRouter>
+          )}
+        </Suspense>
         <ToastContainer />
         <CommonScrollButton />
       </ErrorBoundary>

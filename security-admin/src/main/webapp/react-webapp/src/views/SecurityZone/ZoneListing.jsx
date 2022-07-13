@@ -9,6 +9,7 @@ import moment from "moment-timezone";
 import { Row, Col, Collapse, Breadcrumb } from "react-bootstrap";
 import { sortBy } from "lodash";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import withRouter from "Hooks/withRouter";
 
 class ZoneListing extends Component {
   constructor(props) {
@@ -31,7 +32,7 @@ class ZoneListing extends Component {
   fetchZones = async () => {
     let zoneList = [],
       selectedZone = null,
-      zoneId = this.props.match.params.zoneId;
+      zoneId = this.props.params.zoneId;
     try {
       const zonesResp = await fetchApi({
         url: "zones/zones"
@@ -47,9 +48,7 @@ class ZoneListing extends Component {
     } else {
       if (zoneList.length > 0) {
         selectedZone = zoneList[0];
-        this.props.history.replace({
-          pathname: `/zones/zone/${zoneList[0].id}`
-        });
+        this.props.navigate(`/zones/zone/${zoneList[0].id}`, { replace: true });
       }
     }
 
@@ -65,9 +64,7 @@ class ZoneListing extends Component {
     let selectedZone = this.state.zones.find((obj) => zoneid === obj.id);
     if (selectedZone) {
       this.setState({ selectedZone: selectedZone });
-      this.props.history.replace({
-        pathname: `/zones/zone/${zoneid}`
-      });
+      this.props.navigate(`/zones/zone/${zoneid}`, { replace: true });
     }
   };
 
@@ -98,9 +95,11 @@ class ZoneListing extends Component {
       });
 
       if (getSelectedZone && getSelectedZone !== undefined) {
-        this.props.history.replace(`/zones/zone/${getSelectedZone.id}`);
+        this.props.navigate(`/zones/zone/${getSelectedZone.id}`, {
+          replace: true
+        });
       } else {
-        this.props.history.replace(`/zones/zone/list`);
+        this.props.navigate(`/zones/zone/list`, { replace: true });
       }
       toast.success("Successfully deleted the zone");
     } catch (error) {
@@ -247,7 +246,7 @@ class ZoneListing extends Component {
                 </Row>
               ) : (
                 <ZoneDisplay
-                  history={this.props.history}
+                  history={this.props.navigate}
                   zone={this.state.selectedZone}
                   deleteZone={this.deleteZone}
                   expandBtn={this.expandBtn}
@@ -262,4 +261,4 @@ class ZoneListing extends Component {
   }
 }
 
-export default ZoneListing;
+export default withRouter(ZoneListing);

@@ -6,6 +6,7 @@ import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import { pick } from "lodash";
+import withRouter from "Hooks/withRouter";
 
 class policyTabView extends Component {
   state = {
@@ -22,7 +23,7 @@ class policyTabView extends Component {
     let getComponentDefinationDetails;
     try {
       getServiceDetails = await fetchApi({
-        url: `plugins/services/${this.props.match.params.serviceId}`
+        url: `plugins/services/${this.props.params.serviceId}`
       });
       getComponentDefinationDetails = await fetchApi({
         url: `plugins/definitions/name/${getServiceDetails.data.type}`
@@ -38,14 +39,15 @@ class policyTabView extends Component {
   };
 
   tabChange = (tabName) => {
-    this.props.history.replace({
-      pathname: `/service/${this.props.match.params.serviceId}/policies/${tabName}`
-    });
+    this.props.navigate(
+      `/service/${this.props.params.serviceId}/policies/${tabName}`,
+      { replace: true }
+    );
   };
   policyBreadcrumb = () => {
     let policyDetails = {};
-    policyDetails["serviceId"] = this.props.match.params.serviceId;
-    policyDetails["policyType"] = this.props.match.params;
+    policyDetails["serviceId"] = this.props.params.serviceId;
+    policyDetails["policyType"] = this.props.params.policyType;
     policyDetails["serviceName"] = this.state.serviceDetails.displayName;
     policyDetails["selectedZone"] = JSON.parse(
       localStorage.getItem("zoneDetails")
@@ -89,24 +91,20 @@ class policyTabView extends Component {
             <Tabs
               id="PolicyListing"
               className="mb-3"
-              activeKey={this.props.match.params.policyType}
+              activeKey={this.props.params.policyType}
               onSelect={(k) => this.tabChange(k)}
             >
               <Tab eventKey="0" title="Access">
-                {this.props.match.params.policyType == "0" && <PolicyListing />}
+                {this.props.params.policyType == "0" && <PolicyListing />}
               </Tab>
               {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
                 <Tab eventKey="1" title="Masking">
-                  {this.props.match.params.policyType == "1" && (
-                    <PolicyListing />
-                  )}
+                  {this.props.params.policyType == "1" && <PolicyListing />}
                 </Tab>
               )}
               {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
                 <Tab eventKey="2" title="Row Level Filter">
-                  {this.props.match.params.policyType == "2" && (
-                    <PolicyListing />
-                  )}
+                  {this.props.params.policyType == "2" && <PolicyListing />}
                 </Tab>
               )}
             </Tabs>
@@ -119,4 +117,4 @@ class policyTabView extends Component {
   }
 }
 
-export default policyTabView;
+export default withRouter(policyTabView);

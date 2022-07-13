@@ -11,10 +11,10 @@ import _, {
   isEmpty,
   isUndefined
 } from "lodash";
+import { matchRoutes } from "react-router-dom";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import CustomBreadcrumb from "../views/CustomBreadcrumb";
-// import { includes, map, union, forEach } from "lodash";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
@@ -123,13 +123,20 @@ export const hasAccessToPath = (pathName) => {
   for (const key in PathAssociateWithModule) {
     allRouter = [...allRouter, ...PathAssociateWithModule[key]];
   }
-  let isValidRouter = _.includes(allRouter, pathName);
-  if (isValidRouter) {
+  let isValidRouter = matchRoutes(
+    allRouter.map((val) => ({ path: val })),
+    pathName
+  );
+  if (isValidRouter.length > 0) {
     forEach(moduleNames, function (key) {
       allowPath.push(PathAssociateWithModule[key]);
     });
     allowPath = uniq(flatMap(allowPath));
-    returnFlag = _.includes(allowPath, pathName);
+    returnFlag =
+      matchRoutes(
+        allowPath.map((val) => ({ path: val })),
+        pathName
+      ) === null;
   }
 
   return !returnFlag;
@@ -843,7 +850,7 @@ export const showGroupsOrUsersOrRolesForPolicy = (
 var links = {
   ServiceManager: function (zoneName) {
     return {
-      href: "#/policymanager/resource",
+      href: "/policymanager/resource",
       text: !isUndefined(zoneName && zoneName.selectedZone)
         ? `Service Manager : ${zoneName && zoneName.selectedZone.label} zone`
         : "Service Manager"
@@ -851,7 +858,7 @@ var links = {
   },
   TagBasedServiceManager: function (zoneName) {
     return {
-      href: "#/policymanager/tag",
+      href: "/policymanager/tag",
       text: !isUndefined(zoneName && zoneName.selectedZone)
         ? `Service Manager : ${zoneName && zoneName.selectedZone.label} zone`
         : "Service Manager"
@@ -859,123 +866,119 @@ var links = {
   },
 
   ServiceCreate: {
-    href: "#",
+    href: "",
     text: "Create Service"
   },
   ServiceEdit: function (serviceDetails) {
     return {
-      href: `#/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
+      href: `/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
       text: "Edit Service"
     };
   },
   ManagePolicies: function (policy) {
     return {
-      href: `#/service/${policy.serviceId}/policies/${policy.policyType}`,
+      href: `/service/${policy.serviceId}/policies/${policy.policyType}`,
       text: `${policy.serviceName} Policies`
     };
   },
   PolicyCreate: {
-    href: "#",
+    href: "",
     text: "Create Policy"
   },
   PolicyEdit: {
-    href: "#",
+    href: "",
     text: "Edit Policy"
   },
   Users: {
-    href: "#/users/usertab",
+    href: "/users/usertab",
     text: "Users/Groups/Roles"
   },
   SecurityZone: function (zoneId) {
     return {
-      href: isUndefined(zoneId)
-        ? "#/zones/zone/list"
-        : `#/zones/zone/${zoneId}`,
+      href: isUndefined(zoneId) ? "/zones/zone/list" : `/zones/zone/${zoneId}`,
       text: "Security Zone"
     };
   },
   ZoneCreate: {
-    href: `#/zones/create`,
+    href: "/zones/create",
     text: "Create Zone"
   },
   ZoneEdit: {
-    href: `#`,
+    href: "",
     text: "Edit Zone"
   },
   Kms: function (kms) {
     return {
-      href: isUndefined(kms)
-        ? "#"
-        : `#/kms/keys/edit/manage/${kms.serviceName}`,
+      href: isUndefined(kms) ? "" : `/kms/keys/edit/manage/${kms.serviceName}`,
       text: `KMS`
     };
   },
   KmsKeyForService: function (serviceDetails) {
     return {
-      href: `#/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
+      href: `/service/${serviceDetails.serviceDefId}/edit/${serviceDetails.serviceId}  `,
       text: serviceDetails.serviceName
     };
   },
   KmsKeyCreate: function (kms) {
     return {
-      href: `#/kms/keys/${kms.serviceName}/create`,
+      href: `/kms/keys/${kms.serviceName}/create`,
       text: `Key Create`
     };
   },
   UserProfile: {
-    href: "#",
+    href: "",
     text: "User Profile"
   },
   UserCreate: {
-    href: "#",
+    href: "",
     text: "User Create"
   },
   UserEdit: function (userId) {
     return {
-      href: `#/user/${userId}`,
+      href: `/user/${userId}`,
       text: "User Edit"
     };
   },
   Groups: {
-    href: "#/users/grouptab",
+    href: "/users/grouptab",
     text: "Users/Groups/Roles"
   },
   GroupCreate: {
-    href: "#",
+    href: "",
     text: "Group Create"
   },
   GroupEdit: function (userId) {
     return {
-      href: `#/group/${userId}`,
+      href: `/group/${userId}`,
       text: "Group Edit"
     };
   },
   Roles: {
-    href: "#/users/roletab",
+    href: "/users/roletab",
     text: "Users/Groups/Roles"
   },
   RoleCreate: {
-    href: "#",
+    href: "",
     text: "Role Create"
   },
   RoleEdit: function (roleId) {
     return {
-      href: `#/role/${roleId}`,
+      href: `/role/${roleId}`,
       text: "Role Edit"
     };
   },
   ModulePermissions: {
-    href: "#/permissions/models",
+    href: "/permissions/models",
     text: "Permissions"
   },
   ModulePermissionEdit: function (permissionData) {
     return {
-      href: `#/permissions/${permissionData.id}/edit`,
+      href: `/permissions/${permissionData.id}/edit`,
       text: permissionData.module
     };
   },
   UserAccessReport: {
-    href: "#",
+    href: "",
     text: "User Access Report"
   }
 };
