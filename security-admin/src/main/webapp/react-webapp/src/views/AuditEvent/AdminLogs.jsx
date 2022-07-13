@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
@@ -26,7 +26,7 @@ function Admin() {
   const [showrowmodal, setShowRowModal] = useState(false);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
-  const history = useHistory();
+  const navigate = useNavigate();
   const searchParams = useQuery();
 
   const handleClose = () => setShowModal(false);
@@ -321,9 +321,8 @@ function Admin() {
       }
     }
 
-    history.replace({
-      pathname: "/reports/audit/admin",
-      search: searchParams.toString()
+    navigate(`/reports/audit/admin?${searchParams.toString()}`, {
+      replace: true
     });
   };
 

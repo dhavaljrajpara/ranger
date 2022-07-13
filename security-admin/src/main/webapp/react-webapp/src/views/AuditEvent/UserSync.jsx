@@ -1,5 +1,5 @@
 import React, { Component, useState, useCallback, useRef } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, Modal, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
@@ -23,7 +23,7 @@ function User_Sync() {
     showSyncDetails: false
   });
   const [searchFilterParams, setSearchFilter] = useState({});
-  const history = useHistory();
+  const navigate = useNavigate();
   const searchParams = useQuery();
 
   const fetchUserSyncInfo = useCallback(
@@ -221,9 +221,8 @@ function User_Sync() {
       }
     }
 
-    history.replace({
-      pathname: "/reports/audit/userSync",
-      search: searchParams.toString()
+    navigate(`/reports/audit/userSync?${searchParams.toString()}`, {
+      replace: true
     });
   };
 

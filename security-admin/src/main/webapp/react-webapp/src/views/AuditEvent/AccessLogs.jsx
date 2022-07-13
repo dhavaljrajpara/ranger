@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import dateFormat from "dateformat";
@@ -49,7 +49,7 @@ function Access() {
   const [checked, setChecked] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const fetchIdRef = useRef(0);
-  const history = useHistory();
+  const navigate = useNavigate();
   const searchParams = useQuery();
 
   useEffect(() => {
@@ -621,9 +621,8 @@ function Access() {
       }
     }
 
-    history.replace({
-      pathname: "/reports/audit/bigData",
-      search: searchParams.toString()
+    navigate(`/reports/audit/bigData?${searchParams.toString()}`, {
+      replace: true
     });
   };
 

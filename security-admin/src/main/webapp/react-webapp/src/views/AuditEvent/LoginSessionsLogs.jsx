@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuthStatus, AuthType } from "../../utils/XAEnums";
@@ -22,7 +22,7 @@ function Login_Sessions() {
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [searchFilterParams, setSearchFilter] = useState({});
   const fetchIdRef = useRef(0);
-  const history = useHistory();
+  const navigate = useNavigate();
   const searchParams = useQuery();
 
   const handleClose = () => setShowModal(false);
@@ -240,9 +240,8 @@ function Login_Sessions() {
       }
     }
 
-    history.replace({
-      pathname: "/reports/audit/loginSession",
-      search: searchParams.toString()
+    navigate(`/reports/audit/loginSession?${searchParams.toString()}`, {
+      replace: true
     });
   };
 

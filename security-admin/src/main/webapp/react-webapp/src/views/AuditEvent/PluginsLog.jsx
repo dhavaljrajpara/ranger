@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
@@ -20,7 +20,7 @@ function Plugins() {
   const fetchIdRef = useRef(0);
   const [searchFilterParams, setSearchFilter] = useState({});
   const [services, setServices] = useState([]);
-  const history = useHistory();
+  const navigate = useNavigate();
   const searchParams = useQuery();
 
   useEffect(() => {
@@ -183,9 +183,8 @@ function Plugins() {
       }
     }
 
-    history.replace({
-      pathname: "/reports/audit/agent",
-      search: searchParams.toString()
+    navigate(`/reports/audit/agent?${searchParams.toString()}`, {
+      replace: true
     });
   };
 
