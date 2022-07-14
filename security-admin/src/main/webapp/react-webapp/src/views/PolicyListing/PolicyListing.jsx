@@ -440,8 +440,7 @@ function PolicyListing() {
   };
 
   return (
-    <React.Fragment>
-      <h4 className="wrap-header bold">List of Policies </h4>
+    <div className="wrap">
       <div className="wrap policy-listing">
         <Row>
           <Col sm={10}>
@@ -601,7 +600,7 @@ function PolicyListing() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </React.Fragment>
+    </div>
   );
 }
 

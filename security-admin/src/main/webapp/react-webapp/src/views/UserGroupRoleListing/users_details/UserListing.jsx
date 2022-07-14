@@ -399,7 +399,7 @@ function Users() {
   };
 
   return (
-    <>
+    <div className="wrap">
       <h4 className="wrap-header font-weight-bold">User List</h4>
       <Row className="mb-4">
         <Col sm={9}>
@@ -564,7 +564,7 @@ function Users() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 }
 

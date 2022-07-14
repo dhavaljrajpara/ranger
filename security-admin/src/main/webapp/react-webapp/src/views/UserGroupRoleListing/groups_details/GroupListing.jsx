@@ -382,7 +382,7 @@ function Groups() {
   };
 
   return (
-    <>
+    <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Group List</h4>
       <Row className="mb-4">
         <Col md={9}>
@@ -547,7 +547,7 @@ function Groups() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </div>
   );
 }
 

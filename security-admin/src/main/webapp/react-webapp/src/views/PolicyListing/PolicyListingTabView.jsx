@@ -83,36 +83,36 @@ class policyTabView extends Component {
     return this.state.loader ? (
       <Loader />
     ) : (
-      <>
+      <React.Fragment>
         {this.policyBreadcrumb()}
-        <div className="wrap">
-          {isRenderMasking(componentDefinationDetails.dataMaskDef) ||
-          isRenderRowFilter(componentDefinationDetails.rowFilterDef) ? (
-            <Tabs
-              id="PolicyListing"
-              className="mb-3"
-              activeKey={this.props.params.policyType}
-              onSelect={(k) => this.tabChange(k)}
-            >
-              <Tab eventKey="0" title="Access">
-                {this.props.params.policyType == "0" && <PolicyListing />}
+        <h4 className="wrap-header bold">
+          {`List of Policies : ${this.state.serviceDetails.displayName}`}
+        </h4>
+        {isRenderMasking(componentDefinationDetails.dataMaskDef) ||
+        isRenderRowFilter(componentDefinationDetails.rowFilterDef) ? (
+          <Tabs
+            id="PolicyListing"
+            activeKey={this.props.params.policyType}
+            onSelect={(k) => this.tabChange(k)}
+          >
+            <Tab eventKey="0" title="Access">
+              {this.props.params.policyType == "0" && <PolicyListing />}
+            </Tab>
+            {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
+              <Tab eventKey="1" title="Masking">
+                {this.props.params.policyType == "1" && <PolicyListing />}
               </Tab>
-              {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
-                <Tab eventKey="1" title="Masking">
-                  {this.props.params.policyType == "1" && <PolicyListing />}
-                </Tab>
-              )}
-              {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
-                <Tab eventKey="2" title="Row Level Filter">
-                  {this.props.params.policyType == "2" && <PolicyListing />}
-                </Tab>
-              )}
-            </Tabs>
-          ) : (
-            <PolicyListing />
-          )}
-        </div>
-      </>
+            )}
+            {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
+              <Tab eventKey="2" title="Row Level Filter">
+                {this.props.params.policyType == "2" && <PolicyListing />}
+              </Tab>
+            )}
+          </Tabs>
+        ) : (
+          <PolicyListing />
+        )}
+      </React.Fragment>
     );
   }
 }

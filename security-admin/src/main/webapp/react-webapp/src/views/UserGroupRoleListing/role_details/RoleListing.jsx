@@ -222,7 +222,7 @@ function Roles() {
   };
 
   return (
-    <div>
+    <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Role List</h4>
       <Row className="mb-4">
         <Col md={9}>
