@@ -11,7 +11,7 @@ var Day = createReactClass({
   },
 
   render: function () {
-    classes = classNames({
+    let classes = classNames({
       datepicker__day: true,
       "datepicker__day--disabled": this.props.disabled,
       "datepicker__day--selected": this.props.day.sameDay(this.props.selected),

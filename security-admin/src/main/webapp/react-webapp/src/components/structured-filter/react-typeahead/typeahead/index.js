@@ -1,13 +1,16 @@
 var React = window.React || require("react");
-var TypeaheadSelector = require("./selector").default;
+import TypeaheadSelector from "./selector";
 import KeyEvent from "../keyevent";
 var fuzzy = require("fuzzy");
-var DatePicker = require("../../react-datepicker/datepicker.js").default;
+import DatePicker from "../../react-datepicker/datepicker.js";
+import Datetime from "react-datetime";
 var moment = require("moment");
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 import onClickOutside from "react-onclickoutside";
+import Popover from "../../react-datepicker/popover";
 var classNames = require("classnames");
+import { CustomPopover } from "../../../CommonComponents";
 
 /**
  * A "typeahead", an auto-completing text input
@@ -233,7 +236,7 @@ var Typeahead = onClickOutside(
     },
 
     _handleDateChange: function (date) {
-      this.props.onOptionSelected(date.format("YYYY-MM-DD"));
+      this.props.onOptionSelected(date.format("MM/DD/YYYY"));
     },
 
     _showDatePicker: function () {
@@ -266,13 +269,26 @@ var Typeahead = onClickOutside(
       if (this._showDatePicker()) {
         return (
           <span ref="input" className={classList} onFocus={this._onFocus}>
-            <DatePicker
+            {/* <DatePicker
               ref="datepicker"
-              dateFormat={"YYYY-MM-DD"}
+              dateFormat={"MM/DD/YYYY"}
               selected={moment()}
               onChange={this._handleDateChange}
               onKeyDown={this._onKeyDown}
-            />
+            /> */}
+
+            <Popover>
+              <Datetime
+                ref="datetime"
+                dateFormat="MM/DD/YYYY"
+                timeFormat={false}
+                closeOnSelect
+                onChange={this._handleDateChange}
+                input={false}
+                closeOnClickOutside={true}
+                onKeyDown={this._onKeyDown}
+              />
+            </Popover>
           </span>
         );
       }
@@ -282,7 +298,7 @@ var Typeahead = onClickOutside(
           <input
             ref="entry"
             type="text"
-            placeholder={this.props.placeholder}
+            placeholder={!this.state.focused ? this.props.placeholder : ""}
             className={inputClassList}
             defaultValue={this.state.entryValue}
             onChange={this._onTextEntryUpdated}

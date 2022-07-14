@@ -1,9 +1,9 @@
 var React = require("react");
 
 var Popover = require("./popover").default;
-var DateUtil = require("./util/date");
-var Calendar = require("./calendar");
-var DateInput = require("./date_input");
+var DateUtil = require("./util/date").default;
+var Calendar = require("./calendar").default;
+var DateInput = require("./date_input").default;
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 

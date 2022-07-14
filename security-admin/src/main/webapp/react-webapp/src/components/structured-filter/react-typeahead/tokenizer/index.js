@@ -1,16 +1,17 @@
 const React = require("react");
-var Token = require("./token").default;
+import Token from "./token";
 import KeyEvent from "../keyevent";
-var Typeahead = require("../typeahead").default;
+import Typeahead from "../typeahead";
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
-import { find, map } from "lodash";
+import { find, map, remove } from "lodash";
 var classNames = require("classnames");
 /**
  * A typeahead that, when an option is selected, instead of simply filling
  * the text entry widget, prepends a renderable "token", that may be deleted
  * by pressing backspace on the beginning of the line with the keyboard.
  */
+
 var TypeaheadTokenizer = createReactClass({
   propTypes: {
     options: PropTypes.array,
@@ -231,6 +232,29 @@ var TypeaheadTokenizer = createReactClass({
     return selectedValue;
   },
 
+  _onClearAll: function () {
+    this.setState({ selected: [], category: "" });
+    remove(this.state.selected);
+    this.props.onTokenRemove(this.state.selected);
+  },
+
+  _getClearAllButton: function () {
+    return (
+      <span className="token-clear-all">
+        <a
+          className="typeahead-token-close"
+          href="#"
+          onClick={function (event) {
+            this._onClearAll();
+            event.preventDefault();
+          }.bind(this)}
+        >
+          &#x00d7;
+        </a>
+      </span>
+    );
+  },
+
   render: function () {
     var classes = {};
     classes[this.props.customClasses.typeahead] =
@@ -252,7 +276,9 @@ var TypeaheadTokenizer = createReactClass({
             <Typeahead
               ref="typeahead"
               className={classList}
-              placeholder={this.props.placeholder}
+              placeholder={
+                this.state.selected.length === 0 ? this.props.placeholder : ""
+              }
               customClasses={this.props.customClasses}
               options={this._getOptionsForTypeahead()}
               optionsLabel={this._getOptionsLabel()}
@@ -264,6 +290,7 @@ var TypeaheadTokenizer = createReactClass({
             />
           </div>
         </div>
+        {this._getClearAllButton()}
       </div>
     );
   }

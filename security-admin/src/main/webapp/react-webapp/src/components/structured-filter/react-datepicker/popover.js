@@ -1,12 +1,13 @@
 var React = require("react");
-var Tether = require("tether");
+import Tether from "tether";
+import ReactDOM from "react-dom";
 import createReactClass from "create-react-class";
 
 var Popover = createReactClass({
   displayName: "Popover",
 
   componentWillMount: function () {
-    popoverContainer = document.createElement("span");
+    let popoverContainer = document.createElement("span");
     popoverContainer.className = "datepicker__container";
 
     this._popoverElement = popoverContainer;
@@ -23,14 +24,16 @@ var Popover = createReactClass({
   },
 
   _popoverComponent: function () {
+    let current = ReactDOM.findDOMNode(this);
     var className = this.props.className;
     return <div className={className}>{this.props.children}</div>;
   },
 
   _tetherOptions: function () {
+    let current = ReactDOM.findDOMNode(this);
     return {
       element: this._popoverElement,
-      target: this.parentElement,
+      target: current.parentElement,
       attachment: "top left",
       targetAttachment: "bottom left",
       targetOffset: "10px 0",
@@ -48,7 +51,7 @@ var Popover = createReactClass({
   },
 
   _renderPopover: function () {
-    React.render(this._popoverComponent(), this._popoverElement);
+    ReactDOM.render(this._popoverComponent(), this._popoverElement);
 
     if (this._tether != null) {
       this._tether.setOptions(this._tetherOptions());
@@ -59,7 +62,7 @@ var Popover = createReactClass({
 
   componentWillUnmount: function () {
     this._tether.destroy();
-    React.unmountComponentAtNode(this._popoverElement);
+    ReactDOM.unmountComponentAtNode(this._popoverElement);
     if (this._popoverElement.parentNode) {
       this._popoverElement.parentNode.removeChild(this._popoverElement);
     }
@@ -70,5 +73,4 @@ var Popover = createReactClass({
   }
 });
 
-// module.exports = Popover;
 export default Popover;

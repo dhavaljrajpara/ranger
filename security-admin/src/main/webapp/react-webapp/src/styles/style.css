@@ -1451,6 +1451,10 @@ header {
   color: #fff;
 }
 
+.token-clear-all {
+  display: table-cell;
+}
+
 .typeahead-token-label {
   color: #808080;
   font-size: 10px;

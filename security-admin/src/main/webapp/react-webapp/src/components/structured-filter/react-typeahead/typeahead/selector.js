@@ -1,5 +1,5 @@
 var React = window.React || require("react");
-var TypeaheadOption = require("./option").default;
+import TypeaheadOption from "./option";
 var classNames = require("classnames");
 import PropTypes from "prop-types";
 import createReactClass from "create-react-class";
