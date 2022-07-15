@@ -571,7 +571,8 @@ export const PathAssociateWithModule = {
     "/roles/create",
     "/roles/:roleId"
   ],
-  Permission: ["/permissions/models", "/permissions/:permissionId/edit"]
+  Permission: ["/permissions/models", "/permissions/:permissionId/edit"],
+  Profile: ["/userprofile"]
 };
 
 /* Access */

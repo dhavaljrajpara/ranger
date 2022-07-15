@@ -115,6 +115,7 @@ export const hasAccessToPath = (pathName) => {
   let userModules = _.map(userProfile.userPermList, "moduleName");
   let groupModules = _.map(userProfile.groupPermissions, "moduleName");
   let moduleNames = _.union(userModules, groupModules);
+  moduleNames.push("Profile");
   if (isSystemAdmin() || isAuditor()) {
     moduleNames.push("Permission");
   }
@@ -127,7 +128,7 @@ export const hasAccessToPath = (pathName) => {
     allRouter.map((val) => ({ path: val })),
     pathName
   );
-  if (isValidRouter.length > 0) {
+  if (isValidRouter != null && isValidRouter.length > 0) {
     forEach(moduleNames, function (key) {
       allowPath.push(PathAssociateWithModule[key]);
     });

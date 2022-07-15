@@ -53,7 +53,7 @@ class policyTabView extends Component {
       localStorage.getItem("zoneDetails")
     );
     if (this.state.componentDefinationDetails.name === "tag") {
-      if (policyDetails.selectedZone) {
+      if (policyDetails.selectedZone != null) {
         return commonBreadcrumb(
           ["TagBasedServiceManager", "ManagePolicies"],
           policyDetails
@@ -65,7 +65,7 @@ class policyTabView extends Component {
         );
       }
     } else {
-      if (policyDetails.selectedZone) {
+      if (policyDetails.selectedZone != null) {
         return commonBreadcrumb(
           ["ServiceManager", "ManagePolicies"],
           policyDetails

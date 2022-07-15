@@ -625,6 +625,11 @@ export default function AddUpdatePolicyForm(props) {
       );
     }
 
+    /* For create zoen policy*/
+    if (localStorage.getItem("zoneDetails") != null) {
+      data["zoneName"] = JSON.parse(localStorage.getItem("zoneDetails")).label;
+    }
+    setPreventUnblock(true);
     if (policyId) {
       let dataVal = {
         ...policyData,
@@ -780,7 +785,7 @@ export default function AddUpdatePolicyForm(props) {
               }) => (
                 <>
                   <PromtDialog
-                    isDirtyField={dirty && !submitting}
+                    isDirtyField={dirty}
                     isUnblock={preventUnBlock}
                   />
                   <form
@@ -1009,7 +1014,7 @@ export default function AddUpdatePolicyForm(props) {
                             <FormB.Group
                               as={Row}
                               className="mb-3"
-                              controlId="description"
+                              controlId="isAuditEnabled"
                             >
                               <FormB.Label column sm={3}>
                                 <span className="pull-right fnt-14">
@@ -1187,7 +1192,7 @@ export default function AddUpdatePolicyForm(props) {
                             <FormB.Group
                               as={Row}
                               className="mb-3"
-                              controlId="description"
+                              controlId="isDenyAllElse"
                             >
                               <FormB.Label column sm={2}>
                                 Deny All Other Accesses: *

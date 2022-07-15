@@ -4,7 +4,7 @@ import { Field } from "react-final-form";
 import Select from "react-select";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import AsyncCreatableSelect from "react-select/async-creatable";
-import { filter, groupBy, some } from "lodash";
+import { debounce, filter, groupBy, some } from "lodash";
 
 import { fetchApi } from "Utils/fetchAPI";
 import { RangerPolicyType } from "Utils/XAEnums";
@@ -81,11 +81,13 @@ export default function ResourceComp(props) {
           })) || [];
       }
     } catch (error) {
-      op.push({ label: data.userInput, value: data.userInput });
+      // op.push({ label: data.userInput, value: data.userInput });
     }
 
     callback(op);
   };
+
+  const _fetchResourceLookup = debounce(fetchResourceLookup, 2000);
 
   const getResourceLabelOp = (levelKey, index) => {
     let op = grpResources[levelKey];
@@ -163,6 +165,7 @@ export default function ResourceComp(props) {
       loader: true,
       resourceKey: grpResourcesKeys[index]
     });
+    delete delete formValues[`value-${grpResourcesKeys[index]}`];
     input.onChange(selectedVal);
   };
 
@@ -174,7 +177,9 @@ export default function ResourceComp(props) {
       "denyExceptions"
     ]) {
       for (const policyObj of formValues[name]) {
-        policyObj.accesses = [];
+        if (policyObj.accesses) {
+          policyObj.accesses = [];
+        }
       }
     }
   };
@@ -272,7 +277,7 @@ export default function ResourceComp(props) {
                     }
                     loadOptions={(inputValue) =>
                       new Promise((resolve, reject) => {
-                        fetchResourceLookup(
+                        _fetchResourceLookup(
                           inputValue,
                           formValues[`resourceName-${levelKey}`],
                           input.value,

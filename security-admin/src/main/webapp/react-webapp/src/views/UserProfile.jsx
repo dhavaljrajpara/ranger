@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { commonBreadcrumb } from "../utils/XAUtils";
 import { scrollToError } from "../components/CommonComponents";
+import withRouter from "Hooks/withRouter";
 
 class UserProfile extends Component {
   updateUserInfo = async (values) => {
@@ -23,7 +24,7 @@ class UserProfile extends Component {
       });
       setUserProfile(profResp.data);
       toast.success("Successfully updated user profile");
-      this.props.history.push("/");
+      this.props.navigate("/");
     } catch (error) {
       console.error(`Error occurred while updating user profile! ${error}`);
     }
@@ -46,7 +47,7 @@ class UserProfile extends Component {
         data: jsonData
       });
       toast.success("Successfully updated user password");
-      this.props.history.push("/");
+      this.props.navigate("/");
     } catch (error) {
       console.error(`Error occurred while updating user password! ${error}`);
     }
@@ -277,7 +278,7 @@ class UserProfile extends Component {
                               variant="secondary"
                               type="button"
                               size="sm"
-                              onClick={() => this.props.history.push("/")}
+                              onClick={() => this.props.navigate("/")}
                             >
                               Cancel
                             </Button>
@@ -433,7 +434,7 @@ class UserProfile extends Component {
                               variant="secondary"
                               type="button"
                               size="sm"
-                              onClick={() => this.props.history.push("/")}
+                              onClick={() => this.props.navigate("/")}
                             >
                               Cancel
                             </Button>
@@ -452,4 +453,4 @@ class UserProfile extends Component {
   }
 }
 
-export default UserProfile;
+export default withRouter(UserProfile);

@@ -87,6 +87,11 @@ function PolicyListing() {
           params["sortBy"] = getTableSortBy(sortBy);
           params["sortType"] = getTableSortType(sortBy);
         }
+        if (localStorage.getItem("zoneDetails") != null) {
+          params["zoneName"] = JSON.parse(
+            localStorage.getItem("zoneDetails")
+          ).label;
+        }
         try {
           policyResp = await fetchApi({
             url: `plugins/policies/service/${serviceId}`,
