@@ -371,6 +371,8 @@ function Users() {
       <Row className="mb-4">
         <Col sm={9}>
           <StructuredFilter
+            key="user-listing-search-filter"
+            placeholder="Search for your users..."
             options={[
               {
                 category: "emailAddress",
@@ -439,7 +441,7 @@ function Users() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
-            placeholder="Search for your users..."
+            defaultSelected={[]}
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (

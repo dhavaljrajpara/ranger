@@ -1,9 +1,7 @@
 var React = require("react");
-
-var Popover = require("./popover").default;
-var DateUtil = require("./util/date").default;
-var Calendar = require("./calendar").default;
-var DateInput = require("./date_input").default;
+import Popover from "./popover";
+import Calendar from "./calendar";
+import DateInput from "./date_input";
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 
@@ -37,7 +35,7 @@ var DatePicker = createReactClass({
   },
 
   setSelected: function (date) {
-    this.props.onChange(date.moment());
+    this.props.onChange(date);
   },
 
   onInputClick: function () {
@@ -51,11 +49,8 @@ var DatePicker = createReactClass({
       return (
         <Popover>
           <Calendar
-            selected={this.props.selected}
             onSelect={this.handleSelect}
             hideCalendar={this.hideCalendar}
-            minDate={this.props.minDate}
-            maxDate={this.props.maxDate}
           />
         </Popover>
       );
@@ -67,8 +62,6 @@ var DatePicker = createReactClass({
       <div>
         <DateInput
           ref="dateinput"
-          date={this.props.selected}
-          dateFormat={this.props.dateFormat}
           focus={this.state.focus}
           onFocus={this.handleFocus}
           onKeyDown={this.props.onKeyDown}

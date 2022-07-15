@@ -231,13 +231,13 @@ function User_Sync() {
       category: "endDate",
       label: "End Date",
       urlLabel: "endDate",
-      type: "text"
+      type: "date"
     },
     {
       category: "startDate",
       label: "Start Date",
       urlLabel: "startDate",
-      type: "text"
+      type: "date"
     },
     {
       category: "syncSource",

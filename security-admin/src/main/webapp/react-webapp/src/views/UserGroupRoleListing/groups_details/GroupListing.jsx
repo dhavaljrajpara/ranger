@@ -346,6 +346,8 @@ function Groups() {
       <Row className="mb-4">
         <Col md={9}>
           <StructuredFilter
+            key="user-listing-search-filter"
+            placeholder="Search for your users..."
             options={[
               {
                 category: "name",
@@ -387,7 +389,7 @@ function Groups() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
-            placeholder="Search for your groups..."
+            defaultSelected={[]}
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (

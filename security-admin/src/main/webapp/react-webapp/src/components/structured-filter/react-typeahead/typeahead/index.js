@@ -1,16 +1,12 @@
 var React = window.React || require("react");
 import TypeaheadSelector from "./selector";
 import KeyEvent from "../keyevent";
-var fuzzy = require("fuzzy");
+import fuzzy from "fuzzy";
 import DatePicker from "../../react-datepicker/datepicker.js";
-import Datetime from "react-datetime";
-var moment = require("moment");
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 import onClickOutside from "react-onclickoutside";
-import Popover from "../../react-datepicker/popover";
 var classNames = require("classnames");
-import { CustomPopover } from "../../../CommonComponents";
 
 /**
  * A "typeahead", an auto-completing text input
@@ -269,26 +265,11 @@ var Typeahead = onClickOutside(
       if (this._showDatePicker()) {
         return (
           <span ref="input" className={classList} onFocus={this._onFocus}>
-            {/* <DatePicker
+            <DatePicker
               ref="datepicker"
-              dateFormat={"MM/DD/YYYY"}
-              selected={moment()}
               onChange={this._handleDateChange}
               onKeyDown={this._onKeyDown}
-            /> */}
-
-            <Popover>
-              <Datetime
-                ref="datetime"
-                dateFormat="MM/DD/YYYY"
-                timeFormat={false}
-                closeOnSelect
-                onChange={this._handleDateChange}
-                input={false}
-                closeOnClickOutside={true}
-                onKeyDown={this._onKeyDown}
-              />
-            </Popover>
+            />
           </span>
         );
       }

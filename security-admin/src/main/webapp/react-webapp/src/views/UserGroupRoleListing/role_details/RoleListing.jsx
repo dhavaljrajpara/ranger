@@ -186,6 +186,8 @@ function Roles() {
       <Row className="mb-4">
         <Col md={9}>
           <StructuredFilter
+            key="role-listing-search-filter"
+            placeholder="Search for your roles..."
             options={[
               {
                 category: "groupNamePartial",
@@ -205,7 +207,7 @@ function Roles() {
             ]}
             onTokenAdd={updateSearchFilter}
             onTokenRemove={updateSearchFilter}
-            placeholder="Search for your roles..."
+            defaultSelected={[]}
           />
         </Col>
         {(isSystemAdmin() || isKeyAdmin()) && (

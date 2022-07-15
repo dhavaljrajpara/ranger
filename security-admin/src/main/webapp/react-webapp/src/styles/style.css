@@ -1378,10 +1378,11 @@ header {
 }
 
 .filter-tokenizer .typeahead-token {
+  position: relative;
   display: block;
   float: left;
   margin: 4px 3px 3px;
-  padding: 5px;
+  padding: 5px 5px 5px 7px;
 }
 
 .filter-input-group {
@@ -1403,6 +1404,7 @@ header {
   margin-right: 5px;
   font-size: 10px;
   margin-top: 4px;
+  margin-left: 5px;
 }
 
 .filter-tokenizer .typeahead input {
@@ -1413,6 +1415,10 @@ header {
 
 .filter-tokenizer .typeahead input:focus {
   outline: 0;
+}
+
+.filter-tokenizer .typeahead input::placeholder {
+  font-size: 14px;
 }
 
 .filter-tokenizer ul.typeahead-selector {
@@ -1426,7 +1432,8 @@ header {
   width: 200px;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 5px 5px 5px #888888;
+  box-shadow: 0 1px 3px #999999;
+  border-radius: 3px;
 }
 
 .filter-tokenizer ul.typeahead-selector li.header {
@@ -1453,6 +1460,12 @@ header {
 
 .token-clear-all {
   display: table-cell;
+  position: relative;
+}
+
+.token-clear-all .typeahead-token-icon-close {
+  right: 0;
+  top: 13px;
 }
 
 .typeahead-token-label {
@@ -1462,6 +1475,32 @@ header {
 
 .typeahead-token-value {
   font-size: 12px;
+}
+
+.typeahead-token-icon-close {
+  width: 11px;
+  height: 11px;
+  background-position: center 0;
+  background-image: url(../images/cancel_search.png);
+  cursor: pointer;
+  vertical-align: middle;
+  position: absolute;
+  top: 10px;
+}
+
+.typeahead-token-icon-close:hover {
+  background-position: center -11px;
+}
+
+.typeahead-token-maybe-delete,
+.typeahead-token-maybe-delete > .typeahead-token-label {
+  color: darkred !important;
+}
+
+.typehead-token-datetime {
+  border: 1px solid #aeaeae;
+  border-radius: 2px;
+  box-shadow: 2px 2px 6px #888888;
 }
 
 .datepicker__triangle {

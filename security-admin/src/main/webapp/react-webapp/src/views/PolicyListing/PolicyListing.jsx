@@ -397,6 +397,8 @@ function PolicyListing() {
         <Row>
           <Col sm={10}>
             <StructuredFilter
+              key="policy-listing-search-filter"
+              placeholder="Search for your policy..."
               options={[
                 {
                   category: "group",
@@ -437,6 +439,7 @@ function PolicyListing() {
               ]}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
             />
             <span className="info-icon pd-10">
               <CustomTooltip

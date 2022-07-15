@@ -13,9 +13,33 @@ var Token = createReactClass({
     categoryLabel: PropTypes.string
   },
 
+  getInitialState: function () {
+    return {
+      isHovering: false
+    };
+  },
+
+  handleMouseOver: function () {
+    this.setState({
+      isHovering: true
+    });
+  },
+
+  handleMouseOut: function () {
+    this.setState({
+      isHovering: false
+    });
+  },
+
   render: function () {
     return (
-      <div className="typeahead-token">
+      <div
+        className={
+          this.state.isHovering
+            ? "typeahead-token typeahead-token-maybe-delete"
+            : "typeahead-token"
+        }
+      >
         <span className="typeahead-token-label text-uppercase mr-2 font-weight-bold">
           {this.props.categoryLabel}
         </span>
@@ -40,7 +64,11 @@ var Token = createReactClass({
           event.preventDefault();
         }.bind(this)}
       >
-        &#x00d7;
+        <span
+          className="typeahead-token-icon-close"
+          onMouseOver={this.handleMouseOver}
+          onMouseOut={this.handleMouseOut}
+        ></span>
       </a>
     );
   }

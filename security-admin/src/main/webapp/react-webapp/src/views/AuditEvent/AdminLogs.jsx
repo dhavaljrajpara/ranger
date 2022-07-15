@@ -369,7 +369,7 @@ function Admin() {
       category: "endDate",
       label: "End Date",
       urlLabel: "endDate",
-      type: "text"
+      type: "date"
     },
     {
       category: "sessionId",
@@ -381,7 +381,7 @@ function Admin() {
       category: "startDate",
       label: "Start Date",
       urlLabel: "startDate",
-      type: "text"
+      type: "date"
     },
     {
       category: "owner",

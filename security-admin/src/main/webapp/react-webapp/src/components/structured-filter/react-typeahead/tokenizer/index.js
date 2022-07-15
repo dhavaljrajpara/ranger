@@ -249,7 +249,11 @@ var TypeaheadTokenizer = createReactClass({
             event.preventDefault();
           }.bind(this)}
         >
-          &#x00d7;
+          <span
+            className="typeahead-token-icon-close"
+            onMouseOver={this.handleMouseOver}
+            onMouseOut={this.handleMouseOut}
+          ></span>
         </a>
       </span>
     );

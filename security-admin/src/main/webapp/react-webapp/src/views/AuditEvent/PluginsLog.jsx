@@ -209,7 +209,7 @@ function Plugins() {
       category: "endDate",
       label: "End Date",
       urlLabel: "endDate",
-      type: "text"
+      type: "date"
     },
     {
       category: "httpRetCode",
@@ -240,7 +240,7 @@ function Plugins() {
       category: "startDate",
       label: "Start Date",
       urlLabel: "startDate",
-      type: "text"
+      type: "date"
     }
   ];
 

@@ -1,25 +1,10 @@
 var React = require("react");
-var moment = require("moment");
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
-
-var DateUtil = require("./util/date");
 
 var DateInput = createReactClass({
   propTypes: {
     onKeyDown: PropTypes.func
-  },
-
-  getDefaultProps: function () {
-    return {
-      dateFormat: "YYYY-MM-DD"
-    };
-  },
-
-  getInitialState: function () {
-    return {
-      value: this.safeDateFormat(this.props.date)
-    };
   },
 
   componentDidMount: function () {
@@ -28,10 +13,6 @@ var DateInput = createReactClass({
 
   componentWillReceiveProps: function (newProps) {
     this.toggleFocus(newProps.focus);
-
-    this.setState({
-      value: this.safeDateFormat(newProps.date)
-    });
   },
 
   toggleFocus: function (focus) {
@@ -39,31 +20,6 @@ var DateInput = createReactClass({
       this.refs.entry.focus();
     } else {
       this.refs.entry.blur();
-    }
-  },
-
-  handleChange: function (event) {
-    var date = moment(event.target.value, this.props.dateFormat, true);
-
-    this.setState({
-      value: event.target.value
-    });
-  },
-
-  safeDateFormat: function (date) {
-    return !!date ? date.format(this.props.dateFormat) : null;
-  },
-
-  isValueAValidDate: function () {
-    var date = moment(event.target.value, this.props.dateFormat, true);
-
-    return date.isValid();
-  },
-
-  handleEnter: function (event) {
-    if (this.isValueAValidDate()) {
-      var date = moment(event.target.value, this.props.dateFormat, true);
-      this.props.setSelected(new DateUtil(date));
     }
   },
 
@@ -88,11 +44,9 @@ var DateInput = createReactClass({
       <input
         ref="entry"
         type="text"
-        value={this.state.value}
         onClick={this.handleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={this.props.onFocus}
-        onChange={this.handleChange}
         className="datepicker__input"
         placeholder={this.props.placeholderText}
       />
