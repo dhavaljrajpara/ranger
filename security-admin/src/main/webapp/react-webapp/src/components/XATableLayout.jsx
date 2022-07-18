@@ -40,6 +40,7 @@ function XATableLayout({
   data,
   fetchData,
   pageCount: controlledPageCount,
+  currentpageIndex,
   rowSelectOp,
   columnHide,
   columnSort,
@@ -72,7 +73,7 @@ function XATableLayout({
       columns,
       data,
       initialState: {
-        pageIndex: 0,
+        pageIndex: currentpageIndex || 0,
         pageSize: 25,
         sortBy: defaultSort || []
       },
@@ -126,8 +127,8 @@ function XATableLayout({
   );
 
   useEffect(() => {
-    fetchData({ pageIndex, pageSize, sortBy });
-  }, [fetchData, pageIndex, pageSize, !clientSideSorting && sortBy]);
+    fetchData({ pageIndex, pageSize, gotoPage, sortBy });
+  }, [fetchData, pageIndex, pageSize, gotoPage, !clientSideSorting && sortBy]);
 
   useEffect(() => {
     if (rowSelectOp) {
@@ -293,7 +294,7 @@ function XATableLayout({
                     }}
                   />
                   <span className="mr-1"> </span>
-                  <span>
+                  {/* <span>
                     <select
                       value={pageSize}
                       onChange={(e) => {
@@ -306,7 +307,7 @@ function XATableLayout({
                         </option>
                       ))}
                     </select>
-                  </span>
+                  </span> */}
                   <span className="mr-1"> </span>
                   <button
                     onClick={() => nextPage()}

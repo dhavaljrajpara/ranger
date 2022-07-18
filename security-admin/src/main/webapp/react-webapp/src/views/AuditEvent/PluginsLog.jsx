@@ -4,6 +4,7 @@ import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
+import dateFormat from "dateformat";
 import { find, map, sortBy } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { fetchApi } from "Utils/fetchAPI";
@@ -86,11 +87,11 @@ function Plugins() {
         Header: "Export Date ( India Standard Time )",
         accessor: "createDate",
         Cell: (rawValue) => {
-          const date = rawValue.value;
-          const newdate = moment
-            .tz(date, "Asia/Kolkata")
-            .format("MM/DD/YYYY HH:mm:ss A");
-          return newdate;
+          const formatDateTime = dateFormat(
+            rawValue.value,
+            "mm/dd/yyyy hh:MM:ss TT"
+          );
+          return <div className="text-center">{formatDateTime}</div>;
         },
         width: 240
       },

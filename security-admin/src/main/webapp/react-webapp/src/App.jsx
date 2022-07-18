@@ -203,7 +203,7 @@ export default class App extends Component {
                     <Route path=":groupID" element={<GroupForm />} />
                   </Route>
                   {/* ROLE CREATE / EDIT */}
-                  <Route path="/role">
+                  <Route path="/roles">
                     <Route path="create" element={<RoleForm />} />
                     <Route path=":roleID" element={<RoleForm />} />
                   </Route>

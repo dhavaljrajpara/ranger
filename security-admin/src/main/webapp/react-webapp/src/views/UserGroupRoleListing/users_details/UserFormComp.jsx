@@ -20,6 +20,23 @@ class UserFormComp extends Component {
   }
   handleSubmit = async (formData) => {
     let userFormData = { ...formData };
+    let tblpageData = {};
+    if (this.props.location.state && this.props.location.state !== null) {
+      tblpageData = this.props.location.state.tblpageData;
+      if (
+        this.props.location.state.tblpageData.pageRecords %
+          this.props.location.state.tblpageData.pageSize ==
+        0
+      ) {
+        tblpageData["totalPage"] =
+          this.props.location.state.tblpageData.totalPage + 1;
+      } else {
+        if (this.props.location.state !== undefined) {
+          tblpageData["totalPage"] =
+            this.props.location.state.tblpageData.totalPage;
+        }
+      }
+    }
     let userRoleListVal = [];
     if (userFormData.groupIdList) {
       userFormData.groupIdList = userFormData.groupIdList.map(
@@ -66,7 +83,12 @@ class UserFormComp extends Component {
           data: userFormData
         });
         toast.success("User created successfully!!");
-        this.props.navigate("/users/usertab");
+        this.props.navigate("/users/usertab", {
+          state: {
+            showLastPage: true,
+            addPageData: tblpageData
+          }
+        });
       } catch (error) {
         if (
           error.response !== undefined &&

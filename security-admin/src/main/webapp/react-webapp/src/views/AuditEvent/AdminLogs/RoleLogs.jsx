@@ -82,7 +82,7 @@ export const RoleLogs = ({ data, reportdata }) => {
               </tbody>
             </Table>
             <br />
-            {action == "cerate" && !isEmpty(createUsrNew) && (
+            {action == "create" && !isEmpty(createUsrNew) && (
               <>
                 <h5 className="bold wrap-header m-t-sm">Users:</h5>
                 <Table className="table  table-bordered table-striped w-50">
@@ -114,7 +114,7 @@ export const RoleLogs = ({ data, reportdata }) => {
               </>
             )}
 
-            {action == "cerate" && !isEmpty(createGrpNew) && (
+            {action == "create" && !isEmpty(createGrpNew) && (
               <>
                 <h5 className="bold wrap-header m-t-sm">Groups:</h5>
                 <Table className="table  table-bordered table-striped w-50">

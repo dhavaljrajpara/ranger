@@ -64,4 +64,4 @@ class AuditLayout extends Component {
   }
 }
 
-export default AuditLayout;
+export default withRouter(AuditLayout);

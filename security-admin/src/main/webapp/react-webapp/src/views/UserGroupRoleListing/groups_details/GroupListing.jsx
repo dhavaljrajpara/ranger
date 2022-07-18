@@ -12,7 +12,7 @@ import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
@@ -29,10 +29,10 @@ import StructuredFilter from "../../../components/structured-filter/react-typeah
 
 function Groups() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [groupListingData, setGroupData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
@@ -43,30 +43,62 @@ function Groups() {
   });
   const [showAssociateUserModal, setAssociateUserModal] = useState(false);
   const [searchFilterParams, setSearchFilter] = useState({});
+  const [pageCount, setPageCount] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage : 0
+  );
+  const [currentpageIndex, setCurrentPageIndex] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
+  );
+  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
+  const [tblpageData, setTblPageData] = useState({
+    totalPage: 0,
+    pageRecords: 0,
+    pageSize: 25
+  });
 
   const fetchGroupInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
-      let groupData = [];
+    async ({ pageSize, pageIndex, gotoPage }) => {
+      let groupData = [],
+        groupResp = [];
       let totalCount = 0;
+      let page =
+        state && state.showLastPage
+          ? state.addPageData.totalPage - 1
+          : pageIndex;
+      let totalPageCount = 0;
       const fetchId = ++fetchIdRef.current;
       let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["page"] = page;
+        params["startIndex"] =
+          state && state.showLastPage
+            ? (state.addPageData.totalPage - 1) * pageSize
+            : pageIndex * pageSize;
         params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
         try {
-          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-          const groupResp = await fetchApi({
+          groupResp = await fetchApi({
             url: "xusers/groups",
             params: params
           });
           groupData = groupResp.data.vXGroups;
           totalCount = groupResp.data.totalCount;
+          totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
           toast.error(`Error occurred while fetching Group list! ${error}`);
         }
+        if (state) {
+          state["showLastPage"] = false;
+        }
         setGroupData(groupData);
+        setTblPageData({
+          totalPage: totalPageCount,
+          pageRecords: groupResp.data.totalCount,
+          pageSize: 25
+        });
         setTotalCount(totalCount);
-        setPageCount(Math.ceil(totalCount / pageSize));
+        setPageCount(totalPageCount);
+        setCurrentPageIndex(page);
+        setLastPage({ getLastPage: gotoPage });
         setLoader(false);
       }
     },
@@ -115,8 +147,17 @@ function Groups() {
         toast.error(errorMsg);
       } else {
         toast.success("Group deleted successfully!");
+        if (
+          (groupListingData.length == 1 ||
+            groupListingData.length == selectedRows.current.length) &&
+          currentpageIndex > 1
+        ) {
+          lastPage.getLastPage(currentpageIndex - currentpageIndex);
+        } else {
+          setUpdateTable(moment.now());
+        }
       }
-      setUpdateTable(moment.now());
+
       toggleConfirmModal();
     }
   };
@@ -303,7 +344,7 @@ function Groups() {
     []
   );
   const addGroup = () => {
-    navigate("/group/create");
+    navigate("/group/create", { state: { tblpageData: tblpageData } });
   };
   const toggleGroupSyncModal = (raw) => {
     setGroupSyncdetails({
@@ -392,7 +433,7 @@ function Groups() {
             defaultSelected={[]}
           />
         </Col>
-        {(isSystemAdmin() || isKeyAdmin()) && (
+        {isSystemAdmin() && (
           <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addGroup}>
               Add New Group
@@ -427,6 +468,7 @@ function Groups() {
           fetchData={fetchGroupInfo}
           totalCount={totalCount}
           pageCount={pageCount}
+          currentpageIndex={currentpageIndex}
           loading={loader}
           pagination
           rowSelectOp={

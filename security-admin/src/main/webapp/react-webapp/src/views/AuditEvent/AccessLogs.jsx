@@ -337,7 +337,7 @@ function Access() {
         Cell: (rawValue) => {
           return dateFormat(rawValue.value, "mm/dd/yyyy h:MM:ss TT");
         },
-        width: 160,
+        width: 170,
         disableResizing: true,
         getResizerProps: () => {}
       },
@@ -543,7 +543,7 @@ function Access() {
           return (
             <>
               <h6>
-                <AccessMoreLess data={Tags} />
+                <AccessMoreLess Data={Tags} />
               </h6>
             </>
           );

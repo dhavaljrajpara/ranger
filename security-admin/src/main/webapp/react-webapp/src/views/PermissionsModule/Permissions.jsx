@@ -5,7 +5,7 @@ import { isSystemAdmin, isKeyAdmin } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
 import { isEmpty, reject } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, isAuditor } from "../../utils/XAUtils";
 
 function Permissions() {
   const [permissionslistData, setPermissions] = useState([]);
@@ -47,13 +47,15 @@ function Permissions() {
         accessor: "module",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return (
+            return isAdminRole ? (
               <Link
                 className={`${"text-info"}`}
                 to={`/permissions/${rawValue.row.original.id}/edit`}
               >
                 {rawValue.row.original.module}
               </Link>
+            ) : (
+              rawValue.row.original.module
             );
           }
           return "--";

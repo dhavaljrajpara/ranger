@@ -569,7 +569,7 @@ export const PathAssociateWithModule = {
     "/group/:groupId",
     "/users/roletab",
     "/roles/create",
-    "/role/:roleId"
+    "/roles/:roleId"
   ],
   Permission: ["/permissions/models", "/permissions/:permissionId/edit"]
 };

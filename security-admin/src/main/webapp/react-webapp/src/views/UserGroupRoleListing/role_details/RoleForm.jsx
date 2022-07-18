@@ -91,6 +91,23 @@ class GroupForm extends Component {
       ...this.state.roleInfo,
       ...formData
     };
+    let tblpageData = {};
+    if (this.props.location.state && this.props.location.state != null) {
+      tblpageData = this.props.location.state.tblpageData;
+      if (
+        this.props.location.state.tblpageData.pageRecords %
+          this.props.location.state.tblpageData.pageSize ==
+        0
+      ) {
+        tblpageData["totalPage"] =
+          this.props.location.state.tblpageData.totalPage + 1;
+      } else {
+        if (tblpageData !== undefined) {
+          tblpageData["totalPage"] =
+            this.props.location.state.tblpageData.totalPage;
+        }
+      }
+    }
     if (
       !isEmpty(this.state.selectedUser) ||
       !isEmpty(this.state.selectedGroup) ||
@@ -109,14 +126,14 @@ class GroupForm extends Component {
           data: roleFormData
         });
         toast.success("Role updated successfully!!");
-        this.props.history.push("/users/roletab");
+        this.props.navigate("/users/roletab");
       } catch (error) {
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          this.props.history.push("/users/roletab");
+          this.props.navigate("/users/roletab");
         }
         console.error(`Error occurred while creating Role`);
       }
@@ -129,14 +146,19 @@ class GroupForm extends Component {
           data: formData
         });
         toast.success("Role created successfully!!");
-        this.props.history.push("/users/roletab");
+        this.props.navigate("/users/roletab", {
+          state: {
+            showLastPage: true,
+            addPageData: tblpageData
+          }
+        });
       } catch (error) {
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          this.props.history.push("/users/roletab");
+          this.props.navigate("/users/roletab");
         }
         console.error(`Error occurred while updating role! ${error}`);
       }
@@ -250,7 +272,7 @@ class GroupForm extends Component {
     });
   };
   closeForm = () => {
-    this.props.history.push("/users/roletab");
+    this.props.navigate("/users/roletab");
   };
   setRoleFormData = () => {
     let formValueObj = {};
@@ -373,7 +395,7 @@ class GroupForm extends Component {
                       <FieldArray name="users">
                         {({ fields }) => (
                           <Table bordered>
-                            <thead className="thead-light">
+                            <thead>
                               <tr>
                                 <td>User Name</td>
                                 <td>Is Role Admin</td>
@@ -464,7 +486,7 @@ class GroupForm extends Component {
                       <FieldArray name="groups">
                         {({ fields }) => (
                           <Table bordered>
-                            <thead className="thead-light">
+                            <thead>
                               <tr>
                                 <td>Group Name</td>
                                 <td>Is Role Admin</td>
@@ -555,7 +577,7 @@ class GroupForm extends Component {
                       <FieldArray name="roles">
                         {({ fields }) => (
                           <Table bordered>
-                            <thead className="thead-light">
+                            <thead>
                               <tr>
                                 <td>Role Name</td>
                                 <td>Is Role Admin</td>

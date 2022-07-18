@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { MoreLess } from "Components/CommonComponents";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import moment from "moment-timezone";
 import { isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
@@ -19,39 +19,71 @@ import StructuredFilter from "../../../components/structured-filter/react-typeah
 
 function Roles() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [roleListingData, setRoleData] = useState([]);
   const [loader, setLoader] = useState(true);
-  const [pageCount, setPageCount] = React.useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [searchFilterParams, setSearchFilter] = useState({});
+  const [pageCount, setPageCount] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage : 0
+  );
+  const [currentpageIndex, setCurrentPageIndex] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
+  );
+  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
+  const [tblpageData, setTblPageData] = useState({
+    totalPage: 0,
+    pageRecords: 0,
+    pageSize: 25
+  });
 
   const fetchRoleInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
-      let roleData = [];
+    async ({ pageSize, pageIndex, gotoPage }) => {
+      let roleData = [],
+        roleResp = [];
       let totalCount = 0;
+      let page =
+        state && state.showLastPage
+          ? state.addPageData.totalPage - 1
+          : pageIndex;
+      let totalPageCount = 0;
       const fetchId = ++fetchIdRef.current;
       let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["page"] = page;
+        params["startIndex"] =
+          state && state.showLastPage
+            ? (state.addPageData.totalPage - 1) * pageSize
+            : pageIndex * pageSize;
         params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
         try {
-          const { fetchApi, fetchCSRFConf } = await import("Utils/fetchAPI");
-          const roleResp = await fetchApi({
+          roleResp = await fetchApi({
             url: "roles/lookup/roles",
             params: params
           });
           roleData = roleResp.data.roles;
           totalCount = roleResp.data.totalCount;
+          totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
           console.error(`Error occurred while fetching Role list! ${error}`);
         }
+        if (state) {
+          state["showLastPage"] = false;
+        }
+        setTblPageData({
+          totalPage: totalPageCount,
+          pageRecords: roleResp.data.totalCount,
+          pageSize: 25
+        });
         setRoleData(roleData);
         setTotalCount(totalCount);
-        setPageCount(Math.ceil(totalCount / pageSize));
+        setPageCount(totalPageCount);
+        setCurrentPageIndex(page);
+        setLastPage({ getLastPage: gotoPage });
         setLoader(false);
       }
     },
@@ -95,8 +127,17 @@ function Roles() {
         toast.error(errorMsg);
       } else {
         toast.success("Role deleted successfully!");
+        if (
+          (roleListingData.length == 1 ||
+            roleListingData.length == selectedRows.current.length) &&
+          currentpageIndex > 1
+        ) {
+          lastPage.getLastPage(currentpageIndex - currentpageIndex);
+        } else {
+          setUpdateTable(moment.now());
+        }
       }
-      setUpdateTable(moment.now());
+
       toggleConfirmModal();
     }
   };
@@ -115,7 +156,7 @@ function Roles() {
                     ? "disabled-link text-secondary"
                     : "text-info"
                 }`}
-                to={"/role/" + rawValue.row.original.id}
+                to={"/roles/" + rawValue.row.original.id}
               >
                 {rawValue.value}
               </Link>
@@ -167,7 +208,7 @@ function Roles() {
     []
   );
   const addRole = () => {
-    navigate("/roles/create");
+    navigate("/roles/create", { state: { tblpageData: tblpageData } });
   };
 
   const updateSearchFilter = (filter) => {
@@ -210,7 +251,7 @@ function Roles() {
             defaultSelected={[]}
           />
         </Col>
-        {(isSystemAdmin() || isKeyAdmin()) && (
+        {isSystemAdmin() && (
           <Col md={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addRole}>
               Add New Role
@@ -234,6 +275,7 @@ function Roles() {
           fetchData={fetchRoleInfo}
           totalCount={totalCount}
           pageCount={pageCount}
+          currentpageIndex={currentpageIndex}
           pagination
           loading={loader}
           rowSelectOp={

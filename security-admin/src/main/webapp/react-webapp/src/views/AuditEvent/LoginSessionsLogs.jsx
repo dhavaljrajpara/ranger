@@ -196,9 +196,11 @@ function Login_Sessions() {
         Header: "Login Time ( India Standard Time )",
         accessor: "authTime",
         Cell: (rawValue) => {
-          const date = rawValue.value;
-          const newdate = dateFormat(date, "mm/dd/yyyy h:MM:ss TT");
-          return newdate;
+          let formatDateTime = dateFormat(
+            rawValue.value,
+            "mm/dd/yyyy hh:MM:ss TT"
+          );
+          return <div className="text-center">{formatDateTime}</div>;
         },
         width: 180,
         disableSortBy: true

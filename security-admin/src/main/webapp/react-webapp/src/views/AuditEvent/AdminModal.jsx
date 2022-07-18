@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
 import { AuthStatus, AuthType } from "../../utils/XAEnums";
 import { Modal, Table, Button } from "react-bootstrap";
@@ -117,7 +117,7 @@ export const AdminModal = (props) => {
             </tbody>
           </Table>
         )}
-        <a className="link-tag">Show Actions</a>
+        <Link className="link-tag">Show Actions</Link>
       </Modal.Body>
 
       <Modal.Footer>

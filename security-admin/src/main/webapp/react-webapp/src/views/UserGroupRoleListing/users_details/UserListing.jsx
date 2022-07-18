@@ -18,7 +18,7 @@ import {
   VisibilityStatus
 } from "Utils/XAEnums";
 import { MoreLess } from "Components/CommonComponents";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import qs from "qs";
 
 import { fetchApi } from "Utils/fetchAPI";
@@ -31,15 +31,15 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { isEmpty, map } from "lodash";
+import { isEmpty, map, last } from "lodash";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Users() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [loader, setLoader] = useState(true);
   const [userListingData, setUserData] = useState([]);
-  const [pageCount, setPageCount] = React.useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
@@ -47,26 +47,47 @@ function Users() {
     syncDteails: {},
     showSyncDetails: false
   });
-  const [totalCount, setTotalCount] = useState(0);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [searchFilterParams, setSearchFilter] = useState({});
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageCount, setPageCount] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage : 0
+  );
+  const [currentpageIndex, setCurrentPageIndex] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
+  );
+  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
+  const [tblpageData, setTblPageData] = useState({
+    totalPage: 0,
+    pageRecords: 0,
+    pageSize: 25
+  });
 
   const fetchUserInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
-      // setLoader(true);
-      let userData = [];
+    async ({ pageSize, pageIndex, gotoPage }) => {
+      let userData = [],
+        userResp = [];
       let totalCount = 0;
+      let page =
+        state && state.showLastPage
+          ? state.addPageData.totalPage - 1
+          : pageIndex;
+      let totalPageCount = 0;
       const fetchId = ++fetchIdRef.current;
       let params = { ...searchFilterParams };
       const userRoleListData = getUserAccessRoleList().map((m) => {
         return m.value;
       });
       if (fetchId === fetchIdRef.current) {
+        params["page"] = page;
+        params["startIndex"] =
+          state && state.showLastPage
+            ? (state.addPageData.totalPage - 1) * pageSize
+            : pageIndex * pageSize;
         params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
         params["userRoleList"] = userRoleListData;
         try {
-          const userResp = await fetchApi({
+          userResp = await fetchApi({
             url: "xusers/users",
             params: params,
             paramsSerializer: function (params) {
@@ -75,12 +96,23 @@ function Users() {
           });
           userData = userResp.data.vXUsers;
           totalCount = userResp.data.totalCount;
+          totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
           console.error(`Error occurred while fetching User list! ${error}`);
         }
+        if (state) {
+          state["showLastPage"] = false;
+        }
         setUserData(userData);
+        setTblPageData({
+          totalPage: totalPageCount,
+          pageRecords: userResp.data.totalCount,
+          pageSize: 25
+        });
         setTotalCount(totalCount);
-        setPageCount(Math.ceil(totalCount / pageSize));
+        setPageCount(totalPageCount);
+        setCurrentPageIndex(page);
+        setLastPage({ getLastPage: gotoPage });
         setLoader(false);
       }
     },
@@ -159,8 +191,16 @@ function Users() {
         toast.error(errorMsg);
       } else {
         toast.success("User deleted successfully!");
+        if (
+          (userListingData.length == 1 ||
+            userListingData.length == selectedRows.current.length) &&
+          currentpageIndex > 1
+        ) {
+          lastPage.getLastPage(currentpageIndex - currentpageIndex);
+        } else {
+          setUpdateTable(moment.now());
+        }
       }
-      setUpdateTable(moment.now());
       toggleConfirmModal();
     }
   };
@@ -255,16 +295,12 @@ function Users() {
         Header: "Groups",
         accessor: "groupNameList",
         Cell: (rawValue) => {
-          if (rawValue.value !== undefined) {
-            const Groups = rawValue.value.map((group) => {
-              return group;
-            });
-
+          if (rawValue.row.values.groupNameList !== undefined) {
             return (
               <div className="overflow-auto">
-                {!isEmpty(Groups) ? (
+                {!isEmpty(rawValue.row.values.groupNameList) ? (
                   <h6>
-                    <MoreLess data={Groups} />
+                    <MoreLess data={rawValue.row.values.groupNameList} />
                   </h6>
                 ) : (
                   <div className="text-center">--</div>
@@ -331,11 +367,7 @@ function Users() {
     []
   );
   const addUser = () => {
-    navigate("/user/create");
-    // history.push({
-    //   pathname: "/user/create",
-    //   state: history
-    // });
+    navigate("/user/create", { state: { tblpageData: tblpageData } });
   };
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);
@@ -445,7 +477,7 @@ function Users() {
             defaultSelected={[]}
           />
         </Col>
-        {(isSystemAdmin() || isKeyAdmin()) && (
+        {isSystemAdmin() && (
           <Col sm={3} className="text-right">
             <Button variant="primary" size="sm" onClick={addUser}>
               Add New User
@@ -479,6 +511,7 @@ function Users() {
           fetchData={fetchUserInfo}
           totalCount={totalCount}
           pageCount={pageCount}
+          currentpageIndex={currentpageIndex}
           pagination
           loading={loader}
           rowSelectOp={

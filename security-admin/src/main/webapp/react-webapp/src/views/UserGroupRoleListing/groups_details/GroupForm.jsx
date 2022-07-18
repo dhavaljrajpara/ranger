@@ -41,11 +41,31 @@ class GroupForm extends Component {
     });
   };
 
-  handleSubmit = async (formData) => {
+  handleSubmit = async (values) => {
+    let formData = {};
+    formData.name = values.name;
+    formData.description = values.description || "";
     let groupFormData = {
       ...this.state.groupInfo,
       ...formData
     };
+    let tblpageData = {};
+    if (this.props.location.state && this.props.location.state != null) {
+      tblpageData = this.props.location.state.tblpageData;
+      if (
+        this.props.location.state.tblpageData.pageRecords %
+          this.props.location.state.tblpageData.pageSize ==
+        0
+      ) {
+        tblpageData["totalPage"] =
+          this.props.location.state.tblpageData.totalPage + 1;
+      } else {
+        if (tblpageData !== undefined) {
+          tblpageData["totalPage"] =
+            this.props.location.state.tblpageData.totalPage;
+        }
+      }
+    }
     if (this?.props?.params?.groupID) {
       try {
         const { fetchApi } = await import("Utils/fetchAPI");
@@ -69,7 +89,12 @@ class GroupForm extends Component {
           data: formData
         });
         toast.success("Group created successfully!!");
-        this.props.navigate("/users/grouptab");
+        this.props.navigate("/users/grouptab", {
+          state: {
+            showLastPage: true,
+            addPageData: tblpageData
+          }
+        });
       } catch (error) {
         if (
           error.response !== undefined &&
@@ -161,6 +186,7 @@ class GroupForm extends Component {
                               ? "form-control border-danger"
                               : "form-control"
                           }
+                          disabled={this.props.params.groupID ? true : false}
                         />
                         {meta.error && meta.touched && (
                           <span className="invalid-field">{meta.error}</span>
@@ -182,6 +208,7 @@ class GroupForm extends Component {
                           {...input}
                           placeholder="Description"
                           className="form-control"
+                          disabled={this.props.params.groupID ? true : false}
                         />
                       </Col>
                     </Row>

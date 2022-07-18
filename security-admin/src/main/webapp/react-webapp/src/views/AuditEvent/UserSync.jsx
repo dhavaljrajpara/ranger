@@ -4,6 +4,7 @@ import { Badge, Modal, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
+import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { find, map, sortBy } from "lodash";
@@ -150,11 +151,11 @@ function User_Sync() {
         Header: "Event Time",
         accessor: "eventTime",
         Cell: (rawValue) => {
-          const date = rawValue.value;
-          const newdate = moment
-            .tz(date, "Asia/Kolkata")
-            .format("MM/DD/YYYY HH:mm:ss A");
-          return newdate;
+          const formatDateTime = dateFormat(
+            rawValue.value,
+            "mm/dd/yyyy hh:MM:ss TT"
+          );
+          return <div className="text-center">{formatDateTime}</div>;
         },
         minWidth: 170,
         sortable: true

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
@@ -11,15 +11,28 @@ import {
   QueryParamsName
 } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
+import { isSystemAdmin, isKeyAdmin, isUser } from "Utils/XAUtils";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import { CustomTooltip } from "../../components/CommonComponents";
 
 function PolicyListing() {
+  let navigate = useNavigate();
+  const { state } = useLocation();
   const [policyListingData, setPolicyData] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [pageCount, setPageCount] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage : 0
+  );
+  const [currentpageIndex, setCurrentPageIndex] = useState(
+    state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
+  );
   const [totalCount, setTotalCount] = useState(0);
-  const [pageCount, setPageCount] = React.useState(0);
+  const [tblpageData, setTblPageData] = useState({
+    totalPage: 0,
+    pageRecords: 0,
+    pageSize: 25
+  });
+  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
   const fetchIdRef = useRef(0);
   const [deletePolicyModal, setConfirmModal] = useState({
     policyDetails: {},
@@ -51,32 +64,53 @@ function PolicyListing() {
   };
 
   const fetchPolicyInfo = useCallback(
-    async ({ pageSize, pageIndex, sortBy }) => {
+    async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       let policyData = [];
+      let policyResp = [];
       let totalCount = 0;
+      let page =
+        state && state.showLastPage
+          ? state.addPageData.totalPage - 1
+          : pageIndex;
+      let totalPageCount = 0;
       const fetchId = ++fetchIdRef.current;
       let params = { ...searchFilterParams };
       if (fetchId === fetchIdRef.current) {
+        params["page"] = page;
+        params["startIndex"] =
+          state && state.showLastPage
+            ? (state.addPageData.totalPage - 1) * pageSize
+            : pageIndex * pageSize;
         params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
         params["policyType"] = policyType;
         if (sortBy.length > 0) {
           params["sortBy"] = getTableSortBy(sortBy);
           params["sortType"] = getTableSortType(sortBy);
         }
         try {
-          const policyResp = await fetchApi({
+          policyResp = await fetchApi({
             url: `plugins/policies/service/${serviceId}`,
             params: params
           });
           policyData = policyResp.data.policies;
           totalCount = policyResp.data.totalCount;
+          totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
           console.error(`Error occurred while fetching Policies ! ${error}`);
         }
+        if (state) {
+          state["showLastPage"] = false;
+        }
         setPolicyData(policyData);
+        setTblPageData({
+          totalPage: totalPageCount,
+          pageRecords: policyResp.data.totalCount,
+          pageSize: 25
+        });
         setTotalCount(totalCount);
-        setPageCount(Math.ceil(totalCount / pageSize));
+        setPageCount(totalPageCount);
+        setCurrentPageIndex(page);
+        setLastPage({ getLastPage: gotoPage });
         setLoader(false);
       }
     },
@@ -154,7 +188,12 @@ function PolicyListing() {
         errorMsg += `Error occurred during deleting policy`;
       }
     }
-    setUpdateTable(moment.now());
+    if (policyListingData.length == 1 && currentpageIndex > 1) {
+      let page = currentpageIndex - currentpageIndex;
+      lastPage.getLastPage(page);
+    } else {
+      setUpdateTable(moment.now());
+    }
     toggleClose();
   };
   const previousVer = (e) => {
@@ -293,7 +332,7 @@ function PolicyListing() {
           return !isEmpty(rolesData) ? (
             <MoreLess data={rolesData} />
           ) : (
-            <div>--</div>
+            <div className="text-center">--</div>
           );
         },
         minWidth: 190,
@@ -311,7 +350,7 @@ function PolicyListing() {
           return !isEmpty(groupsData) ? (
             <MoreLess data={groupsData} />
           ) : (
-            <div>--</div>
+            <div className="text-center">--</div>
           );
         },
         minWidth: 190,
@@ -329,7 +368,7 @@ function PolicyListing() {
           return !isEmpty(usersData) ? (
             <MoreLess data={usersData} />
           ) : (
-            <div>--</div>
+            <div className="text-center">--</div>
           );
         },
         minWidth: 190,
@@ -344,7 +383,7 @@ function PolicyListing() {
               <Button
                 variant="outline-dark"
                 size="sm"
-                className="m-r-5 btn-mini"
+                className="m-r-5"
                 title="View"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -353,24 +392,28 @@ function PolicyListing() {
               >
                 <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
               </Button>
-              <Link
-                className="btn btn-outline-dark btn-sm m-r-5 btn-mini"
-                title="Edit"
-                to={`/service/${serviceId}/policies/${original.id}/edit`}
-              >
-                <i className="fa-fw fa fa-edit"></i>
-              </Link>
-              <Button
-                variant="danger"
-                size="sm"
-                className="m-r-5 btn-mini"
-                title="Delete"
-                onClick={() =>
-                  toggleConfirmModalForDelete(original.id, original.name)
-                }
-              >
-                <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
-              </Button>
+              {(isSystemAdmin() || isKeyAdmin() || isUser()) && (
+                <>
+                  <Link
+                    className="btn btn-outline-dark btn-sm m-r-5"
+                    title="Edit"
+                    to={`/service/${serviceId}/policies/${original.id}/edit`}
+                  >
+                    <i className="fa-fw fa fa-edit"></i>
+                  </Link>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="m-r-5"
+                    title="Delete"
+                    onClick={() =>
+                      toggleConfirmModalForDelete(original.id, original.name)
+                    }
+                  >
+                    <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
+                  </Button>
+                </>
+              )}
             </div>
           );
         },
@@ -388,6 +431,12 @@ function PolicyListing() {
       searchFilter[obj.category] = obj.value;
     });
     setSearchFilter(searchFilter);
+  };
+
+  const addPolicy = () => {
+    navigate(`/service/${serviceId}/policies/create/${policyType}`, {
+      state: { tblpageData: tblpageData }
+    });
   };
 
   return (
@@ -441,82 +490,19 @@ function PolicyListing() {
               onTokenRemove={updateSearchFilter}
               defaultSelected={[]}
             />
-            <span className="info-icon pd-10">
-              <CustomTooltip
-                placement="bottom"
-                content={
-                  <>
-                    <p
-                      className="pd-5 text-center"
-                      style={{ margin: "0", borderBottom: "1px solid #d6d6d6" }}
-                    >
-                      Search Filter Hints
-                    </p>
-
-                    <div className="pd-10">
-                      <span>
-                        {" "}
-                        Wildcard searches ( for example using * or ? ) are not
-                        currently supported.
-                      </span>
-                      <div>
-                        <span>
-                          <b>Group Name : </b>
-                        </span>
-                        <span>Name of Group.</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>Policy Name : </b>
-                        </span>
-                        <span>Enter name of policy.</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>Status : </b>
-                        </span>
-                        <span>Status of Policy Enable/Disable.</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>User Name : </b>
-                        </span>
-                        <span>Name of User.</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>Role Name : </b>
-                        </span>
-                        <span>Name of Role.</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>Policy Label : </b>
-                        </span>
-                        <span>Label of policy</span>
-                      </div>
-                      <div>
-                        <span>
-                          <b>TAG : </b>
-                        </span>
-                        <span>Tag Name.</span>
-                      </div>
-                    </div>
-                  </>
-                }
-                icon="fa-fw fa fa-info-circle"
-              />
-            </span>
           </Col>
           <Col sm={2}>
             <div className="pull-right mb-1">
-              <Link
-                role="button"
-                to={`/service/${serviceId}/policies/create/${policyType}`}
-                className="btn btn-sm btn-primary mb-2 btn-fnt"
-              >
-                Add New Policy
-              </Link>
+              {(isSystemAdmin() || isKeyAdmin() || isUser()) && (
+                <Button
+                  variant="primary"
+                  className="btn btn-sm btn-primary mb-2"
+                  size="sm"
+                  onClick={addPolicy}
+                >
+                  Add New Policy
+                </Button>
+              )}
             </div>
           </Col>
         </Row>
@@ -528,6 +514,7 @@ function PolicyListing() {
             fetchData={fetchPolicyInfo}
             pagination
             pageCount={pageCount}
+            currentpageIndex={currentpageIndex}
             loading={loader}
             columnSort={true}
           />
