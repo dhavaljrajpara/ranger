@@ -117,7 +117,9 @@ export const AdminModal = (props) => {
             </tbody>
           </Table>
         )}
-        <Link className="link-tag">Show Actions</Link>
+        <Link className="link-tag" to="/reports/audit/admin">
+          Show Actions
+        </Link>
       </Modal.Body>
 
       <Modal.Footer>

@@ -1727,3 +1727,14 @@ header {
 .ranger-navbar .dropdown-item:active {
   background-color: #0b7fad;
 }
+
+.info-user-role-grp-icon {
+  position: absolute;
+  top: 7px;
+  right: 20px;
+  opacity: 0.6;
+}
+
+.user-role-grp-form .form-control {
+  padding-right: 25px !important;
+}
