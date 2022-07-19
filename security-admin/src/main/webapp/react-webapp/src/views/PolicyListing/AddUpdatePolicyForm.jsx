@@ -29,10 +29,12 @@ import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
 import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, InfoIcon } from "../../utils/XAUtils";
 import { useAccordionToggle } from "react-bootstrap/AccordionToggle";
 import AccordionContext from "react-bootstrap/AccordionContext";
 import usePrompt from "Hooks/usePrompt";
+import { CustomTooltip } from "../../components/CommonComponents";
+import { RegexMessage } from "../../utils/XAMessages";
 
 const noneOptions = {
   label: "None",
@@ -805,7 +807,7 @@ export default function AddUpdatePolicyForm(props) {
                     <fieldset>
                       <p className="formHeader">Policy Details</p>
                     </fieldset>
-                    <Row>
+                    <Row className="user-role-grp-form">
                       <Col md={8}>
                         <FormB.Group
                           as={Row}
@@ -880,7 +882,7 @@ export default function AddUpdatePolicyForm(props) {
                                   </span>
                                 </FormB.Label>
                                 <>
-                                  <Col sm={4}>
+                                  <Col sm={5}>
                                     <FormB.Control
                                       {...input}
                                       placeholder="Policy Name"
@@ -895,6 +897,21 @@ export default function AddUpdatePolicyForm(props) {
                                           : "form-control"
                                       }
                                     />
+                                    <InfoIcon
+                                      css="info-user-role-grp-icon"
+                                      position="right"
+                                      message={
+                                        <p
+                                          className="pd-10"
+                                          style={{ fontSize: "small" }}
+                                        >
+                                          {
+                                            RegexMessage.MESSAGE
+                                              .policynameinfoiconmessage
+                                          }
+                                        </p>
+                                      }
+                                    />
                                     {meta.touched && meta.error && (
                                       <span className="invalid-field">
                                         {meta.error.text}
@@ -905,9 +922,9 @@ export default function AddUpdatePolicyForm(props) {
                               </>
                             )}
                           />
-                          <Col sm={5}>
+                          <Col sm={4}>
                             <Row>
-                              <Col sm={4}>
+                              <Col sm={5}>
                                 <Field
                                   className="form-control"
                                   name="isEnabled"
@@ -927,7 +944,7 @@ export default function AddUpdatePolicyForm(props) {
                                   )}
                                 />
                               </Col>
-                              <Col sm={4}>
+                              <Col sm={5}>
                                 <Field
                                   className="form-control"
                                   name="policyPriority"
@@ -963,7 +980,7 @@ export default function AddUpdatePolicyForm(props) {
                                   Policy Label
                                 </span>
                               </FormB.Label>
-                              <Col sm={4}>
+                              <Col sm={5}>
                                 <AsyncCreatableSelect
                                   {...input}
                                   defaultOptions

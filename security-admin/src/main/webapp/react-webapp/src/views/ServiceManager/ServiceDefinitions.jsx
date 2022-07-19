@@ -293,17 +293,16 @@ class ServiceDefinitions extends Component {
     const customStyles = {
       control: (provided) => ({
         ...provided,
-
-        minHeight: "27px",
-        height: "27px"
+        minHeight: "30px",
+        height: "25px"
       }),
       indicatorsContainer: (provided) => ({
         ...provided,
-        height: "27px"
+        height: "30px"
       }),
-      placeholder: (provided) => ({
+      valueContainer: (provided) => ({
         ...provided,
-        marginBottom: "20px"
+        paddingTop: "0px"
       })
     };
     return (

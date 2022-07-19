@@ -60,7 +60,7 @@ export default function PolicyValidityPeriodComp(props) {
         onClick={handleBtnClick}
         variant="primary"
         size="sm"
-        className="pull-right btn-fnt"
+        className="pull-right btn-sm"
       >
         <i className="fa fa-clock-o"></i> Add Validity Period
       </Button>

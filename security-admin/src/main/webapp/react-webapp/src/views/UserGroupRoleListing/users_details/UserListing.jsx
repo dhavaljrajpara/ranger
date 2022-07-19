@@ -479,14 +479,19 @@ function Users() {
         </Col>
         {isSystemAdmin() && (
           <Col sm={3} className="text-right">
-            <Button variant="primary" size="sm" onClick={addUser}>
+            <Button
+              variant="primary"
+              size="sm"
+              className="btn-sm"
+              onClick={addUser}
+            >
               Add New User
             </Button>
             <DropdownButton
               title="Set Visibility"
               size="sm"
               style={{ display: "inline-block" }}
-              className="ml-2"
+              className="ml-1 btn-sm"
               onSelect={handleSetVisibility}
             >
               <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
@@ -497,7 +502,7 @@ function Users() {
               size="sm"
               title="Delete"
               onClick={handleDeleteBtnClick}
-              className="ml-2"
+              className="ml-1 btn-sm"
             >
               <i className="fa-fw fa fa-trash"></i>
             </Button>
@@ -527,10 +532,16 @@ function Users() {
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
         <Modal.Body>
-          Are you sure you want to delete{" "}
-          {selectedRows.current.length === 1
-            ? selectedRows.current[0].original.name + " user"
-            : selectedRows.current.length + " users"}
+          Are you sure you want to delete&nbsp;
+          {selectedRows.current.length === 1 ? (
+            <span>
+              <b>"{selectedRows.current[0].original.name}"</b> user ?
+            </span>
+          ) : (
+            <span>
+              <b>"{selectedRows.current.length}"</b> users ?
+            </span>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>

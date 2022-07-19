@@ -454,7 +454,7 @@ export default function ServiceAuditFilter(props) {
       <Button
         variant="outline-dark"
         size="sm"
-        className="btn-fnt"
+        className="btn-sm"
         type="button"
         onClick={() => addAuditFilter("auditFilters", undefined)}
       >

@@ -12,6 +12,8 @@ import { isObject } from "Utils/XAUtils";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 import { CustomTooltip } from "../components/CommonComponents";
+import { InfoIcon } from "../utils/XAUtils";
+import { RegexMessage } from "../utils/XAMessages";
 
 const TYPE_SELECT = "select";
 const TYPE_CHECKBOX = "checkbox";
@@ -216,14 +218,13 @@ const CustomCondition = (props) => {
                   <Row>
                     <Col>
                       <b>{m.label}:</b>
-                      <CustomTooltip
-                        placement="right"
-                        content={
-                          "1. JavaScript Condition Examples :\
-                      country_code == 'USA', time_range >= 900 time_range <= 1800 etc.\
-                      2. Dragging bottom-right corner of javascript condition editor(Textarea) can resizable"
+                      <InfoIcon
+                        position="right"
+                        message={
+                          <p className="pd-10">
+                            {RegexMessage.MESSAGE.policyconditioninfoicon}
+                          </p>
                         }
-                        icon="fa-fw fa fa-info-circle"
                       />
                     </Col>
                   </Row>

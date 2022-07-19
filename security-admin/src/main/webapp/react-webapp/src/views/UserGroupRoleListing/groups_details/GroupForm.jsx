@@ -4,7 +4,11 @@ import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
 import { commonBreadcrumb } from "../../../utils/XAUtils";
 import { SyncSourceDetails } from "../SyncSourceDetails";
-import { Loader, scrollToError } from "Components/CommonComponents";
+import {
+  Loader,
+  scrollToError,
+  CustomTooltip
+} from "Components/CommonComponents";
 import withRouter from "Hooks/withRouter";
 import usePrompt from "Hooks/usePrompt";
 
@@ -152,7 +156,7 @@ class GroupForm extends Component {
             pristine,
             dirty
           }) => (
-            <div className="wrap">
+            <div className="wrap user-role-grp-form">
               <form
                 onSubmit={(event) => {
                   if (invalid) {
@@ -186,8 +190,26 @@ class GroupForm extends Component {
                               ? "form-control border-danger"
                               : "form-control"
                           }
-                          disabled={this.props.params.groupID ? true : false}
                         />
+                        <span className="info-user-role-grp-icon">
+                          <CustomTooltip
+                            placement="right"
+                            content={
+                              <p
+                                className="pd-10"
+                                style={{ fontSize: "small" }}
+                              >
+                                1. User name should be start with alphabet /
+                                numeric / underscore / non-us characters.
+                                <br />
+                                2. Allowed special character ,._-+/@= and space.
+                                <br />
+                                3. Name length should be greater than one.
+                              </p>
+                            }
+                            icon="fa-fw fa fa-info-circle"
+                          />
+                        </span>
                         {meta.error && meta.touched && (
                           <span className="invalid-field">{meta.error}</span>
                         )}
@@ -216,8 +238,8 @@ class GroupForm extends Component {
                 </Field>
                 <div className="row">
                   <div className="col-sm-12">
-                    <p className="form-header">Sync Details :</p>
-                    <div>
+                    <p className="form-header mg-0">Sync Details :</p>
+                    <div className="wrap">
                       <SyncSourceDetails
                         syncDetails={
                           this.state &&

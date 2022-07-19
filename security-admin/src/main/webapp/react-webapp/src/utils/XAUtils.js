@@ -15,6 +15,7 @@ import { matchRoutes } from "react-router-dom";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import CustomBreadcrumb from "../views/CustomBreadcrumb";
+import { CustomTooltip } from "../components/CommonComponents";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
@@ -1018,4 +1019,19 @@ export const getTableSortBy = (sortArr = []) => {
 
 export const getTableSortType = (sortArr = []) => {
   return sortArr.map(({ desc }) => (desc ? "desc" : "asc")).join(",");
+};
+
+/* info icon */
+
+export const InfoIcon = (props) => {
+  const { css, position, message } = props;
+  return (
+    <span className={`${css}`}>
+      <CustomTooltip
+        placement={`${position}`}
+        content={message}
+        icon="fa-fw fa fa-info-circle"
+      />
+    </span>
+  );
 };

@@ -304,7 +304,7 @@ function Groups() {
                 title="View Users"
                 data-js="showUserList"
                 onClick={() => {
-                  showGroupAssociateUser(rawValue.row.original.id);
+                  showGroupAssociateUser(rawValue.row.original);
                 }}
               >
                 <i className="fa-fw fa fa-group"> </i>
@@ -360,7 +360,8 @@ function Groups() {
   };
   const showGroupAssociateUser = (raw) => {
     setAssociateUserModal({
-      groupID: raw,
+      groupID: raw.id,
+      groupName: raw.name,
       showAssociateUserDetails: true
     });
   };
@@ -484,10 +485,16 @@ function Groups() {
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
         <Modal.Body>
-          Are you sure you want to delete{" "}
-          {selectedRows.current.length === 1
-            ? selectedRows.current[0].original.name + " group"
-            : selectedRows.current.length + " groups"}
+          Are you sure you want to delete&nbsp;
+          {selectedRows.current.length === 1 ? (
+            <span>
+              <b>"{selectedRows.current[0].original.name}"</b> group ?
+            </span>
+          ) : (
+            <span>
+              <b>"{selectedRows.current.length}"</b> groups ?
+            </span>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
@@ -529,8 +536,10 @@ function Groups() {
         onHide={toggleAssociateUserClose}
         size="lg"
       >
-        <Modal.Header>
-          <Modal.Title>User's List: </Modal.Title>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            User's List:&nbsp;{showAssociateUserModal.groupName}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <GroupAssociateUserDetails

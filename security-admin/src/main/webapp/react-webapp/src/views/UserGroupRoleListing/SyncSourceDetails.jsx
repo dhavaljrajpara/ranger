@@ -14,7 +14,7 @@ export function SyncSourceDetails(props) {
         <tbody>
           <tr>
             <td className="text-center text-muted" colSpan="2">
-              "No details available !!"
+              No Sync Details Found!!
             </td>
           </tr>
         </tbody>

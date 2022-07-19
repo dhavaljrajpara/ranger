@@ -172,85 +172,98 @@ function XATableLayout({
         <div className="col-sm-12">
           <div className="table-responsive">
             <Table bordered hover {...getTableProps()}>
-              <thead className="thead-light text-center">
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th
-                        {...column.getHeaderProps([
-                          {
-                            className: column.className
+              <>
+                <thead className="thead-light text-center">
+                  {headerGroups.map((headerGroup) => (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                      {headerGroup.headers.map((column) => (
+                        <th
+                          {...column.getHeaderProps([
+                            {
+                              className: column.className
+                            }
+                          ])}
+                          {...column.getHeaderProps(
+                            column.getSortByToggleProps()
+                          )}
+                          title={undefined}
+                          onClick={() =>
+                            columnSort &&
+                            column.toggleSortBy &&
+                            column.toggleSortBy(!column.isSortedDesc)
                           }
-                        ])}
-                        {...column.getHeaderProps(
-                          column.getSortByToggleProps()
-                        )}
-                        title={undefined}
-                        onClick={() =>
-                          columnSort &&
-                          column.toggleSortBy &&
-                          column.toggleSortBy(!column.isSortedDesc)
-                        }
-                      >
-                        {columnResizable && !column.disableResizing && (
-                          <>
-                            <div
-                              className="fa fa-expand"
-                              aria-hidden="true"
-                              {...column.getResizerProps([
-                                { className: "resizer" }
-                              ])}
-                              onClick={(event) => event.stopPropagation()}
-                            />
-                            <i
-                              className="fa fa-expand resizeable-icon"
-                              aria-hidden="true"
-                              {...column.getResizerProps()}
-                            />
-                          </>
-                        )}
+                        >
+                          {columnResizable && !column.disableResizing && (
+                            <>
+                              <div
+                                className="fa fa-expand"
+                                aria-hidden="true"
+                                {...column.getResizerProps([
+                                  { className: "resizer" }
+                                ])}
+                                onClick={(event) => event.stopPropagation()}
+                              />
+                              <i
+                                className="fa fa-expand resizeable-icon"
+                                aria-hidden="true"
+                                {...column.getResizerProps()}
+                              />
+                            </>
+                          )}
 
-                        {column.render("Header")}
-                        {columnSort && column.isSorted && (
-                          <span>{column.isSortedDesc ? " ▼" : " ▲"}</span>
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-
-              <tbody {...getTableBodyProps()}>
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps(getRowProps(row))}>
-                      {row.cells.map((cell) => {
-                        return (
-                          <td {...cell.getCellProps()} className="react-table">
-                            {cell.render("Cell")}
-                          </td>
-                        );
-                      })}
+                          {column.render("Header")}
+                          {columnSort && column.isSorted && (
+                            <span>{column.isSortedDesc ? " ▼" : " ▲"}</span>
+                          )}
+                        </th>
+                      ))}
                     </tr>
-                  );
-                })}
-
-                <tr>
-                  <td colSpan={columns.length + 1}>
-                    <center>
-                      {loading && (
-                        <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
-                      )}
-                      {rows.length === 0 && loading == false && (
-                        <span className="text-muted" data-cy="tbleDataMsg">
-                          "No data to show!!"
-                        </span>
-                      )}
-                    </center>
-                  </td>
-                </tr>
-              </tbody>
+                  ))}
+                </thead>
+                {loading ? (
+                  <tbody>
+                    <tr>
+                      <td>
+                        <center>
+                          <i className="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                        </center>
+                      </td>
+                    </tr>
+                  </tbody>
+                ) : rows.length === 0 && loading == false ? (
+                  <tbody>
+                    <tr>
+                      <td colSpan={columns.length + 1}>
+                        <center>
+                          <span className="text-muted" data-cy="tbleDataMsg">
+                            "No data to show!!"
+                          </span>
+                        </center>
+                      </td>
+                    </tr>
+                  </tbody>
+                ) : (
+                  <tbody {...getTableBodyProps()}>
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps(getRowProps(row))}>
+                          {row.cells.map((cell) => {
+                            return (
+                              <td
+                                {...cell.getCellProps()}
+                                className="react-table"
+                              >
+                                {cell.render("Cell")}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                )}
+              </>
             </Table>
           </div>
           {totalCount > 25 && (

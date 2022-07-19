@@ -90,7 +90,7 @@ function TestConnection(props) {
       <Button
         variant="outline-dark"
         size="sm"
-        className="btn-fnt"
+        className="btn-sm"
         onClick={() => {
           validateConfig();
         }}
@@ -98,10 +98,10 @@ function TestConnection(props) {
         Test Connection
       </Button>
       <Modal show={modelState.showTestConnModal} onHide={hideTestConnModal}>
-        <Modal.Header closeButton>
+        <Modal.Body>
           {modelContent.testConnModalContent}
           {!modelState.showMore && modelContent.showMoreModalContent}
-        </Modal.Header>
+        </Modal.Body>
 
         <Modal.Footer>
           {!isEmpty(modelContent.showMoreModalContent) &&

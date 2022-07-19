@@ -28,7 +28,7 @@ export default function PolicyPermissionItem(props) {
     formValues
   } = props;
   // const [showTagPermissionItem, tagPermissionItem] = useState(false);
-  const permList = ["Select Users", "Select Groups", "Select Roles"];
+  const permList = ["Select Roles", "Select Groups", "Select Users"];
   if (serviceCompDetails?.policyConditions?.length > 0) {
     permList.push("Policy Conditions");
   }
@@ -37,7 +37,7 @@ export default function PolicyPermissionItem(props) {
     RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value == formValues.policyType &&
     serviceCompDetails.name !== "tag"
   ) {
-    permList.push("DeligateAdmin");
+    permList.push("Deligate Admin");
   }
   if (
     RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == formValues.policyType
@@ -156,7 +156,7 @@ export default function PolicyPermissionItem(props) {
 
   return (
     <div>
-      <Col sm="12">
+      <Col sm="12" className="policyTable">
         <Table bordered className="plcypermissiontable">
           <thead className="thead-light">
             <tr>
@@ -438,7 +438,7 @@ export default function PolicyPermissionItem(props) {
                         );
                       }
                       if (
-                        colName == "DeligateAdmin" &&
+                        colName == "Deligate Admin" &&
                         serviceCompDetails.name !== "tag"
                       ) {
                         return (

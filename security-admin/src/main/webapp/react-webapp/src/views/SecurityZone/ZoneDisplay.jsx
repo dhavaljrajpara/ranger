@@ -96,7 +96,9 @@ class ZoneDisplay extends Component {
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </Button>
-              <span className="text-info h2 px-2">{this.props.zone.name}</span>
+              <h3 className="text-info px-2 display-inline">
+                {this.props.zone.name}
+              </h3>
             </div>
             {this.state.isAdminRole && (
               <div className="float-right">

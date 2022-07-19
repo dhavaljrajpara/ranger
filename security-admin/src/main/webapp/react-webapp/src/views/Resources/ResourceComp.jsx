@@ -108,7 +108,7 @@ export default function ResourceComp(props) {
   };
 
   const RenderValidateField = ({ name }) =>
-    (formValues && formValues[name]?.mandatory && <span>*</span>) || null;
+    (formValues && formValues[name]?.mandatory && <span className="compulsory-resource">*</span>) || null;
 
   const renderResourceSelect = (levelKey, index) => {
     let renderLabel = false;
@@ -241,7 +241,7 @@ export default function ResourceComp(props) {
           />
         </Col>
         {formValues[`resourceName-${levelKey}`] && (
-          <Col sm={4}>
+          <Col sm={5}>
             <Field
               className="form-control"
               name={`value-${levelKey}`}
@@ -301,7 +301,7 @@ export default function ResourceComp(props) {
           <Col sm={4}>
             <Row>
               {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (
-                <Col sm={4}>
+                <Col sm={5}>
                   <Field
                     className="form-control"
                     name={`isExcludesSupport-${levelKey}`}
@@ -322,7 +322,7 @@ export default function ResourceComp(props) {
                 </Col>
               )}
               {formValues[`resourceName-${levelKey}`]["recursiveSupported"] && (
-                <Col sm={5}>
+                <Col sm={5} className="toggle-switch">
                   <Field
                     className="form-control"
                     name={`isRecursiveSupport-${levelKey}`}

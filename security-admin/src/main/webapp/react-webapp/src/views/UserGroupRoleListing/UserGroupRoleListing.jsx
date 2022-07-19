@@ -35,15 +35,17 @@ class UserGroupRoleListing extends Component {
     return (
       <React.Fragment>
         {commonBreadcrumb(["Users"])}
-        <Tabs
-          id="userGroupRoleListing"
-          activeKey={this.state.activeKey}
-          onSelect={(tabKey) => this.tabChange(tabKey)}
-        >
-          <Tab eventKey="usertab" title="Users" />
-          <Tab eventKey="grouptab" title="Groups" />
-          <Tab eventKey="roletab" title="Roles" />
-        </Tabs>
+        <div className="usrGrpRoleListing">
+          <Tabs
+            id="userGroupRoleListing"
+            activeKey={this.state.activeKey}
+            onSelect={(tabKey) => this.tabChange(tabKey)}
+          >
+            <Tab eventKey="usertab" title="Users" className="wrap" />
+            <Tab eventKey="grouptab" title="Groups" className="wrap" />
+            <Tab eventKey="roletab" title="Roles" className="wrap" />
+          </Tabs>
+        </div>
         <Outlet />
       </React.Fragment>
     );

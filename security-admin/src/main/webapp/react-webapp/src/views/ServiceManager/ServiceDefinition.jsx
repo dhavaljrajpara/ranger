@@ -461,7 +461,7 @@ class ServiceDefinition extends Component {
                           <Modal.Footer>
                             <Button
                               variant="primary"
-                              className="btn-fnt btn-mini"
+                              className="btn-sm btn-mini"
                               onClick={this.hideViewModal}
                             >
                               OK

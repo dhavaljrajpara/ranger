@@ -13,6 +13,9 @@ import { getUserProfile } from "Utils/appState";
 import _ from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import withRouter from "Hooks/withRouter";
+import { CustomTooltip } from "../../../components/CommonComponents";
+import { InfoIcon } from "../../../utils/XAUtils";
+import { RegexMessage } from "../../../utils/XAMessages";
 
 class UserFormComp extends Component {
   constructor(props) {
@@ -294,7 +297,7 @@ class UserFormComp extends Component {
             errors,
             pristine
           }) => (
-            <div className="wrap">
+            <div className="wrap user-role-grp-form">
               <form
                 onSubmit={(event) => {
                   if (invalid) {
@@ -330,6 +333,14 @@ class UserFormComp extends Component {
                           }
                           disabled={this.props.isEditView ? true : false}
                         />
+                        <InfoIcon
+                          css="info-user-role-grp-icon"
+                          position="right"
+                          message={
+                            RegexMessage.MESSAGE.namevalidationinfomessage
+                          }
+                        />
+
                         {meta.error && meta.touched && (
                           <span className="invalid-field">{meta.error}</span>
                         )}
@@ -364,6 +375,22 @@ class UserFormComp extends Component {
                                 : "form-control"
                             }
                           />
+                          <InfoIcon
+                            css="info-user-role-grp-icon"
+                            position="right"
+                            message={
+                              <p
+                                className="pd-10"
+                                style={{ fontSize: "small" }}
+                              >
+                                {
+                                  RegexMessage.MESSAGE
+                                    .passwordvalidationinfomessage
+                                }
+                              </p>
+                            }
+                          />
+
                           {meta.error && meta.touched && (
                             <span className="invalid-field">{meta.error}</span>
                           )}
@@ -397,6 +424,21 @@ class UserFormComp extends Component {
                               meta.error && meta.touched
                                 ? "form-control border-danger"
                                 : "form-control"
+                            }
+                          />
+                          <InfoIcon
+                            css="info-user-role-grp-icon"
+                            position="right"
+                            message={
+                              <p
+                                className="pd-10"
+                                style={{ fontSize: "small" }}
+                              >
+                                {
+                                  RegexMessage.MESSAGE
+                                    .passwordvalidationinfomessage
+                                }
+                              </p>
                             }
                           />
                           {meta.error && meta.touched && (
@@ -438,6 +480,13 @@ class UserFormComp extends Component {
                               : false
                           }
                         />
+                        <InfoIcon
+                          css="info-user-role-grp-icon"
+                          position="right"
+                          message={
+                            RegexMessage.MESSAGE.namevalidationinfomessage
+                          }
+                        />
                         {meta.error && meta.touched && (
                           <span className="invalid-field">{meta.error}</span>
                         )}
@@ -474,6 +523,13 @@ class UserFormComp extends Component {
                               UserSource.XA_USER.value
                               ? true
                               : false
+                          }
+                        />
+                        <InfoIcon
+                          css="info-user-role-grp-icon"
+                          position="right"
+                          message={
+                            RegexMessage.MESSAGE.namevalidationinfomessage
                           }
                         />
                         {meta.error && meta.touched && (
@@ -516,6 +572,14 @@ class UserFormComp extends Component {
                               : false
                           }
                         />
+                        <InfoIcon
+                          css="info-user-role-grp-icon"
+                          position="right"
+                          message={
+                            RegexMessage.MESSAGE.emailvalidationinfomessage
+                          }
+                        />
+
                         {meta.error && meta.touched && (
                           <span className="invalid-field">{meta.error}</span>
                         )}
@@ -537,9 +601,9 @@ class UserFormComp extends Component {
                   </Col>
                 </Row>
                 <div className="row">
-                  <div className="col-sm-12">
-                    <p className="form-header">Sync Details :</p>
-                    <div>
+                  <div className="col-sm-12 ">
+                    <p className="form-header mg-0">Sync Details :</p>
+                    <div className="wrap">
                       <SyncSourceDetails
                         syncDetails={
                           this.props.userInfo &&

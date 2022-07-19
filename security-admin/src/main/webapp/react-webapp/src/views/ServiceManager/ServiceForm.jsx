@@ -610,7 +610,7 @@ class ServiceForm extends Component {
                       />
                     </Col>
                     {configInfo.length === 1 && (
-                      <span className="d-inline">
+                      <span className="service-config-info-icon">
                         <CustomPopover
                           title=""
                           content={configInfo}
@@ -1209,7 +1209,7 @@ class ServiceForm extends Component {
                             <div className="col-sm-4 offset-sm-3">
                               <Button
                                 variant="outline-dark"
-                                className="btn-mini btn-fnt"
+                                className="btn-mini btn-sm"
                                 onClick={() =>
                                   addItem("customConfigs", undefined)
                                 }
@@ -1269,7 +1269,7 @@ class ServiceForm extends Component {
                           <Button
                             variant="primary"
                             type="submit"
-                            className="btn-fnt"
+                            className="btn-sm"
                             size="sm"
                             disabled={submitting}
                           >
@@ -1280,7 +1280,7 @@ class ServiceForm extends Component {
                           <Button
                             variant="secondary"
                             type="button"
-                            className="btn-fnt"
+                            className="btn-sm"
                             size="sm"
                             onClick={() =>
                               this.props.navigate(
@@ -1296,7 +1296,7 @@ class ServiceForm extends Component {
                             <Button
                               variant="danger"
                               type="button"
-                              className="btn-fnt"
+                              className="btn-sm"
                               size="sm"
                               onClick={() => {
                                 this.showDeleteModal();

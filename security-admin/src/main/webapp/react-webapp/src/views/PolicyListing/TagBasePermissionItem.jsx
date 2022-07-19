@@ -173,7 +173,7 @@ export default function TagBasePermissionItem(props) {
           }) => (
             <form onSubmit={handleSubmit}>
               <Modal.Header closeButton>
-                <Modal.Title>Tag Components Permissions</Modal.Title>
+                <Modal.Title>Components Permissions</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <Field

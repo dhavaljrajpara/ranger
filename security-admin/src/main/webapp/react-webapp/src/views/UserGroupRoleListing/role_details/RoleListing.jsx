@@ -288,10 +288,16 @@ function Roles() {
       </div>
       <Modal show={showModal} onHide={toggleConfirmModal}>
         <Modal.Body>
-          Are you sure you want to delete{" "}
-          {selectedRows.current.length === 1
-            ? selectedRows.current[0].original.name + " role"
-            : selectedRows.current.length + " roles"}
+          Are you sure you want to delete&nbsp;
+          {selectedRows.current.length === 1 ? (
+            <span>
+              <b>"{selectedRows.current[0].original.name}"</b> role ?
+            </span>
+          ) : (
+            <span>
+              <b>"{selectedRows.current.length}"</b> roles ?
+            </span>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>

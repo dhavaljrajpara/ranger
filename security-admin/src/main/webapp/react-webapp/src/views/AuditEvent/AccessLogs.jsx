@@ -28,9 +28,12 @@ import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
-import { CustomTooltip } from "../../components/CommonComponents";
-import { useQuery } from "../../components/CommonComponents";
+import {
+  getTableSortBy,
+  getTableSortType,
+  InfoIcon
+} from "../../utils/XAUtils";
+import { CustomTooltip, useQuery } from "../../components/CommonComponents";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
