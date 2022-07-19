@@ -403,6 +403,7 @@ class ServiceDefinitions extends Component {
               <ExportPolicy
                 serviceDef={filterServiceDefs}
                 services={filterServices}
+                zone={selectedZone.label}
                 isParentExport={true}
                 show={showExportModal}
                 onHide={this.hideExportModal}

@@ -271,13 +271,13 @@ export function PolicyViewDetails(props) {
         <tr>
           <td>Policy Labels </td>
           <td>
-            {!isEmpty(policyLabels) ? (
-              <h6 className="d-inline mr-1">
-                <Badge variant="dark">{policyLabels}</Badge>
-              </h6>
-            ) : (
-              "--"
-            )}
+            {!isEmpty(policyLabels)
+              ? policyLabels.map((policyLabel) => (
+                  <h6 className="d-inline mr-1">
+                    <Badge variant="dark">{policyLabel}</Badge>
+                  </h6>
+                ))
+              : "--"}
           </td>
         </tr>
         {getPolicyResources(policyType, serviceType, resources)}

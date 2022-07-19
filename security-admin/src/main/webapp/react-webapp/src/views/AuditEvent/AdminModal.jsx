@@ -40,7 +40,16 @@ export const AdminModal = (props) => {
       </Modal.Header>
       <Modal.Body>
         {loader ? (
-          <Loader />
+          <div className="row">
+            <div className="col-sm-12 text-center">
+              <div className="spinner-border mr-2" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+              <div className="spinner-grow" role="status">
+                <span className="sr-only">Loading...</span>
+              </div>
+            </div>
+          </div>
         ) : (
           <Table striped bordered hover>
             <tbody>

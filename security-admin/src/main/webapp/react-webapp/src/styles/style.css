@@ -1675,12 +1675,6 @@ header {
   transform: rotate(90deg);
 }
 
-.react-table {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .show-more {
   display: inline-flex;
   flex-wrap: wrap;

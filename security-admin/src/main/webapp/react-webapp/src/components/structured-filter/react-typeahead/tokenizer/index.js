@@ -4,7 +4,7 @@ import KeyEvent from "../keyevent";
 import Typeahead from "../typeahead";
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
-import { find, map, remove } from "lodash";
+import { find, map, difference, includes } from "lodash";
 var classNames = require("classnames");
 /**
  * A typeahead that, when an option is selected, instead of simply filling
@@ -76,8 +76,11 @@ var TypeaheadTokenizer = createReactClass({
   _getOptionsForTypeahead: function () {
     if (this.state.category == "") {
       var categories = [];
+      let selectedCategory = [];
+      selectedCategory = map(this.state.selected, "category");
       for (var i = 0; i < this.props.options.length; i++) {
-        categories.push(this.props.options[i].category);
+        selectedCategory.indexOf(this.props.options[i].category) === -1 &&
+          categories.push(this.props.options[i].category);
       }
       return categories;
     } else {
@@ -192,9 +195,11 @@ var TypeaheadTokenizer = createReactClass({
   _getOptionsLabel: function () {
     var currentHeader = this._getHeader();
     var optionsLabel = [];
+    let selectedCategory = map(this.state.selected, "category");
     if (currentHeader == "Category") {
       for (var i = 0; i < this.props.options.length; i++) {
-        optionsLabel.push(this.props.options[i].label);
+        selectedCategory.indexOf(this.props.options[i].category) === -1 &&
+          optionsLabel.push(this.props.options[i].label);
       }
     } else if (currentHeader == "Value") {
       var options = this._getCategoryOptions();
@@ -233,9 +238,9 @@ var TypeaheadTokenizer = createReactClass({
   },
 
   _onClearAll: function () {
-    this.setState({ selected: [], category: "" });
-    remove(this.state.selected);
-    this.props.onTokenRemove(this.state.selected);
+    this.setState({ selected: [], category: "" }, () => {
+      this.props.onTokenRemove(this.state.selected);
+    });
   },
 
   _getClearAllButton: function () {
@@ -281,7 +286,9 @@ var TypeaheadTokenizer = createReactClass({
               ref="typeahead"
               className={classList}
               placeholder={
-                this.state.selected.length === 0 ? this.props.placeholder : ""
+                this.state.selected.length === 0 && this.state.category === ""
+                  ? this.props.placeholder
+                  : ""
               }
               customClasses={this.props.customClasses}
               options={this._getOptionsForTypeahead()}

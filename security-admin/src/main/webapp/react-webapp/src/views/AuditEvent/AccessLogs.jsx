@@ -864,7 +864,7 @@ function Access() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="lg">
+      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>Policy Details</Modal.Title>
         </Modal.Header>

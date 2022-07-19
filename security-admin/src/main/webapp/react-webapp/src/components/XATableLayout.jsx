@@ -250,10 +250,7 @@ function XATableLayout({
                         <tr {...row.getRowProps(getRowProps(row))}>
                           {row.cells.map((cell) => {
                             return (
-                              <td
-                                {...cell.getCellProps()}
-                                className="react-table"
-                              >
+                              <td {...cell.getCellProps()}>
                                 {cell.render("Cell")}
                               </td>
                             );

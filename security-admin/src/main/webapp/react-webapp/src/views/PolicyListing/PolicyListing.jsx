@@ -270,17 +270,11 @@ function PolicyListing() {
         Header: "Policy Label",
         accessor: "policyLabels",
         Cell: (rawValue) => {
-          if (rawValue.value == "") return "--";
-          else {
-            let policyLabels = rawValue.value.map((label, index) => (
-              <h6 className="d-inline mr-1" key={index}>
-                <Badge variant="primary" key={label}>
-                  {label}
-                </Badge>
-              </h6>
-            ));
-            return policyLabels;
-          }
+          return !isEmpty(rawValue.value) ? (
+            <MoreLess data={rawValue.value} />
+          ) : (
+            <div>--</div>
+          );
         },
         width: 100,
         disableSortBy: true
@@ -541,7 +535,7 @@ function PolicyListing() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="lg">
+      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>Policy Details</Modal.Title>
         </Modal.Header>

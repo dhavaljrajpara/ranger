@@ -369,7 +369,7 @@ class ServiceDefinition extends Component {
                         <Modal
                           show={this.state.showView === s.id}
                           onHide={this.hideViewModal}
-                          size="lg"
+                          size="xl"
                         >
                           <Modal.Header closeButton>
                             <Modal.Title>Service Details</Modal.Title>

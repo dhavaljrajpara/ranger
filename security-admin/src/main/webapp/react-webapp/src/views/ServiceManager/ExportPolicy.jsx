@@ -51,7 +51,7 @@ class ExportPolicy extends Component {
       "/service/plugins/policies/exportJson?serviceName=" +
       serviceNameList +
       "&checkPoliciesExists=false" +
-      (zoneName ? "&zoneName=" + zoneName : "");
+      (zoneName !== undefined ? "&zoneName=" + zoneName : "");
 
     const link = document.createElement("a");
 
@@ -192,15 +192,27 @@ class ExportPolicy extends Component {
           <Modal.Footer>
             {!isEmpty(this.props.services) ? (
               <>
-                <Button variant="secondary" className="btn-mini" onClick={this.props.onHide}>
+                <Button
+                  variant="secondary"
+                  className="btn-mini"
+                  onClick={this.props.onHide}
+                >
                   Cancel
                 </Button>
-                <Button variant="primary" className="btn-mini" onClick={this.export}>
+                <Button
+                  variant="primary"
+                  className="btn-mini"
+                  onClick={this.export}
+                >
                   Export
                 </Button>
               </>
             ) : (
-              <Button variant="primary" className="btn-mini" onClick={this.props.onHide}>
+              <Button
+                variant="primary"
+                className="btn-mini"
+                onClick={this.props.onHide}
+              >
                 OK
               </Button>
             )}

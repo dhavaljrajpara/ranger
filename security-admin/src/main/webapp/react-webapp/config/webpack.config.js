@@ -29,7 +29,16 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|svg|ico)$/,
-        type: "asset/resource"
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              name: "[contenthash][ext][query]",
+              outputPath: "images/",
+              publicPath: "../images/"
+            }
+          }
+        ]
       },
       {
         test: /\.(woff|woff2|ttf|otf|eot)$/,
