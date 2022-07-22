@@ -1,6 +1,8 @@
 import React, { Suspense, lazy, Component } from "react";
 import { Route, Routes, HashRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import axios from "axios";
+
 import ErrorBoundary from "Views/ErrorBoundary";
 import ErrorPage from "./views/ErrorPage";
 import { CommonScrollButton, Loader } from "../src/components/CommonComponents";
@@ -77,6 +79,36 @@ export default class App extends Component {
     this.state = {
       loader: true
     };
+  }
+
+  componentWillMount() {
+    // Global axios defaults
+    if (!window.location.origin) {
+      window.location.origin =
+        window.location.protocol +
+        "//" +
+        window.location.hostname +
+        (window.location.port ? ":" + window.location.port : "");
+    }
+    // Proxy URL for Ranger UI doesn't work without trailing slash so add slash
+    // let pathName = /\/[\w-]+.(jsp|html)/;
+    // if (
+    //   !pathName.test(window.location.pathname) &&
+    //   window.location.pathname.slice(-1) !== "/"
+    // ) {
+    //   window.location.pathname += "/";
+    // }
+    let baseUrl =
+      window.location.origin +
+      window.location.pathname.substr(
+        0,
+        window.location.pathname.lastIndexOf("/")
+      );
+
+    if (baseUrl.slice(-1) == "/") {
+      baseUrl = baseUrl.slice(0, -1);
+    }
+    axios.defaults.baseURL = baseUrl + "/service/";
   }
 
   componentDidMount() {

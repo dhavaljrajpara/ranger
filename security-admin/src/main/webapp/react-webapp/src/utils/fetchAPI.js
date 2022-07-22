@@ -9,9 +9,6 @@ import {
 } from "./appConstants";
 import { toast } from "react-toastify";
 
-// Global axios defaults
-axios.defaults.baseURL = "/service/";
-
 let csrfEnabled = false;
 let restCsrfCustomHeader = null;
 let restCsrfIgnoreMethods = [];
@@ -62,7 +59,6 @@ async function fetchApi(axiosConfig = {}, otherConf = {}) {
     return resp;
   } catch (error) {
     if (error && error.response && error.response.status === 419) {
-      // history.push("/signin");
       window.location.replace("login.jsp");
     }
     throw error;
