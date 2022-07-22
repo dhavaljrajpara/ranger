@@ -346,12 +346,6 @@ class ServiceDefinition extends Component {
                         >
                           {s.displayName !== undefined ? s.displayName : s.name}
                         </Link>
-                        {/* <Link
-                          to={`/service/${s.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
-                          className="service-name text-info"
-                        >
-                          {s.displayName !== undefined ? s.displayName : s.name}
-                        </Link> */}
                       </span>
                       <span className="float-right">
                         {!this.props.isUserRole && (

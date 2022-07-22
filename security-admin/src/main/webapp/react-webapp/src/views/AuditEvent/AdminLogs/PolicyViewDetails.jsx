@@ -10,7 +10,8 @@ import { find, isEmpty, sortBy } from "lodash";
 export function PolicyViewDetails(props) {
   const [access, setAccess] = useState([]);
   const [loader, SetLoader] = useState(true);
-  const { serviceDefs, updateServices } = props;
+  const { serviceDef, updateServices } = props;
+
   useEffect(() => {
     if (props.paramsData.isRevert) {
       fetchPolicyVersions();
@@ -55,6 +56,7 @@ export function PolicyViewDetails(props) {
     setAccess(accesslogs.data);
     SetLoader(false);
   };
+
   const fetchByVersion = async () => {
     let accesslogs;
     try {
@@ -68,6 +70,7 @@ export function PolicyViewDetails(props) {
     }
     setAccess(accesslogs.data);
   };
+
   const fetchPolicyVersions = async () => {
     let accesslogs;
     let policyId = props.paramsData.id;
@@ -86,6 +89,7 @@ export function PolicyViewDetails(props) {
     }
     setAccess(accesslogs.data);
   };
+
   const {
     service,
     serviceType,
@@ -113,6 +117,7 @@ export function PolicyViewDetails(props) {
     createTime,
     validitySchedules
   } = access;
+
   const getPolicyDetails = () => {
     const getPolicyType = (policyTypeVal) => {
       if (policyTypeVal == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value) {
@@ -172,10 +177,11 @@ export function PolicyViewDetails(props) {
         </>
       );
     };
-    const getPolicyResources = (policyType, serviceType, resourceval) => {
+
+    const getPolicyResources = (policyType, resourceval) => {
       var resourceDef;
       var filterResources = [];
-      let serviceTypeData = find(serviceDefs, ["name", serviceType]);
+      let serviceTypeData = serviceDef;
       if (policyType == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value) {
         resourceDef = serviceTypeData && serviceTypeData.resources;
       }
@@ -280,7 +286,7 @@ export function PolicyViewDetails(props) {
               : "--"}
           </td>
         </tr>
-        {getPolicyResources(policyType, serviceType, resources)}
+        {getPolicyResources(policyType, resources)}
         <tr>
           <td>Description</td>
           <td>{description}</td>
@@ -298,16 +304,15 @@ export function PolicyViewDetails(props) {
       </>
     );
   };
+
   const getFilterPolicy = (
     policyItemsVal,
-    serviceDefs,
+    serviceDef,
     serviceType,
     noTblDataMsg
   ) => {
     let tableRow = [];
-    let filterServiceDef = find(serviceDefs, ["name", serviceType]);
-    let policyCondition =
-      filterServiceDef && filterServiceDef.hasOwnProperty("policyConditions");
+    let filterServiceDef = serviceDef;
     const getMaskingLabel = (label) => {
       let filterLabel = "";
       filterServiceDef.dataMaskDef.maskTypes.map((obj) => {
@@ -482,8 +487,8 @@ export function PolicyViewDetails(props) {
     return tableRow;
   };
 
-  const getPolicyConditions = (conditions, serviceDefs, serviceType) => {
-    let filterServiceDef = find(serviceDefs, ["name", serviceType]);
+  const getPolicyConditions = (conditions, serviceDef, serviceType) => {
+    let filterServiceDef = serviceDef;
     const getConditionLabel = (label) => {
       let filterLabel = "";
       filterServiceDef.policyConditions.map((obj) =>
@@ -505,7 +510,7 @@ export function PolicyViewDetails(props) {
                   </tr>
                 ))
               ) : (
-                <tr key={obj.type} colSpan="2">
+                <tr colSpan="2">
                   <td width="20%">
                     {filterServiceDef.policyConditions.map((obj) => obj.label)}
                   </td>
@@ -603,7 +608,7 @@ export function PolicyViewDetails(props) {
       <div>
         <p className="form-header">Policy Details :</p>
         <Table bordered size="sm" className="table-audit-filter-ready-only">
-          <tbody>{getPolicyDetails(serviceDefs)}</tbody>
+          <tbody>{getPolicyDetails(serviceDef)}</tbody>
         </Table>
       </div>
       {(policyType == RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value ||
@@ -611,11 +616,11 @@ export function PolicyViewDetails(props) {
         !isEmpty(validitySchedules) &&
         getValidityPeriod(validitySchedules)}
       {policyType == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value && (
-        <>{getPolicyConditions(conditions, serviceDefs, serviceType)}</>
+        <>{getPolicyConditions(conditions, serviceDef, serviceType)}</>
       )}
       {policyType == RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value &&
         serviceType == "tag" && (
-          <>{getPolicyConditions(conditions, serviceDefs, serviceType)}</>
+          <>{getPolicyConditions(conditions, serviceDef, serviceType)}</>
         )}
 
       {policyType == RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value && (
@@ -625,7 +630,7 @@ export function PolicyViewDetails(props) {
             <Table bordered size="sm" className="table-audit-filter-ready-only">
               {getFilterPolicy(
                 policyItems,
-                serviceDefs,
+                serviceDef,
                 serviceType,
                 ` No policy items of "Allow Conditions" are present`
               )}
@@ -643,7 +648,7 @@ export function PolicyViewDetails(props) {
             <Table bordered size="sm" className="table-audit-filter-ready-only">
               {getFilterPolicy(
                 allowExceptions,
-                serviceDefs,
+                serviceDef,
                 serviceType,
                 `No policy items of "Exclude from Allow Conditions" are present`
               )}
@@ -683,7 +688,7 @@ export function PolicyViewDetails(props) {
               >
                 {getFilterPolicy(
                   denyPolicyItems,
-                  serviceDefs,
+                  serviceDef,
                   serviceType,
                   ` No policy items of "Deny Condition" are present`
                 )}
@@ -704,7 +709,7 @@ export function PolicyViewDetails(props) {
               >
                 {getFilterPolicy(
                   denyExceptions,
-                  serviceDefs,
+                  serviceDef,
                   serviceType,
                   `No policy items of "Exclude from Deny Conditions" are present`
                 )}
@@ -720,7 +725,7 @@ export function PolicyViewDetails(props) {
             <Table bordered size="sm" className="table-audit-filter-ready-only">
               {getFilterPolicy(
                 rowFilterPolicyItems,
-                serviceDefs,
+                serviceDef,
                 serviceType,
                 `No policy items of "Row Level Conditions" are present`
               )}
@@ -736,7 +741,7 @@ export function PolicyViewDetails(props) {
             <Table bordered size="sm" className="table-audit-filter-ready-only">
               {getFilterPolicy(
                 dataMaskPolicyItems,
-                serviceDefs,
+                serviceDef,
                 serviceType,
                 ` No policy items of "Masking Conditions" are present`
               )}

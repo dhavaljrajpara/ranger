@@ -205,6 +205,7 @@ a:active {
 }
 
 .btn-primary {
+  background-color: #0b7fad;
   background-image: none;
   color: #fff;
   border-color: #0b7fad;
@@ -521,13 +522,6 @@ div#center div.letter_container_7 {
 /* Service Manager */
 .select-zone-name {
   cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: #0b7fad;
-  background-image: none;
-  color: #fff;
-  border-color: #0b7fad;
 }
 
 .policy-manager table thead tr th:first-child {
@@ -1021,17 +1015,10 @@ header {
   font-size: 11px;
 }
 
-.policy-version {
-  font-size: 23px;
-  padding: 5px 0 0 3px;
-}
-
 .policy-version span {
   padding: 0 10px;
   color: black;
   font-size: 14px;
-  position: relative;
-  top: -3px;
 }
 
 .policy-version i {
@@ -1449,6 +1436,7 @@ header {
   padding: 3px 5px;
   width: 100%;
   display: block;
+  text-transform: capitalize;
 }
 
 .filter-tokenizer ul.typeahead-selector li a:hover,

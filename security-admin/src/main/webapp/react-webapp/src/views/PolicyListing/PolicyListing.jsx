@@ -3,7 +3,17 @@ import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { pick, indexOf, isUndefined, isEmpty, map } from "lodash";
+import {
+  pick,
+  indexOf,
+  isUndefined,
+  isEmpty,
+  map,
+  sortBy,
+  find,
+  concat,
+  capitalize
+} from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import XATableLayout from "Components/XATableLayout";
 import {
@@ -15,8 +25,11 @@ import { isSystemAdmin, isKeyAdmin, isUser } from "Utils/XAUtils";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
-function PolicyListing() {
+function PolicyListing(props) {
+  const { serviceDef } = props;
   let navigate = useNavigate();
+  let { serviceId, policyType } = useParams();
+
   const { state } = useLocation();
   const [policyListingData, setPolicyData] = useState([]);
   const [loader, setLoader] = useState(true);
@@ -44,8 +57,6 @@ function PolicyListing() {
   const [updateTable, setUpdateTable] = useState(moment.now());
   const [currentPage, setCurrentPage] = useState(1);
   const [searchFilterParams, setSearchFilter] = useState({});
-
-  let { serviceId, policyType } = useParams();
 
   useEffect(() => {
     fetchServiceDefs();
@@ -121,6 +132,7 @@ function PolicyListing() {
     },
     [updateTable, searchFilterParams]
   );
+
   const fetchServiceDefs = async () => {
     let serviceDefsResp = [];
     try {
@@ -136,6 +148,7 @@ function PolicyListing() {
     setServiceDefs(serviceDefsResp.data.serviceDefs);
     setLoader(false);
   };
+
   const toggleConfirmModalForDelete = (policyID, policyName) => {
     setConfirmModal({
       policyDetails: { policyID: policyID, policyName: policyName },
@@ -149,13 +162,16 @@ function PolicyListing() {
       showPopup: false
     });
   };
+
   const handleClosePolicyId = () => setPolicyViewModal(false);
+
   const openModal = (policyDetails) => {
     let policyId = pick(policyDetails, ["id"]);
     setPolicyViewModal(true);
     setPolicyParamsData(policyDetails);
     fetchVersions(policyId.id);
   };
+
   const fetchVersions = async (policyId) => {
     let versionsResp = {};
     try {
@@ -201,7 +217,8 @@ function PolicyListing() {
     }
     toggleClose();
   };
-  const previousVer = (e) => {
+
+  const previousVersion = (e) => {
     if (e.currentTarget.classList.contains("active")) {
       let curr = policyParamsData && policyParamsData.version;
       let policyVersionList = currentPage;
@@ -216,7 +233,8 @@ function PolicyListing() {
     prevVal.isChangeVersion = true;
     setPolicyParamsData(prevVal);
   };
-  const nextVer = (e) => {
+
+  const nextVersion = (e) => {
     if (e.currentTarget.classList.contains("active")) {
       let curr = policyParamsData && policyParamsData.version;
       let policyVersionList = currentPage;
@@ -242,9 +260,11 @@ function PolicyListing() {
     setPolicyParamsData(revertVal);
     setPolicyViewModal(false);
   };
+
   const updateServices = () => {
     setUpdateTable(moment.now());
   };
+
   const columns = React.useMemo(
     () => [
       {
@@ -382,7 +402,7 @@ function PolicyListing() {
               <Button
                 variant="outline-dark"
                 size="sm"
-                className="m-r-5"
+                className="mr-2"
                 title="View"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -394,7 +414,7 @@ function PolicyListing() {
               {(isSystemAdmin() || isKeyAdmin() || isUser()) && (
                 <>
                   <Link
-                    className="btn btn-outline-dark btn-sm m-r-5"
+                    className="btn btn-outline-dark btn-sm mr-2"
                     title="Edit"
                     to={`/service/${serviceId}/policies/${original.id}/edit`}
                   >
@@ -403,7 +423,6 @@ function PolicyListing() {
                   <Button
                     variant="danger"
                     size="sm"
-                    className="m-r-5"
                     title="Delete"
                     onClick={() =>
                       toggleConfirmModalForDelete(original.id, original.name)
@@ -422,6 +441,72 @@ function PolicyListing() {
     []
   );
 
+  const addPolicy = () => {
+    navigate(`/service/${serviceId}/policies/create/${policyType}`, {
+      state: { tblpageData: tblpageData }
+    });
+  };
+
+  const searchFilterOption = [
+    {
+      category: "group",
+      label: "Group Name",
+      type: "text"
+    },
+    {
+      category: "policyLabelsPartial",
+      label: "Policy Label",
+      type: "text"
+    },
+    {
+      category: "policyNamePartial",
+      label: "Policy Name",
+      type: "text"
+    },
+    {
+      category: "role",
+      label: "Role Name",
+      type: "text"
+    },
+    {
+      category: "isEnabled",
+      label: "Status",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "true", label: "Enabled" },
+          { value: "false", label: "Disabled" }
+        ];
+      }
+    },
+    {
+      category: "user",
+      label: "User Name",
+      type: "text"
+    }
+  ];
+
+  const getSearchFilterOption = () => {
+    let currentServiceDef = serviceDef;
+
+    if (currentServiceDef !== undefined) {
+      let serviceDefName = currentServiceDef.name;
+      let serviceDefResource = currentServiceDef.resources;
+
+      let serviceDefResourceOption = serviceDefResource.map((obj) => ({
+        category: "resource:" + obj.name,
+        label: capitalize(serviceDefName + " " + obj.name),
+        type: "text"
+      }));
+
+      return sortBy(concat(searchFilterOption, serviceDefResourceOption), [
+        "label"
+      ]);
+    }
+
+    return sortBy(searchFilterOption, ["label"]);
+  };
+
   const updateSearchFilter = (filter) => {
     console.log("PRINT Filter : ", filter);
     let searchFilter = {};
@@ -432,58 +517,15 @@ function PolicyListing() {
     setSearchFilter(searchFilter);
   };
 
-  const addPolicy = () => {
-    navigate(`/service/${serviceId}/policies/create/${policyType}`, {
-      state: { tblpageData: tblpageData }
-    });
-  };
-
   return (
     <div className="wrap">
-      <div className="wrap policy-listing">
-        <Row>
+      <div className="policy-listing">
+        <Row className="mb-3">
           <Col sm={10}>
             <StructuredFilter
               key="policy-listing-search-filter"
               placeholder="Search for your policy..."
-              options={[
-                {
-                  category: "group",
-                  label: "Group Name",
-                  type: "text"
-                },
-                {
-                  category: "policyLabelsPartial",
-                  label: "Policy Label",
-                  type: "text"
-                },
-                {
-                  category: "policyNamePartial:",
-                  label: "Policy Name",
-                  type: "text"
-                },
-                {
-                  category: "role",
-                  label: "Role Name",
-                  type: "text"
-                },
-                {
-                  category: "isEnabled",
-                  label: "Status",
-                  type: "textoptions",
-                  options: () => {
-                    return [
-                      { value: "true", label: "Enabled" },
-                      { value: "false", label: "Disabled" }
-                    ];
-                  }
-                },
-                {
-                  category: "user",
-                  label: "User Name",
-                  type: "text"
-                }
-              ]}
+              options={getSearchFilterOption()}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
               defaultSelected={[]}
@@ -492,32 +534,26 @@ function PolicyListing() {
           <Col sm={2}>
             <div className="pull-right mb-1">
               {(isSystemAdmin() || isKeyAdmin() || isUser()) && (
-                <Button
-                  variant="primary"
-                  className="btn btn-sm btn-primary mb-2"
-                  size="sm"
-                  onClick={addPolicy}
-                >
+                <Button variant="primary" size="sm" onClick={addPolicy}>
                   Add New Policy
                 </Button>
               )}
             </div>
           </Col>
         </Row>
-        <br />
-        <>
-          <XATableLayout
-            data={policyListingData}
-            columns={columns}
-            fetchData={fetchPolicyInfo}
-            pagination
-            pageCount={pageCount}
-            currentpageIndex={currentpageIndex}
-            loading={loader}
-            columnSort={true}
-          />
-        </>
+
+        <XATableLayout
+          data={policyListingData}
+          columns={columns}
+          fetchData={fetchPolicyInfo}
+          pagination
+          pageCount={pageCount}
+          currentpageIndex={currentpageIndex}
+          loading={loader}
+          columnSort={true}
+        />
       </div>
+
       <Modal show={deletePolicyModal.showPopup} onHide={toggleClose}>
         <Modal.Body>Are you sure you want to delete</Modal.Body>
         <Modal.Footer>
@@ -535,6 +571,7 @@ function PolicyListing() {
           </Button>
         </Modal.Footer>
       </Modal>
+
       <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>Policy Details</Modal.Title>
@@ -542,7 +579,7 @@ function PolicyListing() {
         <Modal.Body>
           <PolicyViewDetails
             paramsData={policyParamsData}
-            serviceDefs={serviceDefs}
+            serviceDef={serviceDef}
             policyInfo={fetchPolicyInfo}
             totalCount={totalCount}
             policyView={true}
@@ -550,37 +587,40 @@ function PolicyListing() {
           />
         </Modal.Body>
         <Modal.Footer>
-          <div className="policy-version pull-left">
-            <i
-              className={
-                policyParamsData && policyParamsData.version > 1
-                  ? "fa-fw fa fa-chevron-left active"
-                  : "fa-fw fa fa-chevron-left"
-              }
-              onClick={(e) =>
-                e.currentTarget.classList.contains("active") && previousVer(e)
-              }
-            ></i>
-            <span>{`Version ${
-              policyParamsData && policyParamsData.version
-            }`}</span>
-            <i
-              className={
-                !isUndefined(
-                  currentPage[
-                    indexOf(
-                      currentPage,
-                      policyParamsData && policyParamsData.version
-                    ) + 1
-                  ]
-                )
-                  ? "fa-fw fa fa-chevron-right active"
-                  : "fa-fw fa fa-chevron-right"
-              }
-              onClick={(e) =>
-                e.currentTarget.classList.contains("active") && nextVer(e)
-              }
-            ></i>
+          <div className="policy-version text-left">
+            <span>
+              <i
+                className={
+                  policyParamsData && policyParamsData.version > 1
+                    ? "fa-fw fa fa-chevron-left active"
+                    : "fa-fw fa fa-chevron-left"
+                }
+                onClick={(e) =>
+                  e.currentTarget.classList.contains("active") &&
+                  previousVersion(e)
+                }
+              ></i>
+              <span>{`Version ${
+                policyParamsData && policyParamsData.version
+              }`}</span>
+              <i
+                className={
+                  !isUndefined(
+                    currentPage[
+                      indexOf(
+                        currentPage,
+                        policyParamsData && policyParamsData.version
+                      ) + 1
+                    ]
+                  )
+                    ? "fa-fw fa fa-chevron-right active"
+                    : "fa-fw fa fa-chevron-right"
+                }
+                onClick={(e) =>
+                  e.currentTarget.classList.contains("active") && nextVersion(e)
+                }
+              ></i>
+            </span>
             {!isUndefined(
               currentPage[
                 indexOf(
@@ -589,12 +629,12 @@ function PolicyListing() {
                 ) + 1
               ]
             ) && (
-              <Button variant="primary" onClick={(e) => revert(e)}>
+              <Button variant="primary" size="sm" onClick={(e) => revert(e)}>
                 Revert
               </Button>
             )}
           </div>
-          <Button variant="primary" onClick={handleClosePolicyId}>
+          <Button variant="primary" size="sm" onClick={handleClosePolicyId}>
             OK
           </Button>
         </Modal.Footer>

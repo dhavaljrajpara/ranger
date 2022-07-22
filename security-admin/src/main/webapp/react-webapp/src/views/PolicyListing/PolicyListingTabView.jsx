@@ -8,32 +8,33 @@ import { commonBreadcrumb } from "../../utils/XAUtils";
 import { pick } from "lodash";
 import withRouter from "Hooks/withRouter";
 
-class policyTabView extends Component {
+class PolicyListingTabView extends Component {
   state = {
-    serviceDetails: {},
-    componentDefinationDetails: {},
+    serviceData: {},
+    serviceDefData: {},
     loader: true
   };
 
   componentDidMount() {
     this.fetchServiceDetails();
   }
+
   fetchServiceDetails = async () => {
-    let getServiceDetails;
-    let getComponentDefinationDetails;
+    let getServiceData;
+    let getServiceDefData;
     try {
-      getServiceDetails = await fetchApi({
+      getServiceData = await fetchApi({
         url: `plugins/services/${this.props.params.serviceId}`
       });
-      getComponentDefinationDetails = await fetchApi({
-        url: `plugins/definitions/name/${getServiceDetails.data.type}`
+      getServiceDefData = await fetchApi({
+        url: `plugins/definitions/name/${getServiceData.data.type}`
       });
     } catch (error) {
       console.error(`Error occurred while fetching service details ! ${error}`);
     }
     this.setState({
-      serviceDetails: getServiceDetails.data,
-      componentDefinationDetails: getComponentDefinationDetails.data,
+      serviceData: getServiceData.data,
+      serviceDefData: getServiceDefData.data,
       loader: false
     });
   };
@@ -44,15 +45,16 @@ class policyTabView extends Component {
       { replace: true }
     );
   };
+
   policyBreadcrumb = () => {
     let policyDetails = {};
     policyDetails["serviceId"] = this.props.params.serviceId;
     policyDetails["policyType"] = this.props.params.policyType;
-    policyDetails["serviceName"] = this.state.serviceDetails.displayName;
+    policyDetails["serviceName"] = this.state.serviceData.displayName;
     policyDetails["selectedZone"] = JSON.parse(
       localStorage.getItem("zoneDetails")
     );
-    if (this.state.componentDefinationDetails.name === "tag") {
+    if (this.state.serviceDefData.name === "tag") {
       if (policyDetails.selectedZone != null) {
         return commonBreadcrumb(
           ["TagBasedServiceManager", "ManagePolicies"],
@@ -78,43 +80,50 @@ class policyTabView extends Component {
       }
     }
   };
+
   render() {
-    const { componentDefinationDetails } = this.state;
+    const { serviceDefData } = this.state;
     return this.state.loader ? (
       <Loader />
     ) : (
       <React.Fragment>
         {this.policyBreadcrumb()}
         <h4 className="wrap-header bold">
-          {`List of Policies : ${this.state.serviceDetails.displayName}`}
+          {`List of Policies : ${this.state.serviceData.displayName}`}
         </h4>
-        {isRenderMasking(componentDefinationDetails.dataMaskDef) ||
-        isRenderRowFilter(componentDefinationDetails.rowFilterDef) ? (
+        {isRenderMasking(serviceDefData.dataMaskDef) ||
+        isRenderRowFilter(serviceDefData.rowFilterDef) ? (
           <Tabs
             id="PolicyListing"
             activeKey={this.props.params.policyType}
             onSelect={(k) => this.tabChange(k)}
           >
             <Tab eventKey="0" title="Access">
-              {this.props.params.policyType == "0" && <PolicyListing />}
+              {this.props.params.policyType == "0" && (
+                <PolicyListing serviceDef={serviceDefData} />
+              )}
             </Tab>
-            {isRenderMasking(componentDefinationDetails.dataMaskDef) && (
+            {isRenderMasking(serviceDefData.dataMaskDef) && (
               <Tab eventKey="1" title="Masking">
-                {this.props.params.policyType == "1" && <PolicyListing />}
+                {this.props.params.policyType == "1" && (
+                  <PolicyListing serviceDef={serviceDefData} />
+                )}
               </Tab>
             )}
-            {isRenderRowFilter(componentDefinationDetails.rowFilterDef) && (
+            {isRenderRowFilter(serviceDefData.rowFilterDef) && (
               <Tab eventKey="2" title="Row Level Filter">
-                {this.props.params.policyType == "2" && <PolicyListing />}
+                {this.props.params.policyType == "2" && (
+                  <PolicyListing serviceDef={serviceDefData} />
+                )}
               </Tab>
             )}
           </Tabs>
         ) : (
-          <PolicyListing />
+          <PolicyListing serviceDef={serviceDefData} />
         )}
       </React.Fragment>
     );
   }
 }
 
-export default withRouter(policyTabView);
+export default withRouter(PolicyListingTabView);
