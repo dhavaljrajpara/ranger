@@ -329,7 +329,7 @@ function PolicyListing() {
             policyType
           );
           return !isEmpty(rolesData) ? (
-            <MoreLess data={rolesData} />
+            <MoreLess data={rolesData} key={rawValue.row.original.id} />
           ) : (
             <div className="text-center">--</div>
           );
@@ -347,7 +347,7 @@ function PolicyListing() {
             policyType
           );
           return !isEmpty(groupsData) ? (
-            <MoreLess data={groupsData} />
+            <MoreLess data={groupsData} key={rawValue.row.original.id} />
           ) : (
             <div className="text-center">--</div>
           );
@@ -365,7 +365,7 @@ function PolicyListing() {
             policyType
           );
           return !isEmpty(usersData) ? (
-            <MoreLess data={usersData} />
+            <MoreLess data={usersData} key={rawValue.row.original.id} />
           ) : (
             <div className="text-center">--</div>
           );

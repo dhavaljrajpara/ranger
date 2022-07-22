@@ -173,7 +173,7 @@ function Roles() {
         accessor: (raw) => {
           let usersList = _.map(raw.users, "name");
           return !isEmpty(usersList) ? (
-            <MoreLess data={usersList} />
+            <MoreLess data={usersList} key={raw.id} />
           ) : (
             <div className="text-center">--</div>
           );
@@ -185,7 +185,7 @@ function Roles() {
         accessor: (raw) => {
           let groupsList = _.map(raw.groups, "name");
           return !isEmpty(groupsList) ? (
-            <MoreLess data={groupsList} />
+            <MoreLess data={groupsList} key={raw.id} />
           ) : (
             <div className="text-center">--</div>
           );
@@ -198,7 +198,7 @@ function Roles() {
           let rolesList = _.map(raw.roles, "name");
 
           return !isEmpty(rolesList) ? (
-            <MoreLess data={rolesList} />
+            <MoreLess data={rolesList} key={raw.id} />
           ) : (
             <div className="text-center">--</div>
           );

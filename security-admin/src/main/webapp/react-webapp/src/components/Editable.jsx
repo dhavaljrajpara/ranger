@@ -118,6 +118,7 @@ const InputboxComp = (props) => {
       <Form.Group className="mb-3" controlId="expression">
         <Form.Control
           type="text"
+          defaultValue={valRef.current == "" ? null : valRef.current}
           placeholder="enter expression"
           onChange={(e) => handleChange(e)}
         />
@@ -576,7 +577,7 @@ const Editable = (props) => {
   return (
     <div ref={popoverRef}>
       <OverlayTrigger
-        // show={show}
+        show={show}
         target={target}
         trigger="click"
         placement={placement}

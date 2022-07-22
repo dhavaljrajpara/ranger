@@ -300,7 +300,10 @@ function Users() {
               <div className="overflow-auto">
                 {!isEmpty(rawValue.row.values.groupNameList) ? (
                   <h6>
-                    <MoreLess data={rawValue.row.values.groupNameList} />
+                    <MoreLess
+                      data={rawValue.row.values.groupNameList}
+                      key={rawValue.row.original.id}
+                    />
                   </h6>
                 ) : (
                   <div className="text-center">--</div>
