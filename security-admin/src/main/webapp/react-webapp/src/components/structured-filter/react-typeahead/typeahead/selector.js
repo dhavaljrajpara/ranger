@@ -54,13 +54,41 @@ var TypeaheadSelector = createReactClass({
           customClasses={this.props.customClasses}
           onClick={this._onClick.bind(this, result)}
         >
-          {this.props.optionsLabel.length != 0
-            ? this.props.optionsLabel[i]
-            : result}
+          {this._getOptionsLabel(result)}
         </TypeaheadOption>
       );
     }, this);
     return <ul className={classList}>{results}</ul>;
+  },
+
+  _getOptionsLabel: function (option) {
+    if (this.props.header == "Category") {
+      for (var i = 0; i < this.props.fullOptions.length; i++) {
+        if (this.props.fullOptions[i].category == option) {
+          return this.props.fullOptions[i].label;
+        }
+      }
+    } else if (this.props.header == "Value") {
+      var options = this._getCategoryOptions();
+      if (options == null) {
+        return [];
+      } else {
+        for (var i = 0; i < this.props.options.length; i++) {
+          if (options()[i].value == option) {
+            return options()[i].label;
+          }
+        }
+      }
+    }
+    return option;
+  },
+
+  _getCategoryOptions: function () {
+    for (var i = 0; i < this.props.fullOptions.length; i++) {
+      if (this.props.fullOptions[i].category == this.props.currentCategory) {
+        return this.props.fullOptions[i].options;
+      }
+    }
   },
 
   setSelectionIndex: function (index) {

@@ -51,13 +51,10 @@ var TypeaheadTokenizer = createReactClass({
     var result = this.state.selected.map(function (selected) {
       let mykey = selected.category + selected.value;
       let categoryLabel = this._getFilterCategoryLabel(selected.category);
-      let categoryValue = selected.value;
-      if (this.state.category == "") {
-        categoryValue = this._getFilterCategoryLabelForOption(
-          selected.category,
-          selected.value
-        );
-      }
+      let categoryValue = this._getFilterCategoryLabelForOption(
+        selected.category,
+        selected.value
+      );
       return (
         <Token
           key={mykey}
@@ -291,6 +288,8 @@ var TypeaheadTokenizer = createReactClass({
                   : ""
               }
               customClasses={this.props.customClasses}
+              currentCategory={this.state.category}
+              fullOptions={this.props.options}
               options={this._getOptionsForTypeahead()}
               optionsLabel={this._getOptionsLabel()}
               header={this._getHeader()}

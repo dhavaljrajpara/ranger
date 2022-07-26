@@ -1442,7 +1442,6 @@ header {
   padding: 3px 5px;
   width: 100%;
   display: block;
-  text-transform: capitalize;
 }
 
 .filter-tokenizer ul.typeahead-selector li a:hover,

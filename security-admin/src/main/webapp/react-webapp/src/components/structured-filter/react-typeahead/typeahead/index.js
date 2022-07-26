@@ -117,6 +117,8 @@ var Typeahead = onClickOutside(
           onOptionSelected={this._onOptionSelected}
           customClasses={this.props.customClasses}
           optionsLabel={this.props.optionsLabel}
+          fullOptions={this.props.fullOptions}
+          currentCategory={this.props.currentCategory}
         />
       );
     },
