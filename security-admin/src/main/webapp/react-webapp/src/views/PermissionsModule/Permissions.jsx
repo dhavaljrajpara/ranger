@@ -85,7 +85,7 @@ function Permissions() {
           const Users = raw.userPermList.map((user) => {
             return user.userName;
           });
-
+          console.log(Users);
           return !isEmpty(Users) ? (
             <MoreLess data={Users} />
           ) : (

@@ -1720,3 +1720,8 @@ header {
 .user-role-grp-form .form-control {
   padding-right: 25px !important;
 }
+
+.permission-infinite-scroll {
+  height: 276px;
+  overflow-y: auto;
+}

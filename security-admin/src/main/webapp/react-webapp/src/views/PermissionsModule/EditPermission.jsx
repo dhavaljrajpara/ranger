@@ -1,20 +1,29 @@
 import { Form, Field } from "react-final-form";
-import { Button, Col, Form as FormB, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form as FormB,
+  Row,
+  Table,
+  Spinner
+} from "react-bootstrap";
 import React, { useEffect, useReducer } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Loader } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
-import { cloneDeep, find, findIndex } from "lodash";
+import { cloneDeep, find, findIndex, reverse } from "lodash";
 import { AccessResult } from "Utils/XAEnums";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, CustomInfinteScroll } from "../../utils/XAUtils";
 
 const initialState = {
   loader: true,
   permissionData: null,
   selectedGrp: [],
-  selectedUsr: []
+  selectedUsr: [],
+  usrloading: false,
+  grploading: false
 };
 
 function reducer(state, action) {
@@ -30,13 +39,21 @@ function reducer(state, action) {
     case "SET_SELECTED_GRP":
       return {
         ...state,
-        selectedGrp: action.grpData
+        selectedGrp: action.grpData,
+        grploading: false
       };
     case "SET_SELECTED_USR":
       return {
         ...state,
-        selectedUsr: action.usrData
+        selectedUsr: action.usrData,
+        usrloading: false
       };
+    case "USR_LOADING": {
+      return { ...state, usrloading: true };
+    }
+    case "GRP_LOADING": {
+      return { ...state, grploading: true };
+    }
     default:
       throw new Error();
   }
@@ -45,7 +62,14 @@ const EditPermission = (props) => {
   let { permissionId } = useParams();
   const navigate = useNavigate();
   const [permissionState, dispatch] = useReducer(reducer, initialState);
-  const { loader, permissionData, selectedGrp, selectedUsr } = permissionState;
+  const {
+    loader,
+    permissionData,
+    usrloading,
+    grploading,
+    selectedGrp,
+    selectedUsr
+  } = permissionState;
 
   useEffect(() => {
     fetchPermissions();
@@ -94,8 +118,7 @@ const EditPermission = (props) => {
         });
       }
     }
-    // delete formData.selectgroup;
-    // delete formData.selectuser;
+
     try {
       await fetchApi({
         url: `xusers/permission/${permissionId}`,
@@ -124,6 +147,8 @@ const EditPermission = (props) => {
 
   const fetchPermissions = async () => {
     let data = null;
+    let groups = [];
+    let users = [];
     try {
       const permissionResp = await fetchApi({
         url: `xusers/permission/${permissionId}`,
@@ -133,14 +158,16 @@ const EditPermission = (props) => {
     } catch (error) {
       console.error(`Error occurred while fetching Permissions ! ${error}`);
     }
+    groups = reverse(data.groupPermList);
+    users = reverse(data.userPermList);
     dispatch({
       type: "SET_DATA",
       data,
-      grpData: data?.groupPermList.map((obj) => ({
+      grpData: groups.map((obj) => ({
         label: obj.groupName,
         value: obj.groupId
       })),
-      usrData: data?.userPermList.map((obj) => ({
+      usrData: users.map((obj) => ({
         label: obj.userName,
         value: obj.userId
       }))
@@ -167,22 +194,28 @@ const EditPermission = (props) => {
   };
 
   const addInSelectedGrp = (formData, input) => {
-    dispatch({
-      type: "SET_SELECTED_GRP",
-      grpData: [...selectedGrp, ...formData.selectgroup]
-    });
-    input.onChange([]);
+    dispatch({ type: "GRP_LOADING" });
+    setTimeout(() => {
+      dispatch({
+        type: "SET_SELECTED_GRP",
+        grpData: [...formData.selectgroup, ...selectedGrp]
+      });
+      input.onChange([]);
+    }, 100);
   };
 
   const handleRemoveGrp = (obj) => {
-    let index = findIndex(selectedGrp, obj);
-    if (index !== -1) {
-      selectedGrp.splice(index, 1);
-      dispatch({
-        type: "SET_SELECTED_GRP",
-        grpData: selectedGrp
-      });
-    }
+    dispatch({ type: "GRP_LOADING" });
+    setTimeout(() => {
+      let index = findIndex(selectedGrp, obj);
+      if (index !== -1) {
+        selectedGrp.splice(index, 1);
+        dispatch({
+          type: "SET_SELECTED_GRP",
+          grpData: selectedGrp
+        });
+      }
+    }, 100);
   };
 
   const fetchUsers = async (inputValue) => {
@@ -206,22 +239,29 @@ const EditPermission = (props) => {
   };
 
   const addInSelectedUsr = (formData, input) => {
-    dispatch({
-      type: "SET_SELECTED_USR",
-      usrData: [...selectedUsr, ...formData.selectuser]
-    });
-    input.onChange([]);
+    dispatch({ type: "USR_LOADING" });
+    setTimeout(() => {
+      let data = [...formData.selectuser, ...selectedUsr];
+      dispatch({
+        type: "SET_SELECTED_USR",
+        usrData: data
+      });
+      input.onChange([]);
+    }, 100);
   };
 
   const handleRemoveUsr = (obj) => {
-    let index = findIndex(selectedUsr, obj);
-    if (index !== -1) {
-      selectedUsr.splice(index, 1);
-      dispatch({
-        type: "SET_SELECTED_USR",
-        usrData: selectedUsr
-      });
-    }
+    dispatch({ type: "USR_LOADING" });
+    setTimeout(() => {
+      let index = findIndex(selectedUsr, obj);
+      if (index !== -1) {
+        selectedUsr.splice(index, 1);
+        dispatch({
+          type: "SET_SELECTED_USR",
+          usrData: selectedUsr
+        });
+      }
+    }, 100);
   };
   return loader ? (
     <Loader />
@@ -385,49 +425,47 @@ const EditPermission = (props) => {
                               </td>
                             </tr>
                             <tr>
-                              {selectedGrp.length !== 0 ? (
+                              {!_.isEmpty(selectedGrp) ? (
                                 <td>
-                                  <div className="selected-list">
-                                    {selectedGrp.map((obj, index) => (
-                                      <span
-                                        className="selected-widget"
-                                        key={index}
-                                      >
-                                        <i
-                                          role="button"
-                                          className="icon remove fa-fw fa fa-remove"
-                                          onClick={(e) => handleRemoveGrp(obj)}
-                                        />
-                                        {obj.label}
-                                      </span>
-                                    ))}{" "}
-                                  </div>
+                                  {grploading ? (
+                                    <div className="permission-infinite-scroll text-center">
+                                      <Spinner
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                      ></Spinner>
+                                    </div>
+                                  ) : (
+                                    <CustomInfinteScroll
+                                      data={selectedGrp}
+                                      removeUsrGrp={handleRemoveGrp}
+                                    />
+                                  )}
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">
                                   <strong className="text-danger font-italic">
-                                    No Selected Groups
+                                    No Selected Users
                                   </strong>
                                 </td>
                               )}
 
-                              {selectedUsr.length > 0 ? (
+                              {!_.isEmpty(selectedUsr) ? (
                                 <td>
-                                  <div className="selected-list">
-                                    {selectedUsr.map((obj, index) => (
-                                      <span
-                                        className="selected-widget"
-                                        key={index}
-                                      >
-                                        <i
-                                          role="button"
-                                          className="icon remove fa-fw fa fa-remove"
-                                          onClick={(e) => handleRemoveUsr(obj)}
-                                        />
-                                        {obj.label}
-                                      </span>
-                                    ))}
-                                  </div>
+                                  {usrloading ? (
+                                    <div className="permission-infinite-scroll text-center">
+                                      <Spinner
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                      ></Spinner>
+                                    </div>
+                                  ) : (
+                                    <CustomInfinteScroll
+                                      data={selectedUsr}
+                                      removeUsrGrp={handleRemoveUsr}
+                                    />
+                                  )}
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">

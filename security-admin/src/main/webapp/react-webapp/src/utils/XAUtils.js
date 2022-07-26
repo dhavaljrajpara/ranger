@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { UserRoles, PathAssociateWithModule, QueryParams } from "Utils/XAEnums";
 import _, {
@@ -16,6 +16,7 @@ import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import CustomBreadcrumb from "../views/CustomBreadcrumb";
 import { CustomTooltip } from "../components/CommonComponents";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
@@ -1033,5 +1034,57 @@ export const InfoIcon = (props) => {
         icon="fa-fw fa fa-info-circle"
       />
     </span>
+  );
+};
+
+/* Edit Permission Module Infinite Scroll */
+
+export const CustomInfinteScroll = (props) => {
+  const { data, removeUsrGrp } = props;
+  const [count, setCount] = useState({
+    startIndex: 0,
+    maxItems: 200
+  });
+
+  const [current, setCurrent] = useState(
+    data.slice(count.startIndex, count.maxItems)
+  );
+
+  const getMoreData = () => {
+    let newData = current.concat(
+      data.slice(count.startIndex + 200, count.maxItems + 200)
+    );
+    setCurrent(newData);
+    setCount({
+      startIndex: count.startIndex + 200,
+      maxItems: count.maxItems + 200
+    });
+  };
+
+  const removeData = (value) => {
+    removeUsrGrp(value);
+  };
+
+  return (
+    <div id="scrollableDiv" className="permission-infinite-scroll">
+      <InfiniteScroll
+        dataLength={current.length}
+        next={getMoreData}
+        hasMore={true}
+        scrollableTarget="scrollableDiv"
+      >
+        {current.map((obj) => (
+          <span className="selected-widget" key={obj.value}>
+            <i
+              role="button"
+              id="button"
+              className="icon remove fa-fw fa fa-remove"
+              onClick={() => removeData(obj)}
+            />
+            {obj.label}
+          </span>
+        ))}
+      </InfiniteScroll>
+    </div>
   );
 };
