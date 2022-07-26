@@ -108,7 +108,10 @@ export default function ResourceComp(props) {
   };
 
   const RenderValidateField = ({ name }) =>
-    (formValues && formValues[name]?.mandatory && <span className="compulsory-resource">*</span>) || null;
+    (formValues && formValues[name]?.mandatory && (
+      <span className="compulsory-resource">*</span>
+    )) ||
+    null;
 
   const renderResourceSelect = (levelKey, index) => {
     let renderLabel = false;
@@ -201,6 +204,15 @@ export default function ResourceComp(props) {
     if (rsrcState.loader && rsrcState.resourceKey < levelKey) {
       return null;
     }
+
+    const customStyles = {
+      container: () => ({
+        width: "75%",
+        display: "inline-block",
+        float: "right"
+      })
+    };
+
     return (
       <FormB.Group
         as={Row}
@@ -232,6 +244,7 @@ export default function ResourceComp(props) {
                       onChange={(value) =>
                         handleResourceChange(value, input, index)
                       }
+                      styles={customStyles}
                     />
                     <RenderValidateField name={`resourceName-${levelKey}`} />
                   </>

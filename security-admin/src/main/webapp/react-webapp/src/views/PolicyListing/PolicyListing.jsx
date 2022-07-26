@@ -284,7 +284,17 @@ function PolicyListing(props) {
       },
       {
         Header: "Policy Name",
-        accessor: "name"
+        accessor: "name",
+        Cell: (val) => {
+          return (
+            <span
+              className="text-truncate"
+              style={{ maxWidth: "120px", display: "inline-block" }}
+            >
+              {val.value}
+            </span>
+          );
+        }
       },
       {
         Header: "Policy Label",

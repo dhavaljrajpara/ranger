@@ -387,6 +387,12 @@ div#center div.letter_container_7 {
   }
 }
 
+/* compulsory * */
+.compulsory-resource {
+  position: absolute;
+  right: 5px;
+}
+
 /* Footer */
 .main-footer {
   margin-top: 0;
@@ -1724,4 +1730,9 @@ header {
 .permission-infinite-scroll {
   height: 276px;
   overflow-y: auto;
+}
+
+/* Form control */
+.form-control:disabled {
+  cursor: not-allowed;
 }

@@ -78,8 +78,8 @@ export class MoreLess extends Component {
               <Badge
                 variant="info"
                 key={key}
-                className="m-1"
-                style={{ alignSelf: "start" }}
+                className="m-1 text-truncate"
+                style={{ alignSelf: "start", maxWidth: " 65px" }}
               >
                 {key}
               </Badge>

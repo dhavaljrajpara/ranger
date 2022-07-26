@@ -208,7 +208,8 @@ function Groups() {
           if (rawValue.value) {
             return (
               <Link
-                className={`${
+                style={{ maxWidth: "100px", display: "inline-block" }}
+                className={`text-truncate ${
                   isAuditor() || isKMSAuditor()
                     ? "disabled-link text-secondary"
                     : "text-info"

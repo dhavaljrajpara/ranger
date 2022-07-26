@@ -234,6 +234,7 @@ function GroupForm(props) {
                             ? "form-control border-danger"
                             : "form-control"
                         }
+                        disabled={params.groupID ? true : false}
                       />
                       <span className="info-user-role-grp-icon">
                         <CustomTooltip
@@ -271,7 +272,6 @@ function GroupForm(props) {
                         {...input}
                         placeholder="Description"
                         className="form-control"
-                        disabled={params.groupID ? true : false}
                       />
                     </Col>
                   </Row>

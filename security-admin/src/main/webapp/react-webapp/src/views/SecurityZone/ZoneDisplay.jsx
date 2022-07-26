@@ -96,7 +96,10 @@ class ZoneDisplay extends Component {
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </Button>
-              <h3 className="text-info px-2 display-inline">
+              <h3
+                className="text-info display-inline"
+                style={{ paddingLeft: "2.50rem" }}
+              >
                 {this.props.zone.name}
               </h3>
             </div>

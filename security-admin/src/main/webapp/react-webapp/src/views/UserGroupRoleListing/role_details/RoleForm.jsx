@@ -433,6 +433,7 @@ function RoleForm() {
                             ? "form-control border-danger"
                             : "form-control"
                         }
+                        disabled={params.roleID ? true : false}
                       />
                       <span className="info-user-role-grp-icon">
                         <CustomTooltip
