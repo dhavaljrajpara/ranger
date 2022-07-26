@@ -6,7 +6,10 @@ import { getUserProfile, setUserProfile } from "Utils/appState";
 import { commonBreadcrumb } from "../utils/XAUtils";
 import { scrollToError } from "../components/CommonComponents";
 import withRouter from "Hooks/withRouter";
-
+import { UserTypes, RegexValidation } from "Utils/XAEnums";
+import { has } from "lodash";
+import { InfoIcon } from "../utils/XAUtils";
+import { RegexMessage } from "../utils/XAMessages";
 class UserProfile extends Component {
   updateUserInfo = async (values) => {
     const userProps = getUserProfile();
@@ -50,20 +53,31 @@ class UserProfile extends Component {
       this.props.navigate("/");
     } catch (error) {
       console.error(`Error occurred while updating user password! ${error}`);
+      if (
+        (has(error.response, "data.msgDesc") &&
+          error.response.data.msgDesc == "serverMsg.userMgrOldPassword") ||
+        "serverMsg.userMgrNewPassword"
+      ) {
+        toast.error("You can not use old password.");
+      }
     }
   };
 
   validatePasswordForm = (values) => {
     const errors = {};
-
     if (!values.oldPassword) {
       errors.oldPassword = "Required";
     }
-
     if (!values.newPassword) {
       errors.newPassword = "Required";
     }
-
+    if (
+      values &&
+      has(values, "newPassword") &&
+      !RegexValidation.PASSWORD.regexExpression.test(values.newPassword)
+    ) {
+      errors.newPassword = RegexValidation.PASSWORD.message;
+    }
     if (!values.reEnterPassword) {
       errors.reEnterPassword = "Required";
     } else if (values.newPassword !== values.reEnterPassword) {
@@ -87,24 +101,28 @@ class UserProfile extends Component {
 
   render() {
     const userProps = getUserProfile();
+    console.log(userProps);
     return (
       <div>
         {commonBreadcrumb(["UserProfile"])}
         <h4 className="wrap-header bold">User Profile</h4>
         <div className="wrap">
           <Tab.Container transition={false} defaultActiveKey="edit-basic-info">
-            <Nav variant="tabs">
-              <Nav.Item>
-                <Nav.Link eventKey="edit-basic-info">
-                  <i className="fa-fw fa fa-edit bigger-125"></i>Basic Info
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="edit-password">
-                  <i className="fa-fw fa fa-key bigger-125"></i>Change Password
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
+            {userProps.userSource == UserTypes.USER_INTERNAL.value && (
+              <Nav variant="tabs">
+                <Nav.Item>
+                  <Nav.Link eventKey="edit-basic-info">
+                    <i className="fa-fw fa fa-edit bigger-125"></i>Basic Info
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="edit-password">
+                    <i className="fa-fw fa fa-key bigger-125"></i>Change
+                    Password
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
+            )}
             <div className="user-profile">
               <Tab.Content>
                 <Tab.Pane eventKey="edit-basic-info">
@@ -162,6 +180,19 @@ class UserProfile extends Component {
                                       ? "form-control border-danger"
                                       : "form-control"
                                   }
+                                  disabled={
+                                    userProps.userSource ==
+                                    UserTypes.USER_INTERNAL.value
+                                      ? false
+                                      : true
+                                  }
+                                />
+                                <InfoIcon
+                                  css="info-user-role-grp-icon"
+                                  position="right"
+                                  message={
+                                    RegexMessage.MESSAGE.firstNameValidationMsg
+                                  }
                                 />
                                 {meta.error && meta.touched && (
                                   <span className="invalid-field">
@@ -195,6 +226,19 @@ class UserProfile extends Component {
                                     meta.error && meta.touched
                                       ? "form-control border-danger"
                                       : "form-control"
+                                  }
+                                  disabled={
+                                    userProps.userSource ==
+                                    UserTypes.USER_INTERNAL.value
+                                      ? false
+                                      : true
+                                  }
+                                />
+                                <InfoIcon
+                                  css="info-user-role-grp-icon"
+                                  position="right"
+                                  message={
+                                    RegexMessage.MESSAGE.lastNameValidationMsg
                                   }
                                 />
                                 {meta.error && meta.touched && (
@@ -230,6 +274,12 @@ class UserProfile extends Component {
                                       ? "form-control border-danger"
                                       : "form-control"
                                   }
+                                  disabled={
+                                    userProps.userSource ==
+                                    UserTypes.USER_INTERNAL.value
+                                      ? false
+                                      : true
+                                  }
                                 />
                                 {meta.error && meta.touched && (
                                   <span className="invalid-field">
@@ -256,9 +306,13 @@ class UserProfile extends Component {
                               disabled
                             >
                               <option value="ROLE_SYS_ADMIN">Admin</option>
+                              <option value="ROLE_KEY_ADMIN">KeyAdmin</option>
                               <option value="ROLE_USER">User</option>
                               <option value="ROLE_ADMIN_AUDITOR">
                                 Auditor
+                              </option>
+                              <option value="ROLE_ADMIN_AUDITOR">
+                                KeyAuditor
                               </option>
                             </Field>
                           </Col>
@@ -270,10 +324,16 @@ class UserProfile extends Component {
                               variant="primary"
                               type="submit"
                               size="sm"
-                              disabled={submitting}
+                              disabled={
+                                userProps.userSource ==
+                                UserTypes.USER_INTERNAL.value
+                                  ? false
+                                  : true
+                              }
                             >
                               Save
                             </Button>
+
                             <Button
                               variant="secondary"
                               type="button"
@@ -341,6 +401,18 @@ class UserProfile extends Component {
                                       : "form-control"
                                   }
                                 />
+                                <InfoIcon
+                                  css="info-user-role-grp-icon"
+                                  position="right"
+                                  message={
+                                    <p
+                                      className="pd-10"
+                                      style={{ fontSize: "small" }}
+                                    >
+                                      {RegexValidation.PASSWORD.message}
+                                    </p>
+                                  }
+                                />
                                 {meta.error && meta.touched && (
                                   <span className="invalid-field">
                                     {meta.error}
@@ -374,6 +446,18 @@ class UserProfile extends Component {
                                     meta.error && meta.touched
                                       ? "form-control border-danger"
                                       : "form-control"
+                                  }
+                                />
+                                <InfoIcon
+                                  css="info-user-role-grp-icon"
+                                  position="right"
+                                  message={
+                                    <p
+                                      className="pd-10"
+                                      style={{ fontSize: "small" }}
+                                    >
+                                      {RegexValidation.PASSWORD.message}
+                                    </p>
                                   }
                                 />
                                 {meta.error && meta.touched && (
@@ -411,6 +495,18 @@ class UserProfile extends Component {
                                       : "form-control"
                                   }
                                 />
+                                <InfoIcon
+                                  css="info-user-role-grp-icon"
+                                  position="right"
+                                  message={
+                                    <p
+                                      className="pd-10"
+                                      style={{ fontSize: "small" }}
+                                    >
+                                      {RegexValidation.PASSWORD.message}
+                                    </p>
+                                  }
+                                />
                                 {meta.error && meta.touched && (
                                   <span className="invalid-field">
                                     {meta.error}
@@ -430,6 +526,7 @@ class UserProfile extends Component {
                             >
                               Save
                             </Button>
+
                             <Button
                               variant="secondary"
                               type="button"

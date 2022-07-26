@@ -4,7 +4,7 @@ export const RegexMessage = {
   MESSAGE: {
     policynameinfoiconmessage:
       "Please avoid these characters (&, <, >, ', \", `) for policy name.",
-    namevalidationinfomessage: (
+    userNameValidationMsg: (
       <>
         <p className="pd-10" style={{ fontSize: "small" }}>
           1. User name should be start with alphabet / numeric / underscore /
@@ -33,6 +33,30 @@ export const RegexMessage = {
     policyconditioninfoicon:
       "1. JavaScript Condition Examples :\
                       country_code == 'USA', time_range >= 900 time_range <= 1800 etc.\
-                      2. Dragging bottom-right corner of javascript condition editor(Textarea) can resizable"
+                      2. Dragging bottom-right corner of javascript condition editor(Textarea) can resizable",
+    firstNameValidationMsg: (
+      <>
+        <p className="pd-10" style={{ fontSize: "small" }}>
+          1. First name should be start with alphabet / numeric / underscore /
+          non-us characters.
+          <br />
+          2. Allowed special character ,._-+/@= and space.
+          <br />
+          3. Name length should be greater than one.
+        </p>
+      </>
+    ),
+    lastNameValidationMsg: (
+      <>
+        <p className="pd-10" style={{ fontSize: "small" }}>
+          1. Last name should be start with alphabet / numeric / underscore /
+          non-us characters.
+          <br />
+          2. Allowed special character ,._-+/@= and space.
+          <br />
+          3. Name length should be greater than one.
+        </p>
+      </>
+    )
   }
 };

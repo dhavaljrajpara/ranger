@@ -357,7 +357,7 @@ function UserFormComp(props) {
                       <InfoIcon
                         css="info-user-role-grp-icon"
                         position="right"
-                        message={RegexMessage.MESSAGE.namevalidationinfomessage}
+                        message={RegexMessage.MESSAGE.userNameValidationMsg}
                       />
 
                       {meta.error && meta.touched && (
@@ -493,7 +493,7 @@ function UserFormComp(props) {
                       <InfoIcon
                         css="info-user-role-grp-icon"
                         position="right"
-                        message={RegexMessage.MESSAGE.namevalidationinfomessage}
+                        message={RegexMessage.MESSAGE.firstNameValidationMsg}
                       />
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error}</span>
@@ -531,7 +531,7 @@ function UserFormComp(props) {
                       <InfoIcon
                         css="info-user-role-grp-icon"
                         position="right"
-                        message={RegexMessage.MESSAGE.namevalidationinfomessage}
+                        message={RegexMessage.MESSAGE.lastNameValidationMsg}
                       />
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error}</span>
