@@ -100,7 +100,7 @@ function Permissions() {
           return (
             <div className="text-center">
               <Link
-                className="btn btn-outline-dark btn-sm m-r-5"
+                className="btn btn-sm m-r-5"
                 title="Edit"
                 to={`/permissions/${rawValue.row.original.id}/edit`}
               >

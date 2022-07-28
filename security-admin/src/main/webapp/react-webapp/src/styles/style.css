@@ -178,6 +178,7 @@ a:active {
 }
 
 .btn:focus {
+  color: #0b7fad;
   background-color: #fff;
   border-color: #0062cc;
   box-shadow: 0 0 0 0.2rem rgb(38 143 255 / 50%);
@@ -227,6 +228,13 @@ a:active {
   border-color: #007bff !important;
 }
 
+.btn-outline-dark:not(:disabled):not(.disabled):active,
+.btn-outline-dark:not(:disabled):not(.disabled).active,
+.show > .btn-outline-dark.dropdown-toggle {
+  color: #007bff;
+  background-color: #f8f9fa;
+  border-color: #007bff;
+}
 /* Header */
 .ranger-navbar {
   background-color: none;
@@ -1081,6 +1089,11 @@ header {
 .report-page .accordion > .card {
   overflow: visible;
 }
+.report-table-modal {
+  width: 11rem !important;
+  max-width: 12rem !important;
+  height: 100px !important;
+}
 
 .latestResponse {
   width: 29%;
@@ -1680,13 +1693,11 @@ header {
   display: inline-flex;
   flex-wrap: wrap;
   font-size: 1rem;
-  height: "auto";
+  overflow-y: auto;
+  max-height: 100px;
 }
 
 /*Policy Permission Item */
-.plcypermissiontable td {
-  width: 20%;
-}
 
 .plcypermissiontable th {
   text-align: center;

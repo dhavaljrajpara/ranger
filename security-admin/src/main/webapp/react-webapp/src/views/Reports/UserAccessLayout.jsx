@@ -369,7 +369,10 @@ function UserAccessLayout(props) {
     link.remove();
   };
 
-  const onChangeSearchBy = (e, input) => {
+  const onChangeSearchBy = (e, input, values) => {
+    if (e.label !== input.value.label) {
+      values.searchByValue = {};
+    }
     for (const obj in input.value) {
       delete input.value[obj];
     }
@@ -566,7 +569,7 @@ function UserAccessLayout(props) {
                                       menuPlacement="auto"
                                       placeholder="Select Search By"
                                       onChange={(e) =>
-                                        onChangeSearchBy(e, input)
+                                        onChangeSearchBy(e, input, values)
                                       }
                                     />
                                   )}
@@ -656,15 +659,25 @@ function SearchByAsyncSelect(props) {
   };
 
   const customStyles = {
-    valueContainer: () => ({
+    control: (provided) => ({
+      ...provided,
+      minHeight: "30px",
+      height: "38px",
+      marginLeft: 5
+    }),
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      height: "30px"
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
       width: 215,
-      height: 35,
-      padding: "6px 8px"
+      padding: 4
     })
   };
 
   const fetchOpts = async (inputValue) => {
-    let apiUrl = "xusers/groups";
+    let apiUrl = "xusers/lookup/groups";
     let params = {};
     let optsList = [];
 
@@ -673,7 +686,7 @@ function SearchByAsyncSelect(props) {
     }
 
     if (searchByOptName.value == "searchByUser") {
-      apiUrl = "xusers/users";
+      apiUrl = "xusers/lookup/users";
     } else if (searchByOptName.value == "searchByRole") {
       apiUrl = "roles/roles";
     }
@@ -684,20 +697,19 @@ function SearchByAsyncSelect(props) {
     });
 
     if (searchByOptName.value == "searchByUser") {
-      optsList = serverResp.data.vXUsers.map(({ name }) => ({
-        label: name,
-        value: name
-      }));
+      optsList = serverResp.data.vXStrings.map((obj) => {
+        return { label: obj["value"], value: obj["value"] };
+      });
     } else if (searchByOptName.value == "searchByRole") {
       optsList = serverResp.data.roles.map(({ name }) => ({
         label: name,
         value: name
       }));
     } else {
-      optsList = serverResp.data.vXGroups.map(({ name }) => ({
-        label: name,
-        value: name
-      }));
+      optsList = serverResp.data.vXStrings.map((obj) => {
+        return { label: obj["value"], value: obj["value"] };
+      });
+      console.log(optsList);
     }
 
     return optsList;

@@ -328,7 +328,7 @@ function XATableLayout({
                   </button>
                   <button
                     onClick={() => gotoPage(pageCount - 1)}
-                    className="pagination-btn-last btn btn-outline-dark btn-sm"
+                    className="pagination-btn-last btn btn-primary btn-sm"
                     disabled={!canNextPage}
                   >
                     {">>"}

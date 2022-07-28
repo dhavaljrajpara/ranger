@@ -11,6 +11,7 @@ import {
   Table
 } from "react-bootstrap";
 import { isEmpty } from "lodash";
+import { MoreLess } from "Components/CommonComponents";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
 
@@ -77,28 +78,36 @@ function SearchPolicyTable(props) {
             </Link>
           );
         },
-        width: 50
+        width: 65
       },
       {
         Header: "Policy Name",
-        accessor: "name"
+        accessor: "name",
+        Cell: (val) => {
+          return (
+            <span
+              className="text-truncate"
+              style={{ maxWidth: "120px", display: "inline-block" }}
+            >
+              {val.value}
+            </span>
+          );
+        }
       },
       {
         Header: "Policy Label",
         accessor: "policyLabels",
         Cell: (rawValue) => {
-          if (rawValue.value == "")
-            return <div className="text-center">--</div>;
-          else {
-            let policyLabels = rawValue.value.map((label, index) => (
-              <h6 className="d-inline mr-1" key={index}>
-                <Badge variant="primary" key={label}>
-                  {label}
-                </Badge>
-              </h6>
-            ));
-            return policyLabels;
-          }
+          let policyLabels = rawValue.value.map((label, index) => (
+            <h6 className="d-inline mr-1" key={index}>
+              {label}
+            </h6>
+          ));
+          return !isEmpty(policyLabels) ? (
+            <MoreLess data={policyLabels} key={rawValue.row.original.id} />
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       },
       {
@@ -165,15 +174,11 @@ function SearchPolicyTable(props) {
         Header: "Zone Name",
         accessor: "zoneName",
         Cell: (rawValue) => {
-          if (rawValue.value == "")
-            return <div className="text-center">--</div>;
-          else {
-            return (
-              <h6 className="text-center">
-                <Badge variant="dark">{rawValue.value}</Badge>
-              </h6>
-            );
-          }
+          return !isEmpty(rawValue.value) ? (
+            <MoreLess data={rawValue.value} key={rawValue.row.original.id} />
+          ) : (
+            <div className="text-center">--</div>
+          );
         }
       },
       {
@@ -258,48 +263,32 @@ function PolicyConditionData(props) {
       tableRow = policyItem.map((items, index) => {
         return (
           <tr key={index}>
-            <td className="text-center">
-              {!isEmpty(items.roles)
-                ? items.roles.map((role) => (
-                    <h6 className="d-inline mr-1">
-                      <Badge variant="info" key={role}>
-                        {role}
-                      </Badge>
-                    </h6>
-                  ))
-                : "--"}
+            <td className="text-center report-table-modal">
+              {!isEmpty(items.roles) ? (
+                <MoreLess data={items.roles} />
+              ) : (
+                <div className="text-center">--</div>
+              )}
             </td>
-            <td className="text-center">
-              {!isEmpty(items.groups)
-                ? items.groups.map((group) => (
-                    <h6 className="d-inline mr-1">
-                      <Badge variant="info" key={group}>
-                        {group}
-                      </Badge>
-                    </h6>
-                  ))
-                : "--"}
+            <td className="text-center report-table-modal">
+              {!isEmpty(items.groups) ? (
+                <MoreLess data={items.groups} />
+              ) : (
+                <div className="text-center">--</div>
+              )}
             </td>
-            <td className="text-center">
-              {!isEmpty(items.users)
-                ? items.users.map((user) => (
-                    <h6 className="d-inline mr-1">
-                      <Badge variant="info" key={user}>
-                        {user}
-                      </Badge>
-                    </h6>
-                  ))
-                : "--"}
+            <td className="text-center report-table-modal">
+              {!isEmpty(items.users) ? (
+                <MoreLess data={items.users} />
+              ) : (
+                <div className="text-center">--</div>
+              )}
             </td>
             <td className="text-center">
               {!isEmpty(items.accesses)
                 ? items.accesses.map((obj) => (
                     <h6 className="d-inline mr-1">
-                      <Badge
-                        variant="info"
-                        className="d-inline mr-1"
-                        key={obj.type}
-                      >
+                      <Badge variant="info" className="mr-1" key={obj.type}>
                         {obj.type}
                       </Badge>
                     </h6>

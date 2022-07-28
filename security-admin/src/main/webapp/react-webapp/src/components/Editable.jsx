@@ -316,7 +316,10 @@ const Editable = (props) => {
           });
           val = (
             <h6 className="d-inline mr-1">
-              <span className="editable-edit-text">
+              <span
+                className="editable-edit-text badge bg-dark"
+                style={{ display: "block" }}
+              >
                 {conditionDefVal.label} : {ipRangVal.join(", ")}
               </span>
               <Button

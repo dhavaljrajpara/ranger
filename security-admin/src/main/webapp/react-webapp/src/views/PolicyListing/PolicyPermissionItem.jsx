@@ -153,7 +153,17 @@ export default function PolicyPermissionItem(props) {
   };
 
   const required = (value) => (value ? undefined : "Required");
-
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      width: "235px"
+    }),
+    multiValueLabel: () => ({
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    })
+  };
   return (
     <div>
       <Col sm="12" className="policyTable">
@@ -182,6 +192,7 @@ export default function PolicyPermissionItem(props) {
                                     {...input}
                                     loadOptions={fetchRolesData}
                                     defaultOptions
+                                    styles={customStyles}
                                     cacheOptions
                                     isMulti
                                   />
@@ -205,6 +216,7 @@ export default function PolicyPermissionItem(props) {
                                   <AsyncSelect
                                     {...input}
                                     loadOptions={fetchGroupsData}
+                                    styles={customStyles}
                                     defaultOptions
                                     cacheOptions
                                     isMulti
@@ -230,6 +242,7 @@ export default function PolicyPermissionItem(props) {
                                   <AsyncSelect
                                     {...input}
                                     loadOptions={fetchUsersData}
+                                    styles={customStyles}
                                     defaultOptions
                                     cacheOptions
                                     isMulti
