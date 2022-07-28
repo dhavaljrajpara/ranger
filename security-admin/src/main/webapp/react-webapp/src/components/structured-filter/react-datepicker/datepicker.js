@@ -77,5 +77,4 @@ var DatePicker = createReactClass({
   }
 });
 
-// module.exports = DatePicker;
 export default DatePicker;

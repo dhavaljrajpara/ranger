@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Button, Row, Col, Table, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import dateFormat from "dateformat";
@@ -21,26 +21,22 @@ import {
   map,
   sortBy,
   toString,
-  toUpper
+  toUpper,
+  isNull
 } from "lodash";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import {
-  getTableSortBy,
-  getTableSortType,
-  InfoIcon
-} from "../../utils/XAUtils";
-import { CustomTooltip, useQuery } from "../../components/CommonComponents";
+import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
+import { CustomTooltip } from "../../components/CommonComponents";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
   const [zones, setZones] = useState([]);
-  const [searchFilterParams, setSearchFilter] = useState({});
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const [updateTable, setUpdateTable] = useState(moment.now());
@@ -52,11 +48,117 @@ function Access() {
   const [checked, setChecked] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const fetchIdRef = useRef(0);
-  const navigate = useNavigate();
-  const searchParams = useQuery();
+  const [pageLoader, setPageLoader] = useState(true);
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices(), fetchZones();
+
+    let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
+    let searchFilterParam = {};
+    let searchParam = {};
+    let defaultSearchFilterParam = [];
+
+    // Get Search Filter Params from current search params
+    const currentParams = Object.fromEntries([...searchParams]);
+    console.log("PRINT search params : ", currentParams);
+
+    if (isEmpty(currentParams)) {
+      searchParam["startDate"] = currentDate;
+      searchParam["excludeServiceUser"] = false;
+      searchFilterParam["startDate"] = currentDate;
+      defaultSearchFilterParam.push({
+        category: "startDate",
+        value: currentDate
+      });
+    } else {
+      for (const param in currentParams) {
+        let searchFilterObj = find(searchFilterOption, {
+          urlLabel: param
+        });
+
+        if (!isUndefined(searchFilterObj)) {
+          let category = searchFilterObj.category;
+          let value = currentParams[param];
+
+          if (searchFilterObj.type == "textoptions") {
+            let textOptionObj = find(searchFilterObj.options(), {
+              label: value
+            });
+            value = textOptionObj !== undefined ? textOptionObj.value : value;
+          }
+
+          searchFilterParam[category] = value;
+          defaultSearchFilterParam.push({
+            category: category,
+            value: value
+          });
+        }
+      }
+    }
+
+    // Get Search Filter Params from localStorage
+    const localStorageParams = JSON.parse(localStorage.getItem("bigData"));
+    console.log("PRINT available localStorage : ", localStorageParams);
+
+    if (!isNull(localStorageParams) && !isEmpty(localStorageParams)) {
+      for (const localParam in localStorageParams) {
+        let searchFilterObj = find(searchFilterOption, {
+          urlLabel: localParam
+        });
+
+        if (!isUndefined(searchFilterObj)) {
+          let category = searchFilterObj.category;
+          let value = localStorageParams[localParam];
+
+          if (searchFilterObj.type == "textoptions") {
+            let textOptionObj = find(searchFilterObj.options(), {
+              label: value
+            });
+            value = textOptionObj !== undefined ? textOptionObj.value : value;
+          }
+
+          let isCategory = !(category in searchFilterParam);
+
+          if (isCategory) {
+            searchFilterParam[category] = value;
+            defaultSearchFilterParam.push({
+              category: category,
+              value: value
+            });
+            searchParam[localParam] = value;
+          }
+        }
+      }
+    }
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams({ ...currentParams, ...searchParam });
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem(
+      "bigData",
+      JSON.stringify({ ...currentParams, ...searchParam })
+    );
+    setPageLoader(false);
+
+    console.log(
+      "PRINT Final searchFilterParam to server : ",
+      searchFilterParam
+    );
+    console.log(
+      "PRINT Final defaultSearchFilterParam to tokenzier : ",
+      defaultSearchFilterParam
+    );
+
+    console.log(
+      "PRINT Final available localStorage is : ",
+      localStorage.getItem("bigData")
+    );
   }, []);
 
   const fetchAccessLogsInfo = useCallback(
@@ -106,7 +208,7 @@ function Access() {
     }
 
     setServiceDefs(serviceDefsResp.data.serviceDefs);
-    setLoader(false);
+    setPageLoader(false);
   };
 
   const fetchServices = async () => {
@@ -122,7 +224,7 @@ function Access() {
     }
 
     setServices(servicesResp.data.services);
-    setLoader(false);
+    setPageLoader(false);
   };
 
   const fetchZones = async () => {
@@ -136,7 +238,7 @@ function Access() {
     }
 
     setZones(sortBy(zonesResp.data.securityZones, ["name"]));
-    setLoader(false);
+    setPageLoader(false);
   };
 
   const toggleChange = () => {
@@ -594,39 +696,33 @@ function Access() {
   };
 
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
-    let searchFilterUrlParam = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
+      searchFilterParam[obj.category] = obj.value;
+
       let searchFilterObj = find(searchFilterOption, {
         category: obj.category
       });
-      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
       if (searchFilterObj.type == "textoptions") {
         let textOptionObj = find(searchFilterObj.options(), {
           value: obj.value
         });
-        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+        searchParam[urlLabelParam] = textOptionObj.label;
       } else {
-        searchParams.set(searchFilterObj.urlLabel, obj.value);
+        searchParam[urlLabelParam] = obj.value;
       }
     });
-    setSearchFilter(searchFilter);
 
-    for (const searchParam of searchParams.entries()) {
-      const [param, value] = searchParam;
-      if (searchFilterUrlParam[param] !== undefined) {
-        searchParams.set(param, value);
-      } else {
-        searchParams.delete(param);
-      }
-    }
-
-    navigate(`/reports/audit/bigData?${searchParams.toString()}`, {
-      replace: true
-    });
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
+    localStorage.setItem("bigData", JSON.stringify(searchParam));
   };
 
   const searchFilterOption = [
@@ -751,168 +847,188 @@ function Access() {
 
   return (
     <div className="wrap">
-      <Row className="mb-2">
-        <Col sm={12}>
-          <div className="searchbox-border">
-            <StructuredFilter
-              key="access-log-search-filter"
-              placeholder="Search for your access audits..."
-              options={sortBy(searchFilterOption, ["label"])}
-              onTokenAdd={updateSearchFilter}
-              onTokenRemove={updateSearchFilter}
-              defaultSelected={[]}
-            />
+      {pageLoader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+          </Col>
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-2">
+            <Col sm={12}>
+              <div className="searchbox-border">
+                <StructuredFilter
+                  key="access-log-search-filter"
+                  placeholder="Search for your access audits..."
+                  options={sortBy(searchFilterOption, ["label"])}
+                  onTokenAdd={updateSearchFilter}
+                  onTokenRemove={updateSearchFilter}
+                  defaultSelected={defaultSearchFilterParams}
+                />
 
-            <span className="info-icon">
-              <CustomTooltip
-                placement="left"
-                content={
-                  <p className="pd-10" style={{ fontSize: "small" }}>
-                    Wildcard searches( for example using * or ? ) are not
-                    currently supported.
-                    <br /> <b>Access Enforcer :</b> Search by access enforcer
-                    name.
-                    <br />
-                    <b> Access Type :</b> Search by access Type like
-                    READ_EXECUTE, WRITE_EXECUTE.
-                    <br />
-                    <b>Client IP :</b> Search by IP address from where resource
-                    was accessed.
-                    <br />
-                    <b>Cluster Name : </b> Name of cluster <br />
-                    <b>Zone Name :</b> Name of Zone. <br />
-                    <b>End Date :</b> Set end date. <br />
-                    <b>Resource Name :</b> Resource name.
-                    <br /> <b>Resource Type :</b> Search by resource type based
-                    on component. eg. path in HDFS, database ,table in Hive.
-                    <br />
-                    <b> Result :</b> Search by access result i.e Allowed/Denied
-                    logs.
-                    <br /> <b> Service Name :</b> Name of service.
-                    <br /> <b> Service Type :</b> Select type of service.
-                    <br /> <b> Start Date :</b> Set start date.
-                    <br /> <b> User :</b> Name of User.
-                    <br /> <b> Exclude User :</b> Name of User.
-                    <br /> <b> Application :</b> Application.
-                    <br /> <b> Tags :</b> Tag Name.
-                    <br /> <b> Permission :</b> Permission
-                  </p>
-                }
-                icon="fa-fw fa fa-info-circle"
-              />
-            </span>
-          </div>
-        </Col>
-      </Row>
-      <Row className="mb-2">
-        <Col sm={2}>
-          <span>Exclude Service Users: </span>
-          <input
-            type="checkbox"
-            className="align-middle"
-            defaultChecked={checked}
-            onChange={() => {
-              toggleChange();
-            }}
-          />
-        </Col>
-        <Col sm={9}>
-          <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-        </Col>
-      </Row>
-      <XATableLayout
-        data={accessListingData}
-        columns={columns}
-        fetchData={fetchAccessLogsInfo}
-        totalCount={entries && entries.totalCount}
-        loading={loader}
-        pageCount={pageCount}
-        getRowProps={(row) => ({
-          onClick: (e) => {
-            e.stopPropagation();
-            rowModal(row);
-          }
-        })}
-        columnHide={true}
-        columnResizable={true}
-        columnSort={true}
-      />
-      <Modal show={showrowmodal} size="lg" onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <h4>
-              Audit Access Log Detail
-              <Link
-                className="text-info"
-                target="_blank"
-                title="Show log details in next tab"
-                to={{
-                  pathname: `/reports/audit/eventlog/${rowdata.eventId}`
+                <span className="info-icon">
+                  <CustomTooltip
+                    placement="left"
+                    content={
+                      <p className="pd-10" style={{ fontSize: "small" }}>
+                        Wildcard searches( for example using * or ? ) are not
+                        currently supported.
+                        <br /> <b>Access Enforcer :</b> Search by access
+                        enforcer name.
+                        <br />
+                        <b> Access Type :</b> Search by access Type like
+                        READ_EXECUTE, WRITE_EXECUTE.
+                        <br />
+                        <b>Client IP :</b> Search by IP address from where
+                        resource was accessed.
+                        <br />
+                        <b>Cluster Name : </b> Name of cluster <br />
+                        <b>Zone Name :</b> Name of Zone. <br />
+                        <b>End Date :</b> Set end date. <br />
+                        <b>Resource Name :</b> Resource name.
+                        <br /> <b>Resource Type :</b> Search by resource type
+                        based on component. eg. path in HDFS, database ,table in
+                        Hive.
+                        <br />
+                        <b> Result :</b> Search by access result i.e
+                        Allowed/Denied logs.
+                        <br /> <b> Service Name :</b> Name of service.
+                        <br /> <b> Service Type :</b> Select type of service.
+                        <br /> <b> Start Date :</b> Set start date.
+                        <br /> <b> User :</b> Name of User.
+                        <br /> <b> Exclude User :</b> Name of User.
+                        <br /> <b> Application :</b> Application.
+                        <br /> <b> Tags :</b> Tag Name.
+                        <br /> <b> Permission :</b> Permission
+                      </p>
+                    }
+                    icon="fa-fw fa fa-info-circle"
+                  />
+                </span>
+              </div>
+            </Col>
+          </Row>
+          <Row className="mb-2">
+            <Col sm={2}>
+              <span>Exclude Service Users: </span>
+              <input
+                type="checkbox"
+                className="align-middle"
+                defaultChecked={checked}
+                onChange={() => {
+                  toggleChange();
                 }}
-              >
-                <i className="fa-fw fa fa-external-link pull-right text-info"></i>
-              </Link>
-            </h4>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="overflow-auto p-3 mb-3 mb-md-0 mr-md-3">
-          <AccessLogsTable data={rowdata}></AccessLogsTable>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={handleClose}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="xl">
-        <Modal.Header closeButton>
-          <Modal.Title>Policy Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <PolicyViewDetails
-            paramsData={policyParamsData}
-            serviceDefs={serviceDefs}
-            policyView={false}
+              />
+            </Col>
+            <Col sm={9}>
+              <AuditFilterEntries
+                entries={entries}
+                refreshTable={refreshTable}
+              />
+            </Col>
+          </Row>
+          <XATableLayout
+            data={accessListingData}
+            columns={columns}
+            fetchData={fetchAccessLogsInfo}
+            totalCount={entries && entries.totalCount}
+            loading={loader}
+            pageCount={pageCount}
+            getRowProps={(row) => ({
+              onClick: (e) => {
+                e.stopPropagation();
+                rowModal(row);
+              }
+            })}
+            columnHide={true}
+            columnResizable={true}
+            columnSort={true}
           />
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="policy-version pull-left">
-            <i
-              className={
-                policyParamsData && policyParamsData.policyVersion > 1
-                  ? "fa-fw fa fa-chevron-left active"
-                  : "fa-fw fa fa-chevron-left"
-              }
-              onClick={(e) =>
-                e.currentTarget.classList.contains("active") && previousVer(e)
-              }
-            ></i>
-            <span>{`Version ${
-              policyParamsData && policyParamsData.policyVersion
-            }`}</span>
-            <i
-              className={
-                !isUndefined(
-                  currentPage[
-                    indexOf(
-                      currentPage,
-                      policyParamsData && policyParamsData.policyVersion
-                    ) + 1
-                  ]
-                )
-                  ? "fa-fw fa fa-chevron-right active"
-                  : "fa-fw fa fa-chevron-right"
-              }
-              onClick={(e) =>
-                e.currentTarget.classList.contains("active") && nextVer(e)
-              }
-            ></i>
-          </div>
-          <Button variant="primary" onClick={handleClosePolicyId}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          <Modal show={showrowmodal} size="lg" onHide={handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>
+                <h4>
+                  Audit Access Log Detail
+                  <Link
+                    className="text-info"
+                    target="_blank"
+                    title="Show log details in next tab"
+                    to={{
+                      pathname: `/reports/audit/eventlog/${rowdata.eventId}`
+                    }}
+                  >
+                    <i className="fa-fw fa fa-external-link pull-right text-info"></i>
+                  </Link>
+                </h4>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="overflow-auto p-3 mb-3 mb-md-0 mr-md-3">
+              <AccessLogsTable data={rowdata}></AccessLogsTable>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="primary" onClick={handleClose}>
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Modal show={policyviewmodal} onHide={handleClosePolicyId} size="xl">
+            <Modal.Header closeButton>
+              <Modal.Title>Policy Details</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <PolicyViewDetails
+                paramsData={policyParamsData}
+                serviceDefs={serviceDefs}
+                policyView={false}
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <div className="policy-version pull-left">
+                <i
+                  className={
+                    policyParamsData && policyParamsData.policyVersion > 1
+                      ? "fa-fw fa fa-chevron-left active"
+                      : "fa-fw fa fa-chevron-left"
+                  }
+                  onClick={(e) =>
+                    e.currentTarget.classList.contains("active") &&
+                    previousVer(e)
+                  }
+                ></i>
+                <span>{`Version ${
+                  policyParamsData && policyParamsData.policyVersion
+                }`}</span>
+                <i
+                  className={
+                    !isUndefined(
+                      currentPage[
+                        indexOf(
+                          currentPage,
+                          policyParamsData && policyParamsData.policyVersion
+                        ) + 1
+                      ]
+                    )
+                      ? "fa-fw fa fa-chevron-right active"
+                      : "fa-fw fa fa-chevron-right"
+                  }
+                  onClick={(e) =>
+                    e.currentTarget.classList.contains("active") && nextVer(e)
+                  }
+                ></i>
+              </div>
+              <Button variant="primary" onClick={handleClosePolicyId}>
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </React.Fragment>
+      )}
     </div>
   );
 }
