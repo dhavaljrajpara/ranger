@@ -548,7 +548,8 @@ export const PathAssociateWithModule = {
     "/reports/audit/loginSession",
     "/reports/audit/agent",
     "/reports/audit/pluginStatus",
-    "/reports/audit/userSync"
+    "/reports/audit/userSync",
+    "/reports/audit/eventlog/:eventId"
   ],
   "Security Zone": [
     "/zones/zone/list",
@@ -614,5 +615,18 @@ export const QueryParams = {
   PolicyListing: {
     id: { columnName: "id", queryParamName: "policyId" },
     name: { columnName: "name", queryParamName: "policyName" }
+  }
+};
+
+/* Alert warning Message in Policy Listing */
+
+export const alertMessage = {
+  hdfs: {
+    label: "HDFS",
+    configs: "xasecure.add-hadoop"
+  },
+  yarn: {
+    label: "YARN",
+    configs: "ranger.add-yarn"
   }
 };

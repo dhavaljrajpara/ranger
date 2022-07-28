@@ -271,13 +271,15 @@ function PolicyListing(props) {
         Header: "Policy ID",
         accessor: "id",
         Cell: (rawValue) => {
-          return (
+          return isSystemAdmin() || isKeyAdmin() || isUser() ? (
             <Link
               title="Edit"
               to={`/service/${serviceId}/policies/${rawValue.value}/edit`}
             >
               {rawValue.value}
             </Link>
+          ) : (
+            rawValue.value
           );
         },
         width: 90

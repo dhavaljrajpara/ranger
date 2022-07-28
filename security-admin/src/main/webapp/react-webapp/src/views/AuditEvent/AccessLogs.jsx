@@ -573,7 +573,11 @@ function Access() {
         accessor: "agentHost",
         Cell: (rawValue) => {
           if (!isUndefined(rawValue.value) || !isEmpty(rawValue.value)) {
-            return rawValue.value;
+            return (
+              <div className="text-truncate" title={rawValue.value}>
+                {rawValue.value}
+              </div>
+            );
           } else return "--";
         },
         width: 150,

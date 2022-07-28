@@ -11,7 +11,8 @@ import {
   Col,
   Button,
   Badge,
-  Accordion
+  Accordion,
+  Alert
 } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
@@ -35,6 +36,7 @@ import AccordionContext from "react-bootstrap/AccordionContext";
 import usePrompt from "Hooks/usePrompt";
 import { CustomTooltip } from "../../components/CommonComponents";
 import { RegexMessage } from "../../utils/XAMessages";
+import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 
 const noneOptions = {
   label: "None",
@@ -89,6 +91,7 @@ export default function AddUpdatePolicyForm(props) {
   const rolesDataRef = useRef(null);
   const [showModal, policyConditionState] = useState(false);
   const [preventUnBlock, setPreventUnblock] = useState(false);
+  const [show, setShow] = useState(true);
   // usePrompt("Leave screen?", true);
 
   useEffect(() => {
@@ -795,15 +798,35 @@ export default function AddUpdatePolicyForm(props) {
                       if (invalid) {
                         let selector =
                           document.getElementById("isError") ||
+                          document.getElementById(Object.keys(errors)[0]) ||
                           document.querySelector(
                             `input[name=${Object.keys(errors)[0]}]`
-                          ) ||
-                          document.querySelector(`span[class="invalid-field"]`);
+                          );
+                        document.querySelector(`span[class="invalid-field"]`);
                         scrollToError(selector);
                       }
                       handleSubmit(event);
                     }}
                   >
+                    {(values.policyType ==
+                      RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value ||
+                      values.policyType ==
+                        RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value) &&
+                      show && (
+                        <Alert
+                          variant="warning"
+                          onClose={() => setShow(false)}
+                          dismissible
+                        >
+                          <i className="fa-fw fa fa-info-circle d-inline text-dark"></i>
+                          <p className="pd-l-10 d-inline">
+                            Please ensure that users/groups listed in this
+                            policy have access to the column via an{" "}
+                            <b>Access Policy</b>. This policy does not
+                            implicitly grant access to the column.
+                          </p>
+                        </Alert>
+                      )}
                     <fieldset>
                       <p className="formHeader">Policy Details</p>
                     </fieldset>

@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Field } from "react-final-form";
 import { isEmpty } from "lodash";
+import moment from "moment-timezone";
 
 const Loader = () => {
   return (
@@ -171,7 +172,9 @@ export const AuditFilterEntries = (props) => {
         Last Updated Time:&nbsp;
         <h6 className="d-inline">
           <Badge className="mr-1" variant="info">
-            {new Date().toLocaleString("en-US", { hour12: true })}
+            {moment
+              .tz(moment(), "Asia/Kolkata")
+              .format("MM/DD/YYYY hh:mm:ss A")}
           </Badge>
         </h6>
         <span className="mr-1"> | </span>

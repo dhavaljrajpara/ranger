@@ -45,7 +45,7 @@ export const CustomBreadcrumb = (props) => {
       </div>
       <div className="text-right latestResponse">
         <b>Last Response Time: </b>
-        {moment.tz(moment(), "Asia/Kolkata").format("DD/MM/YYYY HH:mm:ss A")}
+        {moment.tz(moment(), "Asia/Kolkata").format("DD/MM/YYYY hh:mm:ss A")}
       </div>
     </div>
   );

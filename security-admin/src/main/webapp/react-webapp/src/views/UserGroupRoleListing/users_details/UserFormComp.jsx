@@ -305,6 +305,7 @@ function UserFormComp(props) {
       <h4 className="wrap-header bold">User Detail</h4>
       <Form
         onSubmit={handleSubmit}
+        keepDirtyOnReinitialize={true}
         validate={validateForm}
         initialValues={(userData(), setUserFormData())}
         render={({

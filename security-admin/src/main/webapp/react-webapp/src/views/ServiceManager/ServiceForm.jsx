@@ -980,12 +980,26 @@ class ServiceForm extends Component {
                   }) => (
                     <form
                       onSubmit={(event) => {
+                        let selector;
                         if (invalid) {
-                          let selector =
-                            document.getElementById("isError") ||
-                            document.querySelector(
-                              `input[name=${Object.keys(errors)[0]}]`
-                            );
+                          if (errors?.configs !== undefined) {
+                            selector =
+                              document.getElementById("isError") ||
+                              document.querySelector(
+                                `input[name=${Object.keys(errors)[0]}]`
+                              ) ||
+                              document.querySelector(
+                                `input[name="configs.${
+                                  Object.keys(errors.configs)[0]
+                                }`
+                              );
+                          } else {
+                            selector =
+                              document.getElementById("isError") ||
+                              document.querySelector(
+                                `input[name=${Object.keys(errors)[0]}]`
+                              );
+                          }
                           scrollToError(selector);
                         }
                         handleSubmit(event);
@@ -996,6 +1010,7 @@ class ServiceForm extends Component {
                           <p className="form-header">Service Details :</p>
                           <Field
                             name="name"
+                            id="name"
                             validate={this.validateRequired(true)}
                           >
                             {({ input, meta }) => (
