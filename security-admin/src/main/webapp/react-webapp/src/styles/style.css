@@ -766,7 +766,6 @@ header {
   border: 1px solid #c0d4db;
   border-radius: 15px;
   margin-top: 4px;
-  color: #0b7fad;
 }
 
 .resource-grp {
@@ -1740,4 +1739,20 @@ header {
 /* Form control */
 .form-control:disabled {
   cursor: not-allowed;
+}
+
+/* Access Tab Query Popup close button */
+.close {
+  float: right;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: 0.5;
+}
+
+.query-icon {
+  padding: 0 4px;
+  margin-top: 9px;
 }

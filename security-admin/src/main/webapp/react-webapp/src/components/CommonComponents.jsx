@@ -250,10 +250,10 @@ export const CustomPopoverOnClick = ({
             id={`popover-${placement}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <Popover.Title as="h3">
+            <Popover.Title>
               {title}
               <i
-                className="pull-right"
+                className="pull-right close"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClick();
@@ -262,6 +262,7 @@ export const CustomPopoverOnClick = ({
                 ×
               </i>
             </Popover.Title>
+
             <Popover.Content>{content}</Popover.Content>
           </Popover>
         }

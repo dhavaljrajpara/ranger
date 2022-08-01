@@ -630,3 +630,66 @@ export const alertMessage = {
     configs: "ranger.add-yarn"
   }
 };
+
+export const ServiceType = {
+  Service_UNKNOWN: {
+    value: 0,
+    label: "Unknown",
+    rbkey: "xa.enum.AssetType.ASSET_UNKNOWN",
+    tt: "lbl.AssetType_ASSET_UNKNOWN"
+  },
+  Service_HDFS: {
+    value: 1,
+    label: "hdfs",
+    rbkey: "xa.enum.AssetType.ASSET_HDFS",
+    tt: "lbl.AssetType_ASSET_HDFS"
+  },
+  Service_HIVE: {
+    value: 2,
+    label: "hive",
+    rbkey: "xa.enum.AssetType.ASSET_HIVE",
+    tt: "lbl.AssetType_ASSET_HIVE"
+  },
+  Service_HBASE: {
+    value: 3,
+    label: "hbase",
+    rbkey: "xa.enum.AssetType.ASSET_HBASE",
+    tt: "lbl.AssetType_ASSET_HBASE"
+  },
+  Service_KNOX: {
+    value: 4,
+    label: "knox",
+    rbkey: "xa.enum.AssetType.ASSET_KNOX",
+    tt: "lbl.AssetType_ASSET_KNOX"
+  },
+  Service_STORM: {
+    value: 5,
+    label: "storm",
+    rbkey: "xa.enum.AssetType.ASSET_STORM",
+    tt: "lbl.AssetType_ASSET_STORM"
+  },
+  Service_SOLR: {
+    value: 6,
+    label: "solr",
+    rbkey: "xa.enum.AssetType.ASSET_SOLR",
+    tt: "lbl.AssetType_ASSET_SOLR"
+  },
+  SERVICE_TAG: {
+    value: 7,
+    label: "tag",
+    rbkey: "xa.enum.ServiceType.SERVICE_TAG",
+    tt: "lbl.ServiceType_SERVICE_TAG"
+  },
+  Service_KMS: {
+    value: 8,
+    label: "kms",
+    rbkey: "xa.enum.ServiceType.SERVICE_KMS",
+    tt: "lbl.ServiceType_SERVICE_KMS"
+  },
+  Service_YARN: {
+    value: 8,
+    label: "yarn",
+    rbkey: "xa.enum.ServiceType.SERVICE_YARN",
+    tt: "lbl.ServiceType_SERVICE_YARN"
+  }
+};

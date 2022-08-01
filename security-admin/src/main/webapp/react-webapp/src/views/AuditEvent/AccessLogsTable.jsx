@@ -1,9 +1,9 @@
 import React from "react";
 import { Button, Table } from "react-bootstrap";
-
 import dateFormat from "dateformat";
 import { isEmpty } from "lodash";
 import { toast } from "react-toastify";
+import { ServiceType } from "../../utils/XAEnums";
 
 export const AccessLogsTable = ({ data = {} }) => {
   const {
@@ -85,31 +85,36 @@ export const AccessLogsTable = ({ data = {} }) => {
           <td>Resource Type</td>
           <td>{!isEmpty(resourceType) ? resourceType : "--"}</td>
         </tr>
-        {requestData && (
-          <tr>
-            <td>{serviceType} Query</td>
-            <td>
-              {!isEmpty(requestData) ? (
-                <>
-                  <Button
-                    className="pull-right link-tag query-icon btn btn-sm"
-                    size="sm"
-                    variant="link"
-                    title="Copied!"
-                    onClick={() =>
-                      navigator.clipboard.writeText(copyText(requestData))
-                    }
-                  >
-                    <i className="fa-fw fa fa-copy"> </i>
-                  </Button>
-                  <span>{requestData}</span>
-                </>
-              ) : (
-                "--"
-              )}
-            </td>
-          </tr>
-        )}
+        {(serviceType == ServiceType.Service_HIVE.label ||
+          serviceType == ServiceType.Service_HBASE.label ||
+          serviceType == ServiceType.Service_HDFS.label ||
+          serviceType == ServiceType.Service_SOLR.label) &&
+          aclEnforcer === "ranger-acl" &&
+          !isEmpty(requestData) && (
+            <tr>
+              <td>{serviceType} Query</td>
+              <td>
+                {!isEmpty(requestData) ? (
+                  <>
+                    <Button
+                      className="pull-right link-tag query-icon btn btn-sm"
+                      size="sm"
+                      variant="link"
+                      title="Copied!"
+                      onClick={() =>
+                        navigator.clipboard.writeText(copyText(requestData))
+                      }
+                    >
+                      <i className="fa-fw fa fa-copy"> </i>
+                    </Button>
+                    <span>{requestData}</span>
+                  </>
+                ) : (
+                  "--"
+                )}
+              </td>
+            </tr>
+          )}
         <tr>
           <td>Access Type</td>
           <td>{!isEmpty(accessType) ? accessType : "--"}</td>

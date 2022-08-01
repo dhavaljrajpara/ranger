@@ -92,9 +92,6 @@ class UserProfile extends Component {
     if (!values.firstName) {
       errors.firstName = "Required";
     }
-    if (!values.lastName) {
-      errors.lastName = "Required";
-    }
 
     return errors;
   };
@@ -222,11 +219,7 @@ class UserProfile extends Component {
                                       ? "isError"
                                       : "lastName"
                                   }
-                                  className={
-                                    meta.error && meta.touched
-                                      ? "form-control border-danger"
-                                      : "form-control"
-                                  }
+                                  className="form-control"
                                   disabled={
                                     userProps.userSource ==
                                     UserTypes.USER_INTERNAL.value
@@ -241,11 +234,6 @@ class UserProfile extends Component {
                                     RegexMessage.MESSAGE.lastNameValidationMsg
                                   }
                                 />
-                                {meta.error && meta.touched && (
-                                  <span className="invalid-field">
-                                    {meta.error}
-                                  </span>
-                                )}
                               </Col>
                             </Row>
                           )}

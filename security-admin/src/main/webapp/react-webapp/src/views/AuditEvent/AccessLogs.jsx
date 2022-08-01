@@ -31,6 +31,7 @@ import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
 import { CustomTooltip } from "../../components/CommonComponents";
+import { ServiceType } from "../../utils/XAEnums";
 
 function Access() {
   const [accessListingData, setAccessLogs] = useState([]);
@@ -349,16 +350,20 @@ function Access() {
 
   const rsrctitle = (title) => {
     let filterTitle = "";
-    if (title == "hive") {
+    if (title == ServiceType.Service_HIVE.label) {
       filterTitle = `Hive Query`;
     }
-    if (title == "hbase") {
+    if (title == ServiceType.Service_HBASE.label) {
       filterTitle = `HBase Audit Data`;
     }
-    if (title == "hdfs") {
+    if (title == ServiceType.Service_HDFS.label) {
       filterTitle = `HDFS Operation Name`;
     }
-    return (filterTitle = `${capitalize(title)} Query`);
+    if (title == ServiceType.Service_SOLR.label) {
+      filterTitle = "Solr Query";
+    }
+    // return (filterTitle = `${capitalize(title)} Query`);
+    return <strong>{filterTitle}</strong>;
   };
 
   const previousVer = (e) => {
@@ -481,40 +486,94 @@ function Access() {
         Header: "Resource (Name / Type)",
         accessor: "resourceType",
         Cell: (r) => {
-          return (
-            <>
-              <div style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}>
+          let resourcePath = r.row.original.resourcePath;
+          let resourceType = r.row.original.resourceType;
+          let serviceType = r.row.original.serviceType;
+          let aclEnforcer = r.row.original.aclEnforcer;
+          let requestData = r.row.original.requestData;
+          if (
+            (serviceType == ServiceType.Service_HIVE.label ||
+              serviceType == ServiceType.Service_HBASE.label ||
+              serviceType == ServiceType.Service_HDFS.label ||
+              serviceType == ServiceType.Service_SOLR.label) &&
+            aclEnforcer === "ranger-acl" &&
+            !isEmpty(requestData)
+          ) {
+            if (!isUndefined(resourcePath) && !isEmpty(requestData)) {
+              return (
+                <>
+                  <div
+                    className="clearfix"
+                    style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}
+                  >
+                    <div
+                      className="pull-left resource-text"
+                      title={resourcePath}
+                    >
+                      {resourcePath}
+                    </div>
+                    <div className="pull-right">
+                      <div className="queryInfo btn btn-sm link-tag query-icon">
+                        <CustomPopoverOnClick
+                          icon="fa-fw fa fa-table"
+                          title={rsrctitle(serviceType)}
+                          content={rsrcContent(requestData)}
+                          placement="left"
+                          trigger={["click", "focus"]}
+                        ></CustomPopoverOnClick>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bt-1" title={resourceType}>
+                    {resourceType}
+                  </div>
+                </>
+              );
+            } else {
+              return (
                 <div
-                  className="pull-left resource-text"
-                  title={r.row.original.resourcePath}
+                  className="clearfix"
+                  style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}
                 >
-                  {r.row.original.resourcePath}
+                  <div className="pull-left resource-text">--</div>
+                  <div className="pull-right">
+                    <div className="queryInfo btn btn-sm link-tag query-icon">
+                      <CustomPopoverOnClick
+                        icon="fa-fw fa fa-table"
+                        title={rsrctitle(serviceType)}
+                        content={rsrcContent(requestData)}
+                        placement="left"
+                        trigger={["click", "focus"]}
+                      ></CustomPopoverOnClick>
+                    </div>
+                  </div>
                 </div>
-
-                <div>
-                  {!isEmpty(r.row.original.requestData) && (
-                    <CustomPopoverOnClick
-                      icon="fa-fw fa fa-table "
-                      title={rsrctitle(r.row.original.serviceType)}
-                      content={rsrcContent(r.row.original.requestData)}
-                      placement="left"
-                      trigger={["click", "focus"]}
-                    ></CustomPopoverOnClick>
-                  )}
-                </div>
-              </div>
-              {!isEmpty(r.row.original.resourcePath) ? (
-                <div
-                  className="bt-1 text-center"
-                  title={r.row.original.resourceType}
-                >
-                  {r.row.original.resourceType}
-                </div>
-              ) : (
-                <div className="text-center">--</div>
-              )}
-            </>
-          );
+              );
+            }
+          } else {
+            if (!isUndefined(resourcePath)) {
+              return (
+                <>
+                  <div
+                    className="clearfix"
+                    style={{ display: "flex", flexWrap: "nowrap", margin: "0" }}
+                  >
+                    <div
+                      className="pull-left resource-text"
+                      title={resourcePath}
+                    >
+                      {resourcePath}
+                    </div>
+                  </div>
+                  <div className="bt-1" title={resourceType}>
+                    {resourceType}
+                  </div>
+                </>
+              );
+            } else {
+              return <div className="text-center">--</div>;
+            }
+          }
         },
         minWidth: 180
       },
