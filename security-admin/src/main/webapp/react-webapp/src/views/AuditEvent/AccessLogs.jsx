@@ -15,7 +15,6 @@ import {
   find,
   isEmpty,
   isUndefined,
-  capitalize,
   pick,
   indexOf,
   map,

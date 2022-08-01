@@ -1,20 +1,24 @@
-import React, { useState, useCallback, useRef } from "react";
-import { Badge, Button, Row, Col, Modal } from "react-bootstrap";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { MoreLess } from "Components/CommonComponents";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useSearchParams
+} from "react-router-dom";
 import moment from "moment-timezone";
-import { isEmpty } from "lodash";
+import { find, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
 import {
-  isUser,
   isSystemAdmin,
   isKeyAdmin,
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { map } from "lodash";
+import { isUndefined, map } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Roles() {
@@ -27,7 +31,6 @@ function Roles() {
   const selectedRows = useRef([]);
   const [showModal, setConfirmModal] = useState(false);
   const [updateTable, setUpdateTable] = useState(moment.now());
-  const [searchFilterParams, setSearchFilter] = useState({});
   const [pageCount, setPageCount] = useState(
     state && state.showLastPage ? state.addPageData.totalPage : 0
   );
@@ -40,6 +43,60 @@ function Roles() {
     pageRecords: 0,
     pageSize: 25
   });
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
+
+  useEffect(() => {
+    let searchFilterParam = {};
+    let searchParam = {};
+    let defaultSearchFilterParam = [];
+
+    // Get Search Filter Params from current search params
+    const currentParams = Object.fromEntries([...searchParams]);
+    console.log("PRINT search params : ", currentParams);
+
+    for (const param in currentParams) {
+      let searchFilterObj = find(searchFilterOption, {
+        urlLabel: param
+      });
+
+      if (!isUndefined(searchFilterObj)) {
+        let category = searchFilterObj.category;
+        let value = currentParams[param];
+
+        if (searchFilterObj.type == "textoptions") {
+          let textOptionObj = find(searchFilterObj.options(), {
+            label: value
+          });
+          value = textOptionObj !== undefined ? textOptionObj.value : value;
+        }
+
+        searchFilterParam[category] = value;
+        defaultSearchFilterParam.push({
+          category: category,
+          value: value
+        });
+      }
+    }
+
+    // Updating the states for search params, search filter and default search filter
+    setSearchParams({ ...currentParams, ...searchParam });
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    setLoader(false);
+
+    console.log(
+      "PRINT Final searchFilterParam to server : ",
+      searchFilterParam
+    );
+    console.log(
+      "PRINT Final defaultSearchFilterParam to tokenzier : ",
+      defaultSearchFilterParam
+    );
+  }, []);
 
   const fetchRoleInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
@@ -89,6 +146,7 @@ function Roles() {
     },
     [updateTable, searchFilterParams]
   );
+
   const handleDeleteBtnClick = () => {
     if (selectedRows.current.length > 0) {
       toggleConfirmModal();
@@ -96,6 +154,7 @@ function Roles() {
       toast.info("Please select atleast one role!!");
     }
   };
+
   const toggleConfirmModal = () => {
     setConfirmModal((state) => !state);
   };
@@ -167,7 +226,6 @@ function Roles() {
         },
         width: 100
       },
-
       {
         Header: "Users",
         accessor: "users",
@@ -208,107 +266,150 @@ function Roles() {
     ],
     []
   );
+
   const addRole = () => {
     navigate("/roles/create", { state: { tblpageData: tblpageData } });
   };
 
+  const searchFilterOption = [
+    {
+      category: "groupNamePartial",
+      label: "Group Name",
+      urlLabel: "groupName",
+      type: "text"
+    },
+    {
+      category: "roleNamePartial",
+      label: "Role Name",
+      urlLabel: "roleName",
+      type: "text"
+    },
+    {
+      category: "userNamePartial",
+      label: "User Name",
+      urlLabel: "userName",
+      type: "text"
+    }
+  ];
+
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParam[urlLabelParam] = textOptionObj.label;
+      } else {
+        searchParam[urlLabelParam] = obj.value;
+      }
     });
-    setSearchFilter(searchFilter);
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
   };
 
   return (
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Role List</h4>
-      <Row className="mb-4">
-        <Col md={9}>
-          <StructuredFilter
-            key="role-listing-search-filter"
-            placeholder="Search for your roles..."
-            options={[
-              {
-                category: "groupNamePartial",
-                label: "Group Name",
-                type: "text"
-              },
-              {
-                category: "roleNamePartial",
-                label: "Role Name",
-                type: "text"
-              },
-              {
-                category: "userNamePartial",
-                label: "User Name",
-                type: "text"
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-            defaultSelected={[]}
-          />
-        </Col>
-        {isSystemAdmin() && (
-          <Col md={3} className="text-right">
-            <Button variant="primary" size="sm" onClick={addRole}>
-              Add New Role
-            </Button>
-            <Button
-              className="ml-2"
-              variant="danger"
-              size="sm"
-              title="Delete"
-              onClick={handleDeleteBtnClick}
-            >
-              <i className="fa-fw fa fa-trash"></i>
-            </Button>
+      {loader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
           </Col>
-        )}
-      </Row>
-      <div>
-        <XATableLayout
-          data={roleListingData}
-          columns={columns}
-          fetchData={fetchRoleInfo}
-          totalCount={totalCount}
-          pageCount={pageCount}
-          currentpageIndex={currentpageIndex}
-          pagination
-          loading={loader}
-          rowSelectOp={
-            (isSystemAdmin() || isKeyAdmin()) && {
-              position: "first",
-              selectedRows
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-4">
+            <Col md={9}>
+              <StructuredFilter
+                key="role-listing-search-filter"
+                placeholder="Search for your roles..."
+                options={searchFilterOption}
+                onTokenAdd={updateSearchFilter}
+                onTokenRemove={updateSearchFilter}
+                defaultSelected={defaultSearchFilterParams}
+              />
+            </Col>
+            {isSystemAdmin() && (
+              <Col md={3} className="text-right">
+                <Button variant="primary" size="sm" onClick={addRole}>
+                  Add New Role
+                </Button>
+                <Button
+                  className="ml-2"
+                  variant="danger"
+                  size="sm"
+                  title="Delete"
+                  onClick={handleDeleteBtnClick}
+                >
+                  <i className="fa-fw fa fa-trash"></i>
+                </Button>
+              </Col>
+            )}
+          </Row>
+
+          <XATableLayout
+            data={roleListingData}
+            columns={columns}
+            fetchData={fetchRoleInfo}
+            totalCount={totalCount}
+            pageCount={pageCount}
+            currentpageIndex={currentpageIndex}
+            pagination
+            loading={loader}
+            rowSelectOp={
+              (isSystemAdmin() || isKeyAdmin()) && {
+                position: "first",
+                selectedRows
+              }
             }
-          }
-        />
-      </div>
-      <Modal show={showModal} onHide={toggleConfirmModal}>
-        <Modal.Body>
-          Are you sure you want to delete&nbsp;
-          {selectedRows.current.length === 1 ? (
-            <span>
-              <b>"{selectedRows.current[0].original.name}"</b> role ?
-            </span>
-          ) : (
-            <span>
-              <b>"{selectedRows.current.length}"</b> roles ?
-            </span>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
-            Close
-          </Button>
-          <Button variant="primary" size="sm" onClick={handleConfirmClick}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          />
+
+          <Modal show={showModal} onHide={toggleConfirmModal}>
+            <Modal.Body>
+              Are you sure you want to delete&nbsp;
+              {selectedRows.current.length === 1 ? (
+                <span>
+                  <b>"{selectedRows.current[0].original.name}"</b> role ?
+                </span>
+              ) : (
+                <span>
+                  <b>"{selectedRows.current.length}"</b> roles ?
+                </span>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={toggleConfirmModal}
+              >
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleConfirmClick}>
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </React.Fragment>
+      )}
     </div>
   );
 }

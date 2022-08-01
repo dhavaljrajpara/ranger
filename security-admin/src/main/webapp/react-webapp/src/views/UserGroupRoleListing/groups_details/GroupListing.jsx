@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   Badge,
   Button,
@@ -12,7 +12,12 @@ import XATableLayout from "Components/XATableLayout";
 import { GroupSource } from "../../../utils/XAEnums";
 import { GroupTypes } from "../../../utils/XAEnums";
 import { VisibilityStatus } from "Utils/XAEnums";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useSearchParams
+} from "react-router-dom";
 import moment from "moment-timezone";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
@@ -24,7 +29,7 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { map } from "lodash";
+import { find, isUndefined, map } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Groups() {
@@ -42,7 +47,6 @@ function Groups() {
     showSyncDetails: false
   });
   const [showAssociateUserModal, setAssociateUserModal] = useState(false);
-  const [searchFilterParams, setSearchFilter] = useState({});
   const [pageCount, setPageCount] = useState(
     state && state.showLastPage ? state.addPageData.totalPage : 0
   );
@@ -55,6 +59,60 @@ function Groups() {
     pageRecords: 0,
     pageSize: 25
   });
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
+
+  useEffect(() => {
+    let searchFilterParam = {};
+    let searchParam = {};
+    let defaultSearchFilterParam = [];
+
+    // Get Search Filter Params from current search params
+    const currentParams = Object.fromEntries([...searchParams]);
+    console.log("PRINT search params : ", currentParams);
+
+    for (const param in currentParams) {
+      let searchFilterObj = find(searchFilterOption, {
+        urlLabel: param
+      });
+
+      if (!isUndefined(searchFilterObj)) {
+        let category = searchFilterObj.category;
+        let value = currentParams[param];
+
+        if (searchFilterObj.type == "textoptions") {
+          let textOptionObj = find(searchFilterObj.options(), {
+            label: value
+          });
+          value = textOptionObj !== undefined ? textOptionObj.value : value;
+        }
+
+        searchFilterParam[category] = value;
+        defaultSearchFilterParam.push({
+          category: category,
+          value: value
+        });
+      }
+    }
+
+    // Updating the states for search params, search filter and default search filter
+    setSearchParams({ ...currentParams, ...searchParam });
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    setLoader(false);
+
+    console.log(
+      "PRINT Final searchFilterParam to server : ",
+      searchFilterParam
+    );
+    console.log(
+      "PRINT Final defaultSearchFilterParam to tokenzier : ",
+      defaultSearchFilterParam
+    );
+  }, []);
 
   const fetchGroupInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
@@ -373,190 +431,234 @@ function Groups() {
     });
   };
 
+  const searchFilterOption = [
+    {
+      category: "name",
+      label: "Group Name",
+      urlLabel: "groupName",
+      type: "text"
+    },
+    {
+      category: "groupSource",
+      label: "Group Source",
+      urlLabel: "groupSource",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "0", label: "Internal" },
+          { value: "1", label: "External" }
+        ];
+      }
+    },
+    {
+      category: "syncSource",
+      label: "Sync Source",
+      urlLabel: "syncSource",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "File", label: "File" },
+          { value: "LDAP/AD", label: "LDAP/AD" },
+          { value: "Unix", label: "Unix" }
+        ];
+      }
+    },
+    {
+      category: "isVisible",
+      label: "Visibility",
+      urlLabel: "visibility",
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "0", label: "Hidden" },
+          { value: "1", label: "Visible" }
+        ];
+      }
+    }
+  ];
+
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOption, {
+        category: obj.category
+      });
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParam[urlLabelParam] = textOptionObj.label;
+      } else {
+        searchParam[urlLabelParam] = obj.value;
+      }
     });
-    setSearchFilter(searchFilter);
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
   };
 
   return (
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Group List</h4>
-      <Row className="mb-4">
-        <Col md={9}>
-          <StructuredFilter
-            key="user-listing-search-filter"
-            placeholder="Search for your users..."
-            options={[
-              {
-                category: "name",
-                label: "Group Name",
-                type: "text"
-              },
-              {
-                category: "groupSource",
-                label: "Group Source",
-                options: () => {
-                  return [
-                    { value: "0", label: "Internal" },
-                    { value: "1", label: "External" }
-                  ];
-                }
-              },
-              {
-                category: "syncSource",
-                label: "Sync Source",
-                type: "textoptions",
-                options: () => {
-                  return [
-                    { value: "File", label: "File" },
-                    { value: "LDAP/AD", label: "LDAP/AD" },
-                    { value: "Unix", label: "Unix" }
-                  ];
-                }
-              },
-              {
-                category: "isVisible",
-                label: "Visibility",
-                options: () => {
-                  return [
-                    { value: "0", label: "Hidden" },
-                    { value: "1", label: "Visible" }
-                  ];
-                }
-              }
-            ]}
-            onTokenAdd={updateSearchFilter}
-            onTokenRemove={updateSearchFilter}
-            defaultSelected={[]}
-          />
-        </Col>
-        {isSystemAdmin() && (
-          <Col md={3} className="text-right">
-            <Button variant="primary" size="sm" onClick={addGroup}>
-              Add New Group
-            </Button>
-            <DropdownButton
-              title="Set Visibility"
-              size="sm"
-              style={{ display: "inline-block" }}
-              className="ml-2"
-              onSelect={handleSetVisibility}
-            >
-              <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
-              <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
-            </DropdownButton>
-            <Button
-              variant="danger"
-              size="sm"
-              title="Delete"
-              className="ml-2"
-              onClick={handleDeleteBtnClick}
-            >
-              <i className="fa-fw fa fa-trash"></i>
-            </Button>
+      {loader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
           </Col>
-        )}
-      </Row>
-      <br />
-      <div>
-        <XATableLayout
-          data={groupListingData}
-          columns={columns}
-          fetchData={fetchGroupInfo}
-          totalCount={totalCount}
-          pageCount={pageCount}
-          currentpageIndex={currentpageIndex}
-          loading={loader}
-          pagination
-          rowSelectOp={
-            (isSystemAdmin() || isKeyAdmin()) && {
-              position: "first",
-              selectedRows
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-4">
+            <Col md={9}>
+              <StructuredFilter
+                key="user-listing-search-filter"
+                placeholder="Search for your users..."
+                options={searchFilterOption}
+                onTokenAdd={updateSearchFilter}
+                onTokenRemove={updateSearchFilter}
+                defaultSelected={defaultSearchFilterParams}
+              />
+            </Col>
+            {isSystemAdmin() && (
+              <Col md={3} className="text-right">
+                <Button variant="primary" size="sm" onClick={addGroup}>
+                  Add New Group
+                </Button>
+                <DropdownButton
+                  title="Set Visibility"
+                  size="sm"
+                  style={{ display: "inline-block" }}
+                  className="ml-2"
+                  onSelect={handleSetVisibility}
+                >
+                  <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
+                  <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
+                </DropdownButton>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  title="Delete"
+                  className="ml-2"
+                  onClick={handleDeleteBtnClick}
+                >
+                  <i className="fa-fw fa fa-trash"></i>
+                </Button>
+              </Col>
+            )}
+          </Row>
+
+          <XATableLayout
+            data={groupListingData}
+            columns={columns}
+            fetchData={fetchGroupInfo}
+            totalCount={totalCount}
+            pageCount={pageCount}
+            currentpageIndex={currentpageIndex}
+            loading={loader}
+            pagination
+            rowSelectOp={
+              (isSystemAdmin() || isKeyAdmin()) && {
+                position: "first",
+                selectedRows
+              }
             }
-          }
-          getRowProps={(row) => ({
-            className: row.values.isVisible == 0 && "row-inactive"
-          })}
-        />
-      </div>
-      <Modal show={showModal} onHide={toggleConfirmModal}>
-        <Modal.Body>
-          Are you sure you want to delete&nbsp;
-          {selectedRows.current.length === 1 ? (
-            <span>
-              <b>"{selectedRows.current[0].original.name}"</b> group ?
-            </span>
-          ) : (
-            <span>
-              <b>"{selectedRows.current.length}"</b> groups ?
-            </span>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={toggleConfirmModal}>
-            Close
-          </Button>
-          <Button variant="primary" size="sm" onClick={handleConfirmClick}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal
-        show={showGroupSyncDetails && showGroupSyncDetails.showSyncDetails}
-        onHide={toggleGroupSyncModalClose}
-        size="xl"
-      >
-        <Modal.Header>
-          <Modal.Title>Sync Source Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <SyncSourceDetails
-            syncDetails={showGroupSyncDetails.syncDteails}
-          ></SyncSourceDetails>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={toggleGroupSyncModalClose}
+            getRowProps={(row) => ({
+              className: row.values.isVisible == 0 && "row-inactive"
+            })}
+          />
+
+          <Modal show={showModal} onHide={toggleConfirmModal}>
+            <Modal.Body>
+              Are you sure you want to delete&nbsp;
+              {selectedRows.current.length === 1 ? (
+                <span>
+                  <b>"{selectedRows.current[0].original.name}"</b> group ?
+                </span>
+              ) : (
+                <span>
+                  <b>"{selectedRows.current.length}"</b> groups ?
+                </span>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={toggleConfirmModal}
+              >
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleConfirmClick}>
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Modal
+            show={showGroupSyncDetails && showGroupSyncDetails.showSyncDetails}
+            onHide={toggleGroupSyncModalClose}
+            size="xl"
           >
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      <Modal
-        show={
-          showAssociateUserModal &&
-          showAssociateUserModal.showAssociateUserDetails
-        }
-        onHide={toggleAssociateUserClose}
-        size="lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            User's List:&nbsp;{showAssociateUserModal.groupName}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <GroupAssociateUserDetails
-            groupID={showAssociateUserModal.groupID}
-          ></GroupAssociateUserDetails>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={toggleAssociateUserClose}
+            <Modal.Header>
+              <Modal.Title>Sync Source Details</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <SyncSourceDetails
+                syncDetails={showGroupSyncDetails.syncDteails}
+              ></SyncSourceDetails>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={toggleGroupSyncModalClose}
+              >
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+          <Modal
+            show={
+              showAssociateUserModal &&
+              showAssociateUserModal.showAssociateUserDetails
+            }
+            onHide={toggleAssociateUserClose}
+            size="lg"
           >
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
+            <Modal.Header closeButton>
+              <Modal.Title>
+                User's List:&nbsp;{showAssociateUserModal.groupName}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <GroupAssociateUserDetails
+                groupID={showAssociateUserModal.groupID}
+              ></GroupAssociateUserDetails>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={toggleAssociateUserClose}
+              >
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </React.Fragment>
+      )}
     </div>
   );
 }
