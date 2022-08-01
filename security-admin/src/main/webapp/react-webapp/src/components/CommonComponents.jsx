@@ -76,12 +76,7 @@ export class MoreLess extends Component {
         <div className={this.state.show ? "show-less" : "show-more"}>
           {this.state.data.map((key) => {
             return (
-              <Badge
-                variant="info"
-                key={key}
-                className="m-1 text-truncate"
-                style={{ alignSelf: "start", maxWidth: " 65px" }}
-              >
+              <Badge variant="info" key={key} className="m-1">
                 {key}
               </Badge>
             );

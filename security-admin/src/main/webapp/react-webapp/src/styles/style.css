@@ -1089,11 +1089,6 @@ header {
 .report-page .accordion > .card {
   overflow: visible;
 }
-.report-table-modal {
-  width: 11rem !important;
-  max-width: 12rem !important;
-  height: 100px !important;
-}
 
 .latestResponse {
   width: 29%;

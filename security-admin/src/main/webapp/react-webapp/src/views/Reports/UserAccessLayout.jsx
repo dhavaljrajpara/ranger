@@ -371,7 +371,8 @@ function UserAccessLayout(props) {
 
   const onChangeSearchBy = (e, input, values) => {
     if (e.label !== input.value.label) {
-      values.searchByValue = {};
+      //values.searchByValue = {};
+      delete values["searchByValue"];
     }
     for (const obj in input.value) {
       delete input.value[obj];
@@ -697,19 +698,20 @@ function SearchByAsyncSelect(props) {
     });
 
     if (searchByOptName.value == "searchByUser") {
-      optsList = serverResp.data.vXStrings.map((obj) => {
-        return { label: obj["value"], value: obj["value"] };
-      });
+      optsList = serverResp.data.vXStrings.map((obj) => ({
+        label: obj["value"],
+        value: obj["value"]
+      }));
     } else if (searchByOptName.value == "searchByRole") {
       optsList = serverResp.data.roles.map(({ name }) => ({
         label: name,
         value: name
       }));
     } else {
-      optsList = serverResp.data.vXStrings.map((obj) => {
-        return { label: obj["value"], value: obj["value"] };
-      });
-      console.log(optsList);
+      optsList = serverResp.data.vXStrings.map((obj) => ({
+        label: obj["value"],
+        value: obj["value"]
+      }));
     }
 
     return optsList;
