@@ -70,7 +70,7 @@ class ZoneListing extends Component {
 
   onChangeSearch = (e) => {
     let filterZone = this.state.zones.filter((obj) =>
-      obj.name.includes(e.target.value)
+      obj.name.toLowerCase().includes(e.target.value.toLowerCase())
     );
     this.setState({ filterZone: filterZone });
   };
