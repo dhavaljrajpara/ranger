@@ -9,6 +9,7 @@ import {
 } from "react-table";
 import { Table, ButtonGroup } from "react-bootstrap";
 import DropdownButton from "react-bootstrap/DropdownButton";
+import { isEmpty } from "lodash";
 
 const IndeterminateCheckbox = forwardRef(
   ({ indeterminate, chkType, ...rest }, ref) => {
@@ -50,6 +51,20 @@ function XATableLayout({
   defaultSort = [],
   getRowProps = () => ({})
 }) {
+  const getLocalStorageVal = () => {
+    let localStorageVal = [];
+    if (localStorage.getItem("showHideTableCol") != null) {
+      localStorageVal = JSON.parse(
+        localStorage.getItem("showHideTableCol")
+      ).bigData;
+    }
+    let filterColVal = !isEmpty(localStorageVal)
+      ? localStorageVal
+          .filter((obj) => obj.renderable == false)
+          .map((r) => r.name)
+      : [];
+    return filterColVal;
+  };
   const {
     getTableProps,
     getTableBodyProps,
@@ -75,7 +90,8 @@ function XATableLayout({
       initialState: {
         pageIndex: currentpageIndex || 0,
         pageSize: 25,
-        sortBy: defaultSort || []
+        sortBy: defaultSort || [],
+        hiddenColumns: getLocalStorageVal()
       },
       manualPagination: true,
       manualSortBy: !clientSideSorting && true,
@@ -135,7 +151,7 @@ function XATableLayout({
       rowSelectOp.selectedRows.current = selectedFlatRows;
     }
   }, [selectedFlatRows]);
-
+  let columnShowHide = [];
   return (
     // apply the table props
     <>
@@ -151,18 +167,33 @@ function XATableLayout({
             title="Columns"
           >
             <ul className="list-group">
-              {allColumns.map((column, index) => (
-                <li className="column-list" key={`col-${index}`}>
-                  <label>
-                    <input
-                      className="mr-1"
-                      type="checkbox"
-                      {...column.getToggleHiddenProps()}
-                    />
-                    {column.Header}
-                  </label>
-                </li>
-              ))}
+              {allColumns.map((column, index) => {
+                columnShowHide.push({
+                  name: column.id,
+                  renderable: column.isVisible
+                });
+
+                localStorage.setItem(
+                  "showHideTableCol",
+                  JSON.stringify({ bigData: columnShowHide })
+                );
+                return (
+                  <li
+                    className="column-list text-truncate"
+                    key={`col-${index}`}
+                  >
+                    <label>
+                      <input
+                        className="mr-1"
+                        type="checkbox"
+                        {...column.getToggleHiddenProps()}
+                      />
+
+                      {column.Header}
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           </DropdownButton>
         </div>
