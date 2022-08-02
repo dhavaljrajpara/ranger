@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Tab, Tabs } from "react-bootstrap";
 import withRouter from "Hooks/withRouter";
 import { Outlet } from "react-router-dom";
-import { AuditFilterEntries } from "Components/CommonComponents";
 
 class AuditLayout extends Component {
   constructor(props) {

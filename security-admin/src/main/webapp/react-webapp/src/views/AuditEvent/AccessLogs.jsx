@@ -21,7 +21,8 @@ import {
   sortBy,
   toString,
   toUpper,
-  isNull
+  isNull,
+  has
 } from "lodash";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -67,64 +68,52 @@ function Access() {
     const currentParams = Object.fromEntries([...searchParams]);
     console.log("PRINT search params : ", currentParams);
 
-    if (isEmpty(currentParams)) {
-      searchParam["startDate"] = currentDate;
-      searchParam["excludeServiceUser"] = false;
-      searchFilterParam["startDate"] = currentDate;
-      defaultSearchFilterParam.push({
-        category: "startDate",
-        value: currentDate
+    for (const param in currentParams) {
+      let searchFilterObj = find(searchFilterOption, {
+        urlLabel: param
       });
-    } else {
-      for (const param in currentParams) {
-        let searchFilterObj = find(searchFilterOption, {
-          urlLabel: param
-        });
 
-        if (!isUndefined(searchFilterObj)) {
-          let category = searchFilterObj.category;
-          let value = currentParams[param];
+      if (!isUndefined(searchFilterObj)) {
+        let category = searchFilterObj.category;
+        let value = currentParams[param];
 
-          if (searchFilterObj.type == "textoptions") {
-            let textOptionObj = find(searchFilterObj.options(), {
-              label: value
-            });
-            value = textOptionObj !== undefined ? textOptionObj.value : value;
-          }
-
-          searchFilterParam[category] = value;
-          defaultSearchFilterParam.push({
-            category: category,
-            value: value
+        if (searchFilterObj.type == "textoptions") {
+          let textOptionObj = find(searchFilterObj.options(), {
+            label: value
           });
+          value = textOptionObj !== undefined ? textOptionObj.value : value;
         }
+
+        searchFilterParam[category] = value;
+        defaultSearchFilterParam.push({
+          category: category,
+          value: value
+        });
       }
     }
 
     // Get Search Filter Params from localStorage
-    const localStorageParams = JSON.parse(localStorage.getItem("bigData"));
-    console.log("PRINT available localStorage : ", localStorageParams);
+    if (isEmpty(searchFilterParam)) {
+      const localStorageParams = JSON.parse(localStorage.getItem("bigData"));
+      console.log("PRINT available localStorage : ", localStorageParams);
 
-    if (!isNull(localStorageParams) && !isEmpty(localStorageParams)) {
-      for (const localParam in localStorageParams) {
-        let searchFilterObj = find(searchFilterOption, {
-          urlLabel: localParam
-        });
+      if (!isNull(localStorageParams) && !isEmpty(localStorageParams)) {
+        for (const localParam in localStorageParams) {
+          let searchFilterObj = find(searchFilterOption, {
+            urlLabel: localParam
+          });
 
-        if (!isUndefined(searchFilterObj)) {
-          let category = searchFilterObj.category;
-          let value = localStorageParams[localParam];
+          if (!isUndefined(searchFilterObj)) {
+            let category = searchFilterObj.category;
+            let value = localStorageParams[localParam];
 
-          if (searchFilterObj.type == "textoptions") {
-            let textOptionObj = find(searchFilterObj.options(), {
-              label: value
-            });
-            value = textOptionObj !== undefined ? textOptionObj.value : value;
-          }
+            if (searchFilterObj.type == "textoptions") {
+              let textOptionObj = find(searchFilterObj.options(), {
+                label: value
+              });
+              value = textOptionObj !== undefined ? textOptionObj.value : value;
+            }
 
-          let isCategory = !(category in searchFilterParam);
-
-          if (isCategory) {
             searchFilterParam[category] = value;
             defaultSearchFilterParam.push({
               category: category,
@@ -134,6 +123,26 @@ function Access() {
           }
         }
       }
+    }
+
+    if (!has(searchFilterParam, "startDate")) {
+      searchParam["startDate"] = currentDate;
+      searchFilterParam["startDate"] = currentDate;
+      defaultSearchFilterParam.push({
+        category: "startDate",
+        value: currentDate
+      });
+    }
+
+    if (!has(searchFilterParam, "excludeServiceUser")) {
+      let excludeServiceUser = JSON.parse(
+        localStorage.getItem("excludeServiceUser")
+      );
+      let isExcludeServiceUser = isNull(excludeServiceUser)
+        ? checked
+        : excludeServiceUser;
+      setChecked(isExcludeServiceUser);
+      searchParam["excludeServiceUser"] = isExcludeServiceUser;
     }
 
     // Updating the states for search params, search filter, default search filter and localStorage
@@ -154,7 +163,6 @@ function Access() {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
-
     console.log(
       "PRINT Final available localStorage is : ",
       localStorage.getItem("bigData")
@@ -242,6 +250,10 @@ function Access() {
   };
 
   const toggleChange = () => {
+    let currentParams = Object.fromEntries([...searchParams]);
+    currentParams["excludeServiceUser"] = !checked;
+    localStorage.setItem("excludeServiceUser", JSON.stringify(!checked));
+    setSearchParams(currentParams);
     setAccessLogs([]);
     setChecked(!checked);
     setLoader(true);
@@ -361,7 +373,6 @@ function Access() {
     if (title == ServiceType.Service_SOLR.label) {
       filterTitle = "Solr Query";
     }
-    // return (filterTitle = `${capitalize(title)} Query`);
     return <strong>{filterTitle}</strong>;
   };
 
@@ -782,6 +793,8 @@ function Access() {
       }
     });
 
+    searchParam["excludeServiceUser"] = checked;
+
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("bigData", JSON.stringify(searchParam));
@@ -864,7 +877,14 @@ function Access() {
       category: "accessResult",
       label: "Result",
       urlLabel: "result",
-      type: "text"
+      type: "textoptions",
+      options: () => {
+        return [
+          { value: "0", label: "Denied" },
+          { value: "1", label: "Allowed" },
+          { value: "2", label: "Not Determined" }
+        ];
+      }
     },
     {
       category: "repoName",
