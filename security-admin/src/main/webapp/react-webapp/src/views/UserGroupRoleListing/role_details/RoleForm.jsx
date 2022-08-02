@@ -402,14 +402,6 @@ function RoleForm() {
             <PromtDialog isDirtyField={dirty} isUnblock={preventUnBlock} />
             <form
               onSubmit={(event) => {
-                if (invalid) {
-                  let selector =
-                    document.getElementById("isError") ||
-                    document.querySelector(
-                      `input[name=${Object.keys(errors)[0]}]`
-                    );
-                  scrollToError(selector);
-                }
                 handleSubmit(event);
               }}
             >
@@ -752,7 +744,17 @@ function RoleForm() {
                 <div className="col-md-9 offset-md-3">
                   <Button
                     variant="primary"
-                    type="submit"
+                    onClick={() => {
+                      if (invalid) {
+                        let selector =
+                          document.getElementById("isError") ||
+                          document.querySelector(
+                            `input[name=${Object.keys(errors)[0]}]`
+                          );
+                        scrollToError(selector);
+                      }
+                      handleSubmit(values);
+                    }}
                     size="sm"
                     disabled={submitting}
                   >

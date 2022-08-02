@@ -203,14 +203,6 @@ function GroupForm(props) {
             <PromtDialog isDirtyField={dirty} isUnblock={preventUnBlock} />
             <form
               onSubmit={(event) => {
-                if (invalid) {
-                  let selector =
-                    document.getElementById("isError") ||
-                    document.querySelector(
-                      `input[name=${Object.keys(errors)[0]}]`
-                    );
-                  scrollToError(selector);
-                }
                 handleSubmit(event);
               }}
             >
@@ -227,6 +219,9 @@ function GroupForm(props) {
                         {...input}
                         type="text"
                         name="name"
+                        onKeyDown={(e) => {
+                          e.key === "Enter" && e.preventDefault();
+                        }}
                         placeholder="Group Name"
                         id={meta.error && meta.touched ? "isError" : "name"}
                         className={
@@ -297,7 +292,17 @@ function GroupForm(props) {
                 <div className="col-md-9 offset-md-3">
                   <Button
                     variant="primary"
-                    type="submit"
+                    onClick={() => {
+                      if (invalid) {
+                        let selector =
+                          document.getElementById("isError") ||
+                          document.querySelector(
+                            `input[name=${Object.keys(errors)[0]}]`
+                          );
+                        scrollToError(selector);
+                      }
+                      handleSubmit(values);
+                    }}
                     className="btn-mini"
                     size="sm"
                     disabled={groupType === 1 ? true : submitting}

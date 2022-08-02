@@ -1361,7 +1361,24 @@ export default function AddUpdatePolicyForm(props) {
                     )}
                     <div className="row form-actions">
                       <div className="col-md-9 offset-md-3">
-                        <Button type="submit" variant="primary" size="sm">
+                        <Button
+                          onClick={() => {
+                            if (invalid) {
+                              let selector =
+                                document.getElementById("isError") ||
+                                document.querySelector(
+                                  `input[name=${Object.keys(errors)[0]}]`
+                                ) ||
+                                document.querySelector(
+                                  `span[class="invalid-field"]`
+                                );
+                              scrollToError(selector);
+                            }
+                            handleSubmit(values);
+                          }}
+                          variant="primary"
+                          size="sm"
+                        >
                           Save
                         </Button>
                         <Button
