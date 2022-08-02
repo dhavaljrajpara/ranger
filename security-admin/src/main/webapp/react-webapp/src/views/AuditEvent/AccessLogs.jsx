@@ -49,7 +49,7 @@ function Access() {
   const [checked, setChecked] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const fetchIdRef = useRef(0);
-  const [pageLoader, setPageLoader] = useState(true);
+  const [contentLoader, setContentLoader] = useState(true);
   const [searchFilterParams, setSearchFilterParams] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
@@ -153,7 +153,7 @@ function Access() {
       "bigData",
       JSON.stringify({ ...currentParams, ...searchParam })
     );
-    setPageLoader(false);
+    setContentLoader(false);
 
     console.log(
       "PRINT Final searchFilterParam to server : ",
@@ -216,7 +216,7 @@ function Access() {
     }
 
     setServiceDefs(serviceDefsResp.data.serviceDefs);
-    setPageLoader(false);
+    setContentLoader(false);
   };
 
   const fetchServices = async () => {
@@ -232,7 +232,7 @@ function Access() {
     }
 
     setServices(servicesResp.data.services);
-    setPageLoader(false);
+    setContentLoader(false);
   };
 
   const fetchZones = async () => {
@@ -246,7 +246,7 @@ function Access() {
     }
 
     setZones(sortBy(zonesResp.data.securityZones, ["name"]));
-    setPageLoader(false);
+    setContentLoader(false);
   };
 
   const toggleChange = () => {
@@ -929,7 +929,7 @@ function Access() {
 
   return (
     <div className="wrap">
-      {pageLoader ? (
+      {contentLoader ? (
         <Row>
           <Col sm={12} className="text-center">
             <div className="spinner-border mr-2" role="status">

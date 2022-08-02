@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import dateFormat from "dateformat";
 import { isUndefined } from "lodash";
-import { setTimeStamp } from "Utils/XAUtils";
+import { setTimeStamp, fetchSearchFilterParams } from "Utils/XAUtils";
 import {
   CustomPopover,
   CustomTooltip
@@ -14,7 +14,6 @@ import {
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { fetchApi } from "Utils/fetchAPI";
 import { find, map, sortBy, toUpper } from "lodash";
-import { useQuery } from "../../components/CommonComponents";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -23,14 +22,31 @@ function Plugin_Status() {
   const [entries, setEntries] = useState([]);
   const [updateTable, setUpdateTable] = useState(moment.now());
   const fetchIdRef = useRef(0);
-  const [searchFilterParams, setSearchFilter] = useState({});
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
-  const navigate = useNavigate();
-  const searchParams = useQuery();
+  const [contentLoader, setContentLoader] = useState(true);
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices();
+
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams(
+        "pluginStatus",
+        searchParams,
+        searchFilterOptions
+      );
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams(searchParam);
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem("pluginStatus", JSON.stringify(searchParam));
+    setContentLoader(false);
   }, []);
 
   const fetchServiceDefs = async () => {
@@ -46,7 +62,7 @@ function Plugin_Status() {
     }
 
     setServiceDefs(serviceDefsResp.data.serviceDefs);
-    setLoader(false);
+    setContentLoader(false);
   };
 
   const fetchServices = async () => {
@@ -61,7 +77,7 @@ function Plugin_Status() {
       );
     }
     setServices(servicesResp.data.services);
-    setLoader(false);
+    setContentLoader(false);
   };
 
   const fetchPluginStatusInfo = useCallback(
@@ -94,10 +110,12 @@ function Plugin_Status() {
     },
     [updateTable, searchFilterParams]
   );
+
   const isDateDifferenceMoreThanHr = (date1, date2) => {
     let diff = (date1 - date2) / 36e5;
     return diff < 0 ? true : false;
   };
+
   const refreshTable = () => {
     setPluginStatusLogs([]);
     setLoader(true);
@@ -442,39 +460,33 @@ function Plugin_Status() {
   );
 
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
-    let searchFilterUrlParam = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
-      let searchFilterObj = find(searchFilterOption, {
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOptions, {
         category: obj.category
       });
-      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
       if (searchFilterObj.type == "textoptions") {
         let textOptionObj = find(searchFilterObj.options(), {
           value: obj.value
         });
-        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+        searchParam[urlLabelParam] = textOptionObj.label;
       } else {
-        searchParams.set(searchFilterObj.urlLabel, obj.value);
+        searchParam[urlLabelParam] = obj.value;
       }
     });
-    setSearchFilter(searchFilter);
 
-    for (const searchParam of searchParams.entries()) {
-      const [param, value] = searchParam;
-      if (searchFilterUrlParam[param] !== undefined) {
-        searchParams.set(param, value);
-      } else {
-        searchParams.delete(param);
-      }
-    }
-
-    navigate(`/reports/audit/pluginStatus?${searchParams.toString()}`, {
-      replace: true
-    });
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
+    localStorage.setItem("pluginStatus", JSON.stringify(searchParam));
   };
 
   const getServiceDefType = () => {
@@ -500,7 +512,7 @@ function Plugin_Status() {
     return servicesName;
   };
 
-  const searchFilterOption = [
+  const searchFilterOptions = [
     {
       category: "pluginAppType",
       label: "Application",
@@ -543,31 +555,46 @@ function Plugin_Status() {
 
   return (
     <div className="wrap">
-      <Row className="mb-2">
-        <Col sm={12}>
-          <div className="searchbox-border">
-            <StructuredFilter
-              key="plugin-status-log-search-filter"
-              placeholder="Search for your plugin status..."
-              options={sortBy(searchFilterOption, ["label"])}
-              onTokenAdd={updateSearchFilter}
-              onTokenRemove={updateSearchFilter}
-              defaultSelected={[]}
-            />
-          </div>
-        </Col>
-      </Row>
-      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <XATableLayout
-        data={pluginStatusListingData}
-        columns={columns}
-        loading={loader}
-        totalCount={entries && entries.totalCount}
-        fetchData={fetchPluginStatusInfo}
-        pageCount={pageCount}
-        columnSort={true}
-        clientSideSorting={true}
-      />
+      {contentLoader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+          </Col>
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-2">
+            <Col sm={12}>
+              <div className="searchbox-border">
+                <StructuredFilter
+                  key="plugin-status-log-search-filter"
+                  placeholder="Search for your plugin status..."
+                  options={sortBy(searchFilterOptions, ["label"])}
+                  onTokenAdd={updateSearchFilter}
+                  onTokenRemove={updateSearchFilter}
+                  defaultSelected={defaultSearchFilterParams}
+                />
+              </div>
+            </Col>
+          </Row>
+          <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+          <XATableLayout
+            data={pluginStatusListingData}
+            columns={columns}
+            loading={loader}
+            totalCount={entries && entries.totalCount}
+            fetchData={fetchPluginStatusInfo}
+            pageCount={pageCount}
+            columnSort={true}
+            clientSideSorting={true}
+          />
+        </React.Fragment>
+      )}
     </div>
   );
 }

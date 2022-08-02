@@ -1,15 +1,19 @@
 import React, { useState } from "react";
-import { getUserProfile, setUserProfile } from "Utils/appState";
+import { getUserProfile } from "Utils/appState";
 import { UserRoles, PathAssociateWithModule, QueryParams } from "Utils/XAEnums";
-import _, {
+import {
   filter,
+  find,
   flatMap,
   forEach,
   uniq,
-  has,
+  map,
+  union,
+  includes,
   pick,
   isEmpty,
-  isUndefined
+  isUndefined,
+  isNull
 } from "lodash";
 import { matchRoutes } from "react-router-dom";
 import dateFormat from "dateformat";
@@ -30,18 +34,23 @@ export const LoginUser = (role) => {
 export const isSystemAdmin = () => {
   return LoginUser("ROLE_SYS_ADMIN") ? true : false;
 };
+
 export const isKeyAdmin = () => {
   return LoginUser("ROLE_KEY_ADMIN") ? true : false;
 };
+
 export const isUser = () => {
   return LoginUser("ROLE_USER") ? true : false;
 };
+
 export const isAuditor = () => {
   return LoginUser("ROLE_ADMIN_AUDITOR") ? true : false;
 };
+
 export const isKMSAuditor = () => {
   return LoginUser("ROLE_KEY_ADMIN_AUDITOR") ? true : false;
 };
+
 export const isRenderMasking = (dataMaskDef) => {
   return dataMaskDef &&
     dataMaskDef.maskTypes &&
@@ -49,6 +58,7 @@ export const isRenderMasking = (dataMaskDef) => {
     ? true
     : false;
 };
+
 export const isRenderRowFilter = (rowFilterDef) => {
   return rowFilterDef &&
     rowFilterDef.resources &&
@@ -101,10 +111,10 @@ export const getUserDataParams = () => {
 
 export const hasAccessToTab = (tabName) => {
   const userProfile = getUserProfile();
-  let userModules = _.map(userProfile.userPermList, "moduleName");
-  let groupModules = _.map(userProfile.groupPermissions, "moduleName");
-  let moduleNames = _.union(userModules, groupModules);
-  let returnFlag = _.includes(moduleNames, tabName);
+  let userModules = map(userProfile.userPermList, "moduleName");
+  let groupModules = map(userProfile.groupPermissions, "moduleName");
+  let moduleNames = union(userModules, groupModules);
+  let returnFlag = includes(moduleNames, tabName);
   return returnFlag;
 };
 
@@ -114,9 +124,9 @@ export const hasAccessToPath = (pathName) => {
   if (pathName == "/") {
     pathName = "/policymanager/resource";
   }
-  let userModules = _.map(userProfile.userPermList, "moduleName");
-  let groupModules = _.map(userProfile.groupPermissions, "moduleName");
-  let moduleNames = _.union(userModules, groupModules);
+  let userModules = map(userProfile.userPermList, "moduleName");
+  let groupModules = map(userProfile.groupPermissions, "moduleName");
+  let moduleNames = union(userModules, groupModules);
   moduleNames.push("Profile");
   if (isSystemAdmin() || isAuditor()) {
     moduleNames.push("Permission");
@@ -146,7 +156,6 @@ export const hasAccessToPath = (pathName) => {
 };
 
 /* Time Stamp */
-
 export const setTimeStamp = (dateTime) => {
   let formatDateTime = dateFormat(parseInt(dateTime), "mm/dd/yyyy hh:MM:ss TT");
   return !isEmpty(dateTime) ? (
@@ -162,7 +171,6 @@ export const setTimeStamp = (dateTime) => {
 };
 
 /* Policy validity period time zone */
-
 export const getAllTimeZoneList = () => {
   let Timezones = [
     { text: "Africa/Abidjan (GMT)", id: "Africa/Abidjan" },
@@ -867,7 +875,6 @@ var links = {
         : "Service Manager"
     };
   },
-
   ServiceCreate: {
     href: "",
     text: "Create Service"
@@ -1002,7 +1009,6 @@ export const commonBreadcrumb = (type, options) => {
 };
 
 /* PolicyListing QuerParams Name */
-
 export const QueryParamsName = (id) => {
   if (id == QueryParams.PolicyListing.id.columnName) {
     return QueryParams.PolicyListing.id.queryParamName;
@@ -1013,7 +1019,6 @@ export const QueryParamsName = (id) => {
 };
 
 /* QueryParams for sorting */
-
 export const getTableSortBy = (sortArr = []) => {
   return sortArr.map(({ id }) => id).join(",");
 };
@@ -1022,8 +1027,7 @@ export const getTableSortType = (sortArr = []) => {
   return sortArr.map(({ desc }) => (desc ? "desc" : "asc")).join(",");
 };
 
-/* info icon */
-
+/* Info icon */
 export const InfoIcon = (props) => {
   const { css, position, message } = props;
   return (
@@ -1038,7 +1042,6 @@ export const InfoIcon = (props) => {
 };
 
 /* Edit Permission Module Infinite Scroll */
-
 export const CustomInfinteScroll = (props) => {
   const { data, removeUsrGrp } = props;
   const [count, setCount] = useState({
@@ -1087,4 +1090,92 @@ export const CustomInfinteScroll = (props) => {
       </InfiniteScroll>
     </div>
   );
+};
+
+export const fetchSearchFilterParams = (
+  auditTabName,
+  searchParams,
+  searchFilterOptions
+) => {
+  let finalSearchFilterData = {};
+  let searchFilterParam = {};
+  let searchParam = {};
+  let defaultSearchFilterParam = [];
+
+  // Get search filter params from current search params
+  const currentParams = Object.fromEntries([...searchParams]);
+  console.log("PRINT current search params : ", currentParams);
+
+  for (const param in currentParams) {
+    let searchFilterObj = find(searchFilterOptions, {
+      urlLabel: param
+    });
+
+    if (!isUndefined(searchFilterObj)) {
+      let category = searchFilterObj.category;
+      let value = currentParams[param];
+
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          label: value
+        });
+        value = !isUndefined(textOptionObj) ? textOptionObj.value : value;
+      }
+
+      searchFilterParam[category] = value;
+      defaultSearchFilterParam.push({
+        category: category,
+        value: value
+      });
+    }
+  }
+
+  // Get search filter params from localStorage
+  if (isEmpty(searchFilterParam)) {
+    const localStorageParams = JSON.parse(localStorage.getItem(auditTabName));
+    console.log("PRINT available localStorage : ", localStorageParams);
+
+    if (!isNull(localStorageParams) && !isEmpty(localStorageParams)) {
+      for (const localParam in localStorageParams) {
+        let searchFilterObj = find(searchFilterOptions, {
+          urlLabel: localParam
+        });
+
+        if (!isUndefined(searchFilterObj)) {
+          let category = searchFilterObj.category;
+          let value = localStorageParams[localParam];
+
+          if (searchFilterObj.type == "textoptions") {
+            let textOptionObj = find(searchFilterObj.options(), {
+              label: value
+            });
+            value = !isUndefined(textOptionObj) ? textOptionObj.value : value;
+          }
+
+          searchFilterParam[category] = value;
+          defaultSearchFilterParam.push({
+            category: category,
+            value: value
+          });
+          searchParam[localParam] = value;
+        }
+      }
+    }
+  }
+
+  console.log("PRINT Final searchFilterParam to server : ", searchFilterParam);
+  console.log(
+    "PRINT Final defaultSearchFilterParam to tokenzier : ",
+    defaultSearchFilterParam
+  );
+  console.log(
+    "PRINT Final available localStorage is : ",
+    localStorage.getItem(auditTabName)
+  );
+
+  finalSearchFilterData["searchFilterParam"] = searchFilterParam;
+  finalSearchFilterData["defaultSearchFilterParam"] = defaultSearchFilterParam;
+  finalSearchFilterData["searchParam"] = { ...currentParams, ...searchParam };
+
+  return finalSearchFilterData;
 };

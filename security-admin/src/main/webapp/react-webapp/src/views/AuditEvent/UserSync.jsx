@@ -1,5 +1,5 @@
-import React, { Component, useState, useCallback, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Modal, Button, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuditFilterEntries } from "Components/CommonComponents";
@@ -7,9 +7,12 @@ import { SyncSourceDetails } from "../UserGroupRoleListing/SyncSourceDetails";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import { find, map, sortBy } from "lodash";
-import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
-import { useQuery } from "../../components/CommonComponents";
+import { find, map, sortBy, has } from "lodash";
+import {
+  getTableSortBy,
+  getTableSortType,
+  fetchSearchFilterParams
+} from "../../utils/XAUtils";
 
 function User_Sync() {
   const [userSyncListingData, setUserSyncLogs] = useState([]);
@@ -22,9 +25,35 @@ function User_Sync() {
     syncDteails: {},
     showSyncDetails: false
   });
-  const [searchFilterParams, setSearchFilter] = useState({});
-  const navigate = useNavigate();
-  const searchParams = useQuery();
+  const [contentLoader, setContentLoader] = useState(true);
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
+
+  useEffect(() => {
+    let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
+
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams("userSync", searchParams, searchFilterOptions);
+
+    if (!has(searchFilterParam, "startDate")) {
+      searchParam["startDate"] = currentDate;
+      searchFilterParam["startDate"] = currentDate;
+      defaultSearchFilterParam.push({
+        category: "startDate",
+        value: currentDate
+      });
+    }
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams(searchParam);
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem("userSync", JSON.stringify(searchParam));
+    setContentLoader(false);
+  }, []);
 
   const fetchUserSyncInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
@@ -61,23 +90,27 @@ function User_Sync() {
     },
     [updateTable, searchFilterParams]
   );
+
   const refreshTable = () => {
     setUserSyncLogs([]);
     setLoader(true);
     setUpdateTable(moment.now());
   };
+
   const toggleTableSyncModal = (raw) => {
     setTableSyncdetails({
       syncDteails: raw,
       showSyncDetails: true
     });
   };
+
   const toggleTableSyncModalClose = () => {
     setTableSyncdetails({
       syncDteails: {},
       showSyncDetails: false
     });
   };
+
   const getDefaultSort = React.useMemo(
     () => [
       {
@@ -87,6 +120,7 @@ function User_Sync() {
     ],
     []
   );
+
   const columns = React.useMemo(
     () => [
       {
@@ -191,42 +225,36 @@ function User_Sync() {
   );
 
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
-    let searchFilterUrlParam = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
-      let searchFilterObj = find(searchFilterOption, {
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOptions, {
         category: obj.category
       });
-      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
       if (searchFilterObj.type == "textoptions") {
         let textOptionObj = find(searchFilterObj.options(), {
           value: obj.value
         });
-        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+        searchParam[urlLabelParam] = textOptionObj.label;
       } else {
-        searchParams.set(searchFilterObj.urlLabel, obj.value);
+        searchParam[urlLabelParam] = obj.value;
       }
     });
-    setSearchFilter(searchFilter);
 
-    for (const searchParam of searchParams.entries()) {
-      const [param, value] = searchParam;
-      if (searchFilterUrlParam[param] !== undefined) {
-        searchParams.set(param, value);
-      } else {
-        searchParams.delete(param);
-      }
-    }
-
-    navigate(`/reports/audit/userSync?${searchParams.toString()}`, {
-      replace: true
-    });
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
+    localStorage.setItem("userSync", JSON.stringify(searchParam));
   };
 
-  const searchFilterOption = [
+  const searchFilterOptions = [
     {
       category: "endDate",
       label: "End Date",
@@ -262,54 +290,69 @@ function User_Sync() {
 
   return (
     <div className="wrap">
-      <Row className="mb-2">
-        <Col sm={12}>
-          <div className="searchbox-border">
-            <StructuredFilter
-              key="usersync-audit-search-filter"
-              placeholder="Search for your user sync audits..."
-              options={sortBy(searchFilterOption, ["label"])}
-              onTokenAdd={updateSearchFilter}
-              onTokenRemove={updateSearchFilter}
-              defaultSelected={[]}
-            />
-          </div>
-        </Col>
-      </Row>
-      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <XATableLayout
-        data={userSyncListingData}
-        columns={columns}
-        loading={loader}
-        totalCount={entries && entries.totalCount}
-        fetchData={fetchUserSyncInfo}
-        pageCount={pageCount}
-        columnSort={true}
-        defaultSort={getDefaultSort}
-      />
-      <Modal
-        show={showTableSyncDetails && showTableSyncDetails.showSyncDetails}
-        onHide={toggleTableSyncModalClose}
-        size="xl"
-      >
-        <Modal.Header>
-          <Modal.Title>Sync Source Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <SyncSourceDetails
-            syncDetails={showTableSyncDetails.syncDteails}
-          ></SyncSourceDetails>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={toggleTableSyncModalClose}
+      {contentLoader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+          </Col>
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-2">
+            <Col sm={12}>
+              <div className="searchbox-border">
+                <StructuredFilter
+                  key="usersync-audit-search-filter"
+                  placeholder="Search for your user sync audits..."
+                  options={sortBy(searchFilterOptions, ["label"])}
+                  onTokenAdd={updateSearchFilter}
+                  onTokenRemove={updateSearchFilter}
+                  defaultSelected={defaultSearchFilterParams}
+                />
+              </div>
+            </Col>
+          </Row>
+          <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+          <XATableLayout
+            data={userSyncListingData}
+            columns={columns}
+            loading={loader}
+            totalCount={entries && entries.totalCount}
+            fetchData={fetchUserSyncInfo}
+            pageCount={pageCount}
+            columnSort={true}
+            defaultSort={getDefaultSort}
+          />
+          <Modal
+            show={showTableSyncDetails && showTableSyncDetails.showSyncDetails}
+            onHide={toggleTableSyncModalClose}
+            size="xl"
           >
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
+            <Modal.Header>
+              <Modal.Title>Sync Source Details</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <SyncSourceDetails
+                syncDetails={showTableSyncDetails.syncDteails}
+              ></SyncSourceDetails>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={toggleTableSyncModalClose}
+              >
+                OK
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </React.Fragment>
+      )}
     </div>
   );
 }

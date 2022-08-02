@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
@@ -11,12 +11,14 @@ import OperationAdminModal from "./OperationAdminModal";
 import moment from "moment-timezone";
 import { capitalize, find, map, startCase, sortBy, toLower } from "lodash";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
-import { useQuery } from "../../components/CommonComponents";
+import {
+  getTableSortBy,
+  getTableSortType,
+  fetchSearchFilterParams
+} from "../../utils/XAUtils";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
-  const [searchFilterParams, setSearchFilter] = useState({});
   const [sessionId, setSessionId] = useState([]);
   const [loader, setLoader] = useState(true);
   const [pageCount, setPageCount] = useState(0);
@@ -26,8 +28,12 @@ function Admin() {
   const [showrowmodal, setShowRowModal] = useState(false);
   const [rowdata, setRowData] = useState([]);
   const fetchIdRef = useRef(0);
-  const navigate = useNavigate();
-  const searchParams = useQuery();
+  const [contentLoader, setContentLoader] = useState(true);
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
 
   const handleClose = () => setShowModal(false);
   const handleClosed = () => setShowRowModal(false);
@@ -38,6 +44,18 @@ function Admin() {
     setShowRowModal(true);
     setRowData(original);
   };
+
+  useEffect(() => {
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams("admin", searchParams, searchFilterOptions);
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams(searchParam);
+    setSearchFilterParams(searchFilterParam);
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem("admin", JSON.stringify(searchParam));
+    setContentLoader(false);
+  }, []);
 
   const fetchAdminLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
@@ -291,42 +309,36 @@ function Admin() {
   );
 
   const updateSearchFilter = (filter) => {
-    console.log("PRINT Filter : ", filter);
-    let searchFilter = {};
-    let searchFilterUrlParam = {};
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
 
     map(filter, function (obj) {
-      searchFilter[obj.category] = obj.value;
-      let searchFilterObj = find(searchFilterOption, {
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOptions, {
         category: obj.category
       });
-      searchFilterUrlParam[searchFilterObj.urlLabel] = obj.value;
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
       if (searchFilterObj.type == "textoptions") {
         let textOptionObj = find(searchFilterObj.options(), {
           value: obj.value
         });
-        searchParams.set(searchFilterObj.urlLabel, textOptionObj.label);
+        searchParam[urlLabelParam] = textOptionObj.label;
       } else {
-        searchParams.set(searchFilterObj.urlLabel, obj.value);
+        searchParam[urlLabelParam] = obj.value;
       }
     });
-    setSearchFilter(searchFilter);
 
-    for (const searchParam of searchParams.entries()) {
-      const [param, value] = searchParam;
-      if (searchFilterUrlParam[param] !== undefined) {
-        searchParams.set(param, value);
-      } else {
-        searchParams.delete(param);
-      }
-    }
-
-    navigate(`/reports/audit/admin?${searchParams.toString()}`, {
-      replace: true
-    });
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
+    localStorage.setItem("admin", JSON.stringify(searchParam));
   };
 
-  const searchFilterOption = [
+  const searchFilterOptions = [
     {
       category: "action",
       label: "Actions",
@@ -351,7 +363,7 @@ function Admin() {
     {
       category: "objectClassType",
       label: "Audit Type",
-      urlLabel: "actions",
+      urlLabel: "auditType",
       type: "textoptions",
       options: () => {
         return [
@@ -392,47 +404,63 @@ function Admin() {
 
   return (
     <div className="wrap">
-      <Row className="mb-2">
-        <Col sm={12}>
-          <div className="searchbox-border">
-            <StructuredFilter
-              key="admin-log-search-filter"
-              placeholder="Search for your access logs..."
-              options={sortBy(searchFilterOption, ["label"])}
-              onTokenAdd={updateSearchFilter}
-              onTokenRemove={updateSearchFilter}
-              defaultSelected={[]}
-            />
-          </div>
-        </Col>
-      </Row>
-      <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
-      <XATableLayout
-        data={adminListingData}
-        columns={columns}
-        fetchData={fetchAdminLogsInfo}
-        totalCount={entries && entries.totalCount}
-        pageCount={pageCount}
-        loading={loader}
-        columnSort={true}
-        defaultSort={getDefaultSort}
-        getRowProps={(row) => ({
-          onClick: () => rowModal(row)
-        })}
-      />
+      {contentLoader ? (
+        <Row>
+          <Col sm={12} className="text-center">
+            <div className="spinner-border mr-2" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+            <div className="spinner-grow" role="status">
+              <span className="sr-only">Loading...</span>
+            </div>
+          </Col>
+        </Row>
+      ) : (
+        <React.Fragment>
+          <Row className="mb-2">
+            <Col sm={12}>
+              <div className="searchbox-border">
+                <StructuredFilter
+                  key="admin-log-search-filter"
+                  placeholder="Search for your access logs..."
+                  options={sortBy(searchFilterOptions, ["label"])}
+                  onTokenAdd={updateSearchFilter}
+                  onTokenRemove={updateSearchFilter}
+                  defaultSelected={defaultSearchFilterParams}
+                />
+              </div>
+            </Col>
+          </Row>
 
-      <AdminModal
-        show={showmodal}
-        data={sessionId}
-        onHide={handleClose}
-      ></AdminModal>
-      {
-        <OperationAdminModal
-          show={showrowmodal}
-          data={rowdata}
-          onHide={handleClosed}
-        ></OperationAdminModal>
-      }
+          <AuditFilterEntries entries={entries} refreshTable={refreshTable} />
+
+          <XATableLayout
+            data={adminListingData}
+            columns={columns}
+            fetchData={fetchAdminLogsInfo}
+            totalCount={entries && entries.totalCount}
+            pageCount={pageCount}
+            loading={loader}
+            columnSort={true}
+            defaultSort={getDefaultSort}
+            getRowProps={(row) => ({
+              onClick: () => rowModal(row)
+            })}
+          />
+
+          <AdminModal
+            show={showmodal}
+            data={sessionId}
+            onHide={handleClose}
+          ></AdminModal>
+
+          <OperationAdminModal
+            show={showrowmodal}
+            data={rowdata}
+            onHide={handleClosed}
+          ></OperationAdminModal>
+        </React.Fragment>
+      )}
     </div>
   );
 }
