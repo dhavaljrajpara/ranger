@@ -99,8 +99,10 @@ function TestConnection(props) {
       </Button>
       <Modal show={modelState.showTestConnModal} onHide={hideTestConnModal}>
         <Modal.Body>
-          {modelContent.testConnModalContent}
-          {!modelState.showMore && modelContent.showMoreModalContent}
+          <div className="overflow-y-auto">
+            {modelContent.testConnModalContent}
+            {!modelState.showMore && modelContent.showMoreModalContent}
+          </div>
         </Modal.Body>
 
         <Modal.Footer>

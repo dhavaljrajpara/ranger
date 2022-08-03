@@ -23,6 +23,10 @@ a:active {
   float: right;
 }
 
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
 .fnt-14 {
   font-size: 14px;
 }
