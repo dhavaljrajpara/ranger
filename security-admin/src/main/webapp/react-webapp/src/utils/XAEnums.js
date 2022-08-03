@@ -515,6 +515,9 @@ export const RegexValidation = {
     regexforNameValidation: /^[a-zA-Z0-9_-][a-zA-Z0-9\s_-]{0,254}$/,
     regexExpressionForSecondaryName:
       /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-zA-Z0-9\s_. -@]|[\u00C0-\u017F])+$/i,
+    regexforServiceNameValidation: /^[a-zA-Z0-9_-][a-zA-Z0-9_-]{0,254}$/,
+    serviceNameValidationMessage:
+      "Name should not contain space, it should be less than 256 characters and special characters are not allowed (except _ -).",
     nameValidationMessage:
       "1. Name should be start with alphabet / numeric / underscore / non-us characters. 2. Allowed special character ,._-+/@= and space.3. Name length should be greater than one.",
     regexforNameValidationMessage:

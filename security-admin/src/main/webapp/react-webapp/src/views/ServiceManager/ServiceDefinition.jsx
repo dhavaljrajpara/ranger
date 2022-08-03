@@ -428,27 +428,29 @@ class ServiceDefinition extends Component {
                                   </tbody>
                                 </Table>
                                 <p className="form-header">Audit Filter :</p>
-                                <Table
-                                  bordered
-                                  size="sm"
-                                  className="table-audit-filter-ready-only"
-                                >
-                                  <thead>
-                                    <tr>
-                                      <th>Is Audited</th>
-                                      <th>Access Result</th>
-                                      <th>Resources</th>
-                                      <th>Operations</th>
-                                      <th>Permissions</th>
-                                      <th>Users</th>
-                                      <th>Groups</th>
-                                      <th>Roles</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {this.getAuditFilters(s.configs)}
-                                  </tbody>
-                                </Table>
+                                <div className="table-responsive">
+                                  <Table
+                                    bordered
+                                    size="sm"
+                                    className="table-audit-filter-ready-only"
+                                  >
+                                    <thead>
+                                      <tr>
+                                        <th>Is Audited</th>
+                                        <th>Access Result</th>
+                                        <th>Resources</th>
+                                        <th>Operations</th>
+                                        <th>Permissions</th>
+                                        <th>Users</th>
+                                        <th>Groups</th>
+                                        <th>Roles</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {this.getAuditFilters(s.configs)}
+                                    </tbody>
+                                  </Table>
+                                </div>
                               </Col>
                             </Row>
                           </Modal.Body>

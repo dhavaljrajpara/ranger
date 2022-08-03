@@ -6,7 +6,7 @@ import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
-
+import { RegexValidation } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
@@ -31,7 +31,6 @@ import {
   split,
   without
 } from "lodash";
-
 import withRouter from "Hooks/withRouter";
 
 class ServiceForm extends Component {
@@ -833,6 +832,19 @@ class ServiceForm extends Component {
   validateRequired = (isRequired) =>
     isRequired ? (value) => (value ? undefined : "Required") : () => {};
 
+  validateServiceName = (value) =>
+    !RegexValidation.NAME_VALIDATION.regexforServiceNameValidation.test(value)
+      ? RegexValidation.NAME_VALIDATION.serviceNameValidationMessage
+      : undefined;
+
+  composeValidators =
+    (...validators) =>
+    (value) =>
+      validators.reduce(
+        (error, validator) => error || validator(value),
+        undefined
+      );
+
   SelectField = ({ input, ...rest }) => (
     <Select {...input} {...rest} searchable />
   );
@@ -906,6 +918,7 @@ class ServiceForm extends Component {
       value: obj.name
     }));
   };
+
   ServiceDefnBreadcrumb = () => {
     let serviceDetails = {};
     serviceDetails["serviceDefId"] = this.state.serviceDef.id;
@@ -932,6 +945,7 @@ class ServiceForm extends Component {
       );
     }
   };
+
   render() {
     return (
       <React.Fragment>
@@ -1011,7 +1025,10 @@ class ServiceForm extends Component {
                           <Field
                             name="name"
                             id="name"
-                            validate={this.validateRequired(true)}
+                            validate={this.composeValidators(
+                              this.validateRequired(true),
+                              this.validateServiceName
+                            )}
                           >
                             {({ input, meta }) => (
                               <Row className="form-group">
