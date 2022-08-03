@@ -1681,6 +1681,7 @@ header {
   font-size: 1rem;
   max-height: 100px;
   overflow-y: auto;
+  width: 100%;
 }
 
 .show-less {
@@ -1689,6 +1690,7 @@ header {
   font-size: 1rem;
   overflow-y: auto;
   max-height: 100px;
+  width: 100%;
 }
 
 /*Policy Permission Item */

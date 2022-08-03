@@ -346,7 +346,7 @@ function PolicyListing(props) {
             <div>--</div>
           );
         },
-        width: 100,
+        width: 130,
         disableSortBy: true
       },
       {
