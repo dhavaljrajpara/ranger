@@ -33,7 +33,7 @@ module.exports = {
           {
             loader: "file-loader",
             options: {
-              name: "[contenthash][ext][query]",
+              name: "[contenthash].[ext]",
               outputPath: "images/",
               publicPath: "../images/"
             }
@@ -46,7 +46,7 @@ module.exports = {
           {
             loader: "file-loader",
             options: {
-              name: "[contenthash][ext][query]",
+              name: "[contenthash].[ext][query]",
               outputPath: "fonts/",
               publicPath: "../fonts/"
             }
