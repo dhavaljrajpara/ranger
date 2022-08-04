@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
@@ -37,6 +37,13 @@ function Admin() {
 
   const handleClose = () => setShowModal(false);
   const handleClosed = () => setShowRowModal(false);
+  const navigate = useNavigate();
+
+  const updateSessionId = (id) => {
+    navigate(`/reports/audit/admin?sessionId=${id}`);
+    setSearchParams({ sessionId: id });
+    setContentLoader(true);
+  };
 
   const rowModal = async (row) => {
     const { original = {} } = row;
@@ -55,7 +62,7 @@ function Admin() {
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     localStorage.setItem("admin", JSON.stringify(searchParam));
     setContentLoader(false);
-  }, []);
+  }, [searchParams]);
 
   const fetchAdminLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
@@ -452,6 +459,7 @@ function Admin() {
             show={showmodal}
             data={sessionId}
             onHide={handleClose}
+            updateSessionId={updateSessionId}
           ></AdminModal>
 
           <OperationAdminModal

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Badge, Row, Col } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
 import { AuthStatus, AuthType } from "../../utils/XAEnums";
@@ -32,6 +32,11 @@ function Login_Sessions() {
   );
 
   const handleClose = () => setShowModal(false);
+  const navigate = useNavigate();
+
+  const updateSessionId = (id) => {
+    navigate(`/reports/audit/admin?sessionId=${id}`);
+  };
 
   useEffect(() => {
     let { searchFilterParam, defaultSearchFilterParam, searchParam } =
@@ -84,9 +89,7 @@ function Login_Sessions() {
     },
     [updateTable, searchFilterParams]
   );
-  // const getDefaultSort = () => {
-  //   return [{ id: "id", desc: true }];
-  // };
+
   const getDefaultSort = React.useMemo(
     () => [
       {
@@ -96,15 +99,18 @@ function Login_Sessions() {
     ],
     []
   );
+
   const refreshTable = () => {
     setLoginSessionLogs([]);
     setLoader(true);
     setUpdateTable(moment.now());
   };
+
   const openModal = (id) => {
     setShowModal(true);
     setSessionId(id);
   };
+
   const columns = React.useMemo(
     () => [
       {
@@ -375,6 +381,7 @@ function Login_Sessions() {
             show={showmodal}
             data={sessionId}
             onHide={handleClose}
+            updateSessionId={updateSessionId}
           ></AdminModal>
         </React.Fragment>
       )}

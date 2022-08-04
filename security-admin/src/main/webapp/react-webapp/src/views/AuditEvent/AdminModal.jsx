@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
 import { AuthStatus, AuthType } from "../../utils/XAEnums";
 import { Modal, Table, Button } from "react-bootstrap";
 import dateFormat from "dateformat";
-import { Loader } from "Components/CommonComponents";
+import { has } from "lodash";
 
 export const AdminModal = (props) => {
   const [authSession, setAuthSession] = useState([]);
-  // const [showmodal, setShowModal] = useState(false);
   const [loader, setLoader] = useState(true);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (props.show) {
@@ -30,6 +30,14 @@ export const AdminModal = (props) => {
       authlogs ? setLoader(false) : setLoader(true);
     } catch (error) {
       console.error(`Error occurred while fetching Admin logs! ${error}`);
+    }
+  };
+
+  const setSessionId = () => {
+    props.onHide();
+    const currentParams = Object.fromEntries([...searchParams]);
+    if (!has(currentParams, "sessionId")) {
+      props.updateSessionId(props.data);
     }
   };
 
@@ -126,9 +134,14 @@ export const AdminModal = (props) => {
             </tbody>
           </Table>
         )}
-        <Link className="link-tag" to="/reports/audit/admin">
+        <Button
+          variant="link"
+          className="link-tag"
+          size="sm"
+          onClick={setSessionId}
+        >
           Show Actions
-        </Link>
+        </Button>
       </Modal.Body>
 
       <Modal.Footer>
