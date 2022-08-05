@@ -5,12 +5,16 @@ import { FieldError, scrollToError } from "Components/CommonComponents";
 import AsyncSelect from "react-select/async";
 import Select from "react-select";
 import { fetchApi } from "Utils/fetchAPI";
-import { ActivationStatus, RegexValidation } from "Utils/XAEnums";
+import {
+  ActivationStatus,
+  RegexValidation,
+  UserRoles,
+  UserSource
+} from "Utils/XAEnums";
 import { toast } from "react-toastify";
 import { getUserAccessRoleList } from "Utils/XAUtils";
-import { UserRoles, UserSource } from "Utils/XAEnums";
 import { getUserProfile } from "Utils/appState";
-import _ from "lodash";
+import _, { isEmpty, isUndefined } from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import { CustomTooltip } from "../../../components/CommonComponents";
 import { InfoIcon } from "../../../utils/XAUtils";
@@ -97,7 +101,6 @@ function UserFormComp(props) {
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          navigate("/users/usertab");
         }
         console.error(`Error occurred while creating user`);
       }
@@ -121,7 +124,6 @@ function UserFormComp(props) {
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          navigate("/users/usertab");
         }
         console.error(`Error occurred while creating user`);
       }
@@ -270,7 +272,7 @@ function UserFormComp(props) {
         errors.firstName = "Required";
       } else {
         if (
-          !RegexValidation.NAME_VALIDATION.regexExpressionForName.test(
+          !RegexValidation.NAME_VALIDATION.regexExpressionForFirstAndLastName.test(
             values.firstName
           )
         ) {
@@ -278,6 +280,17 @@ function UserFormComp(props) {
             RegexValidation.NAME_VALIDATION.secondaryNameValidationMessage;
         }
       }
+    }
+
+    if (
+      (!isEmpty(values.lastName) || !isUndefined(values.lastName)) &&
+      values.lastName.length > 0 &&
+      !RegexValidation.NAME_VALIDATION.regexExpressionForFirstAndLastName.test(
+        values.lastName
+      )
+    ) {
+      errors.lastName =
+        RegexValidation.NAME_VALIDATION.secondaryNameValidationMessage;
     }
 
     if (
@@ -296,9 +309,17 @@ function UserFormComp(props) {
     ) {
       errors.passwordConfirm = "Password must be match with new password";
     }
-
+    if (
+      (!isEmpty(values.emailAddress) || !isUndefined(values.emailAddress)) &&
+      !RegexValidation.EMAIL_VALIDATION.regexExpressionForEmail.test(
+        values.emailAddress
+      )
+    ) {
+      errors.emailAddress = RegexValidation.EMAIL_VALIDATION.message;
+    }
     return errors;
   };
+
   return (
     <>
       <h4 className="wrap-header bold">User Detail</h4>
@@ -590,6 +611,7 @@ function UserFormComp(props) {
                     render={({ input }) => (
                       <Select
                         {...input}
+                        id="userRoleList"
                         options={userRoleListData()}
                         isDisabled={disabledUserRoleField()}
                       ></Select>

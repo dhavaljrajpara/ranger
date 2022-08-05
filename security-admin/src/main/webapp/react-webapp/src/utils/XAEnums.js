@@ -512,6 +512,8 @@ export const RegexValidation = {
   NAME_VALIDATION: {
     regexExpressionForName:
       /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-z0-9,._\-+/@= ]|[\u00C0-\u017F])+$/i,
+    regexExpressionForFirstAndLastName:
+      /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-zA-Z0-9\s_. -@]|[\u00C0-\u017F])+$/i,
     regexforNameValidation: /^[a-zA-Z0-9_-][a-zA-Z0-9\s_-]{0,254}$/,
     regexExpressionForSecondaryName:
       /^([A-Za-z0-9_]|[\u00C0-\u017F])([a-zA-Z0-9\s_. -@]|[\u00C0-\u017F])+$/i,
@@ -524,6 +526,11 @@ export const RegexValidation = {
       "Name should not start with space, it should be less than 256 characters and special characters are not allowed(except _ - and space).",
     secondaryNameValidationMessage:
       "1. Name should be start with alphabet / numeric / underscore / non-us characters. 2. Allowed special character ._-@ and space. 3. Name length should be greater than one."
+  },
+  EMAIL_VALIDATION: {
+    regexExpressionForEmail:
+      /^[\w]([\-\.\w])+[\w]+@[\w]+[\w\-]+[\w]*\.([\w]+[\w\-]+[\w]*(\.[a-z][a-z|0-9]*)?)$/,
+    message: "Invalid email address"
   }
 };
 

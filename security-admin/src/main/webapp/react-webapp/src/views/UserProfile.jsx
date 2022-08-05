@@ -7,7 +7,7 @@ import { commonBreadcrumb } from "../utils/XAUtils";
 import { scrollToError } from "../components/CommonComponents";
 import withRouter from "Hooks/withRouter";
 import { UserTypes, RegexValidation } from "Utils/XAEnums";
-import { has } from "lodash";
+import { has, isEmpty, isUndefined } from "lodash";
 import { InfoIcon } from "../utils/XAUtils";
 import { RegexMessage } from "../utils/XAMessages";
 class UserProfile extends Component {
@@ -29,6 +29,14 @@ class UserProfile extends Component {
       toast.success("Successfully updated user profile");
       this.props.navigate("/");
     } catch (error) {
+      if (
+        error.response !== undefined &&
+        _.has(error.response, "data.msgDesc")
+      ) {
+        toast.error(
+          `Error occurred while updating user profile! ${error.response.data.msgDesc}`
+        );
+      }
       console.error(`Error occurred while updating user profile! ${error}`);
     }
   };
@@ -83,7 +91,6 @@ class UserProfile extends Component {
     } else if (values.newPassword !== values.reEnterPassword) {
       errors.reEnterPassword = "Must match";
     }
-
     return errors;
   };
 
@@ -92,7 +99,14 @@ class UserProfile extends Component {
     if (!values.firstName) {
       errors.firstName = "Required";
     }
-
+    if (
+      (!isEmpty(values.emailAddress) || !isUndefined(values.emailAddress)) &&
+      !RegexValidation.EMAIL_VALIDATION.regexExpressionForEmail.test(
+        values.emailAddress
+      )
+    ) {
+      errors.emailAddress = RegexValidation.EMAIL_VALIDATION.message;
+    }
     return errors;
   };
 

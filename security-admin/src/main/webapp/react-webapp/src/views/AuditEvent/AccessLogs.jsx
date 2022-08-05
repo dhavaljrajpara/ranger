@@ -171,6 +171,7 @@ function Access() {
 
   const fetchAccessLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
+      setLoader(true);
       let logsResp = [];
       let logs = [];
       let totalCount = 0;
@@ -735,6 +736,16 @@ function Access() {
     []
   );
 
+  const getDefaultSort = React.useMemo(
+    () => [
+      {
+        id: "eventTime",
+        desc: true
+      }
+    ],
+    []
+  );
+
   const getServiceDefType = () => {
     let serviceDefType = [];
 
@@ -1031,6 +1042,7 @@ function Access() {
             columnHide={true}
             columnResizable={true}
             columnSort={true}
+            defaultSort={getDefaultSort}
           />
           <Modal show={showrowmodal} size="lg" onHide={handleClose}>
             <Modal.Header closeButton>

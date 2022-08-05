@@ -229,7 +229,7 @@ const SecurityZoneForm = (props) => {
     setResourceService(filterService);
   };
 
-  const onSubmit = async (values) => {
+  const handleSubmit = async (values) => {
     let zoneId;
 
     let apiMethod;
@@ -615,7 +615,7 @@ const SecurityZoneForm = (props) => {
           </Row>
         ) : (
           <Form
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             keepDirtyOnReinitialize={true}
             initialValuesEqual={() => true}
             initialValues={params.zoneId !== undefined && EditFormData()}
@@ -626,11 +626,13 @@ const SecurityZoneForm = (props) => {
             render={({
               handleSubmit,
               dirty,
+              values,
               invalid,
               errors,
               form: {
                 mutators: { push, remove }
               },
+              form,
               submitting
             }) => (
               <Row>
@@ -638,14 +640,6 @@ const SecurityZoneForm = (props) => {
                 <Col sm={12}>
                   <form
                     onSubmit={(event) => {
-                      if (invalid) {
-                        let selector =
-                          document.getElementById("isError") ||
-                          document.querySelector(
-                            `input[name=${Object.keys(errors)[0]}]`
-                          );
-                        scrollToError(selector);
-                      }
                       handleSubmit(event);
                     }}
                   >
@@ -1058,7 +1052,18 @@ const SecurityZoneForm = (props) => {
                       <Col sm={{ span: 9, offset: 3 }}>
                         <Button
                           variant="primary"
-                          type="submit"
+                          // type="submit"
+                          onClick={() => {
+                            if (invalid) {
+                              let selector =
+                                document.getElementById("isError") ||
+                                document.querySelector(
+                                  `input[name=${Object.keys(errors)[0]}]`
+                                );
+                              scrollToError(selector);
+                            }
+                            handleSubmit(values);
+                          }}
                           size="sm"
                           disabled={submitting}
                         >
@@ -1069,6 +1074,7 @@ const SecurityZoneForm = (props) => {
                           type="button"
                           size="sm"
                           onClick={() => {
+                            form.reset;
                             setPreventUnblock(true);
                             navigate(-1);
                           }}

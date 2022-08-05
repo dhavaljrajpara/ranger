@@ -20,6 +20,7 @@ import { Loader, CustomTooltip } from "Components/CommonComponents";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
 import usePrompt from "Hooks/usePrompt";
+import { RegexValidation } from "../../../utils/XAEnums";
 
 const initialState = {
   loader: true,
@@ -194,7 +195,6 @@ function RoleForm() {
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          navigate("/users/roletab");
         }
         console.error(`Error occurred while creating Role`);
       }
@@ -218,7 +218,6 @@ function RoleForm() {
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(error.response.data.msgDesc);
-          navigate("/users/roletab");
         }
         console.error(`Error occurred while updating role! ${error}`);
       }
@@ -364,6 +363,14 @@ function RoleForm() {
     const errors = {};
     if (!values.name) {
       errors.name = "Required";
+    } else {
+      if (
+        !RegexValidation.NAME_VALIDATION.regexExpressionForName.test(
+          values.name
+        )
+      ) {
+        errors.name = RegexValidation.NAME_VALIDATION.nameValidationMessage;
+      }
     }
     return errors;
   };

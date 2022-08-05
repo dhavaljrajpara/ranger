@@ -13,6 +13,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
 import Switch from "react-bootstrap/esm/Switch";
 import { fetchApi } from "Utils/fetchAPI";
+import { RegexValidation, GroupSource } from "../../../utils/XAEnums";
 
 const initialState = {
   groupInfo: {},
@@ -122,8 +123,13 @@ function GroupForm(props) {
         toast.success("Group updated successfully!!");
         self.location.hash = "#/users/grouptab"; // change to navigate
       } catch (error) {
+        if (
+          error.response !== undefined &&
+          _.has(error.response, "data.msgDesc")
+        ) {
+          toast.error(error.response.data.msgDesc);
+        }
         console.error(`Error occurred while creating proup`);
-        toast.error(error.msgDesc);
       }
     } else {
       try {
@@ -145,7 +151,6 @@ function GroupForm(props) {
           _.has(error.response, "data.msgDesc")
         ) {
           toast.error(`Group creation failed!! ${error.response.data.msgDesc}`);
-          navigate("/users/grouptab");
         }
         console.error(`Error occurred while updating user password! ${error}`);
       }
@@ -171,6 +176,14 @@ function GroupForm(props) {
     const errors = {};
     if (!values.name) {
       errors.name = "Required";
+    } else {
+      if (
+        !RegexValidation.NAME_VALIDATION.regexExpressionForName.test(
+          values.name
+        )
+      ) {
+        errors.name = RegexValidation.NAME_VALIDATION.nameValidationMessage;
+      }
     }
 
     return errors;
@@ -229,7 +242,13 @@ function GroupForm(props) {
                             ? "form-control border-danger"
                             : "form-control"
                         }
-                        disabled={params.groupID ? true : false}
+                        disabled={
+                          params.groupID &&
+                          groupInfo &&
+                          groupInfo.groupSource == GroupSource.XA_GROUP.value
+                            ? true
+                            : false
+                        }
                       />
                       <span className="info-user-role-grp-icon">
                         <CustomTooltip
@@ -267,6 +286,13 @@ function GroupForm(props) {
                         {...input}
                         placeholder="Description"
                         className="form-control"
+                        disabled={
+                          params.groupID &&
+                          groupInfo &&
+                          groupInfo.groupSource == GroupSource.XA_GROUP.value
+                            ? true
+                            : false
+                        }
                       />
                     </Col>
                   </Row>
