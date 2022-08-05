@@ -289,9 +289,9 @@ a:active {
 
 .ranger-navbar .dropdown-item:hover,
 .ranger-navbar .dropdown-item:focus {
-  color: #fff;
+  color: #fff !important;
   text-decoration: none;
-  background-color: #0b7fad;
+  background-color: #0b7fad !important;
 }
 
 .zone-icon {

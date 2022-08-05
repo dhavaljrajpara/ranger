@@ -166,6 +166,13 @@ class Header extends Component {
                   <i className="fa fa-user"></i> Profile
                 </NavDropdown.Item>
                 <NavDropdown.Item
+                  to="../apidocs/index.html"
+                  target="_blank"
+                  as={Link}
+                >
+                  <i className="fa fa-user"></i> API Documentation
+                </NavDropdown.Item>
+                <NavDropdown.Item
                   to="/logout"
                   onClick={this.handleLogout}
                   as={NavLink}

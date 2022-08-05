@@ -79,6 +79,7 @@ const handleCSRFHeaders = (data) => {
   }
   if (data.hasOwnProperty(CSRFToken)) {
     csrfToken = data[CSRFToken];
+    localStorage.setItem("csrfToken", csrfToken);
   }
 };
 
