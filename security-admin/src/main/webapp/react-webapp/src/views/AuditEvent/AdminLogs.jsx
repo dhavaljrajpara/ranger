@@ -66,6 +66,7 @@ function Admin() {
 
   const fetchAdminLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
+      setLoader(true);
       let logsResp = [];
       let adminlogs = [];
       let totalCount = 0;

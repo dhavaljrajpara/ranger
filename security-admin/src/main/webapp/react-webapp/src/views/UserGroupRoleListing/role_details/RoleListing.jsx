@@ -26,6 +26,8 @@ function Roles() {
   const { state } = useLocation();
   const [roleListingData, setRoleData] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [pageLoader, setPageLoader] = useState(true);
+
   const [totalCount, setTotalCount] = useState(0);
   const fetchIdRef = useRef(0);
   const selectedRows = useRef([]);
@@ -86,8 +88,7 @@ function Roles() {
     setSearchParams({ ...currentParams, ...searchParam });
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    setLoader(false);
-
+    setPageLoader(false);
     console.log(
       "PRINT Final searchFilterParam to server : ",
       searchFilterParam
@@ -100,6 +101,7 @@ function Roles() {
 
   const fetchRoleInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
+      setLoader(true);
       let roleData = [],
         roleResp = [];
       let totalCount = 0;
@@ -323,7 +325,7 @@ function Roles() {
   return (
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Role List</h4>
-      {loader ? (
+      {pageLoader ? (
         <Row>
           <Col sm={12} className="text-center">
             <div className="spinner-border mr-2" role="status">

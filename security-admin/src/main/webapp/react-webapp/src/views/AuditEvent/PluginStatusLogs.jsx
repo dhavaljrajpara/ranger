@@ -82,6 +82,7 @@ function Plugin_Status() {
 
   const fetchPluginStatusInfo = useCallback(
     async ({ pageSize, pageIndex }) => {
+      setLoader(true);
       let logsResp = [];
       let logs = [];
       let totalCount = 0;

@@ -12,6 +12,7 @@ import StructuredFilter from "../../components/structured-filter/react-typeahead
 function Permissions() {
   const [permissionslistData, setPermissions] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [pageLoader, setPageLoader] = useState(true);
   const [pageCount, setPageCount] = React.useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const fetchIdRef = useRef(0);
@@ -59,7 +60,7 @@ function Permissions() {
     setSearchParams({ ...currentParams, ...searchParam });
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    setLoader(false);
+    setPageLoader(false);
 
     console.log(
       "PRINT Final searchFilterParam to server : ",
@@ -73,6 +74,7 @@ function Permissions() {
 
   const fetchPermissions = useCallback(
     async ({ pageSize, pageIndex }) => {
+      setLoader(true);
       let permissionsdata = [];
       let totalCount = 0;
       const fetchId = ++fetchIdRef.current;
@@ -228,7 +230,7 @@ function Permissions() {
       {commonBreadcrumb(["ModulePermissions"])}
       <h3 className="wrap-header bold">Permissions</h3>
       <div className="wrap">
-        {loader ? (
+        {pageLoader ? (
           <Row>
             <Col sm={12} className="text-center">
               <div className="spinner-border mr-2" role="status">

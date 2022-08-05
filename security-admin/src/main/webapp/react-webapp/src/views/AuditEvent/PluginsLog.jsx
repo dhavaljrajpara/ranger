@@ -61,6 +61,7 @@ function Plugins() {
 
   const fetchPluginsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy }) => {
+      setLoader(true);
       let logsResp = [];
       let logs = [];
       let totalCount = 0;

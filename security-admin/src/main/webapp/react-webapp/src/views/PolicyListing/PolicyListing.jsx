@@ -63,6 +63,7 @@ function PolicyListing(props) {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [pageLoader, setPageLoader] = useState(true);
 
   let navigate = useNavigate();
   let { serviceId, policyType } = useParams();
@@ -104,7 +105,7 @@ function PolicyListing(props) {
     setSearchParams({ ...currentParams, ...searchParam });
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    setLoader(false);
+    setPageLoader(false);
 
     console.log(
       "PRINT Final searchFilterParam to server : ",
@@ -130,6 +131,7 @@ function PolicyListing(props) {
 
   const fetchPolicyInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
+      setLoader(true);
       let policyData = [];
       let policyResp = [];
       let totalCount = 0;
@@ -593,7 +595,7 @@ function PolicyListing(props) {
 
   return (
     <div className="wrap">
-      {loader ? (
+      {pageLoader ? (
         <Row>
           <Col sm={12} className="text-center">
             <div className="spinner-border mr-2" role="status">

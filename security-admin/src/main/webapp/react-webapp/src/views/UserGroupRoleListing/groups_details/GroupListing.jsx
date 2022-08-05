@@ -64,6 +64,7 @@ function Groups() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [pageLoader, setPageLoader] = useState(true);
 
   useEffect(() => {
     let searchFilterParam = {};
@@ -102,7 +103,7 @@ function Groups() {
     setSearchParams({ ...currentParams, ...searchParam });
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    setLoader(false);
+    setPageLoader(false);
 
     console.log(
       "PRINT Final searchFilterParam to server : ",
@@ -116,6 +117,7 @@ function Groups() {
 
   const fetchGroupInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
+      setLoader(true);
       let groupData = [],
         groupResp = [];
       let totalCount = 0;
@@ -508,7 +510,7 @@ function Groups() {
   return (
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">Group List</h4>
-      {loader ? (
+      {pageLoader ? (
         <Row>
           <Col sm={12} className="text-center">
             <div className="spinner-border mr-2" role="status">

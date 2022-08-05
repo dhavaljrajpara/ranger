@@ -70,6 +70,7 @@ function Users() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [pageLoader, setPageLoader] = useState(true);
 
   useEffect(() => {
     let searchFilterParam = {};
@@ -108,7 +109,7 @@ function Users() {
     setSearchParams({ ...currentParams, ...searchParam });
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    setLoader(false);
+    setPageLoader(false);
 
     console.log(
       "PRINT Final searchFilterParam to server : ",
@@ -122,6 +123,7 @@ function Users() {
 
   const fetchUserInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
+      setLoader(true);
       let userData = [],
         userResp = [];
       let totalCount = 0;
@@ -562,7 +564,7 @@ function Users() {
   return (
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">User List</h4>
-      {loader ? (
+      {pageLoader ? (
         <Row>
           <Col sm={12} className="text-center">
             <div className="spinner-border mr-2" role="status">
