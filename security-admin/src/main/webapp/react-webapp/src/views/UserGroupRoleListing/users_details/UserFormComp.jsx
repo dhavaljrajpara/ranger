@@ -18,7 +18,7 @@ import _, { isEmpty, isUndefined } from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import { CustomTooltip } from "../../../components/CommonComponents";
 import { InfoIcon } from "../../../utils/XAUtils";
-import { RegexMessage } from "../../../utils/XAMessages";
+import { RegexMessage, roleChngWarning } from "../../../utils/XAMessages";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
 
@@ -52,6 +52,7 @@ function UserFormComp(props) {
   const { loader } = userFormState;
   const { isEditView, userInfo } = props;
   const [preventUnBlock, setPreventUnblock] = useState(false);
+  const toastId = React.useRef(null);
 
   const handleSubmit = async (formData) => {
     let userFormData = { ...formData };
@@ -128,6 +129,7 @@ function UserFormComp(props) {
         console.error(`Error occurred while creating user`);
       }
     }
+    toast.dismiss(toastId.current);
   };
 
   const closeForm = () => {
@@ -241,6 +243,19 @@ function UserFormComp(props) {
     return formValueObj;
   };
 
+  const getUserRole = (e, input) => {
+    if (
+      isEditView &&
+      userInfo &&
+      userInfo.userSource == UserSource.XA_USER.value &&
+      e.label != input.value.label
+    ) {
+      toast.dismiss(toastId.current);
+      toastId.current = toast.warning(roleChngWarning.roleChng);
+    }
+
+    input.onChange(e);
+  };
   const validateForm = (values) => {
     const errors = {};
     if (!values.name) {
@@ -613,6 +628,8 @@ function UserFormComp(props) {
                         {...input}
                         id="userRoleList"
                         options={userRoleListData()}
+                        onChange={(e) => getUserRole(e, input)}
+                        // defaultValue={userRoleListData()[0] || roleData}
                         isDisabled={disabledUserRoleField()}
                       ></Select>
                     )}
