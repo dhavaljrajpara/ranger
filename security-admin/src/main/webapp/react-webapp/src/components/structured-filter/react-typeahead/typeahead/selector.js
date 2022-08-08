@@ -73,7 +73,7 @@ var TypeaheadSelector = createReactClass({
       if (options == null) {
         return [];
       } else {
-        for (var i = 0; i < this.props.options.length; i++) {
+        for (var i = 0; i < options().length; i++) {
           if (options()[i].value == option) {
             return options()[i].label;
           }

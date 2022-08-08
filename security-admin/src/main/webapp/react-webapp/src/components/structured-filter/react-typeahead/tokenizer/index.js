@@ -163,6 +163,11 @@ var TypeaheadTokenizer = createReactClass({
       return;
     }
 
+    if (this.state.category == value) {
+      this.refs.typeahead.instanceRef.setEntryText("");
+      return;
+    }
+
     value = {
       category: this.state.category,
       value: value
@@ -226,7 +231,7 @@ var TypeaheadTokenizer = createReactClass({
           let option = find(this.props.options[i].options(), {
             value: selectedValue
           });
-          return option.label;
+          return option !== undefined ? option.label : "";
         }
       }
     }

@@ -6,6 +6,7 @@ import DatePicker from "../../react-datepicker/datepicker.js";
 import createReactClass from "create-react-class";
 import PropTypes from "prop-types";
 import onClickOutside from "react-onclickoutside";
+import { find, isEmpty } from "lodash";
 var classNames = require("classnames");
 
 /**
@@ -18,7 +19,9 @@ var Typeahead = onClickOutside(
   createReactClass({
     propTypes: {
       customClasses: PropTypes.object,
+      currentCategory: PropTypes.string,
       maxVisible: PropTypes.number,
+      fullOptions: PropTypes.array,
       options: PropTypes.array,
       optionsLabel: PropTypes.array,
       header: PropTypes.string,
@@ -87,6 +90,39 @@ var Typeahead = onClickOutside(
       return result;
     },
 
+    getOptionsLabelForValue: function (value, options) {
+      var result = fuzzy
+        .filter(value, this.props.optionsLabel)
+        .map(function (res) {
+          return res.string;
+        });
+
+      result = result.map((option) => {
+        if (this.props.header == "Category") {
+          let actualCategory = find(this.props.fullOptions, ["label", option]);
+          return actualCategory.category;
+        } else if (
+          this.props.header == "Value" &&
+          !isEmpty(this.props.optionsLabel)
+        ) {
+          let valueCategory = find(this.props.fullOptions, [
+            "category",
+            this.props.currentCategory
+          ]);
+          let valueOptions = valueCategory.options();
+          let actualValue = find(valueOptions, ["label", option]);
+          return actualValue.value;
+        }
+      });
+
+      if (this.props.maxVisible) {
+        result = result.slice(0, this.props.maxVisible);
+      }
+
+      console.log("PRINT FINAL RESULT : ===== ", result);
+      return result;
+    },
+
     setEntryText: function (value) {
       if (this.refs.entry != null) {
         this.refs.entry.value = value;
@@ -142,7 +178,7 @@ var Typeahead = onClickOutside(
         value = this.refs.entry.value;
       }
       this.setState({
-        visible: this.getOptionsForValue(value, this.state.options),
+        visible: this.getOptionsLabelForValue(value, this.state.options),
         selection: null,
         entryValue: value
       });
