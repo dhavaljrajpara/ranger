@@ -33,6 +33,20 @@ class ErrorPage extends Component {
         errorInfo: "Sorry, you don't have enough privileges to view this page."
       });
     }
+    if (this.props.errorCode == "checkSSOTrue") {
+      this.setState({
+        errorCode: "Sign Out Is Not Complete!",
+        errorInfo: (
+          <span>
+            Authentication to this instance of Ranger is managed externally(for
+            example,Apache Knox). You can still open this instance of Ranger
+            from the same web browser without re-authentication.To prevent
+            additional access to Ranger,{" "}
+            <strong>close all browser windows and exit the browser</strong>.
+          </span>
+        )
+      });
+    }
   };
 
   onGoBack = (e) => {

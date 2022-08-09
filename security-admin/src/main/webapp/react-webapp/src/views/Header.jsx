@@ -3,6 +3,9 @@ import React, { Component } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link, NavLink } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
+import { fetchApi } from "Utils/fetchAPI";
+import ErrorPage from "./ErrorPage";
+import { toast } from "react-toastify";
 import {
   hasAccessToTab,
   isAuditor,
@@ -16,10 +19,36 @@ class Header extends Component {
     this.state = {};
   }
 
-  handleLogout = async (e) => {
+  checkKnoxSSO = async (e) => {
     e.preventDefault();
     try {
-      const { fetchApi } = await import("Utils/fetchAPI");
+      const checkKnoxSSOresp = await fetchApi({
+        url: "plugins/checksso",
+        type: "GET",
+        headers: {
+          "cache-control": "no-cache"
+        }
+      });
+      if (
+        checkKnoxSSOresp.data == "true" &&
+        userProps?.configProperties?.inactivityTimeout > 0
+      ) {
+        window.location.replace("index.html?action=timeout");
+      } else {
+        this.handleLogout(checkKnoxSSOresp.data);
+      }
+    } catch (error) {
+      if (checkKnoxSSOresp?.status == "419") {
+        setUserProfile(null);
+        window.localStorage.clear();
+        window.location.replace("login.jsp");
+      }
+      console.error(`Error occurred while logout! ${error}`);
+    }
+  };
+
+  handleLogout = async (checkKnoxSSOVal) => {
+    try {
       await fetchApi({
         url: "logout",
         baseURL: "",
@@ -27,17 +56,25 @@ class Header extends Component {
           "cache-control": "no-cache"
         }
       });
+      if (checkKnoxSSOVal) {
+        if (checkKnoxSSOVal == false) {
+          window.location.replace("locallogin");
+        } else {
+          <ErrorPage errorCode="checkSSOTrue"></ErrorPage>;
+        }
+      } else {
+        window.location.replace("login.jsp");
+      }
       setUserProfile(null);
       window.localStorage.clear();
       window.location.replace("login.jsp");
     } catch (error) {
-      console.error(`Error occurred while login! ${error}`);
+      toast.error(`Error occurred while logout! ${error}`);
     }
   };
 
   render() {
     const userProps = getUserProfile();
-
     const loginId = (
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
@@ -174,7 +211,7 @@ class Header extends Component {
                 </NavDropdown.Item>
                 <NavDropdown.Item
                   to="/logout"
-                  onClick={this.handleLogout}
+                  onClick={this.checkKnoxSSO}
                   as={NavLink}
                 >
                   <i className="fa fa-power-off"></i> Logout
