@@ -12,7 +12,8 @@ import StructuredFilter from "../../components/structured-filter/react-typeahead
 import {
   getTableSortBy,
   getTableSortType,
-  fetchSearchFilterParams
+  fetchSearchFilterParams,
+  serverError
 } from "../../utils/XAUtils";
 
 function Login_Sessions() {
@@ -78,6 +79,7 @@ function Login_Sessions() {
           logs = logsResp.data.vXAuthSessions;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(
             `Error occurred while fetching Login Session logs! ${error}`
           );

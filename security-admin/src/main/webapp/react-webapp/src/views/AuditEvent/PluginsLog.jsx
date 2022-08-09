@@ -11,7 +11,8 @@ import { fetchApi } from "Utils/fetchAPI";
 import {
   getTableSortBy,
   getTableSortType,
-  fetchSearchFilterParams
+  fetchSearchFilterParams,
+  serverError
 } from "../../utils/XAUtils";
 
 function Plugins() {
@@ -82,6 +83,7 @@ function Plugins() {
           logs = logsResp.data.vXPolicyExportAudits;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(`Error occurred while fetching Plugins logs! ${error}`);
         }
         setPluginsLogs(logs);

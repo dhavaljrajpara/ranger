@@ -11,7 +11,8 @@ import { find, map, sortBy, has } from "lodash";
 import {
   getTableSortBy,
   getTableSortType,
-  fetchSearchFilterParams
+  fetchSearchFilterParams,
+  serverError
 } from "../../utils/XAUtils";
 
 function User_Sync() {
@@ -79,6 +80,7 @@ function User_Sync() {
           logs = logsResp.data.vxUgsyncAuditInfoList;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(
             `Error occurred while fetching User Sync logs! ${error}`
           );

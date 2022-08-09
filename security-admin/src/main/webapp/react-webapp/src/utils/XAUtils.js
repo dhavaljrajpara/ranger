@@ -13,7 +13,8 @@ import {
   pick,
   isEmpty,
   isUndefined,
-  isNull
+  isNull,
+  has
 } from "lodash";
 import { matchRoutes } from "react-router-dom";
 import dateFormat from "dateformat";
@@ -1179,4 +1180,10 @@ export const fetchSearchFilterParams = (
   finalSearchFilterData["searchParam"] = { ...currentParams, ...searchParam };
 
   return finalSearchFilterData;
+};
+
+export const serverError = (error) => {
+  if (error.response !== undefined && has(error.response, "data.msgDesc")) {
+    toast.error(error.response.data.msgDesc);
+  }
 };

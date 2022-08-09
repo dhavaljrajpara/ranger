@@ -14,7 +14,8 @@ import StructuredFilter from "../../components/structured-filter/react-typeahead
 import {
   getTableSortBy,
   getTableSortType,
-  fetchSearchFilterParams
+  fetchSearchFilterParams,
+  serverError
 } from "../../utils/XAUtils";
 
 function Admin() {
@@ -87,6 +88,7 @@ function Admin() {
           adminlogs = logsResp.data.vXTrxLogs;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(`Error occurred while fetching Admin logs! ${error}`);
         }
         setAdminLogs(adminlogs);

@@ -6,7 +6,11 @@ import { AuditFilterEntries } from "Components/CommonComponents";
 import moment from "moment-timezone";
 import dateFormat from "dateformat";
 import { isUndefined } from "lodash";
-import { setTimeStamp, fetchSearchFilterParams } from "Utils/XAUtils";
+import {
+  setTimeStamp,
+  fetchSearchFilterParams,
+  serverError
+} from "Utils/XAUtils";
 import {
   CustomPopover,
   CustomTooltip
@@ -99,6 +103,7 @@ function Plugin_Status() {
           logs = logsResp.data.pluginInfoList;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(
             `Error occurred while fetching Plugin Status logs! ${error}`
           );

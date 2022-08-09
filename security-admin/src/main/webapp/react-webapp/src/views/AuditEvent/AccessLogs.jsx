@@ -29,7 +29,11 @@ import { Link } from "react-router-dom";
 import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
-import { getTableSortBy, getTableSortType } from "../../utils/XAUtils";
+import {
+  getTableSortBy,
+  getTableSortType,
+  serverError
+} from "../../utils/XAUtils";
 import { CustomTooltip } from "../../components/CommonComponents";
 import { ServiceType } from "../../utils/XAEnums";
 
@@ -193,6 +197,7 @@ function Access() {
           logs = logsResp.data.vXAccessAudits;
           totalCount = logsResp.data.totalCount;
         } catch (error) {
+          serverError(error);
           console.error(`Error occurred while fetching Access logs! ${error}`);
         }
         setAccessLogs(logs);
