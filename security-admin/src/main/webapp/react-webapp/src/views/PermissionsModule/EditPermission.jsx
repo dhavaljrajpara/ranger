@@ -439,13 +439,14 @@ const EditPermission = (props) => {
                                     <CustomInfinteScroll
                                       data={selectedGrp}
                                       removeUsrGrp={handleRemoveGrp}
+                                      scrollableDiv="scrollableGrpDiv"
                                     />
                                   )}
                                 </td>
                               ) : (
                                 <td className="align-middle text-center">
                                   <strong className="text-danger font-italic">
-                                    No Selected Users
+                                    No Selected Groups
                                   </strong>
                                 </td>
                               )}
@@ -464,6 +465,7 @@ const EditPermission = (props) => {
                                     <CustomInfinteScroll
                                       data={selectedUsr}
                                       removeUsrGrp={handleRemoveUsr}
+                                      scrollableDiv="scrollableUsrDiv"
                                     />
                                   )}
                                 </td>

@@ -1044,7 +1044,7 @@ export const InfoIcon = (props) => {
 
 /* Edit Permission Module Infinite Scroll */
 export const CustomInfinteScroll = (props) => {
-  const { data, removeUsrGrp } = props;
+  const { data, removeUsrGrp, scrollableDiv } = props;
   const [count, setCount] = useState({
     startIndex: 0,
     maxItems: 200
@@ -1070,12 +1070,12 @@ export const CustomInfinteScroll = (props) => {
   };
 
   return (
-    <div id="scrollableDiv" className="permission-infinite-scroll">
+    <div id={scrollableDiv} className="permission-infinite-scroll">
       <InfiniteScroll
         dataLength={current.length}
         next={getMoreData}
         hasMore={true}
-        scrollableTarget="scrollableDiv"
+        scrollableTarget={scrollableDiv}
       >
         {current.map((obj) => (
           <span className="selected-widget" key={obj.value}>
