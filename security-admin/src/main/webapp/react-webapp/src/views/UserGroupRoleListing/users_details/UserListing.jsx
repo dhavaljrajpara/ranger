@@ -35,7 +35,7 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { find, isEmpty, isUndefined, map, sortBy } from "lodash";
+import { find, isEmpty, isUndefined, map, sortBy, has } from "lodash";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
@@ -59,6 +59,7 @@ function Users() {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
+
   const [lastPage, setLastPage] = useState({ getLastPage: 0 });
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
@@ -131,6 +132,7 @@ function Users() {
         state && state.showLastPage
           ? state.addPageData.totalPage - 1
           : pageIndex;
+
       let totalPageCount = 0;
       const fetchId = ++fetchIdRef.current;
       let params = { ...searchFilterParams };
@@ -139,6 +141,7 @@ function Users() {
       });
       if (fetchId === fetchIdRef.current) {
         params["page"] = page;
+
         params["startIndex"] =
           state && state.showLastPage
             ? (state.addPageData.totalPage - 1) * pageSize
@@ -158,6 +161,12 @@ function Users() {
           totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
           console.error(`Error occurred while fetching User list! ${error}`);
+          if (
+            error.response !== undefined &&
+            has(error.response, "data.msgDesc")
+          ) {
+            toast.error(error.response.data.msgDesc);
+          }
         }
         if (state) {
           state["showLastPage"] = false;
@@ -165,7 +174,7 @@ function Users() {
         setUserData(userData);
         setTblPageData({
           totalPage: totalPageCount,
-          pageRecords: userResp.data.totalCount,
+          pageRecords: userResp && userResp.data && userResp.data.totalCount,
           pageSize: 25
         });
         setTotalCount(totalCount);

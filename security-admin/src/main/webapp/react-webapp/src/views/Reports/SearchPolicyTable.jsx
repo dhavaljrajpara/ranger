@@ -175,7 +175,7 @@ function SearchPolicyTable(props) {
         accessor: "zoneName",
         Cell: (rawValue) => {
           return !isEmpty(rawValue.value) ? (
-            <MoreLess data={rawValue.value} key={rawValue.row.original.id} />
+            <Badge variant="dark">{rawValue.value}</Badge>
           ) : (
             <div className="text-center">--</div>
           );

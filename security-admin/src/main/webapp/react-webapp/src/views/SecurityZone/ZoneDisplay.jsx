@@ -146,7 +146,7 @@ class ZoneDisplay extends Component {
             )}
           </div>
           <br />
-          <span className="h6">{this.props.zone.description}</span>
+          <p className="text-break">{this.props.zone.description}</p>
           <br />
           <div>
             <Accordion defaultActiveKey="0">
@@ -354,7 +354,10 @@ class ZoneDisplay extends Component {
                                       >
                                         {Object.keys(resource).map(
                                           (resourceKey, index) => (
-                                            <p key={index}>
+                                            <p
+                                              key={index}
+                                              className="text-break"
+                                            >
                                               <strong>{`${resourceKey} : `}</strong>
                                               {resource[resourceKey].join(", ")}
                                             </p>

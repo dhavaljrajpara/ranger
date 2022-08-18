@@ -123,6 +123,7 @@ function GroupForm(props) {
         toast.success("Group updated successfully!!");
         self.location.hash = "#/users/grouptab"; // change to navigate
       } catch (error) {
+        console.error(`Error occurred while fetching User list! ${error}`);
         if (
           error.response !== undefined &&
           _.has(error.response, "data.msgDesc")

@@ -18,7 +18,7 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { isUndefined, map } from "lodash";
+import { isUndefined, map, has } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Roles() {
@@ -128,14 +128,20 @@ function Roles() {
           totalCount = roleResp.data.totalCount;
           totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
-          console.error(`Error occurred while fetching Role list! ${error}`);
+          console.error(`Error occurred while fetching User list! ${error}`);
+          if (
+            error.response !== undefined &&
+            has(error.response, "data.msgDesc")
+          ) {
+            toast.error(error.response.data.msgDesc);
+          }
         }
         if (state) {
           state["showLastPage"] = false;
         }
         setTblPageData({
           totalPage: totalPageCount,
-          pageRecords: roleResp.data.totalCount,
+          pageRecords: roleResp && roleResp.data && roleResp.data.totalCount,
           pageSize: 25
         });
         setRoleData(roleData);

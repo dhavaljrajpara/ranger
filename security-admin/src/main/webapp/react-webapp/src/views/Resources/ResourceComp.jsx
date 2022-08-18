@@ -345,9 +345,9 @@ export default function ResourceComp(props) {
                         checked={!(input.value === false)}
                         onlabel="Recursive"
                         onstyle="primary"
+                        width={130}
                         offlabel="Non-recursive"
                         offstyle="outline-secondary"
-                        style="w-100"
                         size="xs"
                         key={`isRecursiveSupport-${levelKey}`}
                       />

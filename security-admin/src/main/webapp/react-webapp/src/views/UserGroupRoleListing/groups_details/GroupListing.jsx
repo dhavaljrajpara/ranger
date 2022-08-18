@@ -29,7 +29,7 @@ import {
   isAuditor,
   isKMSAuditor
 } from "Utils/XAUtils";
-import { find, isUndefined, map } from "lodash";
+import { find, isUndefined, map, has } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
 
 function Groups() {
@@ -144,7 +144,13 @@ function Groups() {
           totalCount = groupResp.data.totalCount;
           totalPageCount = Math.ceil(totalCount / pageSize);
         } catch (error) {
-          toast.error(`Error occurred while fetching Group list! ${error}`);
+          console.error(`Error occurred while fetching User list! ${error}`);
+          if (
+            error.response !== undefined &&
+            has(error.response, "data.msgDesc")
+          ) {
+            toast.error(error.response.data.msgDesc);
+          }
         }
         if (state) {
           state["showLastPage"] = false;
@@ -152,7 +158,7 @@ function Groups() {
         setGroupData(groupData);
         setTblPageData({
           totalPage: totalPageCount,
-          pageRecords: groupResp.data.totalCount,
+          pageRecords: groupResp && groupResp.data && groupResp.data.totalCount,
           pageSize: 25
         });
         setTotalCount(totalCount);

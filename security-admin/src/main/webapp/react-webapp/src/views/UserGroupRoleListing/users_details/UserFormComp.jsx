@@ -129,7 +129,9 @@ function UserFormComp(props) {
         console.error(`Error occurred while creating user`);
       }
     }
-    toast.dismiss(toastId.current);
+    if (toastId.current !== null) {
+      toast.dismiss(toastId.current);
+    }
   };
 
   const closeForm = () => {

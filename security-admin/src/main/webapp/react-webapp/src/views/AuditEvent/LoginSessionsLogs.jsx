@@ -321,7 +321,7 @@ function Login_Sessions() {
       }
     },
     {
-      category: "sessionId",
+      category: "id",
       label: "Session ID",
       urlLabel: "sessionID",
       type: "text"
