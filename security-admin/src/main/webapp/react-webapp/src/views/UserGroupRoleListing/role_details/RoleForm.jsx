@@ -15,7 +15,7 @@ import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import moment from "moment-timezone";
 import { findIndex, isEmpty } from "lodash";
-import { commonBreadcrumb } from "../../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../../utils/XAUtils";
 import { Loader, CustomTooltip } from "Components/CommonComponents";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
@@ -190,12 +190,7 @@ function RoleForm() {
         toast.success("Role updated successfully!!");
         navigate("/users/roletab");
       } catch (error) {
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(error.response.data.msgDesc);
-        }
+        serverError(error);
         console.error(`Error occurred while creating Role`);
       }
     } else {
@@ -213,12 +208,7 @@ function RoleForm() {
           }
         });
       } catch (error) {
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(error.response.data.msgDesc);
-        }
+        serverError(error);
         console.error(`Error occurred while updating role! ${error}`);
       }
     }

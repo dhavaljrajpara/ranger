@@ -2,7 +2,7 @@ import React, { useState, useEffect, useReducer } from "react";
 import { Button, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
-import { commonBreadcrumb } from "../../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../../utils/XAUtils";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import {
   Loader,
@@ -124,12 +124,7 @@ function GroupForm(props) {
         self.location.hash = "#/users/grouptab"; // change to navigate
       } catch (error) {
         console.error(`Error occurred while fetching User list! ${error}`);
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(error.response.data.msgDesc);
-        }
+        serverError(error);
         console.error(`Error occurred while creating proup`);
       }
     } else {
@@ -147,12 +142,7 @@ function GroupForm(props) {
           }
         });
       } catch (error) {
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(`Group creation failed!! ${error.response.data.msgDesc}`);
-        }
+        serverError(error);
         console.error(`Error occurred while updating user password! ${error}`);
       }
     }

@@ -285,15 +285,31 @@ const KeyManager = (props) => {
     () => [
       {
         Header: "Key Name",
-        accessor: "name"
+        accessor: "name",
+        Cell: (rawValue) => {
+          if (rawValue && rawValue.value) {
+            return <p className="text-truncate">{rawValue.value}</p>;
+          }
+        }
       },
       {
         Header: "Cipher",
-        accessor: "cipher"
+        accessor: "cipher",
+        Cell: (rawValue) => {
+          if (rawValue && rawValue.value) {
+            return <p className="text-center">{rawValue.value}</p>;
+          }
+        }
       },
       {
         Header: "Version",
-        accessor: "versions"
+        accessor: "versions",
+        Cell: (rawValue) => {
+          if (rawValue && rawValue.value) {
+            return <p className="text-center">{rawValue.value}</p>;
+          }
+        },
+        width: 70
       },
       {
         Header: "Attributes",
@@ -302,12 +318,12 @@ const KeyManager = (props) => {
           let html = "";
           if (rawValue && rawValue.value) {
             html = Object.keys(rawValue.value).map((key) => (
-              <span>
+              <p className="text-truncate">
                 {key}
                 <i className="fa-fw fa fa-long-arrow-right fa-fw fa fa-3"></i>
                 {rawValue.value[key]}
                 <br />
-              </span>
+              </p>
             ));
           }
           return html;
@@ -315,15 +331,23 @@ const KeyManager = (props) => {
       },
       {
         Header: "Length",
-        accessor: "length"
+        accessor: "length",
+        Cell: (rawValue) => {
+          if (rawValue && rawValue.value) {
+            return <p className="text-center">{rawValue.value}</p>;
+          }
+        },
+        width: 70
       },
       {
         Header: "Created Date",
         accessor: "created",
         Cell: (rawValue) => {
-          const date = rawValue.value;
-          const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
-          return newdate;
+          if (rawValue && rawValue.value) {
+            const date = rawValue.value;
+            const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
+            return <div className="text-center">{newdate}</div>;
+          }
         }
       },
       {
@@ -354,7 +378,8 @@ const KeyManager = (props) => {
               </Button>
             </div>
           );
-        }
+        },
+        width: 80
       }
     ],
     [updatetable]

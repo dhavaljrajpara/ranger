@@ -10,7 +10,7 @@ import { RegexValidation } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
 import {
   Condition,
   CustomPopover,
@@ -105,14 +105,8 @@ class ServiceForm extends Component {
           : "/policymanager/resource"
       );
     } catch (error) {
-      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
-        toast.error(apiError + " : " + error.response.data.msgDesc);
-        this.props.navigate(
-          this.state.serviceDef.name === "tag"
-            ? "/policymanager/tag"
-            : "/policymanager/resource"
-        );
-      }
+      serverError(error);
+      console.log(apiError);
     }
   };
 

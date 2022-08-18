@@ -6,7 +6,7 @@ import { FieldArray } from "react-final-form-arrays";
 import arrayMutators from "final-form-arrays";
 import { fetchApi } from "Utils/fetchAPI";
 import { Loader, scrollToError } from "../../components/CommonComponents";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
 import { isUndefined, has, values } from "lodash";
 import withRouter from "Hooks/withRouter";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -86,9 +86,8 @@ function KeyCreate(props) {
         state: { detail: state.detail }
       });
     } catch (error) {
-      if (error.response !== undefined && has(error.response, "data.msgDesc")) {
-        toast.error(apiError + " : " + error.response.data.msgDesc);
-      }
+      serverError(error);
+      console.error(`Error occurred while cerating key! ${error}`);
     }
   };
   const fetchKmsServices = async () => {

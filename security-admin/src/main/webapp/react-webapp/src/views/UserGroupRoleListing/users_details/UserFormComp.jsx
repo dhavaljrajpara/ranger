@@ -12,7 +12,7 @@ import {
   UserSource
 } from "Utils/XAEnums";
 import { toast } from "react-toastify";
-import { getUserAccessRoleList } from "Utils/XAUtils";
+import { getUserAccessRoleList, serverError } from "Utils/XAUtils";
 import { getUserProfile } from "Utils/appState";
 import _, { isEmpty, isUndefined } from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
@@ -97,12 +97,7 @@ function UserFormComp(props) {
         toast.success("User updated successfully!!");
         navigate("/users/usertab");
       } catch (error) {
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(error.response.data.msgDesc);
-        }
+        serverError(error);
         console.error(`Error occurred while creating user`);
       }
     } else {
@@ -120,12 +115,7 @@ function UserFormComp(props) {
           }
         });
       } catch (error) {
-        if (
-          error.response !== undefined &&
-          _.has(error.response, "data.msgDesc")
-        ) {
-          toast.error(error.response.data.msgDesc);
-        }
+        serverError(error);
         console.error(`Error occurred while creating user`);
       }
     }
