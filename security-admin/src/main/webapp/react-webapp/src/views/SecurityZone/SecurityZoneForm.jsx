@@ -942,17 +942,18 @@ const SecurityZoneForm = (props) => {
                             fields.value && fields.value.length > 0 ? (
                               fields.map((name, index) => (
                                 <tr className="bg-white" key={index}>
-                                  <td className="align-middle">
-                                    <h6> {fields.value[index].serviceName} </h6>
+                                  <td className="align-middle" width="20%">
+                                    {fields.value[index].serviceName}
                                   </td>
-                                  <td className="align-middle">
-                                    <h6>
-                                      {fields.value[index].serviceType
-                                        .toString()
-                                        .toUpperCase()}
-                                    </h6>
+                                  <td className="align-middle" width="20%">
+                                    {fields.value[index].serviceType.toString()}
                                   </td>
-                                  <td className="text-center" key={name}>
+                                  <td
+                                    className="text-center"
+                                    key={name}
+                                    width="33%"
+                                    height="55px"
+                                  >
                                     <Field
                                       name={`${name}.resources`}
                                       render={(input) => (
@@ -962,7 +963,7 @@ const SecurityZoneForm = (props) => {
                                             ? input.input.value.map(
                                                 (obj, idx) => (
                                                   <div
-                                                    className="resource-group"
+                                                    className="resource-group text-break"
                                                     key={idx}
                                                   >
                                                     <Row>

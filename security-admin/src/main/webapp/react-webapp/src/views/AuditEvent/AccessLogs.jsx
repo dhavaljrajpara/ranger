@@ -596,6 +596,9 @@ function Access() {
       {
         Header: "Access Type",
         accessor: "accessType",
+        Cell: (rawValue) => {
+          return <p className="text-truncate">{rawValue.value}</p>;
+        },
         width: 130,
         disableResizing: true,
         getResizerProps: () => {}
