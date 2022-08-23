@@ -14,6 +14,7 @@ import {
   isEmpty,
   isUndefined,
   isNull,
+  some,
   has
 } from "lodash";
 import { matchRoutes } from "react-router-dom";
@@ -23,6 +24,8 @@ import CustomBreadcrumb from "../views/CustomBreadcrumb";
 import { CustomTooltip } from "../components/CommonComponents";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
+import { RangerPolicyType } from "./XAEnums";
+import { policyInfoMessage } from "./XAMessages";
 
 export const LoginUser = (role) => {
   const userProfile = getUserProfile();
@@ -1186,4 +1189,46 @@ export const serverError = (error) => {
   if (error.response !== undefined && has(error.response, "data.msgDesc")) {
     toast.error(error.response.data.msgDesc);
   }
+};
+
+/* policyInfo for masking and row filter */
+
+export const policyInfo = (policyType, serviceType) => {
+  if (
+    serviceType != "tag" &&
+    policyType == RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value
+  ) {
+    return policyInfoMessage.maskingPolicyInfoMsg;
+  } else if (
+    serviceType == "tag" &&
+    policyType == RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value
+  ) {
+    return policyInfoMessage.maskingPolicyInfoMsgForTagBased;
+  } else if (
+    policyType == RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value
+  ) {
+    return policyInfoMessage.rowFilterPolicyInfoMsg;
+  }
+};
+
+/* Policy Expire */
+export const isPolicyExpired = (policy) => {
+  return !some(
+    policy.validitySchedules &&
+      policy.validitySchedules.map((m) => {
+        if (!m.endTime) {
+          return true;
+        } else if (isEmpty(m.timeZone)) {
+          return new Date().valueOf() > new Date(m.endTime).valueOf()
+            ? false
+            : true;
+        } else {
+          return new Date(
+            moment.tz(m.timeZone).format("MM/DD/YYYY HH:mm:ss")
+          ).valueOf() > new Date(m.endTime).valueOf()
+            ? false
+            : true;
+        }
+      })
+  );
 };

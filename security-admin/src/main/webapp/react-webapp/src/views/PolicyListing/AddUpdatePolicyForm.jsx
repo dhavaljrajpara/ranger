@@ -30,13 +30,16 @@ import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
 import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
-import { commonBreadcrumb, InfoIcon } from "../../utils/XAUtils";
+import {
+  commonBreadcrumb,
+  InfoIcon,
+  isPolicyExpired
+} from "../../utils/XAUtils";
 import { useAccordionToggle } from "react-bootstrap/AccordionToggle";
 import AccordionContext from "react-bootstrap/AccordionContext";
 import usePrompt from "Hooks/usePrompt";
-import { CustomTooltip } from "../../components/CommonComponents";
 import { RegexMessage } from "../../utils/XAMessages";
-import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
+import { policyInfo } from "Utils/XAUtils";
 
 const noneOptions = {
   label: "None",
@@ -92,6 +95,7 @@ export default function AddUpdatePolicyForm(props) {
   const [showModal, policyConditionState] = useState(false);
   const [preventUnBlock, setPreventUnblock] = useState(false);
   const [show, setShow] = useState(true);
+  const [showPolicyExpire, setShowPolicyExpire] = useState(true);
   // usePrompt("Leave screen?", true);
 
   useEffect(() => {
@@ -819,12 +823,23 @@ export default function AddUpdatePolicyForm(props) {
                           dismissible
                         >
                           <i className="fa-fw fa fa-info-circle d-inline text-dark"></i>
-                          <p className="pd-l-10 d-inline">
-                            Please ensure that users/groups listed in this
-                            policy have access to the column via an{" "}
-                            <b>Access Policy</b>. This policy does not
-                            implicitly grant access to the column.
-                          </p>
+                          {policyInfo(
+                            values.policyType,
+                            serviceCompDetails.name
+                          )}
+                        </Alert>
+                      )}
+                    {policyId &&
+                      !isEmpty(policyData.validitySchedules) &&
+                      isPolicyExpired(policyData) &&
+                      showPolicyExpire && (
+                        <Alert
+                          variant="danger"
+                          onClose={() => setShowPolicyExpire(false)}
+                          dismissible
+                        >
+                          <i className="fa fa-clock-o fa-fw  fa-lg time-clock"></i>
+                          <p class="pd-l-6 d-inline"> Policy Expired</p>
                         </Alert>
                       )}
                     <fieldset>

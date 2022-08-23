@@ -27,9 +27,17 @@ import {
   QueryParamsName
 } from "Utils/XAUtils";
 import { MoreLess } from "Components/CommonComponents";
-import { isSystemAdmin, isKeyAdmin, isUser } from "Utils/XAUtils";
+import {} from "Utils/XAUtils";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import {
+  isAuditor,
+  isKMSAuditor,
+  isPolicyExpired,
+  isSystemAdmin,
+  isKeyAdmin,
+  isUser
+} from "../../utils/XAUtils";
 
 function PolicyListing(props) {
   const { serviceDef } = props;
@@ -311,16 +319,59 @@ function PolicyListing(props) {
         Header: "Policy ID",
         accessor: "id",
         Cell: (rawValue) => {
-          return isSystemAdmin() || isKeyAdmin() || isUser() ? (
-            <Link
-              title="Edit"
-              to={`/service/${serviceId}/policies/${rawValue.value}/edit`}
-            >
-              {rawValue.value}
-            </Link>
-          ) : (
-            rawValue.value
-          );
+          if (isAuditor() || isKMSAuditor()) {
+            if (
+              !isEmpty(rawValue.row.original.validitySchedules) &&
+              isPolicyExpired(rawValue.row.original)
+            ) {
+              return (
+                <div className="position-relative text-center">
+                  <i
+                    className="fa-fw fa fa-exclamation-circle policy-expire-icon"
+                    title="Policy expired"
+                  ></i>
+                  {rawValue.value}
+                </div>
+              );
+            } else {
+              return (
+                <div className="position-relative text-center">
+                  {rawValue.value}
+                </div>
+              );
+            }
+          } else {
+            if (
+              !isEmpty(rawValue.row.original.validitySchedules) &&
+              isPolicyExpired(rawValue.row.original)
+            ) {
+              return (
+                <div className="position-relative text-center">
+                  <i
+                    className="fa-fw fa fa-exclamation-circle policy-expire-icon"
+                    title="Policy expired"
+                  ></i>
+                  <Link
+                    title="Edit"
+                    to={`/service/${serviceId}/policies/${rawValue.value}/edit`}
+                  >
+                    {rawValue.value}
+                  </Link>
+                </div>
+              );
+            } else {
+              return (
+                <div className="position-relative text-center">
+                  <Link
+                    title="Edit"
+                    to={`/service/${serviceId}/policies/${rawValue.value}/edit`}
+                  >
+                    {rawValue.value}
+                  </Link>
+                </div>
+              );
+            }
+          }
         },
         width: 90
       },

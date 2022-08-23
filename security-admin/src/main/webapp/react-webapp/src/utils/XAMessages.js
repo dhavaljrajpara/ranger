@@ -73,3 +73,29 @@ export const roleChngWarning = {
     </>
   )
 };
+
+/* policyInfo Message */
+
+export const policyInfoMessage = {
+  maskingPolicyInfoMsg: (
+    <p className="pd-l-10 d-inline">
+      Please ensure that users/groups listed in this policy have access to the
+      column via an <b>Access Policy</b>. This policy does not implicitly grant
+      access to the column.
+    </p>
+  ),
+  maskingPolicyInfoMsgForTagBased: (
+    <p className="pd-l-10 d-inline">
+      Please ensure that users/groups listed in this policy have access to the
+      tag via an <b>Access Policy</b>. This policy does not implicitly grant
+      access to the tag.
+    </p>
+  ),
+  rowFilterPolicyInfoMsg: (
+    <p className="pd-l-10 d-inline">
+      Please ensure that users/groups listed in this policy have access to the
+      table via an <b>Access Policy</b>. This policy does not implicitly grant
+      access to the table.
+    </p>
+  )
+};

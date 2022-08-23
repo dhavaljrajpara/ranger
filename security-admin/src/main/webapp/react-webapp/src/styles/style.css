@@ -1762,3 +1762,16 @@ header {
   padding: 0 4px;
   margin-top: 9px;
 }
+
+/* policy expire icon */
+
+.policy-expire-icon {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  color: #bd362f;
+}
+
+.time-clock {
+  vertical-align: text-top;
+}
