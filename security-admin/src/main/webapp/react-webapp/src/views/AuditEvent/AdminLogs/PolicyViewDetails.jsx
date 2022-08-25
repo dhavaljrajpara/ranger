@@ -6,6 +6,7 @@ import { RangerPolicyType, DefStatus } from "../../../utils/XAEnums";
 import dateFormat from "dateformat";
 import { toast } from "react-toastify";
 import { find, isEmpty, sortBy } from "lodash";
+import { serverError } from "../../../utils/XAUtils";
 
 export function PolicyViewDetails(props) {
   const [access, setAccess] = useState([]);
@@ -86,8 +87,9 @@ export function PolicyViewDetails(props) {
       console.error(
         `Error occurred while fetching Policy Version or CSRF headers! ${error}`
       );
+      serverError(error);
     }
-    setAccess(accesslogs.data);
+    setAccess(accesslogs && accesslogs.data);
   };
 
   const {

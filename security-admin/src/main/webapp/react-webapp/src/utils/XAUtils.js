@@ -1188,6 +1188,8 @@ export const fetchSearchFilterParams = (
 export const serverError = (error) => {
   if (error.response !== undefined && has(error.response, "data.msgDesc")) {
     toast.error(error.response.data.msgDesc);
+  } else if (error.response !== undefined && has(error.response, "data")) {
+    toast.error(error.response.data);
   }
 };
 

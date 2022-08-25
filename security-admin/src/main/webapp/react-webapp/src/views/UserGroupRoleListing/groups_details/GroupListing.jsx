@@ -53,7 +53,7 @@ function Groups() {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
-  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
+  const [resetPage, setResetPage] = useState({ page: 0 });
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
     pageRecords: 0,
@@ -164,7 +164,7 @@ function Groups() {
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
-        setLastPage({ getLastPage: gotoPage });
+        setResetPage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -218,7 +218,7 @@ function Groups() {
             groupListingData.length == selectedRows.current.length) &&
           currentpageIndex > 1
         ) {
-          lastPage.getLastPage(currentpageIndex - currentpageIndex);
+          resetPage.page(0);
         } else {
           setUpdateTable(moment.now());
         }
@@ -511,6 +511,7 @@ function Groups() {
     });
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
+    resetPage.page(0);
   };
 
   return (

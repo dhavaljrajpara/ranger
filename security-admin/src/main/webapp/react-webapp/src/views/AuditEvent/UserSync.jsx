@@ -32,6 +32,7 @@ function User_Sync() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [resetPage, setResetpage] = useState({ page: null });
 
   useEffect(() => {
     let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
@@ -57,7 +58,7 @@ function User_Sync() {
   }, []);
 
   const fetchUserSyncInfo = useCallback(
-    async ({ pageSize, pageIndex, sortBy }) => {
+    async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       setLoader(true);
       let logsResp = [];
       let logs = [];
@@ -88,6 +89,7 @@ function User_Sync() {
         setUserSyncLogs(logs);
         setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -255,6 +257,7 @@ function User_Sync() {
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("userSync", JSON.stringify(searchParam));
+    resetPage.page(0);
   };
 
   const searchFilterOptions = [

@@ -31,7 +31,7 @@ function Login_Sessions() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
-
+  const [resetPage, setResetpage] = useState({ page: null });
   const handleClose = () => setShowModal(false);
   const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ function Login_Sessions() {
   }, []);
 
   const fetchLoginSessionLogsInfo = useCallback(
-    async ({ pageSize, pageIndex, sortBy }) => {
+    async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       setLoader(true);
       let logsResp = [];
       let logs = [];
@@ -87,6 +87,7 @@ function Login_Sessions() {
         setLoginSessionLogs(logs);
         setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -269,6 +270,7 @@ function Login_Sessions() {
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("loginSession", JSON.stringify(searchParam));
+    resetPage.page(0);
   };
 
   const searchFilterOptions = [

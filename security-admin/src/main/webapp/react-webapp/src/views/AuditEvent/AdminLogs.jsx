@@ -35,7 +35,7 @@ function Admin() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
-
+  const [resetPage, setResetpage] = useState({ page: null });
   const handleClose = () => setShowModal(false);
   const handleClosed = () => setShowRowModal(false);
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ function Admin() {
   }, [searchParams]);
 
   const fetchAdminLogsInfo = useCallback(
-    async ({ pageSize, pageIndex, sortBy }) => {
+    async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       setLoader(true);
       let logsResp = [];
       let adminlogs = [];
@@ -94,6 +94,7 @@ function Admin() {
         setAdminLogs(adminlogs);
         setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -346,6 +347,7 @@ function Admin() {
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("admin", JSON.stringify(searchParam));
+    resetPage.page(0);
   };
 
   const searchFilterOptions = [

@@ -56,7 +56,6 @@ function PolicyListing(props) {
     pageRecords: 0,
     pageSize: 25
   });
-  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
   const fetchIdRef = useRef(0);
   const [deletePolicyModal, setConfirmModal] = useState({
     policyDetails: {},
@@ -72,7 +71,7 @@ function PolicyListing(props) {
     []
   );
   const [pageLoader, setPageLoader] = useState(true);
-
+  const [resetPage, setResetpage] = useState({ page: 0 });
   let navigate = useNavigate();
   let { serviceId, policyType } = useParams();
 
@@ -190,7 +189,7 @@ function PolicyListing(props) {
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
-        setLastPage({ getLastPage: gotoPage });
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -259,7 +258,7 @@ function PolicyListing(props) {
     }
     if (policyListingData.length == 1 && currentpageIndex > 1) {
       let page = currentpageIndex - currentpageIndex;
-      lastPage.getLastPage(page);
+      resetPage.page(page);
     } else {
       setUpdateTable(moment.now());
     }
@@ -642,6 +641,7 @@ function PolicyListing(props) {
     });
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
+    resetPage.page(0);
   };
 
   return (

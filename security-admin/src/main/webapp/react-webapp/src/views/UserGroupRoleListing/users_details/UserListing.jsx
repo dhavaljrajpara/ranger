@@ -59,8 +59,7 @@ function Users() {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
-
-  const [lastPage, setLastPage] = useState({ getLastPage: 0 });
+  const [resetPage, setResetPage] = useState({ page: 0 });
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
     pageRecords: 0,
@@ -128,6 +127,7 @@ function Users() {
       let userData = [],
         userResp = [];
       let totalCount = 0;
+
       let page =
         state && state.showLastPage
           ? state.addPageData.totalPage - 1
@@ -145,7 +145,7 @@ function Users() {
         params["startIndex"] =
           state && state.showLastPage
             ? (state.addPageData.totalPage - 1) * pageSize
-            : pageIndex * pageSize;
+            : page * pageSize;
         params["pageSize"] = pageSize;
         params["userRoleList"] = userRoleListData;
         try {
@@ -180,7 +180,7 @@ function Users() {
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
-        setLastPage({ getLastPage: gotoPage });
+        setResetPage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -264,7 +264,7 @@ function Users() {
             userListingData.length == selectedRows.current.length) &&
           currentpageIndex > 1
         ) {
-          lastPage.getLastPage(currentpageIndex - currentpageIndex);
+          resetPage.page(0);
         } else {
           setUpdateTable(moment.now());
         }
@@ -568,6 +568,7 @@ function Users() {
     });
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
+    resetPage.page(0);
   };
 
   return (

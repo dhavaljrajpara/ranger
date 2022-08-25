@@ -59,6 +59,7 @@ function Access() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [resetPage, setResetpage] = useState({ page: 0 });
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices(), fetchZones();
@@ -174,7 +175,7 @@ function Access() {
   }, []);
 
   const fetchAccessLogsInfo = useCallback(
-    async ({ pageSize, pageIndex, sortBy }) => {
+    async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       setLoader(true);
       let logsResp = [];
       let logs = [];
@@ -203,6 +204,7 @@ function Access() {
         setAccessLogs(logs);
         setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -817,6 +819,7 @@ function Access() {
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("bigData", JSON.stringify(searchParam));
+    resetPage.page(0);
   };
 
   const searchFilterOption = [

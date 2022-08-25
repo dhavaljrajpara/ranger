@@ -34,6 +34,7 @@ function Plugin_Status() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+  const [resetPage, setResetpage] = useState({ page: null });
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices();
@@ -85,7 +86,7 @@ function Plugin_Status() {
   };
 
   const fetchPluginStatusInfo = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, gotoPage }) => {
       setLoader(true);
       let logsResp = [];
       let logs = [];
@@ -111,6 +112,7 @@ function Plugin_Status() {
         setPluginStatusLogs(logs);
         setEntries(logsResp.data);
         setPageCount(Math.ceil(totalCount / pageSize));
+        setResetpage({ page: gotoPage });
         setLoader(false);
       }
     },
@@ -493,6 +495,7 @@ function Plugin_Status() {
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
     localStorage.setItem("pluginStatus", JSON.stringify(searchParam));
+    resetPage.page(0);
   };
 
   const getServiceDefType = () => {

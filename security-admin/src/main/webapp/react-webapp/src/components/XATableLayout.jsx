@@ -151,6 +151,7 @@ function XATableLayout({
       rowSelectOp.selectedRows.current = selectedFlatRows;
     }
   }, [selectedFlatRows]);
+
   let columnShowHide = [];
   return (
     // apply the table props

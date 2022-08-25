@@ -1,6 +1,6 @@
 import React, { useReducer, useCallback, useEffect, useState } from "react";
 import { Loader } from "Components/CommonComponents";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import XATableLayout from "Components/XATableLayout";
@@ -18,20 +18,39 @@ function init(props) {
     selcServicesData: [],
     keydata: [],
     onchangeval:
-      props.kmsManagePage == "new"
+      props.params.kmsManagePage == "new"
         ? null
-        : { value: props.kmsServiceName, label: props.kmsServiceName },
+        : {
+            value: props.params.kmsServiceName,
+            label: props.params.kmsServiceName
+          },
     deleteshowmodal: false,
     editshowmodal: false,
     filterdata: null,
     pagecount: 0,
     kmsservice: {},
-    updatetable: moment.now()
+    updatetable: moment.now(),
+    tblpageData: {
+      totalPage: 0,
+      pageRecords: 0,
+      pageSize: 25
+    },
+    currentPageIndex:
+      props.state && props.state.showLastPage
+        ? props.state.addPageData.totalPage - 1
+        : 0,
+    resetPage: { page: null }
   };
 }
 
 function reducer(state, action) {
   switch (action.type) {
+    case "SET_LOADER":
+      return {
+        ...state,
+        loader: action.loader
+      };
+
     case "SET_DATA":
       return {
         ...state,
@@ -86,6 +105,23 @@ function reducer(state, action) {
         updatetable: action.updatetable
       };
 
+    case "SET_DATA_TO_LAST_PAGE":
+      return {
+        ...state,
+        loader: false,
+        tblPageData: action.tblPageData
+      };
+
+    case "SET_CURRENT_PAGE_INDEX":
+      return {
+        ...state,
+        currentPageIndex: action.tblPageData
+      };
+    case "SET_RESET_PAGE":
+      return {
+        ...state,
+        resetPage: action.resetPage
+      };
     default:
       throw new Error();
   }
@@ -93,9 +129,10 @@ function reducer(state, action) {
 
 const KeyManager = (props) => {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const params = useParams();
-
-  const [keyState, dispatch] = useReducer(reducer, params, init);
+  let stateAndParams = { params: params, state: state };
+  const [keyState, dispatch] = useReducer(reducer, stateAndParams, init);
 
   const {
     loader,
@@ -105,9 +142,10 @@ const KeyManager = (props) => {
     onchangeval,
     deleteshowmodal,
     editshowmodal,
+    currentPageIndex,
     pagecount,
     services,
-
+    tblpageData,
     updatetable
   } = keyState;
 
@@ -146,7 +184,6 @@ const KeyManager = (props) => {
 
   const handleConfirmClick = () => {
     handleDeleteClick();
-
     dispatch({
       type: "SET_DELETE_MODAL",
       deleteshowmodal: false
@@ -215,10 +252,15 @@ const KeyManager = (props) => {
       });
 
       toast.success(`Success! Key deleted succesfully`);
-      dispatch({
-        type: "SET_UPDATE_TABLE",
-        updatetable: moment.now()
-      });
+      if (keydata.length == 1 && currentPageIndex > 1) {
+        let page = currentPageIndex - currentPageIndex;
+        resetPage.page(page);
+      } else {
+        dispatch({
+          type: "SET_UPDATE_TABLE",
+          updatetable: moment.now()
+        });
+      }
     } catch (error) {
       let errorMsg = "";
       if (error.response.data.msgDesc) {
@@ -227,7 +269,7 @@ const KeyManager = (props) => {
         errorMsg += `Error occurred during deleting Key` + "\n";
       }
     }
-  }, [updatetable]);
+  }, [filterdata]);
   const closeModal = () => {
     dispatch({
       type: "SET_DELETE_MODAL_CLOSE",
@@ -235,23 +277,36 @@ const KeyManager = (props) => {
     });
   };
   const selectServices = useCallback(
-    async ({ pageSize, pageIndex }) => {
+    async ({ pageSize, pageIndex, gotoPage }) => {
+      dispatch({
+        type: "SET_LOADER",
+        loader: true
+      });
       let selcservicesdata = null;
       let totalCount = 0;
+      let totalPageCount = 0;
+      let page =
+        state && state.showLastPage
+          ? state.addPageData.totalPage - 1
+          : pageIndex;
       try {
         const selservicesResp = await fetchApi({
           url: "/keys/keys",
           params: {
-            page: 0,
+            page: page,
+            startIndex:
+              state && state.showLastPage
+                ? (state.addPageData.totalPage - 1) * pageSize
+                : pageIndex * pageSize,
             pageSize: pageSize,
             total_pages: 1,
             totalCount: Math.ceil(totalCount / pageSize),
-            startIndex: pageIndex * pageSize,
             provider: onchangeval && onchangeval.label
           }
         });
         selcservicesdata = selservicesResp.data.vXKeys;
         totalCount = selservicesResp.data.totalCount;
+        totalPageCount = Math.ceil(totalCount / pageSize);
       } catch (error) {
         console.error(`Error occurred while fetching Services! ${error}`);
       }
@@ -261,6 +316,22 @@ const KeyManager = (props) => {
         keydatalist: selcservicesdata,
         pagecount: Math.ceil(totalCount / pageSize),
         loader: false
+      });
+      dispatch({
+        type: "SET_DATA_TO_LAST_PAGE",
+        tblPageData: {
+          totalPage: totalPageCount,
+          pageRecords: totalCount,
+          pageSize: 25
+        }
+      });
+      dispatch({
+        type: "SET_CURRENT_PAGE_INDEX",
+        currentPageIndex: page
+      });
+      dispatch({
+        type: "SET_RESET_PAGE",
+        resetPage: gotoPage
       });
     },
     [onchangeval, updatetable]
@@ -276,7 +347,8 @@ const KeyManager = (props) => {
           detail:
             params.kmsManagePage == "edit"
               ? params.kmsServiceName
-              : onchangeval.label
+              : onchangeval.label,
+          tblpageData: tblpageData
         }
       }
     );
@@ -435,6 +507,7 @@ const KeyManager = (props) => {
           columns={columns}
           fetchData={selectServices}
           pageCount={pagecount}
+          currentPageIndex={currentPageIndex}
         />
 
         <Modal show={editshowmodal} onHide={closeEditModal}>
