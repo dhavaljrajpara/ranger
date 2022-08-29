@@ -423,6 +423,7 @@ function RoleForm() {
                             : "form-control"
                         }
                         disabled={params.roleID ? true : false}
+                        data-cy="name"
                       />
                       <span className="info-user-role-grp-icon">
                         <CustomTooltip
@@ -460,6 +461,7 @@ function RoleForm() {
                         {...input}
                         placeholder="Description"
                         className="form-control"
+                        data-cy="description"
                       />
                     </Col>
                   </Row>
@@ -506,6 +508,8 @@ function RoleForm() {
                                               {...input}
                                               checked={input.value}
                                               type="checkbox"
+                                              data-js="isRoleAdmin"
+                                              data-cy="isRoleAdmin"
                                             />
                                           </BForm.Group>
                                         </div>
@@ -518,6 +522,8 @@ function RoleForm() {
                                       size="sm"
                                       title="Remove"
                                       onClick={() => fields.remove(index)}
+                                      data-action="delete"
+                                      data-cy="delete"
                                     >
                                       <i className="fa-fw fa fa-remove"></i>
                                     </Button>
@@ -538,6 +544,8 @@ function RoleForm() {
                           loadOptions={fetchUserOp}
                           defaultOptions
                           isMulti
+                          data-name="usersSelect"
+                          data-cy="usersSelect"
                         />
                       </div>
                       <div className="col-sm-3">
@@ -546,6 +554,8 @@ function RoleForm() {
                           className="btn btn-primary"
                           onClick={() => handleUserAdd(push)}
                           size="sm"
+                          data-name="usersAddBtn"
+                          data-cy="usersAddBtn"
                         >
                           Add Users
                         </Button>
@@ -595,6 +605,8 @@ function RoleForm() {
                                               {...input}
                                               checked={input.value}
                                               type="checkbox"
+                                              data-js="isRoleAdmin"
+                                              data-cy="isRoleAdmin"
                                             />
                                           </BForm.Group>
                                         </div>
@@ -607,6 +619,8 @@ function RoleForm() {
                                       size="sm"
                                       title="Remove"
                                       onClick={() => fields.remove(index)}
+                                      data-action="delete"
+                                      data-cy="delete"
                                     >
                                       <i className="fa-fw fa fa-remove"></i>
                                     </Button>
@@ -629,6 +643,8 @@ function RoleForm() {
                           loadOptions={fetchGroupOp}
                           defaultOptions
                           isMulti
+                          data-name="groupsSelect"
+                          data-cy="groupsSelect"
                         />
                       </div>
                       <div className="col-sm-3">
@@ -637,6 +653,8 @@ function RoleForm() {
                           className="btn btn-primary"
                           onClick={() => handleGroupAdd(push)}
                           size="sm"
+                          data-name="groupsAddBtn"
+                          data-cy="groupsAddBtn"
                         >
                           Add Group
                         </Button>
@@ -686,6 +704,8 @@ function RoleForm() {
                                               {...input}
                                               checked={input.value}
                                               type="checkbox"
+                                              data-js="isRoleAdmin"
+                                              data-cy="isRoleAdmin"
                                             />
                                           </BForm.Group>
                                         </div>
@@ -698,6 +718,8 @@ function RoleForm() {
                                       size="sm"
                                       title="Remove"
                                       onClick={() => fields.remove(index)}
+                                      data-action="delete"
+                                      data-cy="delete"
                                     >
                                       <i className="fa-fw fa fa-remove"></i>
                                     </Button>
@@ -720,6 +742,8 @@ function RoleForm() {
                           loadOptions={fetchRoleOp}
                           defaultOptions
                           isMulti
+                          data-name="rolesSelect"
+                          data-cy="rolesSelect"
                         />
                       </div>
                       <div className="col-sm-3">
@@ -728,6 +752,8 @@ function RoleForm() {
                           className="btn btn-primary"
                           onClick={() => handleRoleAdd(push)}
                           size="sm"
+                          data-name="rolesAddBtn"
+                          data-cy="rolesAddBtn"s
                         >
                           Add Role
                         </Button>
@@ -754,6 +780,8 @@ function RoleForm() {
                     }}
                     size="sm"
                     disabled={submitting}
+                    data-id="save"
+                    data-cy="save"
                   >
                     Save
                   </Button>
@@ -769,6 +797,8 @@ function RoleForm() {
                       });
                       closeForm();
                     }}
+                    data-id="cancel"
+                    data-cy="cancel"
                   >
                     Cancel
                   </Button>

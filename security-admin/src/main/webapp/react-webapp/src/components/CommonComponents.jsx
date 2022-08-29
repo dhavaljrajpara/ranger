@@ -89,9 +89,23 @@ export class MoreLess extends Component {
           <a onClick={this.handleShowMoreClick}>
             {this.props.data.length > 4 ? (
               this.state.show ? (
-                <code className="show-more-less"> + More..</code>
+                <code
+                  className="show-more-less"
+                  data-id="showMore"
+                  data-cy="showMore"
+                >
+                  {" "}
+                  + More..
+                </code>
               ) : (
-                <code className="show-more-less"> - Less..</code>
+                <code
+                  className="show-more-less"
+                  data-id="showLess"
+                  data-cy="showLess"
+                >
+                  {" "}
+                  - Less..
+                </code>
               )
             ) : null}
           </a>
@@ -344,7 +358,7 @@ export const CustomTooltip = ({ placement, content, icon }) => (
     placement={placement}
     overlay={<Popover id={`tooltip-${placement}`}>{content}</Popover>}
   >
-    <i className={icon}></i>
+    <i className={icon} data-id="infoTextFiled" data-cy="infoTextFiled"></i>
   </OverlayTrigger>
 );
 

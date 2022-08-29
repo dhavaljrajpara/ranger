@@ -214,6 +214,7 @@ function AddUserView(props) {
                                         ? "form-control border-danger"
                                         : "form-control"
                                     }
+                                    data-cy="newPassword"
                                   />
                                   {meta.error && meta.touched && (
                                     <span className="invalid-field">
@@ -249,6 +250,7 @@ function AddUserView(props) {
                                         ? "form-control border-danger"
                                         : "form-control"
                                     }
+                                    data-cy="reEnterPassword"
                                   />
                                   {meta.error && meta.touched && (
                                     <span className="invalid-field">
@@ -266,6 +268,8 @@ function AddUserView(props) {
                                 type="submit"
                                 disabled={submitting}
                                 size="sm"
+                                data-id="save"
+                                data-cy="save"
                               >
                                 Save
                               </Button>
@@ -277,6 +281,8 @@ function AddUserView(props) {
                                   closeForm();
                                 }}
                                 size="sm"
+                                data-id="save"
+                                data-cy="save"
                               >
                                 Cancel
                               </Button>

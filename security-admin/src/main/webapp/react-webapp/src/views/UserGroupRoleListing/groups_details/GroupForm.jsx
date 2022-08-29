@@ -240,6 +240,7 @@ function GroupForm(props) {
                             ? true
                             : false
                         }
+                        data-cy="name"
                       />
                       <span className="info-user-role-grp-icon">
                         <CustomTooltip
@@ -284,6 +285,8 @@ function GroupForm(props) {
                             ? true
                             : false
                         }
+                        id="description"
+                        data-cy="description"
                       />
                     </Col>
                   </Row>
@@ -323,6 +326,8 @@ function GroupForm(props) {
                     className="btn-mini"
                     size="sm"
                     disabled={groupType === 1 ? true : submitting}
+                    data-id="save"
+                    data-cy="save"
                   >
                     Save
                   </Button>
@@ -339,6 +344,8 @@ function GroupForm(props) {
                       });
                       closeForm();
                     }}
+                    data-id="cancel"
+                    data-cy="cancel"
                   >
                     Cancel
                   </Button>

@@ -419,6 +419,7 @@ function Users() {
                 <button
                   className="btn btn-outline-dark btn-sm "
                   data-id="syncDetailes"
+                  data-cy="syncDetailes"
                   data-for="users"
                   title="Sync Details"
                   id={model.id}
@@ -605,6 +606,8 @@ function Users() {
                   size="sm"
                   className="btn-sm"
                   onClick={addUser}
+                  data-id="addNewUser"
+                  data-cy="addNewUser"
                 >
                   Add New User
                 </Button>
@@ -614,6 +617,8 @@ function Users() {
                   style={{ display: "inline-block" }}
                   className="ml-1 btn-sm"
                   onSelect={handleSetVisibility}
+                  data-id="hideShowVisibility"
+                  data-cy="hideShowVisibility"
                 >
                   <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
                   <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
@@ -624,6 +629,8 @@ function Users() {
                   title="Delete"
                   onClick={handleDeleteBtnClick}
                   className="ml-1 btn-sm"
+                  data-id="deleteUserGroup"
+                  data-cy="deleteUserGroup"
                 >
                   <i className="fa-fw fa fa-trash"></i>
                 </Button>

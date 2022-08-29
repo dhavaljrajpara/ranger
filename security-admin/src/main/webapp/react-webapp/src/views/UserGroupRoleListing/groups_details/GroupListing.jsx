@@ -373,6 +373,7 @@ function Groups() {
                 onClick={() => {
                   showGroupAssociateUser(rawValue.row.original);
                 }}
+                data-cy="showUserList"
               >
                 <i className="fa-fw fa fa-group"> </i>
               </button>
@@ -390,6 +391,7 @@ function Groups() {
                 <button
                   className="btn btn-outline-dark btn-sm"
                   data-id="syncDetailes"
+                  data-cy="syncDetailes"
                   data-for="group"
                   title="Sync Details"
                   id={model.id}
@@ -543,7 +545,13 @@ function Groups() {
             </Col>
             {isSystemAdmin() && (
               <Col md={3} className="text-right">
-                <Button variant="primary" size="sm" onClick={addGroup}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={addGroup}
+                  data-id="addNewGroup"
+                  data-cy="addNewGroup"
+                >
                   Add New Group
                 </Button>
                 <DropdownButton
@@ -552,6 +560,8 @@ function Groups() {
                   style={{ display: "inline-block" }}
                   className="ml-2"
                   onSelect={handleSetVisibility}
+                  data-id="hideShowVisibility"
+                  data-cy="hideShowVisibility"
                 >
                   <Dropdown.Item eventKey="1">Visible</Dropdown.Item>
                   <Dropdown.Item eventKey="0">Hidden</Dropdown.Item>
@@ -562,6 +572,8 @@ function Groups() {
                   title="Delete"
                   className="ml-2"
                   onClick={handleDeleteBtnClick}
+                  data-id="deleteUserGroup"
+                  data-cy="deleteUserGroup"
                 >
                   <i className="fa-fw fa fa-trash"></i>
                 </Button>

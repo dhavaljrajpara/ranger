@@ -152,6 +152,8 @@ function UserFormComp(props) {
     return (
       <AsyncSelect
         {...input}
+        id="groupIdList"
+        data-cy="groupIdList"
         cacheOptions
         loadOptions={loadOptions}
         defaultOptions
@@ -373,6 +375,7 @@ function UserFormComp(props) {
                             : "form-control"
                         }
                         disabled={isEditView ? true : false}
+                        data-cy="name"
                       />
                       <InfoIcon
                         css="info-user-role-grp-icon"
@@ -411,6 +414,7 @@ function UserFormComp(props) {
                               ? "form-control border-danger"
                               : "form-control"
                           }
+                          data-cy="password"
                         />
                         <InfoIcon
                           css="info-user-role-grp-icon"
@@ -459,6 +463,7 @@ function UserFormComp(props) {
                               ? "form-control border-danger"
                               : "form-control"
                           }
+                          data-cy="passwordConfirm"
                         />
                         <InfoIcon
                           css="info-user-role-grp-icon"
@@ -509,6 +514,7 @@ function UserFormComp(props) {
                             ? true
                             : false
                         }
+                        data-cy="firstName"
                       />
                       <InfoIcon
                         css="info-user-role-grp-icon"
@@ -547,6 +553,7 @@ function UserFormComp(props) {
                             ? true
                             : false
                         }
+                        data-cy="lastName"
                       />
                       <InfoIcon
                         css="info-user-role-grp-icon"
@@ -591,6 +598,7 @@ function UserFormComp(props) {
                             ? true
                             : false
                         }
+                        data-cy="emailAddress"
                       />
                       <InfoIcon
                         css="info-user-role-grp-icon"
@@ -619,6 +627,7 @@ function UserFormComp(props) {
                       <Select
                         {...input}
                         id="userRoleList"
+                        data-cy="userRoleList"
                         options={userRoleListData()}
                         onChange={(e) => getUserRole(e, input)}
                         // defaultValue={userRoleListData()[0] || roleData}
@@ -673,6 +682,8 @@ function UserFormComp(props) {
                     }}
                     size="sm"
                     disabled={submitting}
+                    data-id="save"
+                    data-cy="save"
                   >
                     Save
                   </Button>
@@ -685,6 +696,8 @@ function UserFormComp(props) {
                       setPreventUnblock(true);
                       closeForm();
                     }}
+                    data-id="cancel"
+                    data-cy="cancel"
                   >
                     Cancel
                   </Button>

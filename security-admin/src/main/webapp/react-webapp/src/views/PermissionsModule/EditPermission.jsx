@@ -78,7 +78,7 @@ const EditPermission = (props) => {
   const onSubmit = async (values) => {
     const formData = cloneDeep(values);
     if (
-      (values.selectgroup && values.selectgroup.length > 0) ||
+      (values.selectGroups && values.selectGroups.length > 0) ||
       (values.selectuser && values.selectuser.length > 0)
     ) {
       toast.error(
@@ -198,7 +198,7 @@ const EditPermission = (props) => {
     setTimeout(() => {
       dispatch({
         type: "SET_SELECTED_GRP",
-        grpData: [...formData.selectgroup, ...selectedGrp]
+        grpData: [...formData.selectGroups, ...selectedGrp]
       });
       input.onChange([]);
     }, 100);
@@ -336,9 +336,10 @@ const EditPermission = (props) => {
                               <td>
                                 <Field
                                   className="form-control"
-                                  name="selectgroup"
+                                  name="selectGroups"
                                   render={({ input, meta }) => (
                                     <div>
+                                      {" "}
                                       <AsyncSelect
                                         {...input}
                                         menuPlacement="auto"
@@ -356,15 +357,14 @@ const EditPermission = (props) => {
                                         width="500px"
                                         isMulti
                                       />
-
                                       <Button
                                         size="sm"
                                         className="ml-2  m-r-sm"
                                         variant="outline-secondary"
                                         onClick={() => {
                                           if (
-                                            !values.selectgroup ||
-                                            values.selectgroup.length === 0
+                                            !values.selectGroups ||
+                                            values.selectGroups.length === 0
                                           ) {
                                             toast.error(
                                               "Please select group!!"
@@ -373,6 +373,8 @@ const EditPermission = (props) => {
                                           }
                                           addInSelectedGrp(values, input);
                                         }}
+                                        data-id="addGroupBtn"
+                                        data-cy="addGroupBtn"
                                       >
                                         <i className="fa fa-plus"></i>
                                       </Button>
@@ -416,6 +418,8 @@ const EditPermission = (props) => {
                                           }
                                           addInSelectedUsr(values, input);
                                         }}
+                                        data-id="addUserBtn"
+                                        data-cy="addUserBtn"
                                       >
                                         <i className="fa fa-plus"></i>
                                       </Button>
@@ -494,6 +498,8 @@ const EditPermission = (props) => {
                   variant="primary"
                   size="sm"
                   disabled={submitting}
+                  data-id="save"
+                  data-cy="save"
                 >
                   Save
                 </Button>
@@ -504,6 +510,8 @@ const EditPermission = (props) => {
                   onClick={() => {
                     navigate(`/permissions/models`);
                   }}
+                  data-id="cancel"
+                  data-cy="cancel"
                 >
                   Cancel
                 </Button>

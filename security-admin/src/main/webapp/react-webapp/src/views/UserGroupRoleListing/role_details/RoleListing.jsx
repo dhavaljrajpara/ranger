@@ -358,7 +358,13 @@ function Roles() {
             </Col>
             {isSystemAdmin() && (
               <Col md={3} className="text-right">
-                <Button variant="primary" size="sm" onClick={addRole}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={addRole}
+                  data-id="addNewRoles"
+                  data-cy="addNewRoles"
+                >
                   Add New Role
                 </Button>
                 <Button
@@ -367,6 +373,8 @@ function Roles() {
                   size="sm"
                   title="Delete"
                   onClick={handleDeleteBtnClick}
+                  data-id="deleteUserGroup"
+                  data-cy="deleteUserGroup"
                 >
                   <i className="fa-fw fa fa-trash"></i>
                 </Button>

@@ -112,6 +112,7 @@ function Permissions() {
               <Link
                 className={`${"text-info"}`}
                 to={`/permissions/${rawValue.row.original.id}/edit`}
+                title={rawValue.row.original.module}
               >
                 {rawValue.row.original.module}
               </Link>

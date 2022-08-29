@@ -74,6 +74,8 @@ function GroupAssociateUserDetails(props) {
                 // value={this.state.searchText}
                 onChange={onChangeSearch}
                 placeholder="Search"
+                data-id="userInput"
+                data-cy="userInput"
               ></input>
             </Col>
             <Col className="col-sm-1">
@@ -82,6 +84,7 @@ function GroupAssociateUserDetails(props) {
                 size="sm"
                 variant="link"
                 onClick={() => navigator.clipboard.writeText(copyText())}
+                title="Copy All Users Name"
               >
                 <i className="fa-fw fa fa-copy"> </i>
               </Button>

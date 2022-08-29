@@ -1088,6 +1088,8 @@ export const CustomInfinteScroll = (props) => {
               id="button"
               className="icon remove fa-fw fa fa-remove"
               onClick={() => removeData(obj)}
+              data-id={obj.value}
+              data-cy={obj.value}
             />
             {obj.label}
           </span>
