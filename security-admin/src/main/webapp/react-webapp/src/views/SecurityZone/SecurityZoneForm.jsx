@@ -664,6 +664,7 @@ const SecurityZoneForm = (props) => {
                                   ? "form-control border-danger"
                                   : "form-control"
                               }
+                              data-cy="name"
                             />
                             {meta.error && meta.touched && (
                               <span className="invalid-field">
@@ -684,7 +685,11 @@ const SecurityZoneForm = (props) => {
                             </label>
                           </Col>
                           <Col xs={4}>
-                            <textarea {...input} className="form-control" />
+                            <textarea
+                              {...input}
+                              className="form-control"
+                              data-cy="description"
+                            />
                           </Col>
                         </Row>
                       )}
@@ -990,6 +995,8 @@ const SecurityZoneForm = (props) => {
                                                               ].serviceType
                                                             )
                                                           }
+                                                          data-action="editResource"
+                                                          data-cy="editResource"
                                                         >
                                                           <i className="fa-fw fa fa-edit"></i>
                                                         </Button>
@@ -1003,6 +1010,8 @@ const SecurityZoneForm = (props) => {
                                                               input
                                                             )
                                                           }
+                                                          data-action="delete"
+                                                          data-cy="delete"
                                                         >
                                                           <i className="fa-fw fa fa-remove"></i>
                                                         </Button>
@@ -1025,6 +1034,8 @@ const SecurityZoneForm = (props) => {
                                                     .serviceType
                                                 )
                                               }
+                                              data-action="addResource"
+                                              data-cy="addResource"
                                             >
                                               <i className="fa-fw fa fa-plus "></i>
                                             </Button>
@@ -1067,6 +1078,8 @@ const SecurityZoneForm = (props) => {
                           }}
                           size="sm"
                           disabled={submitting}
+                          data-id="save"
+                          data-cy="save"
                         >
                           Save
                         </Button>
@@ -1079,6 +1092,8 @@ const SecurityZoneForm = (props) => {
                             setPreventUnblock(true);
                             navigate(-1);
                           }}
+                          data-id="cancel"
+                          data-cy="cancel"
                         >
                           Cancel
                         </Button>

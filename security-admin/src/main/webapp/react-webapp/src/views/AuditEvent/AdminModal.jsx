@@ -139,6 +139,8 @@ export const AdminModal = (props) => {
           className="link-tag"
           size="sm"
           onClick={setSessionId}
+          data-id="showAction"
+          data-cy="showAction"
         >
           Show Actions
         </Button>

@@ -124,20 +124,23 @@ function Login_Sessions() {
           var id = rawValue.value;
           if (id != undefined) {
             return (
-              <div className="text-center">
+              <span className="text-center d-block">
                 <a
                   role="button"
                   className="text-primary"
                   onClick={() => {
                     openModal(id);
                   }}
+                  data-id={id}
+                  data-cy={id}
+                  title={id}
                 >
-                  <span className="text-center">{id}</span>
+                  {id}
                 </a>
-              </div>
+              </span>
             );
           } else {
-            return <div className="text-center">--</div>;
+            return <span className="text-center d-block">--</span>;
           }
         },
         width: 90
@@ -147,9 +150,11 @@ function Login_Sessions() {
         accessor: "loginId",
         Cell: (rawValue) => {
           if (rawValue.value) {
-            return rawValue.value;
+            return (
+              <span className="text-center d-block">{rawValue.value}</span>
+            );
           } else {
-            return "--";
+            return <span className="text-center d-block">--</span>;
           }
         },
         width: 100,
@@ -166,21 +171,21 @@ function Login_Sessions() {
               label = AuthStatus[item].label;
               if (AuthStatus[item].value == 1) {
                 html = (
-                  <h6>
+                  <span className="text-center d-block">
                     <Badge variant="success">{label}</Badge>
-                  </h6>
+                  </span>
                 );
               } else if (AuthStatus[item].value == 2) {
                 html = (
-                  <h6>
+                  <span className="text-center d-block">
                     <Badge variant="danger">{label}</Badge>
-                  </h6>
+                  </span>
                 );
               } else {
                 html = (
-                  <h6>
+                  <span className="text-center d-block">
                     <Badge variant="secondary">{label}</Badge>
-                  </h6>
+                  </span>
                 );
               }
             }
@@ -200,13 +205,27 @@ function Login_Sessions() {
               label = AuthType[item].label;
             }
           });
-          return label;
+          return <span className="text-center d-block">{label}</span>;
         },
         disableSortBy: true
       },
       {
         Header: "IP",
         accessor: "requestIP",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <span
+                className="text-truncate text-center d-block"
+                title={rawValue.value}
+              >
+                {rawValue.value}
+              </span>
+            );
+          } else {
+            return <span className="text-center d-block">--</span>;
+          }
+        },
         disableSortBy: true
       },
       {
@@ -215,7 +234,7 @@ function Login_Sessions() {
         Cell: (rawValue) => {
           if (rawValue.value) {
             return (
-              <div className="overflow-text" title={rawValue.value}>
+              <div className="text-truncate" title={rawValue.value}>
                 {rawValue.value}
               </div>
             );
@@ -233,7 +252,7 @@ function Login_Sessions() {
             rawValue.value,
             "mm/dd/yyyy hh:MM:ss TT"
           );
-          return <div className="text-center">{formatDateTime}</div>;
+          return <span className="text-center d-block">{formatDateTime}</span>;
         },
         width: 180,
         disableSortBy: true

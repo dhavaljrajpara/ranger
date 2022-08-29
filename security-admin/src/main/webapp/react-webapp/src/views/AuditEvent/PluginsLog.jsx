@@ -113,13 +113,27 @@ function Plugins() {
             rawValue.value,
             "mm/dd/yyyy hh:MM:ss TT"
           );
-          return <div className="text-center">{formatDateTime}</div>;
+          return <span className="text-center d-block">{formatDateTime}</span>;
         },
         width: 240
       },
       {
         Header: "Service Name",
         accessor: "repositoryName",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <span
+                className="text-truncate text-center d-block"
+                title={rawValue.value}
+              >
+                {rawValue.value}
+              </span>
+            );
+          } else {
+            return <span className="text-center d-block">--</span>;
+          }
+        },
         disableSortBy: true
       },
       {
@@ -127,9 +141,12 @@ function Plugins() {
         accessor: "agentId",
         Cell: (rawValue) => {
           return (
-            <div className="overflow-text">
-              <span title={rawValue.value}>{rawValue.value}</span>
-            </div>
+            <span
+              className="text-truncate text-center d-block"
+              title={rawValue.value}
+            >
+              {rawValue.value}
+            </span>
           );
         },
         disableSortBy: true
@@ -137,11 +154,31 @@ function Plugins() {
       {
         Header: "Plugin IP",
         accessor: "clientIP",
+        Cell: (rawValue) => {
+          return (
+            <span
+              className="text-truncate text-center d-block"
+              title={rawValue.value}
+            >
+              {rawValue.value}
+            </span>
+          );
+        },
         disableSortBy: true
       },
       {
         Header: "Cluster Name",
         accessor: "clusterName",
+        Cell: (rawValue) => {
+          return (
+            <span
+              className="text-truncate text-center d-block"
+              title={rawValue.value}
+            >
+              {rawValue.value}
+            </span>
+          );
+        },
         width: 100,
         disableSortBy: true
       },
@@ -150,9 +187,9 @@ function Plugins() {
         accessor: "httpRetCode",
         Cell: (rawValue) => {
           return (
-            <h6>
+            <span className="text-center d-block">
               <Badge variant="success">{rawValue.value}</Badge>
-            </h6>
+            </span>
           );
         },
         disableSortBy: true

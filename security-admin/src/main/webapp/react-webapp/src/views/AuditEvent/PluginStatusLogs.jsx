@@ -191,7 +191,7 @@ function Plugin_Status() {
         accessor: "serviceType",
         Cell: (rawValue) => {
           return (
-            <div className="overflow-text">
+            <div className="text-truncate">
               <span title={rawValue.value}>{rawValue.value}</span>
             </div>
           );
@@ -206,7 +206,7 @@ function Plugin_Status() {
         accessor: "hostName",
         Cell: (rawValue) => {
           return (
-            <div className="overflow-text">
+            <div className="text-truncate">
               <span title={rawValue.value}>{rawValue.value}</span>
             </div>
           );

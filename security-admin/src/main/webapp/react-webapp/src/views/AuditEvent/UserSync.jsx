@@ -131,6 +131,20 @@ function User_Sync() {
       {
         Header: "User Name",
         accessor: "userName",
+        Cell: (rawValue) => {
+          if (rawValue.value) {
+            return (
+              <span
+                className="text-truncate text-center d-block"
+                title={rawValue.value}
+              >
+                {rawValue.value}
+              </span>
+            );
+          } else {
+            return <span className="text-center d-block">--</span>;
+          }
+        },
         disableSortBy: true
       },
       {
@@ -138,11 +152,9 @@ function User_Sync() {
         accessor: "syncSource",
         Cell: (rawValue) => {
           return (
-            <div className="text-center">
-              <h6>
-                <Badge variant="success">{rawValue.value}</Badge>
-              </h6>
-            </div>
+            <span className="text-center d-block">
+              <Badge variant="success">{rawValue.value}</Badge>
+            </span>
           );
         },
         disableSortBy: true
@@ -153,15 +165,23 @@ function User_Sync() {
         columns: [
           {
             Header: "Users",
-
             accessor: "noOfNewUsers",
+            Cell: (rawValue) => {
+              return (
+                <span className="text-center d-block">{rawValue.value}</span>
+              );
+            },
             width: 100,
             disableSortBy: true
           },
           {
             Header: "Groups",
-
             accessor: "noOfNewGroups",
+            Cell: (rawValue) => {
+              return (
+                <span className="text-center d-block">{rawValue.value}</span>
+              );
+            },
             width: 100,
             disableSortBy: true
           }
@@ -174,12 +194,22 @@ function User_Sync() {
           {
             Header: "Users",
             accessor: "noOfModifiedUsers",
+            Cell: (rawValue) => {
+              return (
+                <span className="text-center d-block">{rawValue.value}</span>
+              );
+            },
             width: 100,
             disableSortBy: true
           },
           {
             Header: "Groups",
             accessor: "noOfModifiedGroups",
+            Cell: (rawValue) => {
+              return (
+                <span className="text-center d-block">{rawValue.value}</span>
+              );
+            },
             width: 100,
             disableSortBy: true
           }
@@ -194,7 +224,7 @@ function User_Sync() {
             rawValue.value,
             "mm/dd/yyyy hh:MM:ss TT"
           );
-          return <div className="text-center">{formatDateTime}</div>;
+          return <span className="text-center d-block">{formatDateTime}</span>;
         },
         minWidth: 170,
         sortable: true
@@ -209,6 +239,7 @@ function User_Sync() {
                 <button
                   className="btn btn-outline-dark btn-sm"
                   data-id="syncDetailes"
+                  data-cy="syncDetailes"
                   title="Sync Details"
                   id={model.id}
                   onClick={() => {

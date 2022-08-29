@@ -509,6 +509,7 @@ function Access() {
           let serviceType = r.row.original.serviceType;
           let aclEnforcer = r.row.original.aclEnforcer;
           let requestData = r.row.original.requestData;
+          let id = r.row.original.id;
           if (
             (serviceType == ServiceType.Service_HIVE.label ||
               serviceType == ServiceType.Service_HBASE.label ||
@@ -538,6 +539,7 @@ function Access() {
                           content={rsrcContent(requestData)}
                           placement="left"
                           trigger={["click", "focus"]}
+                          id={id}
                         ></CustomPopoverOnClick>
                       </div>
                     </div>
@@ -562,6 +564,7 @@ function Access() {
                         content={rsrcContent(requestData)}
                         placement="left"
                         trigger={["click", "focus"]}
+                        id={id}
                       ></CustomPopoverOnClick>
                     </div>
                   </div>
@@ -1028,6 +1031,8 @@ function Access() {
                 onChange={() => {
                   toggleChange();
                 }}
+                data-id="serviceUsersExclude"
+                data-cy="serviceUsersExclude"
               />
             </Col>
             <Col sm={9}>

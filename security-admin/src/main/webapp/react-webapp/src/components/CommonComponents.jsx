@@ -204,6 +204,8 @@ export const AuditFilterEntries = (props) => {
           onClick={() => {
             refreshTables();
           }}
+          data-id="refresh"
+          data-cy="refresh"
         >
           <i className="fa-fw fa fa-refresh"></i>
         </button>
@@ -250,7 +252,8 @@ export const CustomPopoverOnClick = ({
   content,
   placement,
   trigger,
-  icon
+  icon,
+  id
 }) => {
   const [show, setShow] = useState(false);
 
@@ -288,10 +291,13 @@ export const CustomPopoverOnClick = ({
       >
         <i
           className={icon}
+          title="Query Info"
           onClick={(e) => {
             e.stopPropagation();
             handleClick();
           }}
+          data-id={id}
+          data-cy={id}
         ></i>
       </OverlayTrigger>
     </>

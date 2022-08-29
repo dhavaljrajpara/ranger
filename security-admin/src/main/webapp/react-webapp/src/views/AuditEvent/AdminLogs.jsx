@@ -195,7 +195,7 @@ function Admin() {
                   Role {action}d <strong>{objectname}</strong>
                 </span>
               );
-            return <div className="overflow-text">{operation}</div>;
+            return <div className="text-truncate">{operation}</div>;
           }
         },
         disableSortBy: true
@@ -206,7 +206,9 @@ function Admin() {
         Cell: (rawValue) => {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
-          return Object.values(audittype.label);
+          return (
+            <div class="text-center">{Object.values(audittype.label)}</div>
+          );
         },
         disableSortBy: true
       },
@@ -215,9 +217,9 @@ function Admin() {
         accessor: "owner",
         Cell: (rawValue) => {
           return rawValue.value !== undefined ? (
-            <div className="text-center">{rawValue.value}</div>
+            <span className="text-center d-block">{rawValue.value}</span>
           ) : (
-            <div className="text-center">--</div>
+            <span className="text-center d-block">--</span>
           );
         },
         disableSortBy: true
@@ -228,7 +230,7 @@ function Admin() {
         Cell: (rawValue) => {
           const date = rawValue.value;
           const newdate = dateFormat(date, "mm/dd/yyyy hh:MM:ss TT");
-          return newdate;
+          return <span className="text-center d-block">{newdate}</span>;
         }
       },
       {
@@ -238,41 +240,41 @@ function Admin() {
           var operation = "";
           if (rawValue.value == "create") {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="success">{capitalize(rawValue.value)}</Badge>
-              </h6>
+              </span>
             );
           } else if (rawValue.value == "update") {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="warning">{capitalize(rawValue.value)}</Badge>
-              </h6>
+              </span>
             );
           } else if (rawValue.value == "delete") {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="danger">{capitalize(rawValue.value)}</Badge>
-              </h6>
+              </span>
             );
           } else if (rawValue.value == "IMPORT START") {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="info">{capitalize(rawValue.value)}</Badge>
-              </h6>
+              </span>
             );
           } else if (rawValue.value == "IMPORT END") {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="info">{capitalize(rawValue.value)}</Badge>
-              </h6>
+              </span>
             );
           } else {
             operation = (
-              <h6>
+              <span className="text-center d-block">
                 <Badge variant="secondary">
                   {startCase(toLower(rawValue.value))}
                 </Badge>{" "}
-              </h6>
+              </span>
             );
           }
           return operation;
@@ -286,7 +288,7 @@ function Admin() {
           var sessionId = rawValue.value;
           if (sessionId != undefined) {
             return (
-              <div className="text-center">
+              <span className="text-center d-block">
                 <a
                   role="button"
                   className="text-primary"
@@ -294,13 +296,16 @@ function Admin() {
                     e.stopPropagation();
                     openModal(sessionId);
                   }}
+                  data-id={sessionId}
+                  data-cy={sessionId}
+                  title={sessionId}
                 >
                   {sessionId}
                 </a>
-              </div>
+              </span>
             );
           } else {
-            return <div className="text-center">--</div>;
+            return <span className="text-center d-block">--</span>;
           }
         },
         disableSortBy: true

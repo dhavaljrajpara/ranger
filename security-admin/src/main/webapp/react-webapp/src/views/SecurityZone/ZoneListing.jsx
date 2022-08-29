@@ -121,7 +121,7 @@ class ZoneListing extends Component {
         {commonBreadcrumb(["SecurityZone"])}
         <div className="wrap mt-1">
           <Row>
-            <Collapse in={this.state.isCollapse}>
+            <Collapse in={this.state.isCollapse} data-id="panel">
               <Col sm={3} className="border-right border-grey">
                 <Row>
                   <Col>
@@ -139,6 +139,7 @@ class ZoneListing extends Component {
                           }
                         }}
                         className="btn btn-outline-secondary btn-sm pull-right"
+                        title="Create zone"
                       >
                         <i className="fa-fw fa fa-plus"></i>
                       </Link>
@@ -152,6 +153,8 @@ class ZoneListing extends Component {
                       type="text"
                       onChange={this.onChangeSearch}
                       placeholder="Search"
+                      data-id="zoneSearch"
+                      data-cy="zoneSearch"
                     ></input>
                   </Col>
                 </Row>
@@ -182,6 +185,9 @@ class ZoneListing extends Component {
                               onClick={() => {
                                 this.clickBtn(zone.id);
                               }}
+                              data-id={zone.name}
+                              data-cy={zone.name}
+                              title={zone.name}
                             >
                               <a
                                 className={

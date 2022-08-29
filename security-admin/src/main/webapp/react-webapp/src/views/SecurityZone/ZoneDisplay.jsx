@@ -93,6 +93,8 @@ class ZoneDisplay extends Component {
                 aria-controls="example-collapse-text"
                 aria-expanded={this.props.isCollapse}
                 onClick={() => this.props.expandBtn(this.props.isCollapse)}
+                data-id="sideBarBtn"
+                data-cy="sideBarBtn"
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </Button>
@@ -109,6 +111,8 @@ class ZoneDisplay extends Component {
                   className="btn btn-sm btn-outline-primary m-r-5"
                   title="Edit"
                   to={`/zones/edit/${this.props.zone.id}`}
+                  data-id="editZone"
+                  data-cy="editZone"
                 >
                   <i className="fa-fw fa fa-edit"></i> Edit
                 </Link>
@@ -117,6 +121,8 @@ class ZoneDisplay extends Component {
                   size="sm"
                   title="Delete"
                   onClick={() => this.deleteZoneModal(this.props.zone.id)}
+                  data-id="deleteZone"
+                  data-id="deleteZone"
                 >
                   <i className="fa-fw fa fa-trash"></i> Delete
                 </Button>
@@ -157,6 +163,8 @@ class ZoneDisplay extends Component {
                     eventKey="0"
                     onClick={this.firstAccordian}
                     className="border-bottom-0"
+                    data-id="panel"
+                    data-cy="panel"
                   >
                     Zone Administrations
                     {this.state.eventKey0 ? (
@@ -261,6 +269,8 @@ class ZoneDisplay extends Component {
                     eventKey="1"
                     onClick={this.secondAccordian}
                     className="border-bottom-0"
+                    data-id="panel"
+                    data-cy="panel"
                   >
                     Zone Tag Services
                     {this.state.eventKey1 ? (
@@ -298,6 +308,8 @@ class ZoneDisplay extends Component {
                     eventKey="2"
                     onClick={this.thirdAccordian}
                     className="border-bottom-0"
+                    data-id="panel"
+                    data-cy="panel"
                   >
                     Services
                     {this.state.eventKey2 ? (
