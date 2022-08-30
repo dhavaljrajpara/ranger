@@ -94,6 +94,8 @@ function TestConnection(props) {
         onClick={() => {
           validateConfig();
         }}
+        data-id="testConn"
+        data-cy="testConn"
       >
         Test Connection
       </Button>

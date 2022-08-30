@@ -435,6 +435,9 @@ const KeyManager = (props) => {
                 onClick={() => {
                   editModal(rawValue.row.original.name);
                 }}
+                data-name="rolloverKey"
+                data-id={rawValue.row.original.name}
+                data-cy={rawValue.row.original.name}
               >
                 <i className="fa-fw fa fa-edit"></i>
               </Button>
@@ -445,6 +448,9 @@ const KeyManager = (props) => {
                 onClick={() => {
                   deleteModal(rawValue.row.original.name);
                 }}
+                data-name="deleteKey"
+                data-id={rawValue.row.original.name}
+                data-cy={rawValue.row.original.name}
               >
                 <i className="fa-fw fa fa-trash"></i>
               </Button>
@@ -495,6 +501,8 @@ const KeyManager = (props) => {
                   : true
               }
               onClick={addKey}
+              data-id="addNewKey"
+              data-cy="addNewKey"
             >
               Add New Key
             </Button>

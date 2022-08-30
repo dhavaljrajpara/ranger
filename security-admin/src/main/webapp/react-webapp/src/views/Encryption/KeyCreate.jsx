@@ -213,6 +213,7 @@ function KeyCreate(props) {
                             ? "form-control border-danger"
                             : "form-control"
                         }
+                        data-cy="name"
                       />
                       {meta.error && meta.touched && (
                         <span className="invalid-field">{meta.error.text}</span>
@@ -234,6 +235,7 @@ function KeyCreate(props) {
                         name="cipher"
                         type="text"
                         className="form-control"
+                        data-cy="cipher"
                       />
                     </Col>
                   </Row>
@@ -252,6 +254,7 @@ function KeyCreate(props) {
                         name="length"
                         type="number"
                         className="form-control"
+                        data-cy="length"
                       />
                     </Col>
                   </Row>
@@ -266,7 +269,11 @@ function KeyCreate(props) {
                       </label>
                     </Col>
                     <Col xs={4}>
-                      <textarea {...input} className="form-control" />
+                      <textarea
+                        {...input}
+                        className="form-control"
+                        data-cy="description"
+                      />
                     </Col>
                   </Row>
                 )}
@@ -310,6 +317,8 @@ function KeyCreate(props) {
                                   size="sm"
                                   title="Yes"
                                   onClick={() => fields.remove(index)}
+                                  data-action="delete"
+                                  data-cy="delete"
                                 >
                                   <i className="fa-fw fa fa-remove"></i>
                                 </Button>
@@ -331,6 +340,8 @@ function KeyCreate(props) {
                     variant="outline-secondary"
                     size="sm"
                     onClick={() => addItem("attributes")}
+                    data-action="addGroup"
+                    data-cy="addGroup"
                   >
                     <i className="fa-fw fa fa-plus"></i>
                   </Button>
@@ -354,6 +365,8 @@ function KeyCreate(props) {
                     }}
                     size="sm"
                     disabled={submitting}
+                    data-id="save"
+                    data-cy="save"
                   >
                     Save
                   </Button>
@@ -367,6 +380,8 @@ function KeyCreate(props) {
                       closeForm();
                     }}
                     disabled={submitting}
+                    data-id="cancel"
+                    data-cy="cancel"
                   >
                     Cancel
                   </Button>

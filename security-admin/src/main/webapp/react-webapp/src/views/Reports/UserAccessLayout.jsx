@@ -434,6 +434,8 @@ function UserAccessLayout(props) {
                                     type="text"
                                     placeholder="Enter Policy Name"
                                     className="form-control"
+                                    data-js="policyName"
+                                    data-cy="policyName"
                                   />
                                 )}
                               </Field>
@@ -497,6 +499,8 @@ function UserAccessLayout(props) {
                                     type="text"
                                     placeholder="Enter Resource Name"
                                     className="form-control"
+                                    data-js="resourceName"
+                                    data-cy="resourceName"
                                   />
                                 )}
                               </Field>
@@ -591,6 +595,8 @@ function UserAccessLayout(props) {
                                 type="submit"
                                 size="sm"
                                 disabled={submitting}
+                                data-js="searchBtn"
+                                data-cy="searchBtn"
                               >
                                 <i className="fa-fw fa fa-search"></i>
                                 Search
@@ -609,7 +615,10 @@ function UserAccessLayout(props) {
         <Row>
           <Col sm={12} className="mt-3 text-right">
             <Dropdown as={ButtonGroup} key="left" drop="left" size="sm">
-              <Dropdown.Toggle>
+              <Dropdown.Toggle
+                data-name="downloadFormatBtn"
+                data-cy="downloadFormatBtn"
+              >
                 <i className="fa-fw fa fa-external-link-square"></i> Export
               </Dropdown.Toggle>
               <Dropdown.Menu>

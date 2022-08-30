@@ -213,6 +213,8 @@ class Header extends Component {
                   to="/logout"
                   onClick={this.checkKnoxSSO}
                   as={NavLink}
+                  data-id="logout"
+                  data-cy="logout"
                 >
                   <i className="fa fa-power-off"></i> Logout
                 </NavDropdown.Item>

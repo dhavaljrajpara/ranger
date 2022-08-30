@@ -600,6 +600,9 @@ class ServiceForm extends Component {
                             ? "form-control border-danger"
                             : "form-control"
                         }
+                        data-cy={
+                          "configs." + this.configsJson[configParam.name]
+                        }
                       />
                     </Col>
                     {configInfo.length === 1 && (
@@ -711,6 +714,8 @@ class ServiceForm extends Component {
                             ? "form-control border-danger"
                             : "form-control"
                         }
+                        data-js="isAudited"
+                        data-cy="isAudited"
                       >
                         {this.booleanOptions(configParam.subType)}
                       </select>
@@ -1045,6 +1050,7 @@ class ServiceForm extends Component {
                                         ? "form-control border-danger"
                                         : "form-control"
                                     }
+                                    data-cy="name"
                                   />
                                 </Col>
                                 {meta.error && meta.touched && (
@@ -1072,6 +1078,7 @@ class ServiceForm extends Component {
                                         ? "form-control border border-danger"
                                         : "form-control"
                                     }
+                                    data-cy="displayName"
                                   />
                                 </Col>
                                 {meta.error && meta.touched && (
@@ -1098,6 +1105,7 @@ class ServiceForm extends Component {
                                         ? "form-control border border-danger"
                                         : "form-control"
                                     }
+                                    data-cy="description"
                                   />
                                 </Col>
                                 {meta.error && meta.touched && (
@@ -1124,6 +1132,7 @@ class ServiceForm extends Component {
                                       type="radio"
                                       className="form-check-input"
                                       value="true"
+                                      data-cy="isEnabled"
                                     />
                                     <label className="form-check-label">
                                       Enabled
@@ -1137,6 +1146,7 @@ class ServiceForm extends Component {
                                       component="input"
                                       type="radio"
                                       value="false"
+                                      data-cy="isEnabled"
                                     />
                                     <label className="form-check-label">
                                       Disabled
@@ -1201,6 +1211,8 @@ class ServiceForm extends Component {
                                               name={`${name}.name`}
                                               component="input"
                                               className="form-control"
+                                              data-js="name"
+                                              data-cy="name"
                                             />
                                           </td>
                                           <td className="text-center">
@@ -1208,6 +1220,8 @@ class ServiceForm extends Component {
                                               name={`${name}.value`}
                                               component="input"
                                               className="form-control"
+                                              data-js="value"
+                                              data-cy="value"
                                             />
                                           </td>
                                           <td className="text-center">
@@ -1219,6 +1233,8 @@ class ServiceForm extends Component {
                                               onClick={() =>
                                                 fields.remove(index)
                                               }
+                                              data-action="delete"
+                                              data-cy="delete"
                                             >
                                               <i className="fa-fw fa fa-remove"></i>
                                             </Button>
@@ -1239,6 +1255,8 @@ class ServiceForm extends Component {
                                 onClick={() =>
                                   addItem("customConfigs", undefined)
                                 }
+                                data-action="addGroup"
+                                data-cy="addGroup"
                               >
                                 <i className="fa-fw fa fa-plus"></i>
                               </Button>
@@ -1298,6 +1316,8 @@ class ServiceForm extends Component {
                             className="btn-sm"
                             size="sm"
                             disabled={submitting}
+                            data-id="save"
+                            data-cy="save"
                           >
                             {this.props.params.serviceId !== undefined
                               ? `Save`
@@ -1315,6 +1335,8 @@ class ServiceForm extends Component {
                                   : "/policymanager/resource"
                               )
                             }
+                            data-id="cancel"
+                            data-cy="cancel"
                           >
                             Cancel
                           </Button>

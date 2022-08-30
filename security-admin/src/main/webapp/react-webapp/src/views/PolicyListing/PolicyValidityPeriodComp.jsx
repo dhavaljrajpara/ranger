@@ -61,6 +61,8 @@ export default function PolicyValidityPeriodComp(props) {
         variant="primary"
         size="sm"
         className="pull-right btn-sm"
+        data-js="policyTimeBtn"
+        data-cy="policyTimeBtn"
       >
         <i className="fa fa-clock-o"></i> Add Validity Period
       </Button>
@@ -160,6 +162,8 @@ export default function PolicyValidityPeriodComp(props) {
                           className="btn-mini"
                           title="Remove"
                           onClick={() => fields.remove(index)}
+                          data-action="delete"
+                          data-cy="delete"
                         >
                           <i className="fa-fw fa fa-remove"></i>
                         </Button>
@@ -174,6 +178,8 @@ export default function PolicyValidityPeriodComp(props) {
             type="button"
             className="btn-mini"
             onClick={() => addPolicyItem("validitySchedules", undefined)}
+            data-action="addTime"
+            data-cy="addTime"
           >
             <i className="fa-fw fa fa-plus"></i>
           </Button>

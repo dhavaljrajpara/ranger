@@ -460,6 +460,8 @@ export default function PolicyPermissionItem(props) {
                               name={`${name}.delegateAdmin`}
                               component="input"
                               type="checkbox"
+                              data-js="delegatedAdmin"
+                              data-cy="delegatedAdmin"
                             />
                           </td>
                         );
@@ -472,6 +474,8 @@ export default function PolicyPermissionItem(props) {
                         size="sm"
                         title="Remove"
                         onClick={() => fields.remove(index)}
+                        data-action="delete"
+                        data-cy="delete"
                       >
                         <i className="fa-fw fa fa-remove"></i>
                       </Button>
@@ -487,6 +491,9 @@ export default function PolicyPermissionItem(props) {
         className="btn btn-mini"
         type="button"
         onClick={() => addPolicyItem(attrName, undefined)}
+        data-action="addGroup"
+        data-cy="addGroup"
+        title="Add"
       >
         <i className="fa-fw fa fa-plus"></i>{" "}
       </Button>

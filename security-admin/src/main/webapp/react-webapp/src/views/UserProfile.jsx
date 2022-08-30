@@ -197,6 +197,7 @@ class UserProfile extends Component {
                                       ? false
                                       : true
                                   }
+                                  data-cy="firstName"
                                 />
                                 <InfoIcon
                                   css="info-user-role-grp-icon"
@@ -240,6 +241,7 @@ class UserProfile extends Component {
                                       ? false
                                       : true
                                   }
+                                  data-cy="lastName"
                                 />
                                 <InfoIcon
                                   css="info-user-role-grp-icon"
@@ -282,6 +284,7 @@ class UserProfile extends Component {
                                       ? false
                                       : true
                                   }
+                                  data-cy="emailAddress"
                                 />
                                 {meta.error && meta.touched && (
                                   <span className="invalid-field">
@@ -332,6 +335,8 @@ class UserProfile extends Component {
                                   ? false
                                   : true
                               }
+                              data-id="save"
+                              data-cy="save"
                             >
                               Save
                             </Button>
@@ -341,6 +346,8 @@ class UserProfile extends Component {
                               type="button"
                               size="sm"
                               onClick={() => this.props.navigate("/")}
+                              data-id="cancel"
+                              data-cy="cancel"
                             >
                               Cancel
                             </Button>
@@ -402,6 +409,7 @@ class UserProfile extends Component {
                                       ? "form-control border-danger"
                                       : "form-control"
                                   }
+                                  data-cy="oldPassword"
                                 />
                                 <InfoIcon
                                   css="info-user-role-grp-icon"
@@ -449,6 +457,7 @@ class UserProfile extends Component {
                                       ? "form-control border-danger"
                                       : "form-control"
                                   }
+                                  data-cy="newPassword"
                                 />
                                 <InfoIcon
                                   css="info-user-role-grp-icon"
@@ -496,6 +505,7 @@ class UserProfile extends Component {
                                       ? "form-control border-danger"
                                       : "form-control"
                                   }
+                                  data-cy="reEnterPassword"
                                 />
                                 <InfoIcon
                                   css="info-user-role-grp-icon"
@@ -525,6 +535,8 @@ class UserProfile extends Component {
                               type="submit"
                               size="sm"
                               disabled={submitting}
+                              data-id="save"
+                              data-cy="save"
                             >
                               Save
                             </Button>
@@ -534,6 +546,8 @@ class UserProfile extends Component {
                               type="button"
                               size="sm"
                               onClick={() => this.props.navigate("/")}
+                              data-id="cancel"
+                              data-cy="cancel"
                             >
                               Cancel
                             </Button>

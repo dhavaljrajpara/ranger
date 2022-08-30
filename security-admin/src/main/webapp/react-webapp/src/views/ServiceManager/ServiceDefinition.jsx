@@ -288,6 +288,8 @@ class ServiceDefinition extends Component {
                           className="text-decoration"
                           onClick={this.showImportModal}
                           title="Import"
+                          data-id="uploadBtnOnServices"
+                          data-cy="uploadBtnOnServices"
                         >
                           <i className="fa-fw fa fa-rotate-180 fa-external-link-square"></i>
                         </a>
@@ -295,6 +297,8 @@ class ServiceDefinition extends Component {
                           className="text-decoration"
                           onClick={this.showExportModal}
                           title="Export"
+                          data-id="downloadBtnOnService"
+                          data-cy="downloadBtnOnService"
                         >
                           <i className="fa-fw fa fa-external-link-square"></i>
                         </a>
@@ -356,6 +360,9 @@ class ServiceDefinition extends Component {
                             onClick={() => {
                               this.showViewModal(s.id);
                             }}
+                            data-name="viewService"
+                            data-id={s.id}
+                            data-cy={s.id}
                           >
                             <i className="fa-fw fa fa-eye"></i>
                           </Button>
@@ -470,17 +477,19 @@ class ServiceDefinition extends Component {
                               className="btn btn-mini m-r-5"
                               title="Edit"
                               to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
+                              data-id={s.id}
+                              data-cy={s.id}
                             >
                               <i className="fa-fw fa fa-edit"></i>
                             </Link>
                             <Button
-                              // variant="danger"
-                              // size="sm"
                               title="Delete"
                               className="btn btn-mini btn-danger"
                               onClick={() => {
                                 this.showDeleteModal(s.id);
                               }}
+                              data-id={s.id}
+                              data-cy={s.id}
                             >
                               <i className="fa-fw fa fa-trash"></i>
                             </Button>

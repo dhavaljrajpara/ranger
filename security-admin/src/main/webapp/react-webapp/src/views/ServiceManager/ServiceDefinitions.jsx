@@ -371,6 +371,8 @@ class ServiceDefinitions extends Component {
                 size="sm"
                 className="ml-2 btn-mini "
                 onClick={this.showImportModal}
+                data-id="importBtn"
+                data-cy="importBtn"
               >
                 <i className="fa fa-fw fa-rotate-180 fa-external-link-square" />
                 Import
@@ -394,6 +396,8 @@ class ServiceDefinitions extends Component {
                 size="sm"
                 className="ml-2 btn-mini "
                 onClick={this.showExportModal}
+                data-id="exportBtn"
+                data-cy="exportBtn"
               >
                 <i className="fa fa-fw fa-external-link-square" />
                 Export

@@ -216,6 +216,8 @@ function SearchPolicyTable(props) {
               className="border-top-0 border-right-0 border-right-0"
               as={Card.Header}
               eventKey="0"
+              data-js="hdfsHeader"
+              data-cy="hdfsHeader"
             >
               <div className="clearfix">
                 <span className="bold float-left text-uppercase">

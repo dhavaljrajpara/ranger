@@ -510,6 +510,8 @@ function PolicyListing(props) {
                   e.stopPropagation();
                   openModal(original);
                 }}
+                data-name="viewPolicy"
+                data-id={original.id}
               >
                 <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
               </Button>
@@ -529,6 +531,9 @@ function PolicyListing(props) {
                     onClick={() =>
                       toggleConfirmModalForDelete(original.id, original.name)
                     }
+                    data-name="deletePolicy"
+                    data-id={original.id}
+                    data-cy={original.id}
                   >
                     <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
                   </Button>
@@ -674,7 +679,13 @@ function PolicyListing(props) {
               <Col sm={2}>
                 <div className="pull-right mb-1">
                   {(isSystemAdmin() || isKeyAdmin() || isUser()) && (
-                    <Button variant="primary" size="sm" onClick={addPolicy}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={addPolicy}
+                      data-js="addNewPolicy"
+                      data-cy="addNewPolicy"
+                    >
                       Add New Policy
                     </Button>
                   )}

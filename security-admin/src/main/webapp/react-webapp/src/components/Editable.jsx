@@ -370,12 +370,19 @@ const Editable = (props) => {
             </>
           ) : (
             <div className="text-center">
-              <span className="editable-add-text">Add Permission</span>
+              <span
+                className="editable-add-text"
+                data-js="permissions"
+                data-cy="permissions"
+              >
+                Add Permission
+              </span>
               <Button
                 className="mg-10 btn-mini"
                 variant="outline-dark"
                 size="sm"
                 type="button"
+                title="add"
               >
                 <i className="fa-fw fa fa-plus"></i>
               </Button>

@@ -257,6 +257,8 @@ export default function ServiceAuditFilter(props) {
                                     variant="primary"
                                     size="sm"
                                     onClick={() => renderResourcesModal(input)}
+                                    data-js="serviceResource"
+                                    data-cy="serviceResource"
                                   >
                                     <i
                                       className={getResourceIcon(input.value)}
@@ -440,6 +442,8 @@ export default function ServiceAuditFilter(props) {
                       size="sm"
                       title="Remove"
                       onClick={() => fields.remove(index)}
+                      data-action="delete"
+                      data-cy="delete"
                     >
                       <i className="fa-fw fa fa-remove"></i>
                     </Button>
@@ -457,6 +461,9 @@ export default function ServiceAuditFilter(props) {
         className="btn-sm"
         type="button"
         onClick={() => addAuditFilter("auditFilters", undefined)}
+        data-action="addGroup"
+        data-cy="addGroup"
+        title="Add"
       >
         <i className="fa-fw fa fa-plus"></i>
       </Button>

@@ -821,6 +821,8 @@ export default function AddUpdatePolicyForm(props) {
                           variant="warning"
                           onClose={() => setShow(false)}
                           dismissible
+                          data-js="policyInfoAlert"
+                          data-cy="policyInfoAlert"
                         >
                           <i className="fa-fw fa fa-info-circle d-inline text-dark"></i>
                           {policyInfo(
@@ -934,6 +936,7 @@ export default function AddUpdatePolicyForm(props) {
                                           ? "form-control border-danger"
                                           : "form-control"
                                       }
+                                      data-cy="policyName"
                                     />
                                     <InfoIcon
                                       css="info-user-role-grp-icon"
@@ -1057,6 +1060,7 @@ export default function AddUpdatePolicyForm(props) {
                                   {...input}
                                   as="textarea"
                                   rows={3}
+                                  data-cy="description"
                                 />
                               </Col>
                             </FormB.Group>
@@ -1132,6 +1136,8 @@ export default function AddUpdatePolicyForm(props) {
                                       onClick={() => {
                                         policyConditionState(true);
                                       }}
+                                      data-js="customPolicyConditions"
+                                      data-cy="customPolicyConditions"
                                     >
                                       <i className="fa-fw fa fa-plus"></i>
                                     </Button>
@@ -1393,6 +1399,8 @@ export default function AddUpdatePolicyForm(props) {
                           }}
                           variant="primary"
                           size="sm"
+                          data-id="save"
+                          data-cy="save"
                         >
                           Save
                         </Button>
@@ -1403,6 +1411,8 @@ export default function AddUpdatePolicyForm(props) {
                           onClick={() => {
                             closeForm();
                           }}
+                          data-id="cancel"
+                          data-cy="cancel"
                         >
                           Cancel
                         </Button>
