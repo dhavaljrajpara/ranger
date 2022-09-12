@@ -39,6 +39,9 @@ function Roles() {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
+  const [currentpageSize, setCurrentPageSize] = useState(
+    state && state.showLastPage ? state.addPageData.pageSize : 25
+  );
   const [resetPage, setResetPage] = useState({ page: 0 });
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
@@ -148,6 +151,7 @@ function Roles() {
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
+        setCurrentPageSize(pageSize);
         setResetPage({ page: gotoPage });
         setLoader(false);
       }
@@ -389,6 +393,7 @@ function Roles() {
             totalCount={totalCount}
             pageCount={pageCount}
             currentpageIndex={currentpageIndex}
+            currentpageSize={currentpageSize}
             pagination
             loading={loader}
             rowSelectOp={

@@ -59,11 +59,14 @@ function Users() {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
+  const [currentpageSize, setCurrentPageSize] = useState(
+    state && state.showLastPage ? state.addPageData.pageSize : 25
+  );
   const [resetPage, setResetPage] = useState({ page: 0 });
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
     pageRecords: 0,
-    pageSize: 25
+    pageSize: 0
   });
   const [searchFilterParams, setSearchFilterParams] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -175,11 +178,12 @@ function Users() {
         setTblPageData({
           totalPage: totalPageCount,
           pageRecords: userResp && userResp.data && userResp.data.totalCount,
-          pageSize: 25
+          pageSize: pageSize
         });
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
+        setCurrentPageSize(pageSize);
         setResetPage({ page: gotoPage });
         setLoader(false);
       }
@@ -645,6 +649,7 @@ function Users() {
             totalCount={totalCount}
             pageCount={pageCount}
             currentpageIndex={currentpageIndex}
+            currentpageSize={currentpageSize}
             pagination
             loading={loader}
             rowSelectOp={

@@ -50,6 +50,9 @@ function PolicyListing(props) {
   const [currentpageIndex, setCurrentPageIndex] = useState(
     state && state.showLastPage ? state.addPageData.totalPage - 1 : 0
   );
+  const [currentpageSize, setCurrentPageSize] = useState(
+    state && state.showLastPage ? state.addPageData.pageSize : 25
+  );
   const [totalCount, setTotalCount] = useState(0);
   const [tblpageData, setTblPageData] = useState({
     totalPage: 0,
@@ -189,6 +192,7 @@ function PolicyListing(props) {
         setTotalCount(totalCount);
         setPageCount(totalPageCount);
         setCurrentPageIndex(page);
+        setCurrentPageSize(pageSize);
         setResetpage({ page: gotoPage });
         setLoader(false);
       }
@@ -700,6 +704,7 @@ function PolicyListing(props) {
               pagination
               pageCount={pageCount}
               currentpageIndex={currentpageIndex}
+              currentpageSize={currentpageSize}
               loading={loader}
               columnSort={true}
             />

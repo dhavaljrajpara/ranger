@@ -33,12 +33,19 @@ function init(props) {
     tblpageData: {
       totalPage: 0,
       pageRecords: 0,
-      pageSize: 25
+      pageSize:
+        props.state && props.state.showLastPage
+          ? props.state.showLastPage.pageSize
+          : 25
     },
     currentPageIndex:
       props.state && props.state.showLastPage
         ? props.state.addPageData.totalPage - 1
         : 0,
+    currentPageSize:
+      props.state && props.state.showLastPage
+        ? props.state.addPageData.pageSize
+        : 25,
     resetPage: { page: null }
   };
 }
@@ -115,7 +122,12 @@ function reducer(state, action) {
     case "SET_CURRENT_PAGE_INDEX":
       return {
         ...state,
-        currentPageIndex: action.tblPageData
+        currentPageIndex: action.currentPageIndex
+      };
+    case "SET_CURRENT_PAGE_SIZE":
+      return {
+        ...state,
+        currentPageSize: action.currentPageSize
       };
     case "SET_RESET_PAGE":
       return {
@@ -143,6 +155,7 @@ const KeyManager = (props) => {
     deleteshowmodal,
     editshowmodal,
     currentPageIndex,
+    currentPageSize,
     pagecount,
     services,
     tblpageData,
@@ -322,12 +335,16 @@ const KeyManager = (props) => {
         tblPageData: {
           totalPage: totalPageCount,
           pageRecords: totalCount,
-          pageSize: 25
+          pageSize: pageSize
         }
       });
       dispatch({
         type: "SET_CURRENT_PAGE_INDEX",
         currentPageIndex: page
+      });
+      dispatch({
+        type: "SET_CURRENT_PAGE_SIZE",
+        currentPageIndex: pageSize
       });
       dispatch({
         type: "SET_RESET_PAGE",
@@ -516,6 +533,7 @@ const KeyManager = (props) => {
           fetchData={selectServices}
           pageCount={pagecount}
           currentPageIndex={currentPageIndex}
+          currentPageSize={currentPageSize}
         />
 
         <Modal show={editshowmodal} onHide={closeEditModal}>

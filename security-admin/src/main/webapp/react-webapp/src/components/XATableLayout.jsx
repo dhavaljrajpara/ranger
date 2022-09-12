@@ -42,6 +42,7 @@ function XATableLayout({
   fetchData,
   pageCount: controlledPageCount,
   currentpageIndex,
+  currentpageSize,
   rowSelectOp,
   columnHide,
   columnSort,
@@ -89,7 +90,7 @@ function XATableLayout({
       data,
       initialState: {
         pageIndex: currentpageIndex || 0,
-        pageSize: 25,
+        pageSize: currentpageSize || 25,
         sortBy: defaultSort || [],
         hiddenColumns: getLocalStorageVal()
       },
@@ -336,10 +337,12 @@ function XATableLayout({
                     }}
                   />
                   <span className="mr-1"> </span>
-                  {/* <span>
+                  <span>
                     <select
+                      className="select-pagesize"
                       value={pageSize}
                       onChange={(e) => {
+                        gotoPage(0);
                         setPageSize(Number(e.target.value));
                       }}
                     >
@@ -349,7 +352,7 @@ function XATableLayout({
                         </option>
                       ))}
                     </select>
-                  </span> */}
+                  </span>
                   <span className="mr-1"> </span>
                   <button
                     onClick={() => nextPage()}
@@ -360,7 +363,7 @@ function XATableLayout({
                   </button>
                   <button
                     onClick={() => gotoPage(pageCount - 1)}
-                    className="pagination-btn-last btn btn-primary btn-sm"
+                    className="pagination-btn-last btn btn-outline btn-sm"
                     disabled={!canNextPage}
                   >
                     {">>"}

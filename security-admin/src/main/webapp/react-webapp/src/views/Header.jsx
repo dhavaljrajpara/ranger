@@ -12,6 +12,7 @@ import {
   isKeyAdmin,
   isSystemAdmin
 } from "Utils/XAUtils";
+import { isUndefined } from "lodash";
 
 class Header extends Component {
   constructor(props) {
@@ -56,7 +57,7 @@ class Header extends Component {
           "cache-control": "no-cache"
         }
       });
-      if (checkKnoxSSOVal) {
+      if (!isUndefined(checkKnoxSSOVal) || checkKnoxSSOVal !== null) {
         if (checkKnoxSSOVal == false) {
           window.location.replace("locallogin");
         } else {
