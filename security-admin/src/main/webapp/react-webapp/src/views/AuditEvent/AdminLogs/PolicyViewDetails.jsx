@@ -253,11 +253,11 @@ export function PolicyViewDetails(props) {
     ) : (
       <>
         <tr>
-          <td>Policy Type</td>
+          <td className="text-nowrap">Policy Type</td>
           <td>{getPolicyType(policyType)}</td>
         </tr>
         <tr>
-          <td>Policy ID</td>
+          <td className="text-nowrap">Policy ID</td>
           <td>
             <h6 className="d-inline mr-1">
               <Badge variant="primary">{id}</Badge>
@@ -265,7 +265,7 @@ export function PolicyViewDetails(props) {
           </td>
         </tr>
         <tr>
-          <td>Version</td>
+          <td className="text-nowrap">Version</td>
           <td>
             <h6 className="d-inline mr-1">
               <Badge variant="primary">{version}</Badge>
@@ -273,28 +273,31 @@ export function PolicyViewDetails(props) {
           </td>
         </tr>
         <tr>
-          <td>Policy Name </td>
+          <td className="text-nowrap">Policy Name </td>
           <td>{getPolicyName(name)}</td>
         </tr>
         <tr>
-          <td>Policy Labels </td>
+          <td className="text-nowrap">Policy Labels </td>
           <td>
             {!isEmpty(policyLabels)
               ? policyLabels.map((policyLabel) => (
-                  <h6 className="d-inline mr-1">
-                    <Badge variant="dark">{policyLabel}</Badge>
-                  </h6>
+                  <Badge
+                    variant="dark"
+                    className="mr-1 more-less-width text-truncate"
+                  >
+                    {policyLabel}
+                  </Badge>
                 ))
               : "--"}
           </td>
         </tr>
         {getPolicyResources(policyType, resources)}
         <tr>
-          <td>Description</td>
+          <td className="text-nowrap">Description</td>
           <td>{description}</td>
         </tr>
         <tr>
-          <td>Audit Logging </td>
+          <td className="text-nowrap">Audit Logging </td>
           <td>
             <h6 className="d-inline mr-1">
               <Badge variant="info">
@@ -368,11 +371,13 @@ export function PolicyViewDetails(props) {
                     <td className="text-center">
                       {!isEmpty(items.roles)
                         ? items.roles.map((role) => (
-                            <h6 className="d-inline mr-1">
-                              <Badge variant="info" key={role}>
-                                {role}
-                              </Badge>
-                            </h6>
+                            <Badge
+                              variant="info"
+                              className="text-truncate mr-1 more-less-width"
+                              key={role}
+                            >
+                              {role}
+                            </Badge>
                           ))
                         : "--"}
                     </td>
@@ -380,26 +385,26 @@ export function PolicyViewDetails(props) {
                     <td className="text-center">
                       {!isEmpty(items.groups)
                         ? items.groups.map((group) => (
-                            <h6 className="d-inline mr-1">
-                              <Badge variant="info" key={group}>
-                                {group}
-                              </Badge>
-                            </h6>
+                            <Badge
+                              variant="info"
+                              className="text-truncate mr-1 more-less-width"
+                              key={group}
+                            >
+                              {group}
+                            </Badge>
                           ))
                         : "--"}
                     </td>
                     <td className="text-center">
                       {!isEmpty(items.users)
                         ? items.users.map((user) => (
-                            <h6 className="d-inline mr-1">
-                              <Badge
-                                variant="info"
-                                key={user}
-                                className="d-inline mr-1"
-                              >
-                                {user}
-                              </Badge>
-                            </h6>
+                            <Badge
+                              variant="info"
+                              key={user}
+                              className="text-truncate mr-1 more-less-width "
+                            >
+                              {user}
+                            </Badge>
                           ))
                         : "--"}
                     </td>
@@ -607,7 +612,7 @@ export function PolicyViewDetails(props) {
           </p>
         </div>
       </div>
-      <div>
+      <div className="overflow-auto">
         <p className="form-header">Policy Details :</p>
         <Table bordered size="sm" className="table-audit-filter-ready-only">
           <tbody>{getPolicyDetails(serviceDef)}</tbody>

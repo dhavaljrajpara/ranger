@@ -6,7 +6,7 @@ import {
   useLocation,
   useSearchParams
 } from "react-router-dom";
-import { Badge, Button, Col, Row, Modal } from "react-bootstrap";
+import { Badge, Button, Col, Row, Modal, Alert } from "react-bootstrap";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
 import {
@@ -38,6 +38,7 @@ import {
   isKeyAdmin,
   isUser
 } from "../../utils/XAUtils";
+import { alertMessage } from "../../utils/XAEnums";
 
 function PolicyListing(props) {
   const { serviceDef } = props;
@@ -75,6 +76,7 @@ function PolicyListing(props) {
   );
   const [pageLoader, setPageLoader] = useState(true);
   const [resetPage, setResetpage] = useState({ page: 0 });
+  const [show, setShow] = useState(true);
   let navigate = useNavigate();
   let { serviceId, policyType } = useParams();
 
@@ -655,6 +657,26 @@ function PolicyListing(props) {
 
   return (
     <div className="wrap">
+      {(props.serviceData.type == "hdfs" || props.serviceData.type == "yarn") &&
+        show && (
+          <Alert variant="warning" onClose={() => setShow(false)} dismissible>
+            <i className="fa-fw fa fa-info-circle d-inline text-dark"></i>
+            <p className="pd-l-10 d-inline">
+              {`By default, fallback to ${
+                alertMessage[props.serviceData.type].label
+              } ACLs are enabled. If access cannot be
+              determined by Ranger policies, authorization will fall back to
+              ${
+                alertMessage[props.serviceData.type].label
+              } ACLs. If this behavior needs to be changed, modify ${
+                alertMessage[props.serviceData.type].label
+              }
+              plugin config - ${
+                alertMessage[props.serviceData.type].configs
+              }-authorization.`}
+            </p>
+          </Alert>
+        )}
       {pageLoader ? (
         <Row>
           <Col sm={12} className="text-center">
@@ -701,6 +723,7 @@ function PolicyListing(props) {
               data={policyListingData}
               columns={columns}
               fetchData={fetchPolicyInfo}
+              totalCount={totalCount}
               pagination
               pageCount={pageCount}
               currentpageIndex={currentpageIndex}

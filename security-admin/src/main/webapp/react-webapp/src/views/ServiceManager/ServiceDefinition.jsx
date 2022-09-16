@@ -219,7 +219,14 @@ class ServiceDefinition extends Component {
             {a.users !== undefined
               ? a.users.map((user) => (
                   <h6 key={user}>
-                    <Badge variant="info">{user}</Badge>
+                    <Badge
+                      variant="info"
+                      className="m-1 text-truncate more-less-width"
+                      title={user}
+                      key={user}
+                    >
+                      {user}
+                    </Badge>
                   </h6>
                 ))
               : "--"}
@@ -228,7 +235,14 @@ class ServiceDefinition extends Component {
             {a.groups !== undefined
               ? a.groups.map((group) => (
                   <h6 key={group}>
-                    <Badge variant="info">{group}</Badge>
+                    <Badge
+                      variant="info"
+                      className="m-1 text-truncate more-less-width"
+                      title={group}
+                      key={group}
+                    >
+                      {group}
+                    </Badge>
                   </h6>
                 ))
               : "--"}

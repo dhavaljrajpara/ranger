@@ -84,8 +84,8 @@ class ZoneDisplay extends Component {
     return (
       <div className="row">
         <div className="col-sm-12">
-          <div className="clearfix">
-            <div className="float-left">
+          <div className="clearfix d-flex">
+            <div className="float-left d-flex align-items-start">
               <Button
                 variant="outline-secondary"
                 size="sm"
@@ -98,21 +98,19 @@ class ZoneDisplay extends Component {
               >
                 <i className="fa-fw fa fa-reorder"></i>
               </Button>
-              <h3
-                className="text-info display-inline"
-                style={{ paddingLeft: "2.50rem" }}
-              >
+              <h3 className="text-info d-inline zone-name">
                 {this.props.zone.name}
               </h3>
             </div>
             {this.state.isAdminRole && (
-              <div className="float-right">
+              <div className="float-right d-flex align-items-start">
                 <Link
-                  className="btn btn-sm btn-outline-primary m-r-5"
+                  className="btn btn-sm btn-outline-primary m-r-5 "
                   title="Edit"
                   to={`/zones/edit/${this.props.zone.id}`}
                   data-id="editZone"
                   data-cy="editZone"
+                  style={{ whiteSpace: "nowrap" }}
                 >
                   <i className="fa-fw fa fa-edit"></i> Edit
                 </Link>
@@ -123,6 +121,7 @@ class ZoneDisplay extends Component {
                   onClick={() => this.deleteZoneModal(this.props.zone.id)}
                   data-id="deleteZone"
                   data-id="deleteZone"
+                  style={{ whiteSpace: "nowrap" }}
                 >
                   <i className="fa-fw fa fa-trash"></i> Delete
                 </Button>
@@ -183,11 +182,16 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props.zone.adminUsers.length > 0 ? (
-                            this.props.zone.adminUsers.map((obj, index) => {
+                            this.props.zone.adminUsers.map((obj) => {
                               return (
-                                <h6 key={index} className="d-inline mr-1">
-                                  <Badge variant="info">{obj}</Badge>
-                                </h6>
+                                <Badge
+                                  variant="info"
+                                  className="mr-1 more-less-width text-truncate"
+                                  key={obj}
+                                  title={obj}
+                                >
+                                  {obj}
+                                </Badge>
                               );
                             })
                           ) : (
@@ -204,9 +208,14 @@ class ZoneDisplay extends Component {
                             this.props.zone.adminUserGroups.map(
                               (obj, index) => {
                                 return (
-                                  <h6 key={index} className="d-inline mr-1">
-                                    <Badge variant="secondary">{obj}</Badge>
-                                  </h6>
+                                  <Badge
+                                    variant="secondary"
+                                    className="mr-1 more-less-width text-truncate"
+                                    key={obj}
+                                    title={obj}
+                                  >
+                                    {obj}
+                                  </Badge>
                                 );
                               }
                             )
@@ -221,11 +230,16 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props.zone.auditUsers.length > 0 ? (
-                            this.props.zone.auditUsers.map((obj, index) => {
+                            this.props.zone.auditUsers.map((obj) => {
                               return (
-                                <h6 key={index} className="d-inline mr-1">
-                                  <Badge variant="info">{obj}</Badge>
-                                </h6>
+                                <Badge
+                                  variant="info"
+                                  className="mr-1 more-less-width text-truncate"
+                                  key={obj}
+                                  title={obj}
+                                >
+                                  {obj}
+                                </Badge>
                               );
                             })
                           ) : (
@@ -242,9 +256,14 @@ class ZoneDisplay extends Component {
                             this.props.zone.auditUserGroups.map(
                               (obj, index) => {
                                 return (
-                                  <h6 key={index} className="d-inline mr-1">
-                                    <Badge variant="secondary">{obj}</Badge>
-                                  </h6>
+                                  <Badge
+                                    variant="secondary"
+                                    className="mr-1 more-less-width text-truncate"
+                                    key={obj}
+                                    title={obj}
+                                  >
+                                    {obj}
+                                  </Badge>
                                 );
                               }
                             )

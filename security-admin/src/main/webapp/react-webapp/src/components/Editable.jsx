@@ -320,7 +320,7 @@ const Editable = (props) => {
                 className="editable-edit-text badge bg-dark"
                 style={{ display: "block" }}
               >
-                {conditionDefVal.label} : {ipRangVal.join(", ")}
+                {conditionDefVal.name} : {ipRangVal.join(", ")}
               </span>
               <Button
                 className="mg-10 btn-mini"

@@ -27,6 +27,18 @@ export default function ServiceAuditFilter(props) {
     data: {}
   });
 
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      width: "235px"
+    }),
+    multiValueLabel: () => ({
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    })
+  };
+
   const handleClose = () =>
     setModalstate({
       showModalResource: false,
@@ -179,7 +191,11 @@ export default function ServiceAuditFilter(props) {
 
   return (
     <React.Fragment>
-      <Table bordered size="sm" className="mt-3 table-audit-filter text-center">
+      <Table
+        bordered
+        size="sm"
+        className="mt-3 table-audit-filter text-center table-responsive"
+      >
         <thead>
           <tr>{tableHeader()}</tr>
         </thead>
@@ -374,6 +390,7 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
+                                  styles={customStyles}
                                 />
                               </div>
                             )}
@@ -400,6 +417,7 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
+                                  styles={customStyles}
                                 />
                               </div>
                             )}
@@ -426,6 +444,7 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
+                                  styles={customStyles}
                                 />
                               </div>
                             )}

@@ -80,7 +80,7 @@ export class MoreLess extends Component {
                 variant="info"
                 title={key}
                 key={key}
-                className="m-1 text-truncate"
+                className="m-1 text-truncate more-less-width"
               >
                 {key}
               </Badge>

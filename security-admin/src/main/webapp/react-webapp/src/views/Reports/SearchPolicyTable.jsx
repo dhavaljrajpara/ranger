@@ -33,6 +33,7 @@ function SearchPolicyTable(props) {
 
   const fetchSearchPolicies = useCallback(
     async ({ pageSize, pageIndex }) => {
+      setLoader(true);
       const fetchId = ++fetchIdRef.current;
       let searchPoliciesResp;
       let searchPolicies = [];
@@ -99,9 +100,7 @@ function SearchPolicyTable(props) {
         accessor: "policyLabels",
         Cell: (rawValue) => {
           let policyLabels = rawValue.value.map((label, index) => (
-            <span className="mr-1" key={index}>
-              {label}
-            </span>
+            <span key={index}>{label}</span>
           ));
           return !isEmpty(policyLabels) ? (
             <MoreLess data={policyLabels} key={rawValue.row.original.id} />
@@ -450,7 +449,7 @@ function PolicyConditionData(props) {
           <Table
             bordered
             size="sm"
-            className="mb-3 table-audit-filter-ready-only"
+            className="mb-3 table-audit-filter-ready-only  table-responsive w-auto"
           >
             <thead>
               <tr>
