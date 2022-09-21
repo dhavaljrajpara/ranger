@@ -22,7 +22,8 @@ import {
   toString,
   toUpper,
   isNull,
-  has
+  has,
+  filter
 } from "lodash";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -761,25 +762,26 @@ function Access() {
 
   const getServiceDefType = () => {
     let serviceDefType = [];
-
-    serviceDefType = map(serviceDefs, function (serviceDef) {
-      return {
-        label: toUpper(serviceDef.name),
-        value: toString(serviceDef.id)
-      };
+    serviceDefType = filter(serviceDefs, function (serviceDef) {
+      return serviceDef.name !== "tag";
     });
 
-    return serviceDefType;
+    return serviceDefType.map((serviceDef) => ({
+      label: toUpper(serviceDef.name),
+      value: toString(serviceDef.id)
+    }));
   };
 
   const getServices = () => {
     let servicesName = [];
-
-    servicesName = map(services, function (service) {
-      return { label: service.name, value: service.name };
+    servicesName = filter(services, function (service) {
+      return service.type !== "kms" && service.type !== "tag";
     });
 
-    return servicesName;
+    return servicesName.map((service) => ({
+      label: service.displayName,
+      value: service.displayName
+    }));
   };
 
   const getZones = () => {

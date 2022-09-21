@@ -12,13 +12,14 @@ import {
   Button,
   Badge,
   Accordion,
-  Alert
+  Alert,
+  Modal
 } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, find, isEmpty, pick, isObject } from "lodash";
+import { groupBy, find, isEmpty, pick, isObject, isArray } from "lodash";
 import { toast } from "react-toastify";
 import { Loader, scrollToError } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
@@ -96,11 +97,19 @@ export default function AddUpdatePolicyForm(props) {
   const [preventUnBlock, setPreventUnblock] = useState(false);
   const [show, setShow] = useState(true);
   const [showPolicyExpire, setShowPolicyExpire] = useState(true);
+  const [showDelete, setShowDelete] = useState(false);
   // usePrompt("Leave screen?", true);
 
   useEffect(() => {
     fetchInitalData();
   }, []);
+
+  const showDeleteModal = () => {
+    setShowDelete(true);
+  };
+  const hideDeleteModal = () => {
+    setShowDelete(false);
+  };
 
   const fetchUsersData = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
@@ -419,16 +428,38 @@ export default function AddUpdatePolicyForm(props) {
           }
         }
 
-        if (key?.conditions && isObject(key.conditions)) {
+        if (
+          key?.conditions &&
+          isObject(key.conditions) &&
+          serviceCompDetails.name == "tag"
+        ) {
           let condObj = {};
           obj.conditions = Object.entries(key.conditions).map(
             ([key, value]) => {
               return (condObj = {
                 type: key,
-                values: value.split(",")
+                values: value.split(", ")
               });
             }
           );
+        } else if (
+          key?.conditions &&
+          isObject(key.conditions) &&
+          serviceCompDetails.name == "knox"
+        ) {
+          let condObj = {};
+          obj.conditions = [
+            {
+              type: "ip-range",
+              values:
+                !isEmpty(Object.keys(key.conditions)) &&
+                !isArray(key.conditions)
+                  ? key.conditions["ip-range"].split(", ")
+                  : key.conditions.map((value) => {
+                      return value.value;
+                    })
+            }
+          ];
         }
 
         policyResourceItem.push(obj);
@@ -517,7 +548,7 @@ export default function AddUpdatePolicyForm(props) {
       if (val?.conditions?.length > 0) {
         obj.conditions = {};
         for (let data of val.conditions) {
-          obj.conditions[data.type] = data.values.join(",");
+          obj.conditions[data.type] = data.values.join(", ");
         }
       }
       return obj;
@@ -675,6 +706,26 @@ export default function AddUpdatePolicyForm(props) {
         console.error(`Error while saving policy form!!! ${error}`);
       }
     }
+  };
+
+  const handleDeleteClick = async (policyID, serviceId) => {
+    let policyType = policyId ? policyData.policyType : policyType;
+    try {
+      await fetchApi({
+        url: `plugins/policies/${policyID}`,
+        method: "DELETE"
+      });
+      toast.success(" Success! Policy deleted successfully");
+      navigate(`/service/${serviceId}/policies/${policyType}`);
+    } catch (error) {
+      console.log(error.response);
+      if (error.response.data.msgDesc) {
+        errorMsg += error.response.data.msgDesc + "\n";
+      } else {
+        errorMsg += `Error occurred during deleting policy`;
+      }
+    }
+    hideDeleteModal();
   };
 
   const closeForm = () => {
@@ -1416,7 +1467,49 @@ export default function AddUpdatePolicyForm(props) {
                         >
                           Cancel
                         </Button>
+
+                        {policyId !== undefined && (
+                          <Button
+                            variant="danger"
+                            type="button"
+                            className="btn-sm"
+                            size="sm"
+                            onClick={() => {
+                              showDeleteModal();
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        )}
                       </div>
+                      {policyId !== undefined && (
+                        <Modal show={showDelete} onHide={hideDeleteModal}>
+                          <Modal.Header closeButton>
+                            <h5> Are you sure want to delete ?</h5>
+                          </Modal.Header>
+
+                          <Modal.Footer>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              title="Cancel"
+                              onClick={hideDeleteModal}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              title="Yes"
+                              onClick={() =>
+                                handleDeleteClick(policyId, serviceId)
+                              }
+                            >
+                              Yes
+                            </Button>
+                          </Modal.Footer>
+                        </Modal>
+                      )}
                     </div>
                   </form>
                 </>

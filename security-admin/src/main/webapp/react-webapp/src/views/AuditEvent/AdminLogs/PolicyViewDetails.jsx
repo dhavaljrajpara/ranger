@@ -420,7 +420,9 @@ export function PolicyViewDetails(props) {
                                     variant="info"
                                     className="d-inline mr-1"
                                     key={obj.values}
-                                  >{`${obj.type}: ${obj.values}`}</Badge>
+                                  >{`${obj.type}: ${obj.values.join(
+                                    ", "
+                                  )}`}</Badge>
                                 </h6>
                               );
                             })

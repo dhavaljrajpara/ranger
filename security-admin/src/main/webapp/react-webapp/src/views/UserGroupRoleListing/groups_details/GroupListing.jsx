@@ -665,7 +665,15 @@ function Groups() {
           >
             <Modal.Header closeButton>
               <Modal.Title>
-                User's List:&nbsp;{showAssociateUserModal.groupName}
+                <div className="d-flex">
+                  User's List :
+                  <div
+                    className="pl-2 more-less-width text-truncate"
+                    title={showAssociateUserModal.groupName}
+                  >
+                    {showAssociateUserModal.groupName}
+                  </div>
+                </div>
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>

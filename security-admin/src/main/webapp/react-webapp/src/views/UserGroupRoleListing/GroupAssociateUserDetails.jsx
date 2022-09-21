@@ -99,11 +99,12 @@ function GroupAssociateUserDetails(props) {
                     variant="link"
                     href={`#/user/${val.id}`}
                     size="sm"
-                    className={`mr-2 rounded-pill border ${
+                    className={`mr-2 rounded-pill border text-truncate more-less-width ${
                       isAuditor() || isKMSAuditor()
                         ? "disabled-link text-secondary"
                         : ""
                     }`}
+                    title={val.value}
                     key={index}
                   >
                     {val.value}

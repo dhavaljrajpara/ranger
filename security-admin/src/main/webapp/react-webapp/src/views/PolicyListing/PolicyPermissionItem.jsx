@@ -167,7 +167,7 @@ export default function PolicyPermissionItem(props) {
   return (
     <div>
       <Col sm="12" className="policyTable">
-        <Table bordered className="plcypermissiontable">
+        <Table bordered className="plcypermissiontable table-responsive">
           <thead className="thead-light">
             <tr>
               {tableHeader()}
@@ -272,6 +272,7 @@ export default function PolicyPermissionItem(props) {
                                     conditionDefVal={
                                       serviceCompDetails.policyConditions[0]
                                     }
+                                    servicedefName={serviceCompDetails.name}
                                     selectProps={{ isMulti: true }}
                                   />
                                   {meta.touched && meta.error && (

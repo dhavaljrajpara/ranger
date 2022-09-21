@@ -7,7 +7,7 @@ import {
   Row,
   Col
 } from "react-bootstrap";
-import { filter, findIndex } from "lodash";
+import _, { filter, findIndex, isArray } from "lodash";
 import { isObject } from "Utils/XAUtils";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
@@ -141,7 +141,15 @@ const CreatableSelectNew = (props) => {
         <b>{conditionDefVal.label}:</b>
         <CreatableSelect
           {...selectProps}
-          defaultValue={valRef.current == "" ? null : valRef.current}
+          defaultValue={
+            valRef.current == ""
+              ? null
+              : !isArray(valRef.current)
+              ? valRef.current["ip-range"]
+                  .split(", ")
+                  .map((obj) => ({ label: obj, value: obj }))
+              : valRef.current
+          }
           onChange={(e) => handleChange(e)}
           placeholder="enter expression"
           width="500px"
@@ -294,7 +302,8 @@ const Editable = (props) => {
     displayFormat,
     onChange,
     options = [],
-    conditionDefVal
+    conditionDefVal,
+    servicedefName
   } = props;
 
   const initialLoad = useRef(true);
@@ -310,17 +319,22 @@ const Editable = (props) => {
       val = displayFormat(selectVal);
     } else {
       if (type === TYPE_SELECT) {
-        if (selectVal?.length > 0) {
-          let ipRangVal = selectVal.map(function (m) {
-            return m.value;
-          });
+        if (selectVal?.length > 0 || Object.keys(selectVal).length > 0) {
+          let ipRangVal =
+            servicedefName == "knox" && !isArray(selectVal)
+              ? selectVal["ip-range"]
+              : selectVal
+                  .map(function (m) {
+                    return m.value;
+                  })
+                  .join(", ");
           val = (
             <h6 className="d-inline mr-1">
               <span
                 className="editable-edit-text badge bg-dark"
                 style={{ display: "block" }}
               >
-                {conditionDefVal.name} : {ipRangVal.join(", ")}
+                {conditionDefVal.name} : {ipRangVal}
               </span>
               <Button
                 className="mg-10 btn-mini"

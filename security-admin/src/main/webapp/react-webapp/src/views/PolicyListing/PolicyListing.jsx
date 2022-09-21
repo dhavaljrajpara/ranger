@@ -387,6 +387,7 @@ function PolicyListing(props) {
           return (
             <span
               className="text-truncate"
+              title={val.value}
               style={{ maxWidth: "120px", display: "inline-block" }}
             >
               {val.value}

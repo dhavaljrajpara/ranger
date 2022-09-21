@@ -14,7 +14,7 @@ import arrayMutators from "final-form-arrays";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import moment from "moment-timezone";
-import { findIndex, isEmpty } from "lodash";
+import { findIndex, isEmpty, filter } from "lodash";
 import { commonBreadcrumb, serverError } from "../../../utils/XAUtils";
 import { Loader, CustomTooltip } from "Components/CommonComponents";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
@@ -319,7 +319,14 @@ function RoleForm() {
       url: "roles/roles",
       params: params
     });
-    op = userResp.data.roles;
+    if (roleInfo.id !== undefined) {
+      op = filter(userResp.data.roles, function (role) {
+        return role.id !== roleInfo.id;
+      });
+    } else {
+      op = userResp.data.roles;
+    }
+
     return op.map((obj) => ({
       label: obj.name,
       value: obj.name
@@ -475,12 +482,12 @@ function RoleForm() {
                   <Col sm="8">
                     <FieldArray name="users">
                       {({ fields }) => (
-                        <Table bordered className="custom-table">
+                        <Table className="table table-striped table-bordered">
                           <thead>
                             <tr>
-                              <td>User Name</td>
-                              <td>Is Role Admin</td>
-                              <td>Action</td>
+                              <th className="text-center">User Name</th>
+                              <th className="text-center">Is Role Admin</th>
+                              <th className="text-center">Action</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -496,7 +503,11 @@ function RoleForm() {
                             ) : (
                               fields.map((name, index) => (
                                 <tr key={index}>
-                                  <td>{fields.value[index].name}</td>
+                                  <td className="text-center more-less-width text-truncate">
+                                    <span title={fields.value[index].name}>
+                                      {fields.value[index].name}
+                                    </span>
+                                  </td>
                                   <td className="text-center">
                                     <Field
                                       className="form-control"
@@ -516,7 +527,7 @@ function RoleForm() {
                                       )}
                                     />
                                   </td>
-                                  <td>
+                                  <td className="text-center">
                                     <Button
                                       variant="danger"
                                       size="sm"
@@ -572,12 +583,15 @@ function RoleForm() {
                   <Col sm="8">
                     <FieldArray name="groups">
                       {({ fields }) => (
-                        <Table bordered className="custom-table">
+                        <Table
+                          bordered
+                          className="table table-striped table-bordered"
+                        >
                           <thead>
                             <tr>
-                              <td>Group Name</td>
-                              <td>Is Role Admin</td>
-                              <td>Action</td>
+                              <th className="text-center">Group Name</th>
+                              <th className="text-center">Is Role Admin</th>
+                              <th className="etxt-center">Action</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -593,7 +607,11 @@ function RoleForm() {
                             ) : (
                               fields.map((name, index) => (
                                 <tr>
-                                  <td>{fields.value[index].name}</td>
+                                  <td className="text-center more-less-width text-truncate">
+                                    <span title={fields.value[index].name}>
+                                      {fields.value[index].name}
+                                    </span>
+                                  </td>
                                   <td className="text-center">
                                     <Field
                                       className="form-control"
@@ -613,7 +631,7 @@ function RoleForm() {
                                       )}
                                     />
                                   </td>
-                                  <td>
+                                  <td className="text-center">
                                     <Button
                                       variant="danger"
                                       size="sm"
@@ -671,12 +689,15 @@ function RoleForm() {
                   <Col sm="8">
                     <FieldArray name="roles">
                       {({ fields }) => (
-                        <Table bordered className="custom-table">
+                        <Table
+                          bordered
+                          className="table table-striped table-bordered"
+                        >
                           <thead>
                             <tr>
-                              <td>Role Name</td>
-                              <td>Is Role Admin</td>
-                              <td>Action</td>
+                              <th className="text-center">Role Name</th>
+                              <th className="text-center">Is Role Admin</th>
+                              <th className="text-center">Action</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -692,7 +713,11 @@ function RoleForm() {
                             ) : (
                               fields.map((name, index) => (
                                 <tr>
-                                  <td>{fields.value[index].name}</td>
+                                  <td className="text-center more-less-width text-truncate">
+                                    <span title={fields.value[index].name}>
+                                      {fields.value[index].name}
+                                    </span>
+                                  </td>
                                   <td className="text-center">
                                     <Field
                                       className="form-control"
@@ -712,7 +737,7 @@ function RoleForm() {
                                       )}
                                     />
                                   </td>
-                                  <td>
+                                  <td className="text-center">
                                     <Button
                                       variant="danger"
                                       size="sm"
@@ -753,7 +778,8 @@ function RoleForm() {
                           onClick={() => handleRoleAdd(push)}
                           size="sm"
                           data-name="rolesAddBtn"
-                          data-cy="rolesAddBtn"s
+                          data-cy="rolesAddBtn"
+                          s
                         >
                           Add Role
                         </Button>

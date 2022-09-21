@@ -84,7 +84,7 @@ class ZoneDisplay extends Component {
     return (
       <div className="row">
         <div className="col-sm-12">
-          <div className="clearfix d-flex">
+          <div className="d-flex justify-content-between">
             <div className="float-left d-flex align-items-start">
               <Button
                 variant="outline-secondary"

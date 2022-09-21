@@ -27,18 +27,6 @@ export default function ServiceAuditFilter(props) {
     data: {}
   });
 
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      width: "235px"
-    }),
-    multiValueLabel: () => ({
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis"
-    })
-  };
-
   const handleClose = () =>
     setModalstate({
       showModalResource: false,
@@ -190,11 +178,11 @@ export default function ServiceAuditFilter(props) {
   };
 
   return (
-    <React.Fragment>
+    <div className="table-responsive">
       <Table
         bordered
         size="sm"
-        className="mt-3 table-audit-filter text-center table-responsive"
+        className="mt-3 table-audit-filter text-center d-table"
       >
         <thead>
           <tr>{tableHeader()}</tr>
@@ -222,6 +210,7 @@ export default function ServiceAuditFilter(props) {
                             className="form-control audit-filter-select"
                             name={`${name}.isAudited`}
                             component="select"
+                            style={{ minWidth: "75px" }}
                           >
                             <option value="true">Yes</option>
                             <option value="false">No</option>
@@ -231,26 +220,28 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Access Result") {
                       return (
-                        <td key={colName} width="150px">
+                        <td key={colName}>
                           <Field
                             className="form-control"
                             name={`${name}.accessResult`}
                           >
                             {({ input, meta }) => (
-                              <Select
-                                {...input}
-                                isClearable={false}
-                                options={[
-                                  { value: "DENIED", label: "DENIED" },
-                                  { value: "ALLOWED", label: "ALLOWED" },
-                                  {
-                                    value: "NOT_DETERMINED",
-                                    label: "NOT_DETERMINED"
-                                  }
-                                ]}
-                                menuPlacement="auto"
-                                placeholder="Select Value"
-                              />
+                              <div style={{ minWidth: "195px" }}>
+                                <Select
+                                  {...input}
+                                  isClearable={false}
+                                  options={[
+                                    { value: "DENIED", label: "DENIED" },
+                                    { value: "ALLOWED", label: "ALLOWED" },
+                                    {
+                                      value: "NOT_DETERMINED",
+                                      label: "NOT_DETERMINED"
+                                    }
+                                  ]}
+                                  menuPlacement="auto"
+                                  placeholder="Select Value"
+                                />
+                              </div>
                             )}
                           </Field>
                         </td>
@@ -258,12 +249,12 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Resources") {
                       return (
-                        <td key={`${name}.resources`} width="210px">
+                        <td key={`${name}.resources`}>
                           <Field
                             name={`${name}.resources`}
                             render={({ input }) => (
                               <React.Fragment>
-                                <div>
+                                <div style={{ minWidth: "195px" }}>
                                   <div className="resource-group">
                                     {getResourceData(input.value)}
                                   </div>
@@ -321,12 +312,12 @@ export default function ServiceAuditFilter(props) {
                     if (colName == "Permissions") {
                       if (serviceDefDetails.name == "tag") {
                         return (
-                          <td key={`${name}.accessTypes`} width="100px">
+                          <td key={`${name}.accessTypes`}>
                             <Field
                               className="form-control"
                               name={`${name}.accessTypes`}
                               render={({ input }) => (
-                                <React.Fragment>
+                                <div style={{ minWidth: "100px" }}>
                                   <span className="d-inline mr-1 ">
                                     <h6 className="editable-edit-text">
                                       {input.value.tableList !== undefined &&
@@ -343,19 +334,19 @@ export default function ServiceAuditFilter(props) {
                                       />
                                     </div>
                                   </span>
-                                </React.Fragment>
+                                </div>
                               )}
                             />
                           </td>
                         );
                       } else {
                         return (
-                          <td key={`${name}.accessTypes`} width="100px">
+                          <td key={`${name}.accessTypes`}>
                             <Field
                               className="form-control"
                               name={`${name}.accessTypes`}
                               render={({ input }) => (
-                                <div>
+                                <div style={{ minWidth: "100px" }}>
                                   <Editable
                                     {...input}
                                     placement="right"
@@ -373,12 +364,17 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Roles") {
                       return (
-                        <td key={`${name}.roles`} width="150px">
+                        <td key={`${name}.roles`}>
                           <Field
                             className="form-control"
                             name={`${name}.roles`}
                             render={({ input, meta }) => (
-                              <div>
+                              <div
+                                style={{
+                                  minWidth: "150px",
+                                  maxWidth: "350px"
+                                }}
+                              >
                                 <AsyncSelect
                                   {...input}
                                   components={{
@@ -390,7 +386,6 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
-                                  styles={customStyles}
                                 />
                               </div>
                             )}
@@ -400,12 +395,17 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Groups") {
                       return (
-                        <td key={`${name}.groups`} width="150px">
+                        <td key={`${name}.groups`}>
                           <Field
                             className="form-control"
                             name={`${name}.groups`}
                             render={({ input, meta }) => (
-                              <div>
+                              <div
+                                style={{
+                                  minWidth: "150px",
+                                  maxWidth: "350px"
+                                }}
+                              >
                                 <AsyncSelect
                                   {...input}
                                   components={{
@@ -417,7 +417,6 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
-                                  styles={customStyles}
                                 />
                               </div>
                             )}
@@ -427,12 +426,17 @@ export default function ServiceAuditFilter(props) {
                     }
                     if (colName == "Users") {
                       return (
-                        <td key={`${name}.users`} width="250px">
+                        <td key={`${name}.users`}>
                           <Field
                             className="form-control"
                             name={`${name}.users`}
                             render={({ input, meta }) => (
-                              <div>
+                              <div
+                                style={{
+                                  minWidth: "150px",
+                                  maxWidth: "350px"
+                                }}
+                              >
                                 <AsyncSelect
                                   {...input}
                                   components={{
@@ -444,7 +448,6 @@ export default function ServiceAuditFilter(props) {
                                   defaultOptions
                                   cacheOptions
                                   isMulti
-                                  styles={customStyles}
                                 />
                               </div>
                             )}
@@ -497,6 +500,6 @@ export default function ServiceAuditFilter(props) {
         handleClose={handleClose}
         policyItem={false}
       />
-    </React.Fragment>
+    </div>
   );
 }
