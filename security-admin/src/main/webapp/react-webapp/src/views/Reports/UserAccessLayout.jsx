@@ -14,12 +14,21 @@ import { Form, Field } from "react-final-form";
 import Select from "react-select";
 import AsyncSelect from "react-select/async";
 import AsyncCreatableSelect from "react-select/async-creatable";
-import { filter, find, isEmpty, join, map, sortBy, split } from "lodash";
+import {
+  filter,
+  find,
+  isEmpty,
+  isUndefined,
+  join,
+  map,
+  sortBy,
+  split
+} from "lodash";
 import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
 import { useQuery } from "../../components/CommonComponents";
 import SearchPolicyTable from "./SearchPolicyTable";
-import { commonBreadcrumb } from "../../utils/XAUtils";
+import { commonBreadcrumb, getBaseUrl } from "../../utils/XAUtils";
 
 function UserAccessLayout(props) {
   const [show, setShow] = useState(true);
@@ -60,9 +69,13 @@ function UserAccessLayout(props) {
 
     let filterResourceServiceDefs = resourceServiceDefs;
     if (searchParams.get("serviceType")) {
+      filterResourceServiceDefs = [];
       let serviceTypes = split(searchParams.get("serviceType"), ",");
-      filterResourceServiceDefs = map(serviceTypes, function (obj) {
-        return find(resourceServiceDefs, { name: obj });
+      serviceTypes.map((serviceType) => {
+        let findObj = find(resourceServiceDefs, { name: serviceType });
+        if (!isUndefined(findObj)) {
+          filterResourceServiceDefs.push(findObj);
+        }
       });
     }
 
@@ -346,14 +359,7 @@ function UserAccessLayout(props) {
   };
 
   const downloadFile = ({ apiUrl }) => {
-    let downloadUrl =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      (window.location.port ? ":" + window.location.port : "") +
-      "/service" +
-      apiUrl +
-      location.search;
+    let downloadUrl = getBaseUrl() + "service" + apiUrl + location.search;
 
     const link = document.createElement("a");
     link.href = downloadUrl;

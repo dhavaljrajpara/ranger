@@ -1,5 +1,4 @@
 import React, { Component, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button, Col, Row } from "react-bootstrap";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -12,9 +11,7 @@ import {
   isKMSAuditor,
   isUser
 } from "Utils/XAUtils";
-
 import withRouter from "Hooks/withRouter";
-
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
@@ -66,6 +63,7 @@ class ServiceDefinitions extends Component {
   hideImportModal = () => {
     this.setState({ showImportModal: false });
   };
+
   fetchServiceDefs = async () => {
     this.setState({
       loader: true
@@ -103,6 +101,7 @@ class ServiceDefinitions extends Component {
       loader: false
     });
   };
+
   fetchZones = async () => {
     this.setState({
       loader: true
@@ -138,10 +137,17 @@ class ServiceDefinitions extends Component {
       if (this.state.isTagView) {
         tagServices = filter(servicesResp.data.services, ["type", "tag"]);
       } else {
-        resourceServices = filter(
-          servicesResp.data.services,
-          (service) => service.type !== "tag"
-        );
+        if (this.state.isKMSRole) {
+          resourceServices = filter(
+            servicesResp.data.services,
+            (service) => service.type == "kms"
+          );
+        } else {
+          resourceServices = filter(
+            servicesResp.data.services,
+            (service) => service.type !== "tag" && service.type !== "kms"
+          );
+        }
       }
     } catch (error) {
       console.error(
@@ -378,7 +384,6 @@ class ServiceDefinitions extends Component {
                 Import
               </Button>
             )}
-
             {filterServiceDefs.length > 0 && showImportModal && (
               <ImportPolicy
                 serviceDef={filterServiceDefs}

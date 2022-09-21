@@ -4,6 +4,7 @@ import Select from "react-select";
 import { has, map, toString, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import { toast } from "react-toastify";
+import { getBaseUrl } from "../../utils/XAUtils";
 
 class ExportPolicy extends Component {
   constructor(props) {
@@ -44,11 +45,8 @@ class ExportPolicy extends Component {
     let zoneName = responseData.config.params.zoneName;
 
     let downloadUrl =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      (window.location.port ? ":" + window.location.port : "") +
-      "/service/plugins/policies/exportJson?serviceName=" +
+      getBaseUrl() +
+      "service/plugins/policies/exportJson?serviceName=" +
       serviceNameList +
       "&checkPoliciesExists=false" +
       (zoneName !== undefined ? "&zoneName=" + zoneName : "");
@@ -143,7 +141,7 @@ class ExportPolicy extends Component {
               {!isEmpty(this.props.services) ? (
                 "Export Policy"
               ) : (
-                <small>No service found to export policies.</small>
+                <h6>No service found to export policies.</h6>
               )}
             </Modal.Title>
           </Modal.Header>
@@ -194,15 +192,16 @@ class ExportPolicy extends Component {
               <>
                 <Button
                   variant="secondary"
-                  className="btn-mini"
+                  className="btn-sm"
                   onClick={this.props.onHide}
                 >
                   Cancel
                 </Button>
                 <Button
                   variant="primary"
-                  className="btn-mini"
+                  className="btn-sm"
                   onClick={this.export}
+                  disabled={isEmpty(this.state.selectedServices)}
                 >
                   Export
                 </Button>
@@ -210,7 +209,7 @@ class ExportPolicy extends Component {
             ) : (
               <Button
                 variant="primary"
-                className="btn-mini"
+                className="btn-sm"
                 onClick={this.props.onHide}
               >
                 OK

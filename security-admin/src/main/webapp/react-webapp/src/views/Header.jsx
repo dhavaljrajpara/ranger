@@ -10,7 +10,8 @@ import {
   hasAccessToTab,
   isAuditor,
   isKeyAdmin,
-  isSystemAdmin
+  isSystemAdmin,
+  getBaseUrl
 } from "Utils/XAUtils";
 import { isUndefined } from "lodash";
 
@@ -76,6 +77,7 @@ class Header extends Component {
 
   render() {
     const userProps = getUserProfile();
+    const apiUrl = getBaseUrl() + "apidocs/index.html";
     const loginId = (
       <span className="login-id">
         <i className="fa fa-user-circle fa-lg"></i>
@@ -203,12 +205,9 @@ class Header extends Component {
                 <NavDropdown.Item to="/userprofile" as={NavLink}>
                   <i className="fa fa-user"></i> Profile
                 </NavDropdown.Item>
-                <NavDropdown.Item
-                  href="../../apidocs/index.html"
-                  target="_blank"
-                >
+                <a class="dropdown-item" href={apiUrl} target="_blank">
                   <i className="fa fa-user"></i> API Documentation
-                </NavDropdown.Item>
+                </a>
                 <NavDropdown.Item
                   to="/logout"
                   onClick={this.checkKnoxSSO}
