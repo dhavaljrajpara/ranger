@@ -35,6 +35,7 @@ function UserAccessLayout(props) {
   const [serviceDefs, setServiceDefs] = useState([]);
   const [filterServiceDefs, setFilterServiceDefs] = useState([]);
   const [serviceDefOpts, setServiceDefOpts] = useState([]);
+  const [services, setServices] = useState([]);
   const [zoneNameOpts, setZoneNameOpts] = useState([]);
   const [searchParamsObj, setSearchParamsObj] = useState({});
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ function UserAccessLayout(props) {
   };
 
   useEffect(() => {
-    fetchServiceDefs(), fetchZones(), getSearchParams();
+    fetchServiceDefs(), fetchServices(), fetchZones(), getSearchParams();
   }, []);
 
   const fetchServiceDefs = async () => {
@@ -90,6 +91,29 @@ function UserAccessLayout(props) {
     );
 
     setServiceDefOpts(serviceDefsList);
+  };
+
+  const fetchServices = async () => {
+    let servicesResp;
+    let resourceServices;
+
+    try {
+      servicesResp = await fetchApi({
+        url: "plugins/services"
+      });
+
+      resourceServices = filter(
+        servicesResp.data.services,
+        (service) => service.type !== "tag" && service.type !== "kms"
+      );
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Services or CSRF headers! ${error}`
+      );
+    }
+
+    setServices(resourceServices);
+    console.log("PRINT services : ", resourceServices);
   };
 
   const fetchZones = async () => {
@@ -647,6 +671,7 @@ function UserAccessLayout(props) {
           <SearchPolicyTable
             key={serviceDef.name}
             serviceDef={serviceDef}
+            services={services}
             searchParams={searchParamsObj}
             searchParamsUrl={location.search}
           ></SearchPolicyTable>

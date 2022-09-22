@@ -10,7 +10,7 @@ import {
   Row,
   Table
 } from "react-bootstrap";
-import { isEmpty } from "lodash";
+import { isEmpty, find } from "lodash";
 import { MoreLess } from "Components/CommonComponents";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
@@ -64,6 +64,12 @@ function SearchPolicyTable(props) {
     [props.searchParamsUrl]
   );
 
+  const getServiceId = (serviceName) => {
+    let service = find(props.services, { name: serviceName });
+
+    return service.id;
+  };
+
   const columns = React.useMemo(
     () => [
       {
@@ -73,7 +79,9 @@ function SearchPolicyTable(props) {
           return (
             <Link
               title="Edit"
-              to={`/service/${props.serviceDef.id}/policies/${rawValue.value}/edit`}
+              to={`/service/${getServiceId(
+                rawValue.row.original.service
+              )}/policies/${rawValue.value}/edit`}
             >
               {rawValue.value}
             </Link>
