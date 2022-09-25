@@ -1,14 +1,20 @@
 import React, { useReducer, useCallback, useEffect, useState } from "react";
-import { Loader } from "Components/CommonComponents";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useLocation,
+  useSearchParams
+} from "react-router-dom";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import XATableLayout from "Components/XATableLayout";
-import { Row, Col, Button, Modal, Breadcrumb } from "react-bootstrap";
+import { Row, Col, Button, Modal } from "react-bootstrap";
 import { fetchApi } from "Utils/fetchAPI";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
+import { find, map, sortBy } from "lodash";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 
 function init(props) {
   return {
@@ -145,6 +151,8 @@ const KeyManager = (props) => {
   const params = useParams();
   let stateAndParams = { params: params, state: state };
   const [keyState, dispatch] = useReducer(reducer, stateAndParams, init);
+  const [searchFilterParams, setSearchFilterParams] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const {
     loader,
@@ -157,7 +165,6 @@ const KeyManager = (props) => {
     currentPageIndex,
     currentPageSize,
     pagecount,
-    services,
     tblpageData,
     updatetable
   } = keyState;
@@ -210,6 +217,7 @@ const KeyManager = (props) => {
       filterdata: name
     });
   };
+
   const editModal = (name) => {
     dispatch({
       type: "SET_EDIT_MODAL",
@@ -217,12 +225,14 @@ const KeyManager = (props) => {
       filterdata: name
     });
   };
+
   const closeEditModal = () => {
     dispatch({
       type: "SET_EDIT_MODAL_CLOSE",
       editshowmodal: false
     });
   };
+
   const EditConfirmClick = () => {
     handleEditClick();
     dispatch({
@@ -283,12 +293,14 @@ const KeyManager = (props) => {
       }
     }
   }, [filterdata]);
+
   const closeModal = () => {
     dispatch({
       type: "SET_DELETE_MODAL_CLOSE",
       deleteshowmodal: false
     });
   };
+
   const selectServices = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
       dispatch({
@@ -302,20 +314,20 @@ const KeyManager = (props) => {
         state && state.showLastPage
           ? state.addPageData.totalPage - 1
           : pageIndex;
+      let params = { ...searchFilterParams };
+      params["page"] = page;
+      params["startIndex"] =
+        state && state.showLastPage
+          ? (state.addPageData.totalPage - 1) * pageSize
+          : pageIndex * pageSize;
+      params["pageSize"] = pageSize;
+      params["total_pages"] = 1;
+      params["totalCount"] = Math.ceil(totalCount / pageSize);
+      params["provider"] = onchangeval && onchangeval.label;
       try {
         const selservicesResp = await fetchApi({
           url: "/keys/keys",
-          params: {
-            page: page,
-            startIndex:
-              state && state.showLastPage
-                ? (state.addPageData.totalPage - 1) * pageSize
-                : pageIndex * pageSize,
-            pageSize: pageSize,
-            total_pages: 1,
-            totalCount: Math.ceil(totalCount / pageSize),
-            provider: onchangeval && onchangeval.label
-          }
+          params: params
         });
         selcservicesdata = selservicesResp.data.vXKeys;
         totalCount = selservicesResp.data.totalCount;
@@ -351,7 +363,7 @@ const KeyManager = (props) => {
         resetPage: gotoPage
       });
     },
-    [onchangeval, updatetable]
+    [onchangeval, updatetable, searchFilterParams]
   );
 
   const addKey = () => {
@@ -370,6 +382,7 @@ const KeyManager = (props) => {
       }
     );
   };
+
   const columns = React.useMemo(
     () => [
       {
@@ -407,7 +420,7 @@ const KeyManager = (props) => {
           let html = "";
           if (rawValue && rawValue.value) {
             html = Object.keys(rawValue.value).map((key) => (
-              <p className="text-truncate">
+              <p className="text-truncate" key={key}>
                 {key}
                 <i className="fa-fw fa fa-long-arrow-right fa-fw fa fa-3"></i>
                 {rawValue.value[key]}
@@ -480,32 +493,81 @@ const KeyManager = (props) => {
     [updatetable]
   );
 
+  const searchFilterOptions = [
+    {
+      category: "name",
+      label: "Key Name",
+      urlLabel: "keyName",
+      type: "text"
+    }
+  ];
+
+  const updateSearchFilter = (filter) => {
+    console.log("PRINT Filter from tokenizer : ", filter);
+
+    let searchFilterParam = {};
+    let searchParam = {};
+
+    map(filter, function (obj) {
+      searchFilterParam[obj.category] = obj.value;
+
+      let searchFilterObj = find(searchFilterOptions, {
+        category: obj.category
+      });
+
+      let urlLabelParam = searchFilterObj.urlLabel;
+
+      if (searchFilterObj.type == "textoptions") {
+        let textOptionObj = find(searchFilterObj.options(), {
+          value: obj.value
+        });
+        searchParam[urlLabelParam] = textOptionObj.label;
+      } else {
+        searchParam[urlLabelParam] = obj.value;
+      }
+    });
+
+    setSearchFilterParams(searchFilterParam);
+    setSearchParams(searchParam);
+  };
+
   return (
     <div>
       {commonBreadcrumb(["Kms"])}
       <h6 className="font-weight-bold">Key Management</h6>
 
       <div className="wrap">
-        <fieldset>
-          <div className="formHeader" style={{ padding: "12px 4px" }}>
-            Select Service:
-            <Select
-              value={onchangeval}
-              className="w-25 p-1"
-              isClearable
-              onChange={selconChange}
-              components={{
-                IndicatorSeparator: () => null
-              }}
-              options={servicesData}
-              placeholder="Please select KMS service"
-            />
-          </div>
-          <br />
-        </fieldset>
+        <Row>
+          <Col sm={12}>
+            <div className="formHeader pb-3 mb-3">
+              Select Service:
+              <Select
+                value={onchangeval}
+                className="w-25"
+                isClearable
+                onChange={selconChange}
+                components={{
+                  IndicatorSeparator: () => null
+                }}
+                options={servicesData}
+                placeholder="Please select KMS service"
+              />
+            </div>
+          </Col>
+        </Row>
+
         <Row className="mb-2">
-          <Col md={10}></Col>
-          <Col md={2} className="text-right">
+          <Col sm={10}>
+            <StructuredFilter
+              key="key-search-filter"
+              placeholder="Search for your keys..."
+              options={sortBy(searchFilterOptions, ["label"])}
+              onTokenAdd={updateSearchFilter}
+              onTokenRemove={updateSearchFilter}
+              defaultSelected={[]}
+            />
+          </Col>
+          <Col sm={2} className="text-right">
             <Button
               className={
                 onchangeval !== undefined || params.kmsManagePage == "edit"

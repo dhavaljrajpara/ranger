@@ -28,9 +28,15 @@ import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
 import { useQuery } from "../../components/CommonComponents";
 import SearchPolicyTable from "./SearchPolicyTable";
-import { commonBreadcrumb, getBaseUrl } from "../../utils/XAUtils";
+import {
+  commonBreadcrumb,
+  getBaseUrl,
+  isKeyAdmin,
+  isKMSAuditor
+} from "../../utils/XAUtils";
 
 function UserAccessLayout(props) {
+  const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const [show, setShow] = useState(true);
   const [contentLoader, setContentLoader] = useState(true);
   const [serviceDefs, setServiceDefs] = useState([]);
@@ -48,7 +54,10 @@ function UserAccessLayout(props) {
   };
 
   useEffect(() => {
-    fetchServiceDefs(), fetchServices(), fetchZones(), getSearchParams();
+    fetchServiceDefs(), fetchServices(), getSearchParams();
+    if (!isKMSRole) {
+      fetchZones();
+    }
     setContentLoader(false);
   }, []);
 
@@ -67,7 +76,8 @@ function UserAccessLayout(props) {
 
     let resourceServiceDefs = filter(
       serviceDefsResp.data.serviceDefs,
-      (serviceDef) => serviceDef.name !== "kms"
+      (serviceDef) =>
+        isKMSRole ? serviceDef.name == "kms" : serviceDef.name != "kms"
     );
 
     let filterResourceServiceDefs = resourceServiceDefs;
@@ -104,9 +114,8 @@ function UserAccessLayout(props) {
         url: "plugins/services"
       });
 
-      resourceServices = filter(
-        servicesResp.data.services,
-        (service) => service.type !== "kms"
+      resourceServices = filter(servicesResp.data.services, (service) =>
+        isKMSRole ? service.type == "kms" : service.type != "kms"
       );
     } catch (error) {
       console.error(
@@ -556,24 +565,28 @@ function UserAccessLayout(props) {
                                 )}
                               </Field>
                             </Col>
-                            <Col sm={2} className="text-right">
-                              <label className="col-form-label ">
-                                Zone Name
-                              </label>
-                            </Col>
-                            <Col sm={4}>
-                              <Field name="zoneName">
-                                {({ input }) => (
-                                  <Select
-                                    {...input}
-                                    isClearable={true}
-                                    options={zoneNameOpts}
-                                    menuPlacement="auto"
-                                    placeholder="Select Zone Name"
-                                  />
-                                )}
-                              </Field>
-                            </Col>
+                            {!isKMSRole && (
+                              <React.Fragment>
+                                <Col sm={2} className="text-right">
+                                  <label className="col-form-label ">
+                                    Zone Name
+                                  </label>
+                                </Col>
+                                <Col sm={4}>
+                                  <Field name="zoneName">
+                                    {({ input }) => (
+                                      <Select
+                                        {...input}
+                                        isClearable={true}
+                                        options={zoneNameOpts}
+                                        menuPlacement="auto"
+                                        placeholder="Select Zone Name"
+                                      />
+                                    )}
+                                  </Field>
+                                </Col>
+                              </React.Fragment>
+                            )}
                           </Row>
                           <Row>
                             <Col sm={2} className="text-right">

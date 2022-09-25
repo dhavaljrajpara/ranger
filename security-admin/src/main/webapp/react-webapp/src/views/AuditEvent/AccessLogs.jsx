@@ -31,6 +31,8 @@ import { AccessMoreLess } from "Components/CommonComponents";
 import { PolicyViewDetails } from "./AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import {
+  isKeyAdmin,
+  isKMSAuditor,
   getTableSortBy,
   getTableSortType,
   serverError
@@ -39,6 +41,7 @@ import { CustomTooltip } from "../../components/CommonComponents";
 import { ServiceType } from "../../utils/XAEnums";
 
 function Access() {
+  const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const [accessListingData, setAccessLogs] = useState([]);
   const [serviceDefs, setServiceDefs] = useState([]);
   const [services, setServices] = useState([]);
@@ -63,7 +66,10 @@ function Access() {
   const [resetPage, setResetpage] = useState({ page: 0 });
 
   useEffect(() => {
-    fetchServiceDefs(), fetchServices(), fetchZones();
+    fetchServiceDefs(), fetchServices();
+    if (!isKMSRole) {
+      fetchZones();
+    }
 
     let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
     let searchFilterParam = {};
