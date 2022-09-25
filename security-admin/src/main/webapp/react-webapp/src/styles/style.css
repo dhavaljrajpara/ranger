@@ -15,6 +15,10 @@ a:active {
   color: #2996ba;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .app-body {
   padding: 45px 15px 0 15px;
 }
@@ -1705,7 +1709,7 @@ header {
 
 /*Policy Permission Item */
 
-.plcypermissiontable th {
+.policy-permission-table th {
   text-align: center;
 }
 

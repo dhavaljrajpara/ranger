@@ -182,7 +182,7 @@ function SearchPolicyTable(props) {
         accessor: "zoneName",
         Cell: (rawValue) => {
           return !isEmpty(rawValue.value) ? (
-            <Badge variant="dark">{rawValue.value}</Badge>
+            <Badge variant="dark text-truncate mw-100">{rawValue.value}</Badge>
           ) : (
             <div className="text-center">--</div>
           );
@@ -234,18 +234,31 @@ function SearchPolicyTable(props) {
               </div>
             </Accordion.Toggle>
             <Accordion.Collapse eventKey="0">
-              <Card.Body>
-                <XATableLayout
-                  columnHide={false}
-                  loading={loader}
-                  data={searchPoliciesData}
-                  columns={columns}
-                  fetchData={fetchSearchPolicies}
-                  pagination
-                  pageCount={pageCount}
-                  totalCount={totalCount}
-                />
-              </Card.Body>
+              {props.contentLoader ? (
+                <Row>
+                  <Col sm={12} className="text-center">
+                    <div className="spinner-border mr-2" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                    <div className="spinner-grow" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                  </Col>
+                </Row>
+              ) : (
+                <Card.Body>
+                  <XATableLayout
+                    columnHide={false}
+                    loading={loader}
+                    data={searchPoliciesData}
+                    columns={columns}
+                    fetchData={fetchSearchPolicies}
+                    pagination
+                    pageCount={pageCount}
+                    totalCount={totalCount}
+                  />
+                </Card.Body>
+              )}
             </Accordion.Collapse>
           </Card>
         </Accordion>
@@ -457,7 +470,7 @@ function PolicyConditionData(props) {
           <Table
             bordered
             size="sm"
-            className="mb-3 table-audit-filter-ready-only  table-responsive w-auto"
+            className="mb-3 table-audit-filter-ready-only"
           >
             <thead>
               <tr>

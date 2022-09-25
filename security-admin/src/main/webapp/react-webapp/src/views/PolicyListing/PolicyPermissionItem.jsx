@@ -166,8 +166,8 @@ export default function PolicyPermissionItem(props) {
   };
   return (
     <div>
-      <Col sm="12" className="policyTable">
-        <Table bordered className="plcypermissiontable table-responsive">
+      <Col sm="12">
+        <Table bordered className="policy-permission-table">
           <thead className="thead-light">
             <tr>
               {tableHeader()}
@@ -236,7 +236,6 @@ export default function PolicyPermissionItem(props) {
                             <Field
                               className="form-control"
                               name={`${name}.users`}
-                              // validate={required}
                               render={({ input, meta }) => (
                                 <div>
                                   <AsyncSelect

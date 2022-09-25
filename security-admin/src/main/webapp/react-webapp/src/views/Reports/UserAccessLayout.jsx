@@ -32,6 +32,7 @@ import { commonBreadcrumb, getBaseUrl } from "../../utils/XAUtils";
 
 function UserAccessLayout(props) {
   const [show, setShow] = useState(true);
+  const [contentLoader, setContentLoader] = useState(true);
   const [serviceDefs, setServiceDefs] = useState([]);
   const [filterServiceDefs, setFilterServiceDefs] = useState([]);
   const [serviceDefOpts, setServiceDefOpts] = useState([]);
@@ -48,6 +49,7 @@ function UserAccessLayout(props) {
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices(), fetchZones(), getSearchParams();
+    setContentLoader(false);
   }, []);
 
   const fetchServiceDefs = async () => {
@@ -65,7 +67,7 @@ function UserAccessLayout(props) {
 
     let resourceServiceDefs = filter(
       serviceDefsResp.data.serviceDefs,
-      (serviceDef) => serviceDef.name !== "tag"
+      (serviceDef) => serviceDef.name !== "kms"
     );
 
     let filterResourceServiceDefs = resourceServiceDefs;
@@ -104,7 +106,7 @@ function UserAccessLayout(props) {
 
       resourceServices = filter(
         servicesResp.data.services,
-        (service) => service.type !== "tag" && service.type !== "kms"
+        (service) => service.type !== "kms"
       );
     } catch (error) {
       console.error(
@@ -113,7 +115,6 @@ function UserAccessLayout(props) {
     }
 
     setServices(resourceServices);
-    console.log("PRINT services : ", resourceServices);
   };
 
   const fetchZones = async () => {
@@ -434,7 +435,7 @@ function UserAccessLayout(props) {
                 >
                   <div className="clearfix">
                     <span className="bold float-left">Search Criteria</span>
-                    <span className="float-right">
+                    <span className="float-right cursor-pointer">
                       {show ? (
                         <i className="fa fa-angle-up fa-lg font-weight-bold"></i>
                       ) : (
@@ -644,7 +645,13 @@ function UserAccessLayout(props) {
         </Row>
         <Row>
           <Col sm={12} className="mt-3 text-right">
-            <Dropdown as={ButtonGroup} key="left" drop="left" size="sm">
+            <Dropdown
+              as={ButtonGroup}
+              key="left"
+              drop="left"
+              size="sm"
+              title="Export all below policies"
+            >
               <Dropdown.Toggle
                 data-name="downloadFormatBtn"
                 data-cy="downloadFormatBtn"
@@ -674,6 +681,7 @@ function UserAccessLayout(props) {
             services={services}
             searchParams={searchParamsObj}
             searchParamsUrl={location.search}
+            contentLoader={contentLoader}
           ></SearchPolicyTable>
         ))}
       </div>
