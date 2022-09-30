@@ -39,6 +39,8 @@ import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyItemAccess;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerPolicyResource;
 import org.apache.ranger.plugin.model.RangerPolicy.RangerRowFilterPolicyItem;
 import org.apache.ranger.plugin.model.RangerServiceDef;
+import org.apache.ranger.plugin.policyengine.PolicyEngine;
+import org.apache.ranger.plugin.policyengine.RangerResourceAccessInfo;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 import org.apache.ranger.plugin.policyengine.RangerAccessResult;
 import org.apache.ranger.plugin.policyengine.RangerAccessResource;
@@ -46,8 +48,7 @@ import org.apache.ranger.plugin.policyengine.RangerPolicyEngine;
 import org.apache.ranger.plugin.policyengine.RangerPolicyEngineOptions;
 import org.apache.ranger.plugin.policyengine.RangerResourceACLs.DataMaskResult;
 import org.apache.ranger.plugin.policyengine.RangerResourceACLs.RowFilterResult;
-import org.apache.ranger.plugin.policyengine.RangerResourceAccessInfo;
-import org.apache.ranger.plugin.policyresourcematcher.RangerPolicyResourceEvaluator;
+import org.apache.ranger.plugin.policyresourcematcher.RangerResourceEvaluator;
 import org.apache.ranger.plugin.policyresourcematcher.RangerPolicyResourceMatcher;
 
 
@@ -56,7 +57,7 @@ import static org.apache.ranger.plugin.policyevaluator.RangerPolicyItemEvaluator
 import static org.apache.ranger.plugin.policyevaluator.RangerPolicyItemEvaluator.POLICY_ITEM_TYPE_DENY;
 import static org.apache.ranger.plugin.policyevaluator.RangerPolicyItemEvaluator.POLICY_ITEM_TYPE_DENY_EXCEPTIONS;
 
-public interface RangerPolicyEvaluator extends RangerPolicyResourceEvaluator {
+public interface RangerPolicyEvaluator {
 	Comparator<RangerPolicyEvaluator> EVAL_ORDER_COMPARATOR = new RangerPolicyEvaluator.PolicyEvalOrderComparator();
 	Comparator<RangerPolicyEvaluator> NAME_COMPARATOR       = new RangerPolicyEvaluator.PolicyNameComparator();
 
@@ -80,7 +81,11 @@ public interface RangerPolicyEvaluator extends RangerPolicyResourceEvaluator {
 
 	boolean hasDeny();
 
+	long getPolicyId();
+
 	int getPolicyPriority();
+
+	List<RangerPolicyResourceEvaluator> getResourceEvaluators();
 
 	boolean isApplicable(Date accessTime);
 
@@ -98,9 +103,9 @@ public interface RangerPolicyEvaluator extends RangerPolicyResourceEvaluator {
 
 	boolean isCompleteMatch(RangerAccessResource resource, Map<String, Object> evalContext);
 
-	boolean isCompleteMatch(Map<String, RangerPolicyResource> resources, Map<String, Object> evalContext);
+	boolean isCompleteMatch(Map<String, RangerPolicyResource> resources, List<Map<String, RangerPolicyResource>> additionalResources, Map<String, Object> evalContext);
 
-	boolean isAccessAllowed(Map<String, RangerPolicyResource> resources, String user, Set<String> userGroups, String accessType);
+	boolean isAccessAllowed(Map<String, RangerPolicyResource> resources, List<Map<String, RangerPolicyResource>> additionalResources, String user, Set<String> userGroups, String accessType);
 
 	void updateAccessResult(RangerAccessResult result, RangerPolicyResourceMatcher.MatchType matchType, boolean isAllowed, String reason);
 
@@ -627,5 +632,17 @@ public interface RangerPolicyEvaluator extends RangerPolicyResourceEvaluator {
 				}
 			}
 		}
+	}
+
+	interface RangerPolicyResourceEvaluator extends RangerResourceEvaluator {
+		default long getPolicyId() {
+			RangerPolicyEvaluator evaluator = getPolicyEvaluator();
+
+			return evaluator != null ? evaluator.getPolicyId() : -1;
+		}
+
+		RangerPolicyEvaluator getPolicyEvaluator();
+
+		RangerPolicyResourceMatcher getMacrosReplaceWithWildcardMatcher(PolicyEngine policyEngine);
 	}
 }

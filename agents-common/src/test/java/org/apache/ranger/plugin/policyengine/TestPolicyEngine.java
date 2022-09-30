@@ -46,8 +46,9 @@ import org.apache.ranger.plugin.model.RangerValiditySchedule;
 import org.apache.ranger.plugin.model.validation.RangerValidityScheduleValidator;
 import org.apache.ranger.plugin.model.validation.ValidationFailureDetails;
 import org.apache.ranger.plugin.policyengine.TestPolicyEngine.PolicyEngineTestCase.TestData;
+import org.apache.ranger.plugin.policyevaluator.RangerPolicyEvaluator.RangerPolicyResourceEvaluator;
 import org.apache.ranger.plugin.policyevaluator.RangerValidityScheduleEvaluator;
-import org.apache.ranger.plugin.policyresourcematcher.RangerPolicyResourceEvaluator;
+import org.apache.ranger.plugin.policyresourcematcher.RangerResourceEvaluator;
 import org.apache.ranger.plugin.service.RangerBasePlugin;
 import org.apache.ranger.plugin.util.RangerAccessRequestUtil;
 import org.apache.ranger.plugin.util.RangerRequestedResources;
@@ -349,6 +350,13 @@ public class TestPolicyEngine {
 	}
 
 	@Test
+	public void testPolicyEngine_hiveMaskingWithReqExpressions() {
+		String[] resourceFiles = {"/policyengine/test_policyengine_hive_mask_filter_with_req_expressions.json"};
+
+		runTestsFromResourceFiles(resourceFiles);
+	}
+
+	@Test
 	public void testPolicyEngine_hiveTagMasking() {
 		String[] resourceFiles = {"/policyengine/test_policyengine_tag_hive_mask.json"};
 
@@ -461,6 +469,13 @@ public class TestPolicyEngine {
 	@Test
 	public void testPolicyEngine_resourceWithReqExpressions() {
 		String[] resourceFiles = {"/policyengine/test_policyengine_resource_with_req_expressions.json"};
+
+		runTestsFromResourceFiles(resourceFiles);
+	}
+
+	@Test
+	public void testPolicyEngin_policyWithAdditionalResources() {
+		String[] resourceFiles = {"/policyengine/test_policyengine_policy_with_additional_resources.json"};
 
 		runTestsFromResourceFiles(resourceFiles);
 	}
@@ -672,18 +687,18 @@ public class TestPolicyEngine {
 
 			RangerAccessResultProcessor auditHandler = new RangerDefaultAuditHandler();
 
+			if (MapUtils.isNotEmpty(test.userAttributes) || MapUtils.isNotEmpty(test.groupAttributes)) {
+				RangerUserStore userStore = new RangerUserStore();
+
+				userStore.setUserAttrMapping(test.userAttributes);
+				userStore.setGroupAttrMapping(test.groupAttributes);
+
+				RangerAccessRequestUtil.setRequestUserStoreInContext(request.getContext(), userStore);
+			}
+
 			if(test.result != null) {
                 RangerAccessResult expected = test.result;
                 RangerAccessResult result;
-
-                if (MapUtils.isNotEmpty(test.userAttributes) || MapUtils.isNotEmpty(test.groupAttributes)) {
-                    RangerUserStore userStore = new RangerUserStore();
-
-                    userStore.setUserAttrMapping(test.userAttributes);
-                    userStore.setGroupAttrMapping(test.groupAttributes);
-
-                    RangerAccessRequestUtil.setRequestUserStoreInContext(request.getContext(), userStore);
-                }
 
 				result   = policyEngine.evaluatePolicies(request, RangerPolicy.POLICY_TYPE_ACCESS, auditHandler);
 
@@ -1108,28 +1123,36 @@ public class TestPolicyEngine {
 			ret = me.size() == other.size();
 
 			if (ret) {
-				List<? extends RangerPolicyResourceEvaluator> meAsList = new ArrayList<>(me);
-				List<? extends RangerPolicyResourceEvaluator> otherAsList = new ArrayList<>(other);
+				List<? extends RangerResourceEvaluator> meAsList    = new ArrayList<>(me);
+				List<? extends RangerResourceEvaluator> otherAsList = new ArrayList<>(other);
+				List<Long>                              myIds       = new ArrayList<>();
+				List<Long>                              otherIds    = new ArrayList<>();
 
-				List<Long> myIds = new ArrayList<>();
-				List<Long> otherIds = new ArrayList<>();
-				for (RangerPolicyResourceEvaluator evaluator : meAsList) {
-					myIds.add(evaluator.getId());
+				for (RangerResourceEvaluator evaluator : meAsList) {
+					if (evaluator instanceof RangerPolicyResourceEvaluator) {
+						myIds.add(((RangerPolicyResourceEvaluator) evaluator).getPolicyId());
+					} else {
+						myIds.add(evaluator.getId());
+					}
 				}
-				for (RangerPolicyResourceEvaluator evaluator : otherAsList) {
-					otherIds.add(evaluator.getId());
+
+				for (RangerResourceEvaluator evaluator : otherAsList) {
+					if (evaluator instanceof RangerPolicyResourceEvaluator) {
+						otherIds.add(((RangerPolicyResourceEvaluator) evaluator).getPolicyId());
+					} else {
+						otherIds.add(evaluator.getId());
+					}
 				}
 
 				ret = compareLongLists(myIds, otherIds);
 			}
 		}
+
 		return ret;
 	}
 
 	private static boolean compareLongLists(List<Long> me, List<Long> other) {
 		return me.size() == CollectionUtils.intersection(me, other).size();
 	}
-
-
 }
 

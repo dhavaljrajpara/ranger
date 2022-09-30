@@ -32,6 +32,7 @@ import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.biz.PolicyRefUpdater;
 import org.apache.ranger.biz.ServiceDBStore;
+import org.apache.ranger.biz.XUserMgr;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.db.XXGroupDao;
 import org.apache.ranger.db.XXPolicyDao;
@@ -91,6 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -118,6 +120,9 @@ public class PatchForUpdatingPolicyJson_J10019 extends BaseLoader {
 
 	@Autowired
 	PolicyRefUpdater policyRefUpdater;
+
+	@Autowired
+	XUserMgr xUserMgr;
 
 	private final Map<String, Long>              groupIdMap         = new HashMap<>();
 	private final Map<String, Long>              userIdMap          = new HashMap<>();
@@ -351,10 +356,28 @@ public class PatchForUpdatingPolicyJson_J10019 extends BaseLoader {
 				XXUser userObject = userDao.findByUserName(user);
 
 				if (userObject == null) {
-					throw new Exception(user + ": unknown user in policy [id=" + policyId + "]");
+					logger.info(user +" user is not found, adding user: "+user);
+					TransactionTemplate txTemplate = new TransactionTemplate(txManager);
+					txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+					try {
+						txTemplate.execute(new TransactionCallback<Object>() {
+							@Override
+							public Object doInTransaction(TransactionStatus status) {
+								xUserMgr.createServiceConfigUserSynchronously(user);
+								return null;
+							}
+						});
+					} catch(Exception exception) {
+						logger.error("Cannot create ServiceConfigUser(" + user + ")", exception);
+					}
+					userObject = userDao.findByUserName(user);
+					if (userObject == null) {
+						throw new Exception(user + ": unknown user in policy [id=" + policyId + "]");
+					}
 				}
 
 				userId = userObject.getId();
+				logger.info("userId:"+userId);
 
 				userIdMap.put(user, userId);
 			}
