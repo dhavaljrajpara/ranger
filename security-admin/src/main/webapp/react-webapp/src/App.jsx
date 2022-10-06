@@ -270,6 +270,13 @@ export default class App extends Component {
                   </Route>
                   {/* USER PROFILE */}
                   <Route path="/userprofile" element={<UserProfileComp />} />
+                  {/* KNOX SSO WARNING */}
+                  <Route
+                    path="/knoxSSOWarning"
+                    element={<ErrorPage errorCode="checkSSOTrue" />}
+                  />
+                  {/* NOT FOUND ROUTE */}
+                  <Route path="*" />
                 </Route>
               </Routes>
             </HashRouter>

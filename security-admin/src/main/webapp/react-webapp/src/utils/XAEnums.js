@@ -600,7 +600,8 @@ export const PathAssociateWithModule = {
     "/roles/:roleId"
   ],
   Permission: ["/permissions/models", "/permissions/:permissionId/edit"],
-  Profile: ["/userprofile"]
+  Profile: ["/userprofile"],
+  KnoxSignOut: ["/knoxSSOWarning"]
 };
 
 /* Access */

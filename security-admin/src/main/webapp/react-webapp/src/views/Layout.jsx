@@ -15,11 +15,7 @@ const Layout = () => {
       )}
       <section className="container-fluid">
         <div id="ranger-content">
-          {hasAccessToPath(location.pathname) ? (
-            <Outlet />
-          ) : (
-            <ErrorPage errorCode="401"></ErrorPage>
-          )}
+          {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
         </div>
         <footer>
           <div className="main-footer">

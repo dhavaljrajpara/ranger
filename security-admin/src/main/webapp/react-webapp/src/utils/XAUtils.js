@@ -133,6 +133,7 @@ export const hasAccessToPath = (pathName) => {
   let groupModules = map(userProfile.groupPermissions, "moduleName");
   let moduleNames = union(userModules, groupModules);
   moduleNames.push("Profile");
+  moduleNames.push("KnoxSignOut");
   if (isSystemAdmin() || isAuditor()) {
     moduleNames.push("Permission");
   }

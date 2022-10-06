@@ -4,7 +4,6 @@ import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Link, NavLink } from "react-router-dom";
 import { getUserProfile, setUserProfile } from "Utils/appState";
 import { fetchApi } from "Utils/fetchAPI";
-import ErrorPage from "./ErrorPage";
 import { toast } from "react-toastify";
 import {
   hasAccessToTab,
@@ -14,6 +13,7 @@ import {
   getBaseUrl
 } from "Utils/XAUtils";
 import { isUndefined } from "lodash";
+import withRouter from "Hooks/withRouter";
 
 class Header extends Component {
   constructor(props) {
@@ -42,7 +42,7 @@ class Header extends Component {
     } catch (error) {
       if (checkKnoxSSOresp?.status == "419") {
         setUserProfile(null);
-        window.localStorage.clear();
+        // window.localStorage.clear();
         window.location.replace("login.jsp");
       }
       console.error(`Error occurred while logout! ${error}`);
@@ -50,8 +50,9 @@ class Header extends Component {
   };
 
   handleLogout = async (checkKnoxSSOVal) => {
+    let logoutResp = {};
     try {
-      await fetchApi({
+      logoutResp = await fetchApi({
         url: "logout",
         baseURL: "",
         headers: {
@@ -61,15 +62,17 @@ class Header extends Component {
       if (!isUndefined(checkKnoxSSOVal) || checkKnoxSSOVal !== null) {
         if (checkKnoxSSOVal == false) {
           window.location.replace("locallogin");
+          window.localStorage.clear();
+          setUserProfile(null);
         } else {
-          <ErrorPage errorCode="checkSSOTrue"></ErrorPage>;
+          this.props.navigate("/knoxSSOWarning");
         }
       } else {
         window.location.replace("login.jsp");
       }
-      setUserProfile(null);
-      window.localStorage.clear();
-      window.location.replace("login.jsp");
+
+      // window.localStorage.clear();
+      // window.location.replace("login.jsp");
     } catch (error) {
       toast.error(`Error occurred while logout! ${error}`);
     }
@@ -202,16 +205,18 @@ class Header extends Component {
             </Nav>
             <Nav>
               <NavDropdown title={loginId} id="user-dropdown" alignRight>
-                <NavDropdown.Item to="/userprofile" as={NavLink}>
+                <NavDropdown.Item
+                  class="dropdown-item"
+                  to="/userprofile"
+                  as={NavLink}
+                >
                   <i className="fa fa-user"></i> Profile
                 </NavDropdown.Item>
                 <a class="dropdown-item" href={apiUrl} target="_blank">
                   <i className="fa fa-user"></i> API Documentation
                 </a>
                 <NavDropdown.Item
-                  to="/logout"
                   onClick={this.checkKnoxSSO}
-                  as={NavLink}
                   data-id="logout"
                   data-cy="logout"
                 >
@@ -226,4 +231,4 @@ class Header extends Component {
   }
 }
 
-export default Header;
+export default withRouter(Header);
