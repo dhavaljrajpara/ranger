@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Button, Row, Col, Modal } from "react-bootstrap";
 import XATableLayout from "Components/XATableLayout";
-import { MoreLess } from "Components/CommonComponents";
+import { MoreLess, scrollToNewData } from "Components/CommonComponents";
 import {
   useNavigate,
   Link,
@@ -100,6 +100,7 @@ function Roles() {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
+    localStorage.setItem("newDataAdded", state && state.showLastPage);
   }, []);
 
   const fetchRoleInfo = useCallback(
@@ -154,7 +155,11 @@ function Roles() {
         setCurrentPageSize(pageSize);
         setResetPage({ page: gotoPage });
         setLoader(false);
+        if (localStorage.getItem("newDataAdded") == "true") {
+          scrollToNewData(roleData, roleResp.data.resultSize);
+        }
       }
+      localStorage.removeItem("newDataAdded");
     },
     [updateTable, searchFilterParams]
   );

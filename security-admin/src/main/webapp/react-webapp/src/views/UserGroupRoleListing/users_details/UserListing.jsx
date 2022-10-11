@@ -17,7 +17,7 @@ import {
   UserTypes,
   VisibilityStatus
 } from "Utils/XAEnums";
-import { MoreLess } from "Components/CommonComponents";
+import { MoreLess, scrollToNewData } from "Components/CommonComponents";
 import {
   useNavigate,
   Link,
@@ -42,6 +42,7 @@ import StructuredFilter from "../../../components/structured-filter/react-typeah
 function Users() {
   const navigate = useNavigate();
   const { state } = useLocation();
+
   const [loader, setLoader] = useState(true);
   const [userListingData, setUserData] = useState([]);
   const fetchIdRef = useRef(0);
@@ -73,6 +74,7 @@ function Users() {
   const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
     []
   );
+
   const [pageLoader, setPageLoader] = useState(true);
 
   useEffect(() => {
@@ -122,6 +124,7 @@ function Users() {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
+    localStorage.setItem("newDataAdded", state && state.showLastPage);
   }, []);
 
   const fetchUserInfo = useCallback(
@@ -130,7 +133,7 @@ function Users() {
       let userData = [],
         userResp = [];
       let totalCount = 0;
-
+      let lastRowData;
       let page =
         state && state.showLastPage
           ? state.addPageData.totalPage - 1
@@ -142,6 +145,7 @@ function Users() {
       const userRoleListData = getUserAccessRoleList().map((m) => {
         return m.value;
       });
+
       if (fetchId === fetchIdRef.current) {
         params["page"] = page;
 
@@ -174,6 +178,7 @@ function Users() {
         if (state) {
           state["showLastPage"] = false;
         }
+
         setUserData(userData);
         setTblPageData({
           totalPage: totalPageCount,
@@ -186,7 +191,14 @@ function Users() {
         setCurrentPageSize(pageSize);
         setResetPage({ page: gotoPage });
         setLoader(false);
+        if (
+          page == totalPageCount - 1 &&
+          localStorage.getItem("newDataAdded") == "true"
+        ) {
+          scrollToNewData(userData, userResp.data.resultSize);
+        }
       }
+      localStorage.removeItem("newDataAdded");
     },
     [updateTable, searchFilterParams]
   );

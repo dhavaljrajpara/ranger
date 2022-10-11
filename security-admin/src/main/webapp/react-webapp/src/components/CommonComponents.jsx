@@ -426,4 +426,21 @@ export const selectCustomStyles = {
   }
 };
 
+export const scrollToNewData = (usrData, resultSize) => {
+  let newRowAdded;
+  newRowAdded = document.getElementById(usrData[resultSize - 1].id);
+  if (newRowAdded) {
+    newRowAdded.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "start"
+    });
+    newRowAdded.bgColor = "#dbe8f7";
+
+    setTimeout(function () {
+      newRowAdded.bgColor = "";
+    }, 8000);
+  }
+};
+
 export { Loader };

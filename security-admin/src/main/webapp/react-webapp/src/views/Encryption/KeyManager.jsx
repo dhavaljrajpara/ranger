@@ -36,22 +36,8 @@ function init(props) {
     pagecount: 0,
     kmsservice: {},
     updatetable: moment.now(),
-    tblpageData: {
-      totalPage: 0,
-      pageRecords: 0,
-      pageSize:
-        props.state && props.state.showLastPage
-          ? props.state.showLastPage.pageSize
-          : 25
-    },
-    currentPageIndex:
-      props.state && props.state.showLastPage
-        ? props.state.addPageData.totalPage - 1
-        : 0,
-    currentPageSize:
-      props.state && props.state.showLastPage
-        ? props.state.addPageData.pageSize
-        : 25,
+    currentPageIndex: 0,
+    currentPageSize: 25,
     resetPage: { page: null }
   };
 }
@@ -118,13 +104,6 @@ function reducer(state, action) {
         updatetable: action.updatetable
       };
 
-    case "SET_DATA_TO_LAST_PAGE":
-      return {
-        ...state,
-        loader: false,
-        tblPageData: action.tblPageData
-      };
-
     case "SET_CURRENT_PAGE_INDEX":
       return {
         ...state,
@@ -140,6 +119,7 @@ function reducer(state, action) {
         ...state,
         resetPage: action.resetPage
       };
+
     default:
       throw new Error();
   }
@@ -153,6 +133,7 @@ const KeyManager = (props) => {
   const [keyState, dispatch] = useReducer(reducer, stateAndParams, init);
   const [searchFilterParams, setSearchFilterParams] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [totalCount, setTotalCount] = useState(0);
 
   const {
     loader,
@@ -165,7 +146,6 @@ const KeyManager = (props) => {
     currentPageIndex,
     currentPageSize,
     pagecount,
-    tblpageData,
     updatetable
   } = keyState;
 
@@ -307,25 +287,19 @@ const KeyManager = (props) => {
         type: "SET_LOADER",
         loader: true
       });
+      let selservicesResp = [];
       let selcservicesdata = null;
       let totalCount = 0;
       let totalPageCount = 0;
-      let page =
-        state && state.showLastPage
-          ? state.addPageData.totalPage - 1
-          : pageIndex;
+      let page = pageIndex;
       let params = { ...searchFilterParams };
       params["page"] = page;
-      params["startIndex"] =
-        state && state.showLastPage
-          ? (state.addPageData.totalPage - 1) * pageSize
-          : pageIndex * pageSize;
+      params["startIndex"] = pageIndex * pageSize;
       params["pageSize"] = pageSize;
-      params["total_pages"] = 1;
-      params["totalCount"] = Math.ceil(totalCount / pageSize);
       params["provider"] = onchangeval && onchangeval.label;
+
       try {
-        const selservicesResp = await fetchApi({
+        selservicesResp = await fetchApi({
           url: "/keys/keys",
           params: params
         });
@@ -336,32 +310,29 @@ const KeyManager = (props) => {
         console.error(`Error occurred while fetching Services! ${error}`);
       }
 
+      if (state) {
+        state["showLastPage"] = false;
+      }
       dispatch({
         type: "SET_SEL_SERVICE",
         keydatalist: selcservicesdata,
         pagecount: Math.ceil(totalCount / pageSize),
         loader: false
       });
-      dispatch({
-        type: "SET_DATA_TO_LAST_PAGE",
-        tblPageData: {
-          totalPage: totalPageCount,
-          pageRecords: totalCount,
-          pageSize: pageSize
-        }
-      });
+
       dispatch({
         type: "SET_CURRENT_PAGE_INDEX",
         currentPageIndex: page
       });
       dispatch({
         type: "SET_CURRENT_PAGE_SIZE",
-        currentPageIndex: pageSize
+        currentPageSize: pageSize
       });
       dispatch({
         type: "SET_RESET_PAGE",
         resetPage: gotoPage
       });
+      setTotalCount(totalCount);
     },
     [onchangeval, updatetable, searchFilterParams]
   );
@@ -376,8 +347,7 @@ const KeyManager = (props) => {
           detail:
             params.kmsManagePage == "edit"
               ? params.kmsServiceName
-              : onchangeval.label,
-          tblpageData: tblpageData
+              : onchangeval.label
         }
       }
     );
@@ -596,6 +566,7 @@ const KeyManager = (props) => {
           pageCount={pagecount}
           currentPageIndex={currentPageIndex}
           currentPageSize={currentPageSize}
+          totalCount={totalCount}
         />
 
         <Modal show={editshowmodal} onHide={closeEditModal}>

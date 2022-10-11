@@ -26,7 +26,7 @@ import {
   showGroupsOrUsersOrRolesForPolicy,
   QueryParamsName
 } from "Utils/XAUtils";
-import { MoreLess } from "Components/CommonComponents";
+import { MoreLess, scrollToNewData } from "Components/CommonComponents";
 import {} from "Utils/XAUtils";
 import PolicyViewDetails from "../AuditEvent/AdminLogs/PolicyViewDetails";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
@@ -127,6 +127,7 @@ function PolicyListing(props) {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
+    localStorage.setItem("newDataAdded", state && state.showLastPage);
   }, []);
 
   const getTableSortBy = (sortArr = []) => {
@@ -197,7 +198,14 @@ function PolicyListing(props) {
         setCurrentPageSize(pageSize);
         setResetpage({ page: gotoPage });
         setLoader(false);
+        if (
+          page == totalPageCount - 1 &&
+          localStorage.getItem("newDataAdded") == "true"
+        ) {
+          scrollToNewData(policyData, policyResp.data.resultSize);
+        }
       }
+      localStorage.removeItem("newDataAdded");
     },
     [updateTable, searchFilterParams]
   );

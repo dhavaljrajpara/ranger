@@ -277,10 +277,13 @@ function XATableLayout({
                   </tbody>
                 ) : (
                   <tbody {...getTableBodyProps()}>
-                    {rows.map((row) => {
+                    {rows.map((row, index) => {
                       prepareRow(row);
                       return (
-                        <tr {...row.getRowProps(getRowProps(row))}>
+                        <tr
+                          {...row.getRowProps(getRowProps(row))}
+                          id={row.original.id}
+                        >
                           {row.cells.map((cell) => {
                             return (
                               <td {...cell.getCellProps()}>

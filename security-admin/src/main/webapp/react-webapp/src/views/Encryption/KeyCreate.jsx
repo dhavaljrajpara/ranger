@@ -59,17 +59,7 @@ function KeyCreate(props) {
 
   const handleSubmit = async (values) => {
     const serviceJson = {};
-    let tblpageData = {};
-    if (state && state != null) {
-      tblpageData = state.tblpageData;
-      if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
-        tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
-      } else {
-        if (tblpageData !== undefined) {
-          tblpageData["totalPage"] = state.tblpageData.totalPage;
-        }
-      }
-    }
+
     let apiError = "Error occurred while creating Key";
     serviceJson.name = values.name;
     serviceJson.cipher = values.cipher;
@@ -94,7 +84,9 @@ function KeyCreate(props) {
       });
       toast.success(`Success! Key created succesfully`);
       navigate(`/kms/keys/edit/manage/${state.detail}`, {
-        state: { detail: state.detail, addPageData: tblpageData }
+        state: {
+          detail: state.detail
+        }
       });
     } catch (error) {
       serverError(error);

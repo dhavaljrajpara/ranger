@@ -31,6 +31,7 @@ import {
 } from "Utils/XAUtils";
 import { find, isUndefined, map, has } from "lodash";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
+import { scrollToNewData } from "../../../components/CommonComponents";
 
 function Groups() {
   const navigate = useNavigate();
@@ -116,6 +117,7 @@ function Groups() {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
+    localStorage.setItem("newDataAdded", state && state.showLastPage);
   }, []);
 
   const fetchGroupInfo = useCallback(
@@ -170,7 +172,14 @@ function Groups() {
         setCurrentPageSize(pageSize);
         setResetPage({ page: gotoPage });
         setLoader(false);
+        if (
+          page == totalPageCount - 1 &&
+          localStorage.getItem("newDataAdded") == "true"
+        ) {
+          scrollToNewData(groupData, groupResp.data.resultSize);
+        }
       }
+      localStorage.removeItem("newDataAdded");
     },
     [updateTable, searchFilterParams]
   );
