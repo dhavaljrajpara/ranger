@@ -21,7 +21,6 @@ import {
   sortBy,
   toString,
   toUpper,
-  isNull,
   has,
   filter
 } from "lodash";
@@ -35,7 +34,8 @@ import {
   isKMSAuditor,
   getTableSortBy,
   getTableSortType,
-  serverError
+  serverError,
+  fetchSearchFilterParams
 } from "../../utils/XAUtils";
 import { CustomTooltip } from "../../components/CommonComponents";
 import { ServiceType } from "../../utils/XAEnums";
@@ -72,70 +72,8 @@ function Access() {
     }
 
     let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
-    let searchFilterParam = {};
-    let searchParam = {};
-    let defaultSearchFilterParam = [];
-
-    // Get Search Filter Params from current search params
-    const currentParams = Object.fromEntries([...searchParams]);
-    console.log("PRINT search params : ", currentParams);
-
-    for (const param in currentParams) {
-      let searchFilterObj = find(searchFilterOption, {
-        urlLabel: param
-      });
-
-      if (!isUndefined(searchFilterObj)) {
-        let category = searchFilterObj.category;
-        let value = currentParams[param];
-
-        if (searchFilterObj.type == "textoptions") {
-          let textOptionObj = find(searchFilterObj.options(), {
-            label: value
-          });
-          value = textOptionObj !== undefined ? textOptionObj.value : value;
-        }
-
-        searchFilterParam[category] = value;
-        defaultSearchFilterParam.push({
-          category: category,
-          value: value
-        });
-      }
-    }
-
-    // Get Search Filter Params from localStorage
-    if (isEmpty(searchFilterParam)) {
-      const localStorageParams = JSON.parse(localStorage.getItem("bigData"));
-      console.log("PRINT available localStorage : ", localStorageParams);
-
-      if (!isNull(localStorageParams) && !isEmpty(localStorageParams)) {
-        for (const localParam in localStorageParams) {
-          let searchFilterObj = find(searchFilterOption, {
-            urlLabel: localParam
-          });
-
-          if (!isUndefined(searchFilterObj)) {
-            let category = searchFilterObj.category;
-            let value = localStorageParams[localParam];
-
-            if (searchFilterObj.type == "textoptions") {
-              let textOptionObj = find(searchFilterObj.options(), {
-                label: value
-              });
-              value = textOptionObj !== undefined ? textOptionObj.value : value;
-            }
-
-            searchFilterParam[category] = value;
-            defaultSearchFilterParam.push({
-              category: category,
-              value: value
-            });
-            searchParam[localParam] = value;
-          }
-        }
-      }
-    }
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams("bigData", searchParams, searchFilterOptions);
 
     if (!has(searchFilterParam, "startDate")) {
       searchParam["startDate"] = currentDate;
@@ -146,39 +84,12 @@ function Access() {
       });
     }
 
-    if (!has(searchFilterParam, "excludeServiceUser")) {
-      let excludeServiceUser = JSON.parse(
-        localStorage.getItem("excludeServiceUser")
-      );
-      let isExcludeServiceUser = isNull(excludeServiceUser)
-        ? checked
-        : excludeServiceUser;
-      setChecked(isExcludeServiceUser);
-      searchParam["excludeServiceUser"] = isExcludeServiceUser;
-    }
-
     // Updating the states for search params, search filter, default search filter and localStorage
-    setSearchParams({ ...currentParams, ...searchParam });
+    setSearchParams(searchParam);
     setSearchFilterParams(searchFilterParam);
     setDefaultSearchFilterParams(defaultSearchFilterParam);
-    localStorage.setItem(
-      "bigData",
-      JSON.stringify({ ...currentParams, ...searchParam })
-    );
+    localStorage.setItem("bigData", JSON.stringify(searchParam));
     setContentLoader(false);
-
-    console.log(
-      "PRINT Final searchFilterParam to server : ",
-      searchFilterParam
-    );
-    console.log(
-      "PRINT Final defaultSearchFilterParam to tokenzier : ",
-      defaultSearchFilterParam
-    );
-    console.log(
-      "PRINT Final available localStorage is : ",
-      localStorage.getItem("bigData")
-    );
   }, []);
 
   const fetchAccessLogsInfo = useCallback(
@@ -809,7 +720,7 @@ function Access() {
     map(filter, function (obj) {
       searchFilterParam[obj.category] = obj.value;
 
-      let searchFilterObj = find(searchFilterOption, {
+      let searchFilterObj = find(searchFilterOptions, {
         category: obj.category
       });
 
@@ -833,7 +744,7 @@ function Access() {
     resetPage.page(0);
   };
 
-  const searchFilterOption = [
+  const searchFilterOptions = [
     {
       category: "aclEnforcer",
       label: "Access Enforcer",
@@ -981,7 +892,7 @@ function Access() {
                 <StructuredFilter
                   key="access-log-search-filter"
                   placeholder="Search for your access audits..."
-                  options={sortBy(searchFilterOption, ["label"])}
+                  options={sortBy(searchFilterOptions, ["label"])}
                   onTokenAdd={updateSearchFilter}
                   onTokenRemove={updateSearchFilter}
                   defaultSelected={defaultSearchFilterParams}
