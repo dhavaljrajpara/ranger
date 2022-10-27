@@ -49,11 +49,15 @@ function Login_Sessions() {
 
     // Updating the states for search params, search filter, default search filter and localStorage
     setSearchParams(searchParam);
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     localStorage.setItem("loginSession", JSON.stringify(searchParam));
     setContentLoader(false);
-  }, []);
+  }, [searchParams]);
 
   const fetchLoginSessionLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy, gotoPage }) => {

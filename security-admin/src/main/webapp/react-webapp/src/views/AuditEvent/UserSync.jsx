@@ -36,7 +36,6 @@ function User_Sync() {
 
   useEffect(() => {
     let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
-
     let { searchFilterParam, defaultSearchFilterParam, searchParam } =
       fetchSearchFilterParams("userSync", searchParams, searchFilterOptions);
 
@@ -56,6 +55,22 @@ function User_Sync() {
     localStorage.setItem("userSync", JSON.stringify(searchParam));
     setContentLoader(false);
   }, []);
+
+  useEffect(() => {
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams("userSync", searchParams, searchFilterOptions);
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams(searchParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem("userSync", JSON.stringify(searchParam));
+    setContentLoader(false);
+  }, [searchParams]);
 
   const fetchUserSyncInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy, gotoPage }) => {

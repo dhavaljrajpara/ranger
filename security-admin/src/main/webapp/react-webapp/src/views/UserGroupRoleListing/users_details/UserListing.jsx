@@ -42,7 +42,6 @@ import StructuredFilter from "../../../components/structured-filter/react-typeah
 function Users() {
   const navigate = useNavigate();
   const { state } = useLocation();
-
   const [loader, setLoader] = useState(true);
   const [userListingData, setUserData] = useState([]);
   const fetchIdRef = useRef(0);
@@ -112,7 +111,11 @@ function Users() {
 
     // Updating the states for search params, search filter and default search filter
     setSearchParams({ ...currentParams, ...searchParam });
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     setPageLoader(false);
 
@@ -125,7 +128,7 @@ function Users() {
       defaultSearchFilterParam
     );
     localStorage.setItem("newDataAdded", state && state.showLastPage);
-  }, []);
+  }, [searchParams]);
 
   const fetchUserInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
@@ -133,7 +136,6 @@ function Users() {
       let userData = [],
         userResp = [];
       let totalCount = 0;
-      let lastRowData;
       let page =
         state && state.showLastPage
           ? state.addPageData.totalPage - 1

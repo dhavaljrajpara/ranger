@@ -67,6 +67,7 @@ function Access() {
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices();
+
     if (!isKMSRole) {
       fetchZones();
     }
@@ -91,6 +92,23 @@ function Access() {
     localStorage.setItem("bigData", JSON.stringify(searchParam));
     setContentLoader(false);
   }, []);
+
+  useEffect(() => {
+    let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
+    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+      fetchSearchFilterParams("bigData", searchParams, searchFilterOptions);
+
+    // Updating the states for search params, search filter, default search filter and localStorage
+    setSearchParams(searchParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+    localStorage.setItem("bigData", JSON.stringify(searchParam));
+    setContentLoader(false);
+  }, [searchParams]);
 
   const fetchAccessLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy, gotoPage }) => {

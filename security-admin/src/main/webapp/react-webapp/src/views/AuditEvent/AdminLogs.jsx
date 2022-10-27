@@ -59,7 +59,11 @@ function Admin() {
 
     // Updating the states for search params, search filter, default search filter and localStorage
     setSearchParams(searchParam);
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     localStorage.setItem("admin", JSON.stringify(searchParam));
     setContentLoader(false);
@@ -207,7 +211,7 @@ function Admin() {
           let classtype = rawValue.row.original.objectClassType;
           var audittype = enumValueToLabel(ClassTypes, classtype);
           return (
-            <div class="text-center">{Object.values(audittype.label)}</div>
+            <div className="text-center">{Object.values(audittype.label)}</div>
           );
         },
         disableSortBy: true

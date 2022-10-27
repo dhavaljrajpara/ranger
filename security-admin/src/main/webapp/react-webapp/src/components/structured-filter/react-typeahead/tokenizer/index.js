@@ -23,6 +23,15 @@ var TypeaheadTokenizer = createReactClass({
     onTokenAdd: PropTypes.func
   },
 
+  componentWillReceiveProps(nextProps) {
+    if (
+      JSON.stringify(this.props.defaultSelected) !==
+      JSON.stringify(nextProps.defaultSelected)
+    ) {
+      this.setState({ selected: nextProps.defaultSelected });
+    }
+  },
+
   getInitialState: function () {
     return {
       selected: this.props.defaultSelected,
@@ -231,7 +240,7 @@ var TypeaheadTokenizer = createReactClass({
           let option = find(this.props.options[i].options(), {
             value: selectedValue
           });
-          return option !== undefined ? option.label : "";
+          return option !== undefined ? option.label : selectedValue;
         }
       }
     }

@@ -105,7 +105,11 @@ function Groups() {
 
     // Updating the states for search params, search filter and default search filter
     setSearchParams({ ...currentParams, ...searchParam });
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     setPageLoader(false);
 
@@ -118,7 +122,7 @@ function Groups() {
       defaultSearchFilterParam
     );
     localStorage.setItem("newDataAdded", state && state.showLastPage);
-  }, []);
+  }, [searchParams]);
 
   const fetchGroupInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {

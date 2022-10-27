@@ -58,7 +58,11 @@ function Permissions() {
 
     // Updating the states for search params, search filter and default search filter
     setSearchParams({ ...currentParams, ...searchParam });
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     setPageLoader(false);
 
@@ -70,7 +74,7 @@ function Permissions() {
       "PRINT Final defaultSearchFilterParam to tokenzier : ",
       defaultSearchFilterParam
     );
-  }, []);
+  }, [searchParams]);
 
   const fetchPermissions = useCallback(
     async ({ pageSize, pageIndex }) => {

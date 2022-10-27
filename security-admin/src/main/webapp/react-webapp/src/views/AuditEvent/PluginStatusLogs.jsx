@@ -38,7 +38,9 @@ function Plugin_Status() {
 
   useEffect(() => {
     fetchServiceDefs(), fetchServices();
+  }, []);
 
+  useEffect(() => {
     let { searchFilterParam, defaultSearchFilterParam, searchParam } =
       fetchSearchFilterParams(
         "pluginStatus",
@@ -48,11 +50,15 @@ function Plugin_Status() {
 
     // Updating the states for search params, search filter, default search filter and localStorage
     setSearchParams(searchParam);
-    setSearchFilterParams(searchFilterParam);
+    if (
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
     setDefaultSearchFilterParams(defaultSearchFilterParam);
     localStorage.setItem("pluginStatus", JSON.stringify(searchParam));
     setContentLoader(false);
-  }, []);
+  }, [searchParams]);
 
   const fetchServiceDefs = async () => {
     let serviceDefsResp = [];
