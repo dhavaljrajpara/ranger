@@ -17,7 +17,7 @@ import {
 } from "../../components/CommonComponents";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import { fetchApi } from "Utils/fetchAPI";
-import { find, map, sortBy, toUpper } from "lodash";
+import { find, isEmpty, map, sortBy, toUpper } from "lodash";
 
 function Plugin_Status() {
   const [pluginStatusListingData, setPluginStatusLogs] = useState([]);
@@ -37,8 +37,26 @@ function Plugin_Status() {
   const [resetPage, setResetpage] = useState({ page: null });
 
   useEffect(() => {
-    fetchServiceDefs(), fetchServices();
-  }, []);
+    if (isEmpty(serviceDefs)) {
+      fetchServiceDefs(), fetchServices();
+    }
+
+    if (!isEmpty(serviceDefs)) {
+      let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+        fetchSearchFilterParams(
+          "pluginStatus",
+          searchParams,
+          searchFilterOptions
+        );
+
+      // Updating the states for search params, search filter, default search filter and localStorage
+      setSearchParams(searchParam);
+      setSearchFilterParams(searchFilterParam);
+      setDefaultSearchFilterParams(defaultSearchFilterParam);
+      localStorage.setItem("pluginStatus", JSON.stringify(searchParam));
+      setContentLoader(false);
+    }
+  }, [serviceDefs]);
 
   useEffect(() => {
     let { searchFilterParam, defaultSearchFilterParam, searchParam } =
@@ -61,6 +79,7 @@ function Plugin_Status() {
   }, [searchParams]);
 
   const fetchServiceDefs = async () => {
+    setLoader(true);
     let serviceDefsResp = [];
     try {
       serviceDefsResp = await fetchApi({
@@ -73,7 +92,7 @@ function Plugin_Status() {
     }
 
     setServiceDefs(serviceDefsResp.data.serviceDefs);
-    setContentLoader(false);
+    setLoader(false);
   };
 
   const fetchServices = async () => {
@@ -94,32 +113,34 @@ function Plugin_Status() {
   const fetchPluginStatusInfo = useCallback(
     async ({ pageSize, pageIndex, gotoPage }) => {
       setLoader(true);
-      let logsResp = [];
-      let logs = [];
-      let totalCount = 0;
-      const fetchId = ++fetchIdRef.current;
-      let params = { ...searchFilterParams };
-      if (fetchId === fetchIdRef.current) {
-        params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
-        try {
-          logsResp = await fetchApi({
-            url: "plugins/plugins/info",
-            params: params
-          });
-          logs = logsResp.data.pluginInfoList;
-          totalCount = logsResp.data.totalCount;
-        } catch (error) {
-          serverError(error);
-          console.error(
-            `Error occurred while fetching Plugin Status logs! ${error}`
-          );
+      if (!isEmpty(serviceDefs)) {
+        let logsResp = [];
+        let logs = [];
+        let totalCount = 0;
+        const fetchId = ++fetchIdRef.current;
+        let params = { ...searchFilterParams };
+        if (fetchId === fetchIdRef.current) {
+          params["pageSize"] = pageSize;
+          params["startIndex"] = pageIndex * pageSize;
+          try {
+            logsResp = await fetchApi({
+              url: "plugins/plugins/info",
+              params: params
+            });
+            logs = logsResp.data.pluginInfoList;
+            totalCount = logsResp.data.totalCount;
+          } catch (error) {
+            serverError(error);
+            console.error(
+              `Error occurred while fetching Plugin Status logs! ${error}`
+            );
+          }
+          setPluginStatusLogs(logs);
+          setEntries(logsResp.data);
+          setPageCount(Math.ceil(totalCount / pageSize));
+          setResetpage({ page: gotoPage });
+          setLoader(false);
         }
-        setPluginStatusLogs(logs);
-        setEntries(logsResp.data);
-        setPageCount(Math.ceil(totalCount / pageSize));
-        setResetpage({ page: gotoPage });
-        setLoader(false);
       }
     },
     [updateTable, searchFilterParams]

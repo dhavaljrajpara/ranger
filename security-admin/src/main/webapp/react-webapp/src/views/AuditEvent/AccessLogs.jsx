@@ -66,35 +66,40 @@ function Access() {
   const [resetPage, setResetpage] = useState({ page: 0 });
 
   useEffect(() => {
-    fetchServiceDefs(), fetchServices();
+    if (isEmpty(serviceDefs)) {
+      fetchServiceDefs(), fetchServices();
 
-    if (!isKMSRole) {
-      fetchZones();
+      if (!isKMSRole) {
+        fetchZones();
+      }
     }
 
-    let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
-    let { searchFilterParam, defaultSearchFilterParam, searchParam } =
-      fetchSearchFilterParams("bigData", searchParams, searchFilterOptions);
+    if (!isEmpty(serviceDefs)) {
+      let currentDate = moment
+        .tz(moment(), "Asia/Kolkata")
+        .format("MM/DD/YYYY");
+      let { searchFilterParam, defaultSearchFilterParam, searchParam } =
+        fetchSearchFilterParams("bigData", searchParams, searchFilterOptions);
 
-    if (!has(searchFilterParam, "startDate")) {
-      searchParam["startDate"] = currentDate;
-      searchFilterParam["startDate"] = currentDate;
-      defaultSearchFilterParam.push({
-        category: "startDate",
-        value: currentDate
-      });
+      if (!has(searchFilterParam, "startDate")) {
+        searchParam["startDate"] = currentDate;
+        searchFilterParam["startDate"] = currentDate;
+        defaultSearchFilterParam.push({
+          category: "startDate",
+          value: currentDate
+        });
+      }
+
+      // Updating the states for search params, search filter, default search filter and localStorage
+      setSearchParams(searchParam);
+      setSearchFilterParams(searchFilterParam);
+      setDefaultSearchFilterParams(defaultSearchFilterParam);
+      localStorage.setItem("bigData", JSON.stringify(searchParam));
+      setContentLoader(false);
     }
-
-    // Updating the states for search params, search filter, default search filter and localStorage
-    setSearchParams(searchParam);
-    setSearchFilterParams(searchFilterParam);
-    setDefaultSearchFilterParams(defaultSearchFilterParam);
-    localStorage.setItem("bigData", JSON.stringify(searchParam));
-    setContentLoader(false);
-  }, []);
+  }, [serviceDefs]);
 
   useEffect(() => {
-    let currentDate = moment.tz(moment(), "Asia/Kolkata").format("MM/DD/YYYY");
     let { searchFilterParam, defaultSearchFilterParam, searchParam } =
       fetchSearchFilterParams("bigData", searchParams, searchFilterOptions);
 
@@ -113,35 +118,39 @@ function Access() {
   const fetchAccessLogsInfo = useCallback(
     async ({ pageSize, pageIndex, sortBy, gotoPage }) => {
       setLoader(true);
-      let logsResp = [];
-      let logs = [];
-      let totalCount = 0;
-      const fetchId = ++fetchIdRef.current;
-      let params = { ...searchFilterParams };
-      if (fetchId === fetchIdRef.current) {
-        params["pageSize"] = pageSize;
-        params["startIndex"] = pageIndex * pageSize;
-        params["excludeServiceUser"] = checked ? true : false;
-        if (sortBy.length > 0) {
-          params["sortBy"] = getTableSortBy(sortBy);
-          params["sortType"] = getTableSortType(sortBy);
+      if (!isEmpty(serviceDefs)) {
+        let logsResp = [];
+        let logs = [];
+        let totalCount = 0;
+        const fetchId = ++fetchIdRef.current;
+        let params = { ...searchFilterParams };
+        if (fetchId === fetchIdRef.current) {
+          params["pageSize"] = pageSize;
+          params["startIndex"] = pageIndex * pageSize;
+          params["excludeServiceUser"] = checked ? true : false;
+          if (sortBy.length > 0) {
+            params["sortBy"] = getTableSortBy(sortBy);
+            params["sortType"] = getTableSortType(sortBy);
+          }
+          try {
+            logsResp = await fetchApi({
+              url: "assets/accessAudit",
+              params: params
+            });
+            logs = logsResp.data.vXAccessAudits;
+            totalCount = logsResp.data.totalCount;
+          } catch (error) {
+            serverError(error);
+            console.error(
+              `Error occurred while fetching Access logs! ${error}`
+            );
+          }
+          setAccessLogs(logs);
+          setEntries(logsResp.data);
+          setPageCount(Math.ceil(totalCount / pageSize));
+          setResetpage({ page: gotoPage });
+          setLoader(false);
         }
-        try {
-          logsResp = await fetchApi({
-            url: "assets/accessAudit",
-            params: params
-          });
-          logs = logsResp.data.vXAccessAudits;
-          totalCount = logsResp.data.totalCount;
-        } catch (error) {
-          serverError(error);
-          console.error(`Error occurred while fetching Access logs! ${error}`);
-        }
-        setAccessLogs(logs);
-        setEntries(logsResp.data);
-        setPageCount(Math.ceil(totalCount / pageSize));
-        setResetpage({ page: gotoPage });
-        setLoader(false);
       }
     },
     [updateTable, searchFilterParams]
