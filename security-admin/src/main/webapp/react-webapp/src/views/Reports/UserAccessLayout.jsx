@@ -54,15 +54,23 @@ function UserAccessLayout(props) {
   };
 
   useEffect(() => {
-    fetchServiceDefs(), fetchServices(), getSearchParams();
+    fetchInitialData(), getSearchParams();
+
     if (!isKMSRole) {
       fetchZones();
     }
+
     setContentLoader(false);
   }, []);
 
-  const fetchServiceDefs = async () => {
+  const fetchInitialData = async () => {
+    await fetchData();
+  };
+
+  const fetchData = async () => {
     let serviceDefsResp;
+    let servicesResp;
+    let resourceServices;
 
     try {
       serviceDefsResp = await fetchApi({
@@ -71,6 +79,20 @@ function UserAccessLayout(props) {
     } catch (error) {
       console.error(
         `Error occurred while fetching Service Definitions ! ${error}`
+      );
+    }
+
+    try {
+      servicesResp = await fetchApi({
+        url: "plugins/services"
+      });
+
+      resourceServices = filter(servicesResp.data.services, (service) =>
+        isKMSRole ? service.type == "kms" : service.type != "kms"
+      );
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
 
@@ -92,9 +114,6 @@ function UserAccessLayout(props) {
       });
     }
 
-    setServiceDefs(resourceServiceDefs);
-    setFilterServiceDefs(filterResourceServiceDefs);
-
     let serviceDefsList = map(
       serviceDefsResp.data.serviceDefs,
       function (serviceDef) {
@@ -102,28 +121,10 @@ function UserAccessLayout(props) {
       }
     );
 
-    setServiceDefOpts(serviceDefsList);
-  };
-
-  const fetchServices = async () => {
-    let servicesResp;
-    let resourceServices;
-
-    try {
-      servicesResp = await fetchApi({
-        url: "plugins/services"
-      });
-
-      resourceServices = filter(servicesResp.data.services, (service) =>
-        isKMSRole ? service.type == "kms" : service.type != "kms"
-      );
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Services or CSRF headers! ${error}`
-      );
-    }
-
+    setServiceDefs(resourceServiceDefs);
     setServices(resourceServices);
+    setFilterServiceDefs(filterResourceServiceDefs);
+    setServiceDefOpts(serviceDefsList);
   };
 
   const fetchZones = async () => {

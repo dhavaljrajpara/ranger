@@ -710,7 +710,7 @@ function Access() {
   const getServices = () => {
     let servicesName = [];
     servicesName = filter(services, function (service) {
-      return service.type !== "kms" && service.type !== "tag";
+      return service.type !== "tag";
     });
 
     return servicesName.map((service) => ({
