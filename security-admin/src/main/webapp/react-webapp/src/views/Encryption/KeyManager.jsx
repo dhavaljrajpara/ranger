@@ -5,16 +5,16 @@ import {
   useLocation,
   useSearchParams
 } from "react-router-dom";
-import Select from "react-select";
 import { toast } from "react-toastify";
 import XATableLayout from "Components/XATableLayout";
 import { Row, Col, Button, Modal } from "react-bootstrap";
 import { fetchApi } from "Utils/fetchAPI";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
-import { find, map, sortBy } from "lodash";
+import { find, map, sortBy, isUndefined, isEmpty } from "lodash";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
+import AsyncSelect from "react-select/async";
 
 function init(props) {
   return {
@@ -49,18 +49,17 @@ function reducer(state, action) {
         ...state,
         loader: action.loader
       };
-
     case "SET_DATA":
       return {
         ...state,
-        loader: false,
-        services: action.servicesdata,
-        servicesData: action.services
+
+        services: action.services,
+        servicesData: action.servicesdata
       };
     case "SET_SEL_SERVICE":
       return {
         ...state,
-        loader: false,
+
         selcServicesData: action.selcservicesData,
         keydata: action.keydatalist,
         pagecount: action.pagecount
@@ -74,33 +73,28 @@ function reducer(state, action) {
     case "SET_DELETE_MODAL":
       return {
         ...state,
-        loader: false,
         deleteshowmodal: action.deleteshowmodal,
         filterdata: action.filterdata
       };
     case "SET_DELETE_MODAL_CLOSE":
       return {
         ...state,
-        loader: false,
         deleteshowmodal: action.deleteshowmodal
       };
     case "SET_EDIT_MODAL":
       return {
         ...state,
-        loader: false,
         editshowmodal: action.editshowmodal,
         filterdata: action.filterdata
       };
     case "SET_EDIT_MODAL_CLOSE":
       return {
         ...state,
-        loader: false,
         editshowmodal: action.editshowmodal
       };
     case "SET_UPDATE_TABLE":
       return {
         ...state,
-        loader: false,
         updatetable: action.updatetable
       };
 
@@ -133,11 +127,14 @@ const KeyManager = (props) => {
   const [keyState, dispatch] = useReducer(reducer, stateAndParams, init);
   const [searchFilterParams, setSearchFilterParams] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [defaultSearchFilterParams, setDefaultSearchFilterParams] = useState(
+    []
+  );
+
   const [totalCount, setTotalCount] = useState(0);
 
   const {
     loader,
-    servicesData,
     keydata,
     filterdata,
     onchangeval,
@@ -150,28 +147,74 @@ const KeyManager = (props) => {
   } = keyState;
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    let searchFilterParam = {};
+    let searchParam = {};
+    let defaultSearchFilterParam = [];
 
-  const fetchServices = async () => {
+    const currentParams = Object.fromEntries([...searchParams]);
+
+    for (const param in currentParams) {
+      let searchFilterObj = find(searchFilterOptions, {
+        urlLabel: param
+      });
+
+      if (!isUndefined(searchFilterObj)) {
+        let category = searchFilterObj.category;
+        let value = currentParams[param];
+
+        if (searchFilterObj.type == "textoptions") {
+          let textOptionObj = find(searchFilterObj.options(), {
+            label: value
+          });
+          value = textOptionObj !== undefined ? textOptionObj.value : value;
+        }
+
+        searchFilterParam[category] = value;
+        defaultSearchFilterParam.push({
+          category: category,
+          value: value
+        });
+      }
+    }
+
+    // Updating the states for search params, search filter and default search filter
+    setSearchParams({ ...currentParams, ...searchParam });
+    if (
+      (!isEmpty(searchFilterParams) || !isEmpty(searchFilterParam)) &&
+      JSON.stringify(searchFilterParams) !== JSON.stringify(searchFilterParam)
+    ) {
+      setSearchFilterParams(searchFilterParam);
+    }
+    setDefaultSearchFilterParams(defaultSearchFilterParam);
+  }, [searchParams]);
+
+  const fetchServices = async (inputValue) => {
     let servicesdata = null;
+    let allParams = {};
+    if (inputValue) {
+      allParams["name"] = inputValue || "";
+    }
+    allParams["serviceType"] = "kms";
+    let serviceOptions = [];
     try {
       const servicesResp = await fetchApi({
-        url: "plugins/services?name=&serviceType=kms"
+        url: "plugins/services",
+        params: allParams
       });
       servicesdata = servicesResp.data.services;
     } catch (error) {
       console.error(`Error occurred while fetching Services! ${error}`);
     }
-
+    serviceOptions = servicesdata.map((obj) => ({
+      value: obj.name,
+      label: obj.name
+    }));
     dispatch({
       type: "SET_DATA",
       servicesdata: servicesdata,
-      services: servicesdata.map((obj) => ({
-        value: obj.name,
-        label: obj.name
-      }))
+      services: serviceOptions
     });
+    return serviceOptions;
   };
 
   const selconChange = (e) => {
@@ -239,9 +282,9 @@ const KeyManager = (props) => {
     } catch (error) {
       let errorMsg = "";
       if (error.response.data.msgDesc) {
-        errorMsg += toast.error(error.response.data.msgDesc + "\n");
+        errorMsg = toast.error("Error! " + error.response.data.msgDesc + "\n");
       } else {
-        errorMsg += `Error occurred during editing Key` + "\n";
+        errorMsg = `Error occurred during editing Key` + "\n";
       }
     }
   }, [filterdata]);
@@ -267,9 +310,9 @@ const KeyManager = (props) => {
     } catch (error) {
       let errorMsg = "";
       if (error.response.data.msgDesc) {
-        errorMsg += toast.error(error.response.data.msgDesc + "\n");
+        errorMsg = toast.error("Error! " + error.response.data.msgDesc + "\n");
       } else {
-        errorMsg += `Error occurred during deleting Key` + "\n";
+        errorMsg = `Error occurred during deleting Key` + "\n";
       }
     }
   }, [filterdata]);
@@ -290,7 +333,6 @@ const KeyManager = (props) => {
       let selservicesResp = [];
       let selcservicesdata = null;
       let totalCount = 0;
-      let totalPageCount = 0;
       let page = pageIndex;
       let params = { ...searchFilterParams };
       params["page"] = page;
@@ -305,7 +347,6 @@ const KeyManager = (props) => {
         });
         selcservicesdata = selservicesResp.data.vXKeys;
         totalCount = selservicesResp.data.totalCount;
-        totalPageCount = Math.ceil(totalCount / pageSize);
       } catch (error) {
         console.error(`Error occurred while fetching Services! ${error}`);
       }
@@ -316,10 +357,8 @@ const KeyManager = (props) => {
       dispatch({
         type: "SET_SEL_SERVICE",
         keydatalist: selcservicesdata,
-        pagecount: Math.ceil(totalCount / pageSize),
-        loader: false
+        pagecount: Math.ceil(totalCount / pageSize)
       });
-
       dispatch({
         type: "SET_CURRENT_PAGE_INDEX",
         currentPageIndex: page
@@ -332,25 +371,21 @@ const KeyManager = (props) => {
         type: "SET_RESET_PAGE",
         resetPage: gotoPage
       });
+      dispatch({
+        type: "SET_LOADER",
+        loader: false
+      });
       setTotalCount(totalCount);
     },
     [onchangeval, updatetable, searchFilterParams]
   );
 
   const addKey = () => {
-    navigate(
-      params.kmsManagePage == "edit"
-        ? `/kms/keys/${params.kmsServiceName}/create`
-        : `/kms/keys/${onchangeval.label}/create`,
-      {
-        state: {
-          detail:
-            params.kmsManagePage == "edit"
-              ? params.kmsServiceName
-              : onchangeval.label
-        }
+    navigate(`/kms/keys/${onchangeval.label}/create`, {
+      state: {
+        detail: onchangeval.label
       }
-    );
+    });
   };
 
   const columns = React.useMemo(
@@ -511,16 +546,17 @@ const KeyManager = (props) => {
           <Col sm={12}>
             <div className="formHeader pb-3 mb-3">
               Select Service:
-              <Select
+              <AsyncSelect
                 value={onchangeval}
                 className="w-25"
                 isClearable
-                onChange={selconChange}
                 components={{
                   IndicatorSeparator: () => null
                 }}
-                options={servicesData}
+                onChange={selconChange}
+                loadOptions={fetchServices}
                 placeholder="Please select KMS service"
+                defaultOptions
               />
             </div>
           </Col>
@@ -534,21 +570,13 @@ const KeyManager = (props) => {
               options={sortBy(searchFilterOptions, ["label"])}
               onTokenAdd={updateSearchFilter}
               onTokenRemove={updateSearchFilter}
-              defaultSelected={[]}
+              defaultSelected={defaultSearchFilterParams}
             />
           </Col>
           <Col sm={2} className="text-right">
             <Button
-              className={
-                onchangeval !== undefined || params.kmsManagePage == "edit"
-                  ? ""
-                  : "button-disabled"
-              }
-              disabled={
-                onchangeval != undefined || params.kmsManagePage == "edit"
-                  ? false
-                  : true
-              }
+              className={onchangeval !== null ? "" : "button-disabled"}
+              disabled={onchangeval != null ? false : true}
               onClick={addKey}
               data-id="addNewKey"
               data-cy="addNewKey"
