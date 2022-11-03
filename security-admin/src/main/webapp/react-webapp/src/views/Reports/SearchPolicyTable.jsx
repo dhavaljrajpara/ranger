@@ -62,7 +62,7 @@ function SearchPolicyTable(props) {
         setLoader(false);
       }
     },
-    [props.searchParamsUrl]
+    [props.searchParams]
   );
 
   const getServiceId = (serviceName) => {

@@ -22,7 +22,9 @@ import {
   join,
   map,
   sortBy,
-  split
+  split,
+  has,
+  uniq
 } from "lodash";
 import { toast } from "react-toastify";
 import { fetchApi } from "Utils/fetchAPI";
@@ -54,7 +56,7 @@ function UserAccessLayout(props) {
   };
 
   useEffect(() => {
-    fetchInitialData(), getSearchParams();
+    fetchInitialData();
 
     if (!isKMSRole) {
       fetchZones();
@@ -62,6 +64,10 @@ function UserAccessLayout(props) {
 
     setContentLoader(false);
   }, []);
+
+  useEffect(() => {
+    getSearchParams();
+  }, [searchParams]);
 
   const fetchInitialData = async () => {
     await fetchData();
@@ -323,6 +329,11 @@ function UserAccessLayout(props) {
 
   const getSearchParams = () => {
     const searchFields = {};
+    let resourceServiceDefs = filter(serviceDefs, (serviceDef) =>
+      isKMSRole ? serviceDef.name == "kms" : serviceDef.name != "kms"
+    );
+
+    let filterResourceServiceDefs = [...resourceServiceDefs];
 
     if (searchParams.get("policyNamePartial")) {
       searchFields.policyNamePartial = searchParams.get("policyNamePartial");
@@ -334,6 +345,14 @@ function UserAccessLayout(props) {
 
     if (searchParams.get("serviceType")) {
       searchFields.serviceType = searchParams.get("serviceType");
+      filterResourceServiceDefs = [];
+      let serviceTypes = split(searchParams.get("serviceType"), ",");
+      uniq(serviceTypes).map((serviceType) => {
+        let findObj = find(resourceServiceDefs, { name: serviceType });
+        if (!isUndefined(findObj)) {
+          filterResourceServiceDefs.push(findObj);
+        }
+      });
     }
 
     if (searchParams.get("polResource")) {
@@ -362,7 +381,30 @@ function UserAccessLayout(props) {
       searchFields.role = searchParams.get("role");
     }
 
-    setSearchParamsObj(searchFields);
+    if (JSON.stringify(searchParamsObj) !== JSON.stringify(searchFields)) {
+      if (has(searchFields, "serviceType")) {
+        searchFields.serviceType = uniq(
+          searchFields.serviceType.split(",")
+        ).join(",");
+      }
+      setSearchParamsObj(searchFields);
+      setFilterServiceDefs(filterResourceServiceDefs);
+      if (!has(Object.fromEntries(searchParams), "policyType")) {
+        searchParams.set("policyType", "0");
+        searchFields.policyType = "0";
+        navigate(`${location.pathname}?${searchParams}`, {
+          replace: true
+        });
+        setSearchParamsObj(searchFields);
+      }
+      if (has(searchFields, "serviceType")) {
+        let filterServiceType = searchFields.serviceType.split(",");
+        searchParams.set("serviceType", uniq(filterServiceType).join(","));
+        navigate(`${location.pathname}?${searchParams}`, {
+          replace: true
+        });
+      }
+    }
   };
 
   const exportPolicy = async (exportType) => {
@@ -740,24 +782,27 @@ function SearchByAsyncSelect(props) {
   };
 
   const fetchOpts = async (inputValue) => {
-    let apiUrl = "xusers/lookup/groups";
+    let apiUrl = "";
     let params = {};
     let optsList = [];
+    let serverResp = [];
 
     if (inputValue) {
       params["name"] = inputValue || "";
     }
-
-    if (searchByOptName.value == "searchByUser") {
+    if (searchByOptName.value == "searchByGroup") {
+      apiUrl = "xusers/lookup/groups";
+    } else if (searchByOptName.value == "searchByUser") {
       apiUrl = "xusers/lookup/users";
     } else if (searchByOptName.value == "searchByRole") {
       apiUrl = "roles/roles";
     }
-
-    let serverResp = await fetchApi({
-      url: apiUrl,
-      params: params
-    });
+    if (!isEmpty(apiUrl)) {
+      serverResp = await fetchApi({
+        url: apiUrl,
+        params: params
+      });
+    }
 
     if (searchByOptName.value == "searchByUser") {
       optsList = serverResp.data.vXStrings.map((obj) => ({

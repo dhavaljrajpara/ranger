@@ -316,7 +316,7 @@ class UserProfile extends Component {
                               <option value="ROLE_ADMIN_AUDITOR">
                                 Auditor
                               </option>
-                              <option value="ROLE_ADMIN_AUDITOR">
+                              <option value="ROLE_KEY_ADMIN_AUDITOR">
                                 KeyAuditor
                               </option>
                             </Field>
