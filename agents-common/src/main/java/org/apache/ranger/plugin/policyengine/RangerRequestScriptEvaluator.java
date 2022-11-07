@@ -117,25 +117,37 @@ public final class RangerRequestScriptEvaluator {
 
 
 	public static boolean needsJsonCtxEnabled(String script) {
-		Matcher matcher = JSON_VAR_NAMES_PATTERN.matcher(script);
+		boolean ret = false;
 
-		boolean ret = matcher.find();
+		if (script != null) {
+			Matcher matcher = JSON_VAR_NAMES_PATTERN.matcher(script);
+
+			ret = matcher.find();
+		}
 
 		return ret;
 	}
 
 	public static boolean hasUserAttributeReference(String script) {
-		Matcher matcher = USER_ATTRIBUTES_PATTERN.matcher(script);
+		boolean ret = false;
 
-		boolean ret = matcher.find();
+		if (script != null) {
+			Matcher matcher = USER_ATTRIBUTES_PATTERN.matcher(script);
+
+			ret = matcher.find();
+		}
 
 		return ret;
 	}
 
 	public static boolean hasGroupAttributeReference(String script) {
-		Matcher matcher = GROUP_ATTRIBUTES_PATTERN.matcher(script);
+		boolean ret = false;
 
-		boolean ret = matcher.find();
+		if (script != null) {
+			Matcher matcher = GROUP_ATTRIBUTES_PATTERN.matcher(script);
+
+			ret = matcher.find();
+		}
 
 		return ret;
 	}
@@ -191,10 +203,12 @@ public final class RangerRequestScriptEvaluator {
 	}
 
 	private Object evaluateScript(ScriptEngine scriptEngine, String script, boolean enableJsonCtx) {
-		Object              ret        = null;
-		Bindings            bindings   = scriptEngine.createBindings();
-		RangerTagForEval    currentTag = this.getCurrentTag();
-		Map<String, String> tagAttribs = currentTag != null ? currentTag.getAttributes() : Collections.emptyMap();
+		Object              ret           = null;
+		Bindings            bindings      = scriptEngine.createBindings();
+		RangerTagForEval    currentTag    = this.getCurrentTag();
+		Map<String, String> tagAttribs    = currentTag != null ? currentTag.getAttributes() : Collections.emptyMap();
+		boolean             hasIncludes   = StringUtils.contains(script, ".includes(");
+		boolean             hasIntersects = StringUtils.contains(script, ".intersects(");
 
 		bindings.put(SCRIPT_VAR_ctx, this);
 		bindings.put(SCRIPT_VAR_tag, currentTag);
@@ -204,6 +218,14 @@ public final class RangerRequestScriptEvaluator {
 			bindings.put(SCRIPT_VAR__CTX_JSON, this.toJson());
 
 			script = SCRIPT_PREEXEC + script;
+		}
+
+		if (hasIncludes) {
+			script = SCRIPT_POLYFILL_INCLUDES + script;
+		}
+
+		if (hasIntersects) {
+			script = SCRIPT_POLYFILL_INTERSECTS + script;
 		}
 
 		if (LOG.isDebugEnabled()) {
@@ -226,6 +248,8 @@ public final class RangerRequestScriptEvaluator {
 		} catch (ScriptException exception) {
 			LOG.error("RangerRequestScriptEvaluator.evaluateScript(): failed to evaluate script," +
 					" exception=" + exception);
+		} catch (Throwable t) {
+			LOG.error("RangerRequestScriptEvaluator.evaluateScript(): failed to evaluate script", t);
 		} finally {
 			RangerPerfTracer.log(perf);
 		}
