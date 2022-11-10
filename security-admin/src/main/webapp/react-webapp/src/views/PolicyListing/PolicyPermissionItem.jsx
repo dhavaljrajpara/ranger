@@ -1,15 +1,13 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Table, Button, Badge, Form } from "react-bootstrap";
 import { FieldArray } from "react-final-form-arrays";
 import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
-import { find, groupBy, isEmpty, isObject } from "lodash";
+import { find, groupBy, isEmpty, isArray } from "lodash";
 
 import Editable from "Components/Editable";
 import { RangerPolicyType } from "Utils/XAEnums";
-import { fetchApi } from "Utils/fetchAPI";
-import { toast } from "react-toastify";
 import TagBasePermissionItem from "./TagBasePermissionItem";
 
 const noneOptions = {
@@ -125,16 +123,53 @@ export default function PolicyPermissionItem(props) {
       let users = (fieldVals[index]?.users || []).length > 0;
       let grps = (fieldVals[index]?.groups || []).length > 0;
       let roles = (fieldVals[index]?.roles || []).length > 0;
-      if (fieldVals[index]?.accesses && isObject(fieldVals[index]?.accesses)) {
-        accTypes = (fieldVals[index]?.accesses || {}) !== {};
+      let delegateAdmin = fieldVals[index]?.delegateAdmin;
+      if (fieldVals[index]?.accesses && !isArray(fieldVals[index]?.accesses)) {
+        if (serviceCompDetails.name == "tag") {
+          accTypes =
+            isEmpty(fieldVals[index]?.accesses?.tableList) !== isEmpty({});
+        } else {
+          accTypes =
+            JSON.stringify(fieldVals[index]?.accesses || {}) !==
+            JSON.stringify({});
+        }
       } else {
         accTypes = (fieldVals[index]?.accesses || []).length > 0;
       }
       if ((users || grps || roles) && !accTypes) {
-        error = "Please select permision item for selected users/groups/roles";
+        if (delegateAdmin !== undefined && delegateAdmin === false) {
+          error =
+            "Please select permision item for selected users/groups/roles";
+        } else if (delegateAdmin == undefined) {
+          error =
+            "Please select permision item for selected users/groups/roles";
+        }
       }
       if (accTypes && !users && !grps && !roles) {
-        error = "Please select users/groups/roles for selected permission item";
+        if (delegateAdmin !== undefined && delegateAdmin === false) {
+          error =
+            "Please select users/groups/roles for selected permission item";
+        } else if (delegateAdmin == undefined) {
+          error =
+            "Please select users/groups/roles for selected permission item";
+        }
+      }
+      return error;
+    }
+  };
+  const requiredForDeleGateAdmin = (fieldVals, index) => {
+    if (
+      !_.isEmpty(fieldVals[index]) &&
+      _.has(fieldVals[index], "delegateAdmin")
+    ) {
+      let error;
+      let users = (fieldVals[index]?.users || []).length > 0;
+      let grps = (fieldVals[index]?.groups || []).length > 0;
+      let roles = (fieldVals[index]?.roles || []).length > 0;
+      let delegateAdmin = fieldVals[index]?.delegateAdmin;
+
+      if (delegateAdmin && !users && !grps && !roles) {
+        error = "Please select user/group/role for the selected permission(s)";
       }
       return error;
     }
@@ -167,210 +202,145 @@ export default function PolicyPermissionItem(props) {
   return (
     <div>
       <Col sm="12">
-        <Table bordered className="policy-permission-table">
-          <thead className="thead-light">
-            <tr>
-              {tableHeader()}
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <FieldArray name={attrName}>
-              {({ fields }) =>
-                fields.map((name, index) => (
-                  <tr key={name}>
-                    {permList.map((colName) => {
-                      if (colName == "Select Roles") {
-                        return (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.roles`}
-                              render={({ input, meta }) => (
-                                <div>
-                                  <AsyncSelect
-                                    {...input}
-                                    loadOptions={fetchRolesData}
-                                    defaultOptions
-                                    styles={customStyles}
-                                    cacheOptions
-                                    isMulti
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (colName == "Select Groups") {
-                        return (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.groups`}
-                              render={({ input, meta }) => (
-                                <div>
-                                  <AsyncSelect
-                                    {...input}
-                                    loadOptions={fetchGroupsData}
-                                    styles={customStyles}
-                                    defaultOptions
-                                    cacheOptions
-                                    isMulti
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (colName == "Select Users") {
-                        return (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.users`}
-                              render={({ input, meta }) => (
-                                <div>
-                                  <AsyncSelect
-                                    {...input}
-                                    loadOptions={fetchUsersData}
-                                    styles={customStyles}
-                                    defaultOptions
-                                    cacheOptions
-                                    isMulti
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (colName == "Policy Conditions") {
-                        return serviceCompDetails?.policyConditions?.length ==
-                          1 ? (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.conditions`}
-                              render={({ input, meta }) => (
-                                <div className="table-editable">
-                                  <Editable
-                                    {...input}
-                                    placement="auto"
-                                    type="select"
-                                    conditionDefVal={
-                                      serviceCompDetails.policyConditions[0]
-                                    }
-                                    servicedefName={serviceCompDetails.name}
-                                    selectProps={{ isMulti: true }}
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        ) : (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.conditions`}
-                              render={({ input, meta }) => (
-                                <div className="table-editable">
-                                  <Editable
-                                    {...input}
-                                    placement="auto"
-                                    type="custom"
-                                    conditionDefVal={
-                                      serviceCompDetails.policyConditions
-                                    }
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (colName == "Permissions") {
-                        if (serviceCompDetails.name == "tag") {
+        <div className="table-responsive">
+          <Table bordered className="policy-permission-table">
+            <thead className="thead-light">
+              <tr>
+                {tableHeader()}
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <FieldArray name={attrName}>
+                {({ fields }) =>
+                  fields.map((name, index) => (
+                    <tr key={name}>
+                      {permList.map((colName) => {
+                        if (colName == "Select Roles") {
                           return (
                             <td key={colName}>
-                              {fields?.value[index]?.accesses?.tableList
-                                .length > 0 ? (
-                                <h6 className="d-inline mr-1 mb-1">
-                                  <span className="editable-edit-text">
-                                    {tagAccessTypeDisplayVal(
-                                      fields.value[index].accesses.tableList
-                                    )}
-                                  </span>
-                                </h6>
-                              ) : (
-                                <></>
-                              )}
                               <Field
                                 className="form-control"
-                                name={`${name}.accesses`}
-                                validate={(value, formValues) =>
-                                  requiredForPermission(
-                                    formValues[attrName],
-                                    index
-                                  )
-                                }
+                                name={`${name}.roles`}
                                 render={({ input, meta }) => (
-                                  <div className="table-editable">
-                                    <TagBasePermissionItem
-                                      options={getAccessTypeOptions()}
-                                      inputVal={input}
+                                  <div>
+                                    <AsyncSelect
+                                      {...input}
+                                      menuPortalTarget={document.body}
+                                      loadOptions={fetchRolesData}
+                                      defaultOptions
+                                      styles={customStyles}
+                                      cacheOptions
+                                      isMulti
                                     />
-                                    {meta.error && (
-                                      <div className="invalid-field">
-                                        {meta.error}
-                                      </div>
+                                    {meta.touched && meta.error && (
+                                      <span>{meta.error}</span>
                                     )}
                                   </div>
                                 )}
                               />
                             </td>
                           );
-                        } else {
+                        }
+                        if (colName == "Select Groups") {
                           return (
                             <td key={colName}>
                               <Field
                                 className="form-control"
-                                name={`${name}.accesses`}
-                                validate={(value, formValues) =>
-                                  requiredForPermission(
-                                    formValues[attrName],
-                                    index
-                                  )
-                                }
+                                name={`${name}.groups`}
+                                render={({ input, meta }) => (
+                                  <div>
+                                    <AsyncSelect
+                                      {...input}
+                                      menuPortalTarget={document.body}
+                                      loadOptions={fetchGroupsData}
+                                      styles={customStyles}
+                                      defaultOptions
+                                      cacheOptions
+                                      isMulti
+                                    />
+                                    {meta.touched && meta.error && (
+                                      <span>{meta.error}</span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          );
+                        }
+                        if (colName == "Select Users") {
+                          return (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.users`}
+                                render={({ input, meta }) => (
+                                  <div>
+                                    <AsyncSelect
+                                      {...input}
+                                      menuPortalTarget={document.body}
+                                      loadOptions={fetchUsersData}
+                                      styles={customStyles}
+                                      defaultOptions
+                                      cacheOptions
+                                      isMulti
+                                    />
+                                    {meta.touched && meta.error && (
+                                      <span>{meta.error}</span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          );
+                        }
+                        if (colName == "Policy Conditions") {
+                          return serviceCompDetails?.policyConditions?.length ==
+                            1 ? (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.conditions`}
                                 render={({ input, meta }) => (
                                   <div className="table-editable">
                                     <Editable
                                       {...input}
                                       placement="auto"
-                                      type="checkbox"
-                                      options={getAccessTypeOptions()}
-                                      showSelectAll={true}
-                                      selectAllLabel="Select All"
+                                      type="select"
+                                      conditionDefVal={
+                                        serviceCompDetails.policyConditions[0]
+                                      }
+                                      servicedefName={serviceCompDetails.name}
+                                      selectProps={{ isMulti: true }}
                                     />
                                     {meta.error && (
                                       <span className="invalid-field">
-                                        {meta.error}
+                                        <p> {meta.error}</p>
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          ) : (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.conditions`}
+                                render={({ input, meta }) => (
+                                  <div className="table-editable">
+                                    <Editable
+                                      {...input}
+                                      placement="auto"
+                                      type="custom"
+                                      conditionDefVal={
+                                        serviceCompDetails.policyConditions
+                                      }
+                                    />
+
+                                    {meta.error && (
+                                      <span className="invalid-field">
+                                        <p> {meta.error}</p>
                                       </span>
                                     )}
                                   </div>
@@ -379,113 +349,210 @@ export default function PolicyPermissionItem(props) {
                             </td>
                           );
                         }
-                      }
-                      if (colName == "Select Masking Option") {
-                        return (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.dataMaskInfo`}
-                              render={({ input, meta }) => (
-                                <div className="table-editable">
-                                  <Editable
-                                    {...input}
-                                    placement="auto"
-                                    type="radio"
-                                    options={getMaskingAccessTypeOptions()}
-                                    showSelectAll={false}
-                                    selectAllLabel="Select All"
-                                  />
-                                  {fields?.value[index]?.dataMaskInfo?.label ==
-                                    "Custom" && (
-                                    <>
-                                      <Field
-                                        className="form-control"
-                                        name={`${name}.dataMaskInfo.valueExpr`}
-                                        validate={required}
-                                        render={({ input, meta }) => (
-                                          <>
-                                            <Form.Control
-                                              type="text"
-                                              {...input}
-                                              placeholder="Enter masked value or expression..."
-                                              // width="80%"
-                                            />
-                                            {meta.error && (
-                                              <span>{meta.error}</span>
-                                            )}
-                                          </>
-                                        )}
+                        if (colName == "Permissions") {
+                          if (serviceCompDetails.name == "tag") {
+                            return (
+                              <td key={colName}>
+                                {!isEmpty(
+                                  fields?.value[index]?.accesses?.tableList
+                                ) ? (
+                                  <h6 className="d-inline mr-1 mb-1">
+                                    <span className="editable-edit-text">
+                                      {tagAccessTypeDisplayVal(
+                                        fields.value[index].accesses.tableList
+                                      )}
+                                    </span>
+                                  </h6>
+                                ) : (
+                                  <></>
+                                )}
+                                <Field
+                                  className="form-control"
+                                  name={`${name}.accesses`}
+                                  validate={(value, formValues) =>
+                                    requiredForPermission(
+                                      formValues[attrName],
+                                      index
+                                    )
+                                  }
+                                  render={({ input, meta }) => (
+                                    <div className="table-editable">
+                                      <TagBasePermissionItem
+                                        options={getAccessTypeOptions()}
+                                        inputVal={input}
                                       />
-                                    </>
+                                      {meta.error && (
+                                        <div className="invalid-field">
+                                          {meta.error}
+                                        </div>
+                                      )}
+                                    </div>
                                   )}
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
+                                />
+                              </td>
+                            );
+                          } else {
+                            return (
+                              <td key={colName}>
+                                <Field
+                                  className="form-control"
+                                  name={`${name}.accesses`}
+                                  validate={(value, formValues) =>
+                                    requiredForPermission(
+                                      formValues[attrName],
+                                      index
+                                    )
+                                  }
+                                  render={({ input, meta }) => (
+                                    <div className="table-editable">
+                                      <Editable
+                                        {...input}
+                                        placement="auto"
+                                        type="checkbox"
+                                        options={getAccessTypeOptions()}
+                                        showSelectAll={true}
+                                        selectAllLabel="Select All"
+                                      />
+                                      {meta.error && (
+                                        <span className="invalid-field">
+                                          {meta.error}
+                                        </span>
+                                      )}
+                                    </div>
                                   )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (colName == "Row Level Filter") {
-                        return (
-                          <td key={colName}>
-                            <Field
-                              className="form-control"
-                              name={`${name}.rowFilterInfo`}
-                              render={({ input, meta }) => (
-                                <div className="table-editable">
-                                  <Editable
-                                    {...input}
-                                    placement="auto"
-                                    type="input"
-                                  />
-                                  {meta.touched && meta.error && (
-                                    <span>{meta.error}</span>
-                                  )}
-                                </div>
-                              )}
-                            />
-                          </td>
-                        );
-                      }
-                      if (
-                        colName == "Deligate Admin" &&
-                        serviceCompDetails.name !== "tag"
-                      ) {
-                        return (
-                          <td className="text-center">
-                            <Field
-                              name={`${name}.delegateAdmin`}
-                              component="input"
-                              type="checkbox"
-                              data-js="delegatedAdmin"
-                              data-cy="delegatedAdmin"
-                            />
-                          </td>
-                        );
-                      }
-                      return <td key={colName}>{colName}</td>;
-                    })}
-                    <td>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        title="Remove"
-                        onClick={() => fields.remove(index)}
-                        data-action="delete"
-                        data-cy="delete"
-                      >
-                        <i className="fa-fw fa fa-remove"></i>
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              }
-            </FieldArray>
-          </tbody>
-        </Table>
+                                />
+                              </td>
+                            );
+                          }
+                        }
+                        if (colName == "Select Masking Option") {
+                          return (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.dataMaskInfo`}
+                                render={({ input, meta }) => (
+                                  <div className="table-editable">
+                                    <Editable
+                                      {...input}
+                                      placement="auto"
+                                      type="radio"
+                                      options={getMaskingAccessTypeOptions()}
+                                      showSelectAll={false}
+                                      selectAllLabel="Select All"
+                                    />
+                                    {fields?.value[index]?.dataMaskInfo
+                                      ?.label == "Custom" && (
+                                      <>
+                                        <Field
+                                          className="form-control"
+                                          name={`${name}.dataMaskInfo.valueExpr`}
+                                          validate={required}
+                                          render={({ input, meta }) => (
+                                            <>
+                                              <Form.Control
+                                                type="text"
+                                                {...input}
+                                                placeholder="Enter masked value or expression..."
+                                                // width="80%"
+                                              />
+                                              {meta.error && (
+                                                <span>{meta.error}</span>
+                                              )}
+                                            </>
+                                          )}
+                                        />
+                                      </>
+                                    )}
+                                    {meta.touched && meta.error && (
+                                      <span>{meta.error}</span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          );
+                        }
+                        if (colName == "Row Level Filter") {
+                          return (
+                            <td key={colName}>
+                              <Field
+                                className="form-control"
+                                name={`${name}.rowFilterInfo`}
+                                render={({ input, meta }) => (
+                                  <div className="table-editable">
+                                    <Editable
+                                      {...input}
+                                      placement="auto"
+                                      type="input"
+                                    />
+                                    {meta.touched && meta.error && (
+                                      <span>{meta.error}</span>
+                                    )}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                          );
+                        }
+                        if (
+                          colName == "Deligate Admin" &&
+                          serviceCompDetails.name !== "tag"
+                        ) {
+                          return (
+                            <td className="text-center">
+                              <Field
+                                className="form-control"
+                                name={`${name}.delegateAdmin`}
+                                validate={(value, formValues) =>
+                                  requiredForDeleGateAdmin(
+                                    formValues[attrName],
+                                    index
+                                  )
+                                }
+                                data-js="delegatedAdmin"
+                                data-cy="delegatedAdmin"
+                                type="checkbox"
+                              >
+                                {({ input, meta }) => (
+                                  <div>
+                                    <input {...input} type="checkbox" />
+
+                                    {meta.error && (
+                                      <>
+                                        <br />
+                                        <span className="invalid-field">
+                                          {meta.error}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </Field>
+                            </td>
+                          );
+                        }
+                        return <td key={colName}>{colName}</td>;
+                      })}
+                      <td>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          title="Remove"
+                          onClick={() => fields.remove(index)}
+                          data-action="delete"
+                          data-cy="delete"
+                        >
+                          <i className="fa-fw fa fa-remove"></i>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                }
+              </FieldArray>
+            </tbody>
+          </Table>
+        </div>
       </Col>
       <Button
         className="btn btn-mini"

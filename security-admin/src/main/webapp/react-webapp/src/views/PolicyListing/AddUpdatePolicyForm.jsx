@@ -257,7 +257,7 @@ export default function AddUpdatePolicyForm(props) {
     let data = {};
     data.policyType = policyId ? policyData.policyType : policyType;
     data.policyItems =
-      policyId && policyData.policyItems.length > 0
+      policyId && policyData?.policyItems?.length > 0
         ? setPolicyItemVal(
             policyData.policyItems,
             serviceCompData.accessTypes,
@@ -266,7 +266,7 @@ export default function AddUpdatePolicyForm(props) {
           )
         : [{}];
     data.allowExceptions =
-      policyId && policyData.allowExceptions.length > 0
+      policyId && policyData?.allowExceptions?.length > 0
         ? setPolicyItemVal(
             policyData.allowExceptions,
             serviceCompData.accessTypes,
@@ -275,7 +275,7 @@ export default function AddUpdatePolicyForm(props) {
           )
         : [{}];
     data.denyPolicyItems =
-      policyId && policyData.denyPolicyItems.length > 0
+      policyId && policyData?.denyPolicyItems?.length > 0
         ? setPolicyItemVal(
             policyData.denyPolicyItems,
             serviceCompData.accessTypes,
@@ -284,7 +284,7 @@ export default function AddUpdatePolicyForm(props) {
           )
         : [{}];
     data.denyExceptions =
-      policyId && policyData.denyExceptions.length > 0
+      policyId && policyData?.denyExceptions?.length > 0
         ? setPolicyItemVal(
             policyData.denyExceptions,
             serviceCompData.accessTypes,
@@ -293,7 +293,7 @@ export default function AddUpdatePolicyForm(props) {
           )
         : [{}];
     data.dataMaskPolicyItems =
-      policyId && policyData.dataMaskPolicyItems.length > 0
+      policyId && policyData?.dataMaskPolicyItems?.length > 0
         ? setPolicyItemVal(
             policyData.dataMaskPolicyItems,
             serviceCompData.dataMaskDef.accessTypes,
@@ -302,7 +302,7 @@ export default function AddUpdatePolicyForm(props) {
           )
         : [{}];
     data.rowFilterPolicyItems =
-      policyId && policyData.rowFilterPolicyItems.length > 0
+      policyId && policyData?.rowFilterPolicyItems?.length > 0
         ? setPolicyItemVal(
             policyData.rowFilterPolicyItems,
             serviceCompData.rowFilterDef.accessTypes,
@@ -316,9 +316,11 @@ export default function AddUpdatePolicyForm(props) {
       data.policyPriority = policyData.policyPriority == 0 ? false : true;
       data.description = policyData.description;
       data.isAuditEnabled = policyData.isAuditEnabled;
-      data.policyLabel = policyData.policyLabels.map((val) => {
-        return { label: val, value: val };
-      });
+      data.policyLabel =
+        policyData &&
+        policyData?.policyLabels?.map((val) => {
+          return { label: val, value: val };
+        });
       let serviceCompResourcesDetails;
       if (
         RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value ==
@@ -389,12 +391,15 @@ export default function AddUpdatePolicyForm(props) {
         if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
           obj.delegateAdmin = key.delegateAdmin;
         }
-        if (key?.accesses && serviceCompDetails.name !== "tag") {
+        if (key?.accesses?.length > 0 && serviceCompDetails.name !== "tag") {
           obj.accesses = key.accesses.map(({ value }) => ({
             type: value,
             isAllowed: true
           }));
-        } else if (key?.accesses && serviceCompDetails.name == "tag") {
+        } else if (
+          key?.accesses?.tableList?.length > 0 &&
+          serviceCompDetails.name == "tag"
+        ) {
           let accessesData = [];
           for (let data in key.accesses.tableList) {
             accessesData = [
@@ -433,36 +438,47 @@ export default function AddUpdatePolicyForm(props) {
           isObject(key.conditions) &&
           serviceCompDetails.name == "tag"
         ) {
-          let condObj = {};
-          obj.conditions = Object.entries(key.conditions).map(
-            ([key, value]) => {
-              return (condObj = {
+          Object.entries(key.conditions).map(([key, value]) => {
+            if (!isEmpty(value)) {
+              obj.conditions = [];
+              return obj.conditions.push({
                 type: key,
-                values: value.split(", ")
+                values: value?.split(", ")
               });
             }
-          );
+          });
         } else if (
-          key?.conditions &&
+          !isEmpty(key?.conditions) &&
           isObject(key.conditions) &&
           serviceCompDetails.name == "knox"
         ) {
-          let condObj = {};
           obj.conditions = [
             {
               type: "ip-range",
               values:
                 !isEmpty(Object.keys(key.conditions)) &&
                 !isArray(key.conditions)
-                  ? key.conditions["ip-range"].split(", ")
+                  ? key.conditions["ip-range"]?.split(", ")
                   : key.conditions.map((value) => {
                       return value.value;
                     })
             }
           ];
         }
-
-        policyResourceItem.push(obj);
+        if (
+          !isEmpty(obj) &&
+          !_.isEmpty(obj?.delegateAdmin) &&
+          Object.keys(obj)?.length > 1
+        ) {
+          policyResourceItem.push(obj);
+        }
+        if (
+          !_.isEmpty(obj) &&
+          _.isEmpty(obj?.delegateAdmin) &&
+          Object.keys(obj)?.length > 1
+        ) {
+          policyResourceItem.push(obj);
+        }
       }
     }
     return policyResourceItem;
@@ -498,7 +514,7 @@ export default function AddUpdatePolicyForm(props) {
         }
         obj["accesses"] = { tableList };
       } else {
-        for (let i = 0; val.accesses.length > i; i++) {
+        for (let i = 0; val?.accesses?.length > i; i++) {
           accessTypes.map((opt) => {
             if (val.accesses[i].type == opt.name) {
               accessTypesObj.push({ label: opt.label, value: opt.name });
@@ -507,17 +523,17 @@ export default function AddUpdatePolicyForm(props) {
         }
         obj["accesses"] = accessTypesObj;
       }
-      if (val.groups.length > 0) {
+      if (val?.groups?.length > 0) {
         obj.groups = val.groups.map((opt) => {
           return { label: opt, value: opt };
         });
       }
-      if (val.users.length > 0) {
+      if (val?.users?.length > 0) {
         obj.users = val.users.map((opt) => {
           return { label: opt, value: opt };
         });
       }
-      if (val.roles.length > 0) {
+      if (val?.roles?.length > 0) {
         obj.roles = val.roles.map((opt) => {
           return { label: opt, value: opt };
         });
@@ -654,15 +670,13 @@ export default function AddUpdatePolicyForm(props) {
 
     /*Policy Condition*/
     if (values?.conditions) {
-      let condObj = {};
-      data.conditions = Object.entries(values.conditions).map(
-        ([key, value]) => {
-          return (condObj = {
-            type: key,
-            values: value.split(",")
-          });
-        }
-      );
+      Object.entries(values.conditions).map(([key, value]) => {
+        data.conditions = [];
+        return data.conditions.push({
+          type: key,
+          values: value?.split(",")
+        });
+      });
     }
 
     /* For create zoen policy*/

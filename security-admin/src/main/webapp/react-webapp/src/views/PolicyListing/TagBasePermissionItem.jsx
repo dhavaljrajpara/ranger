@@ -4,7 +4,7 @@ import { Form, Field } from "react-final-form";
 import Select from "react-select";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
-import { groupBy, keys, indexOf, findIndex, uniq, omit } from "lodash";
+import { groupBy, keys, indexOf, findIndex, isEmpty } from "lodash";
 
 export default function TagBasePermissionItem(props) {
   const { options, inputVal, showModal, handleCloseModal } = props;
@@ -20,8 +20,10 @@ export default function TagBasePermissionItem(props) {
     delete tagPermissionType.servicesDefType;
     if (values?.tableList) {
       tagPermissionType.tableList = values.tableList.filter((m) => {
-        if (m.permission) {
+        if (!isEmpty(m.permission)) {
           return m;
+        } else {
+          m.serviceName = "";
         }
       });
     }

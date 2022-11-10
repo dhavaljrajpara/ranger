@@ -857,7 +857,9 @@ export const showGroupsOrUsersOrRolesForPolicy = (
   for (let item of itemList) {
     if (rawData[item] && rawData[item].length > 0)
       for (const obj of rawData[item]) {
-        allTypes = new Set([...allTypes, ...obj[showType]]);
+        if (obj?.showType) {
+          allTypes = new Set([...allTypes, ...obj[showType]]);
+        }
       }
   }
   allTypes = [...allTypes];
