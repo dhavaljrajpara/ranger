@@ -428,6 +428,7 @@ export default function AddUpdatePolicyForm(props) {
         if (key.dataMaskInfo != "undefined" && key.dataMaskInfo != null) {
           obj.dataMaskInfo = {};
           obj.dataMaskInfo.dataMaskType = key.dataMaskInfo.value;
+
           if (key?.dataMaskInfo?.valueExpr) {
             obj.dataMaskInfo.valueExpr = key.dataMaskInfo.valueExpr;
           }
@@ -571,10 +572,10 @@ export default function AddUpdatePolicyForm(props) {
     });
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, invalid) => {
     let data = {};
     let tblpageData = {};
-    if (state && state != null) {
+    if (state && state != null && !invalid) {
       tblpageData = state.tblpageData;
       if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
         tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
@@ -698,7 +699,11 @@ export default function AddUpdatePolicyForm(props) {
         toast.success("Policy updated successfully!!");
         navigate(`/service/${serviceId}/policies/${policyData.policyType}`);
       } catch (error) {
-        toast.error("Failed to save policy form!!");
+        let errorMsg = `Failed to save policy form`;
+        if (error?.response?.data?.msgDesc) {
+          errorMsg = `Error! ${error.response.data.msgDesc}`;
+        }
+        toast.error(errorMsg);
         console.error(`Error while saving policy form!!! ${error}`);
       }
     } else {
@@ -716,7 +721,11 @@ export default function AddUpdatePolicyForm(props) {
           }
         });
       } catch (error) {
-        toast.error("Failed to save policy form!!");
+        let errorMsg = `Failed to save policy form`;
+        if (error?.response?.data?.msgDesc) {
+          errorMsg = `Error! ${error.response.data.msgDesc}`;
+        }
+        toast.error(errorMsg);
         console.error(`Error while saving policy form!!! ${error}`);
       }
     }
@@ -733,11 +742,11 @@ export default function AddUpdatePolicyForm(props) {
       navigate(`/service/${serviceId}/policies/${policyType}`);
     } catch (error) {
       console.log(error.response);
+      let errorMsg = `Error occurred during deleting policy`;
       if (error.response.data.msgDesc) {
-        errorMsg += error.response.data.msgDesc + "\n";
-      } else {
-        errorMsg += `Error occurred during deleting policy`;
+        errorMsg = `Error! ${error.response.data.msgDesc}`;
       }
+      toast.error(errorMsg);
     }
     hideDeleteModal();
   };
@@ -1460,7 +1469,7 @@ export default function AddUpdatePolicyForm(props) {
                                 );
                               scrollToError(selector);
                             }
-                            handleSubmit(values);
+                            handleSubmit(values, invalid);
                           }}
                           variant="primary"
                           size="sm"

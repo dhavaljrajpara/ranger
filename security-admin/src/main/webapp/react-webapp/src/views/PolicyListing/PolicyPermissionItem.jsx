@@ -5,6 +5,7 @@ import { Col } from "react-bootstrap";
 import { Field } from "react-final-form";
 import AsyncSelect from "react-select/async";
 import { find, groupBy, isEmpty, isArray } from "lodash";
+import { toast } from "react-toastify";
 
 import Editable from "Components/Editable";
 import { RangerPolicyType } from "Utils/XAEnums";
@@ -32,19 +33,20 @@ export default function PolicyPermissionItem(props) {
   }
   permList.push("Permissions");
   if (
-    RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value == formValues.policyType &&
+    RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value ==
+      formValues?.policyType &&
     serviceCompDetails.name !== "tag"
   ) {
     permList.push("Deligate Admin");
   }
   if (
-    RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == formValues.policyType
+    RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value == formValues?.policyType
   ) {
     permList.push("Select Masking Option");
   }
   if (
     RangerPolicyType.RANGER_ROW_FILTER_POLICY_TYPE.value ==
-    formValues.policyType
+    formValues?.policyType
   ) {
     permList.push("Row Level Filter");
   }
@@ -106,14 +108,32 @@ export default function PolicyPermissionItem(props) {
       value
     }));
   };
-  const getMaskingAccessTypeOptions = () => {
-    if (serviceCompDetails.dataMaskDef.maskTypes.length > 0) {
-      return serviceCompDetails.dataMaskDef.maskTypes.map(
-        ({ label, name: value }) => ({
+  const getMaskingAccessTypeOptions = (index) => {
+    if (serviceCompDetails?.dataMaskDef?.maskTypes?.length > 0) {
+      if (
+        formValues?.policyType ==
+          RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value &&
+        serviceCompDetails?.name == "tag"
+      ) {
+        let accessServices =
+          formValues?.dataMaskPolicyItems[index]?.accesses?.tableList[0]
+            ?.serviceName;
+        let filterServiceDetails =
+          serviceCompDetails.dataMaskDef.maskTypes.filter((a) => {
+            return a.name.includes(accessServices);
+          });
+        return filterServiceDetails.map(({ label, name: value }) => ({
           label,
           value
-        })
-      );
+        }));
+      } else {
+        return serviceCompDetails.dataMaskDef.maskTypes.map(
+          ({ label, name: value }) => ({
+            label,
+            value
+          })
+        );
+      }
     }
   };
 
@@ -125,7 +145,7 @@ export default function PolicyPermissionItem(props) {
       let roles = (fieldVals[index]?.roles || []).length > 0;
       let delegateAdmin = fieldVals[index]?.delegateAdmin;
       if (fieldVals[index]?.accesses && !isArray(fieldVals[index]?.accesses)) {
-        if (serviceCompDetails.name == "tag") {
+        if (serviceCompDetails?.name == "tag") {
           accTypes =
             isEmpty(fieldVals[index]?.accesses?.tableList) !== isEmpty({});
         } else {
@@ -350,7 +370,7 @@ export default function PolicyPermissionItem(props) {
                           );
                         }
                         if (colName == "Permissions") {
-                          if (serviceCompDetails.name == "tag") {
+                          if (serviceCompDetails?.name == "tag") {
                             return (
                               <td key={colName}>
                                 {!isEmpty(
@@ -380,11 +400,17 @@ export default function PolicyPermissionItem(props) {
                                       <TagBasePermissionItem
                                         options={getAccessTypeOptions()}
                                         inputVal={input}
+                                        formValues={formValues}
+                                        dataMaskIndex={index}
+                                        serviceCompDetails={serviceCompDetails}
                                       />
                                       {meta.error && (
-                                        <div className="invalid-field">
-                                          {meta.error}
-                                        </div>
+                                        <>
+                                          <br />
+                                          <span className="invalid-field">
+                                            {meta.error}
+                                          </span>
+                                        </>
                                       )}
                                     </div>
                                   )}
@@ -414,9 +440,12 @@ export default function PolicyPermissionItem(props) {
                                         selectAllLabel="Select All"
                                       />
                                       {meta.error && (
-                                        <span className="invalid-field">
-                                          {meta.error}
-                                        </span>
+                                        <>
+                                          <br />
+                                          <span className="invalid-field">
+                                            {meta.error}
+                                          </span>
+                                        </>
                                       )}
                                     </div>
                                   )}
@@ -426,52 +455,129 @@ export default function PolicyPermissionItem(props) {
                           }
                         }
                         if (colName == "Select Masking Option") {
-                          return (
-                            <td key={colName}>
-                              <Field
-                                className="form-control"
-                                name={`${name}.dataMaskInfo`}
-                                render={({ input, meta }) => (
-                                  <div className="table-editable">
-                                    <Editable
-                                      {...input}
-                                      placement="auto"
-                                      type="radio"
-                                      options={getMaskingAccessTypeOptions()}
-                                      showSelectAll={false}
-                                      selectAllLabel="Select All"
-                                    />
-                                    {fields?.value[index]?.dataMaskInfo
-                                      ?.label == "Custom" && (
-                                      <>
-                                        <Field
-                                          className="form-control"
-                                          name={`${name}.dataMaskInfo.valueExpr`}
-                                          validate={required}
-                                          render={({ input, meta }) => (
-                                            <>
-                                              <Form.Control
-                                                type="text"
-                                                {...input}
-                                                placeholder="Enter masked value or expression..."
-                                                // width="80%"
-                                              />
-                                              {meta.error && (
-                                                <span>{meta.error}</span>
-                                              )}
-                                            </>
+                          if (serviceCompDetails?.name == "tag") {
+                            return (
+                              <td key={colName}>
+                                <Field
+                                  className="form-control"
+                                  name={`${name}.dataMaskInfo`}
+                                  render={({ input, meta }) =>
+                                    fields?.value[index]?.accesses?.tableList
+                                      ?.length > 0 ? (
+                                      <div className="table-editable">
+                                        <Editable
+                                          {...input}
+                                          placement="auto"
+                                          type="radio"
+                                          options={getMaskingAccessTypeOptions(
+                                            index,
+                                            input
                                           )}
+                                          showSelectAll={false}
+                                          selectAllLabel="Select All"
+                                          formValues={formValues}
+                                          dataMaskIndex={
+                                            fields?.value[index]?.accesses
+                                              ?.tableList
+                                          }
                                         />
-                                      </>
-                                    )}
-                                    {meta.touched && meta.error && (
-                                      <span>{meta.error}</span>
-                                    )}
-                                  </div>
-                                )}
-                              />
-                            </td>
-                          );
+                                        {fields?.value[index]?.dataMaskInfo
+                                          ?.label == "Custom" && (
+                                          <>
+                                            <Field
+                                              className="form-control"
+                                              name={`${name}.dataMaskInfo.valueExpr`}
+                                              validate={required}
+                                              render={({ input, meta }) => (
+                                                <>
+                                                  <Form.Control
+                                                    type="text"
+                                                    {...input}
+                                                    placeholder="Enter masked value or expression..."
+                                                    // width="80%"
+                                                  />
+                                                  {meta.error && (
+                                                    <span className="invalid-field">
+                                                      {meta.error}
+                                                    </span>
+                                                  )}
+                                                </>
+                                              )}
+                                            />
+                                          </>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <span className="editable-add-text">
+                                          Select Masking Option
+                                        </span>
+                                        <Button
+                                          className="mg-10 btn-mini text-secondary"
+                                          variant="outline-dark"
+                                          size="sm"
+                                          type="button"
+                                          onClick={() => {
+                                            return toast.warning(
+                                              "Please select access type first to enable add masking options."
+                                            );
+                                          }}
+                                        >
+                                          <i className="fa-fw fa fa-plus"></i>
+                                        </Button>
+                                      </div>
+                                    )
+                                  }
+                                />
+                              </td>
+                            );
+                          } else {
+                            return (
+                              <td key={colName}>
+                                <Field
+                                  className="form-control"
+                                  name={`${name}.dataMaskInfo`}
+                                  render={({ input, meta }) => (
+                                    <div className="table-editable">
+                                      <Editable
+                                        {...input}
+                                        placement="auto"
+                                        type="radio"
+                                        options={getMaskingAccessTypeOptions()}
+                                        showSelectAll={false}
+                                        selectAllLabel="Select All"
+                                      />
+                                      {fields?.value[index]?.dataMaskInfo
+                                        ?.label == "Custom" && (
+                                        <>
+                                          <Field
+                                            className="form-control"
+                                            name={`${name}.dataMaskInfo.valueExpr`}
+                                            validate={required}
+                                            render={({ input, meta }) => (
+                                              <>
+                                                <Form.Control
+                                                  type="text"
+                                                  {...input}
+                                                  placeholder="Enter masked value or expression..."
+                                                  // width="80%"
+                                                />
+                                                {meta.error && (
+                                                  <span className="invalid-field">
+                                                    {meta.error}
+                                                  </span>
+                                                )}
+                                              </>
+                                            )}
+                                          />
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                />
+                              </td>
+                            );
+                          }
                         }
                         if (colName == "Row Level Filter") {
                           return (
@@ -497,7 +603,7 @@ export default function PolicyPermissionItem(props) {
                         }
                         if (
                           colName == "Deligate Admin" &&
-                          serviceCompDetails.name !== "tag"
+                          serviceCompDetails?.name !== "tag"
                         ) {
                           return (
                             <td className="text-center">

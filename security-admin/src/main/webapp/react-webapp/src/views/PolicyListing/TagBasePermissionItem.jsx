@@ -5,10 +5,31 @@ import Select from "react-select";
 import arrayMutators from "final-form-arrays";
 import { FieldArray } from "react-final-form-arrays";
 import { groupBy, keys, indexOf, findIndex, isEmpty } from "lodash";
+import { RangerPolicyType } from "Utils/XAEnums";
 
 export default function TagBasePermissionItem(props) {
-  const { options, inputVal, showModal, handleCloseModal } = props;
+  const { options, inputVal, formValues, serviceCompDetails, dataMaskIndex } =
+    props;
   const [showTagPermissionItem, tagPermissionItem] = useState(false);
+
+  const msgStyles = {
+    background: "white",
+    color: "black"
+  };
+  const noOptionMsg = (inputValue) => {
+    if (
+      formValues?.policyType ==
+      RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value
+    ) {
+      if (!inputValue) {
+        return " You can only select 1 item";
+      } else {
+        return "No results found";
+      }
+    } else {
+      return "No Options";
+    }
+  };
 
   const tagServicePerms = groupBy(options, function (obj) {
     let val = obj.value;
@@ -20,10 +41,20 @@ export default function TagBasePermissionItem(props) {
     delete tagPermissionType.servicesDefType;
     if (values?.tableList) {
       tagPermissionType.tableList = values.tableList.filter((m) => {
-        if (!isEmpty(m.permission)) {
-          return m;
-        } else {
-          m.serviceName = "";
+        if (m.permission) {
+          if (!_.isEmpty(m.permission)) {
+            return m;
+          } else {
+            m.serviceName = "";
+            if (
+              serviceCompDetails?.name == "tag" &&
+              formValues?.policyType ==
+                RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value &&
+              formValues?.dataMaskPolicyItems[dataMaskIndex]?.dataMaskInfo
+            ) {
+              formValues.dataMaskPolicyItems[dataMaskIndex].dataMaskInfo = {};
+            }
+          }
         }
       });
     }
@@ -46,15 +77,37 @@ export default function TagBasePermissionItem(props) {
         e.removedValue.value
       ]);
       remove("tableList", removeItemIndex);
+      if (
+        serviceCompDetails?.name == "tag" &&
+        formValues?.policyType ==
+          RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value &&
+        formValues?.dataMaskPolicyItems[dataMaskIndex]?.dataMaskInfo
+      ) {
+        formValues.dataMaskPolicyItems[dataMaskIndex].dataMaskInfo = {};
+      }
     }
     input.onChange(values);
   };
 
-  const selectOptions = () => {
-    return keys(tagServicePerms).map((m) => ({
-      value: m,
-      label: m.toUpperCase()
-    }));
+  const selectOptions = (values) => {
+    if (
+      formValues?.policyType ==
+      RangerPolicyType.RANGER_MASKING_POLICY_TYPE.value
+    ) {
+      if (values?.tableList?.length > 0) {
+        return [];
+      } else {
+        return keys(tagServicePerms).map((m) => ({
+          value: m,
+          label: m.toUpperCase()
+        }));
+      }
+    } else {
+      return keys(tagServicePerms).map((m) => ({
+        value: m,
+        label: m.toUpperCase()
+      }));
+    }
   };
 
   const isChecked = (obj, input) => {
@@ -64,9 +117,9 @@ export default function TagBasePermissionItem(props) {
 
   const isAllChecked = (fieldObj, objVal) => {
     return (
-      !!fieldObj.permission &&
-      fieldObj.permission.length > 0 &&
-      fieldObj.permission.length === objVal.length
+      !!fieldObj?.permission &&
+      fieldObj?.permission?.length > 0 &&
+      fieldObj?.permission?.length === objVal?.length
     );
   };
 
@@ -189,11 +242,20 @@ export default function TagBasePermissionItem(props) {
                           serviceOnChange(e, input, values, push, remove)
                         }
                         isMulti
+                        options={selectOptions(values)}
+                        noOptionsMessage={({ inputValue }) =>
+                          noOptionMsg(inputValue)
+                        }
+                        styles={{
+                          noOptionsMessage: (base) => ({
+                            ...base,
+                            ...msgStyles
+                          })
+                        }}
                         components={{
                           DropdownIndicator: () => null,
                           IndicatorSeparator: () => null
                         }}
-                        options={selectOptions()}
                         isClearable={false}
                         isSearchable={true}
                         placeholder="Select Service Name"

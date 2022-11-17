@@ -7,11 +7,10 @@ import {
   Row,
   Col
 } from "react-bootstrap";
-import _, { filter, findIndex, isArray } from "lodash";
+import { findIndex, isArray } from "lodash";
 import { isObject } from "Utils/XAUtils";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
-import { CustomTooltip } from "../components/CommonComponents";
 import { InfoIcon } from "../utils/XAUtils";
 import { RegexMessage } from "../utils/XAMessages";
 
@@ -364,7 +363,7 @@ const Editable = (props) => {
         }
       } else if (type === TYPE_CHECKBOX) {
         val =
-          selectVal && selectVal.length > 0 ? (
+          selectVal && selectVal?.length > 0 ? (
             <>
               {selectVal.map((op, index) => (
                 <h6 className="d-inline mr-1 editable-edit-text " key={index}>
@@ -431,7 +430,7 @@ const Editable = (props) => {
           );
       } else if (type === TYPE_RADIO) {
         val =
-          selectVal && selectVal.label ? (
+          selectVal && selectVal?.label ? (
             <h6 className="d-inline mr-1 editable-edit-text ">
               <span className="badge bg-info">{selectVal.label}</span>
               <Button
