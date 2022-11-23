@@ -17,6 +17,7 @@ import {
   fetchSearchFilterParams,
   serverError
 } from "../../utils/XAUtils";
+import { ContentLoader } from "../../components/CommonComponents";
 
 function Admin() {
   const [adminListingData, setAdminLogs] = useState([]);
@@ -426,16 +427,7 @@ function Admin() {
   return (
     <div className="wrap">
       {contentLoader ? (
-        <Row>
-          <Col sm={12} className="text-center">
-            <div className="spinner-border mr-2" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <div className="spinner-grow" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </Col>
-        </Row>
+        <ContentLoader size="50px" />
       ) : (
         <React.Fragment>
           <Row className="mb-2">

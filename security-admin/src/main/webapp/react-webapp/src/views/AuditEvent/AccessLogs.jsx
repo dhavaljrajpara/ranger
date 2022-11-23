@@ -37,7 +37,10 @@ import {
   serverError,
   fetchSearchFilterParams
 } from "../../utils/XAUtils";
-import { CustomTooltip } from "../../components/CommonComponents";
+import {
+  ContentLoader,
+  CustomTooltip
+} from "../../components/CommonComponents";
 import { ServiceType } from "../../utils/XAEnums";
 
 function Access() {
@@ -901,16 +904,7 @@ function Access() {
   return (
     <div className="wrap">
       {contentLoader ? (
-        <Row>
-          <Col sm={12} className="text-center">
-            <div className="spinner-border mr-2" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <div className="spinner-grow" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </Col>
-        </Row>
+        <ContentLoader size="50px" />
       ) : (
         <React.Fragment>
           <Row className="mb-2">

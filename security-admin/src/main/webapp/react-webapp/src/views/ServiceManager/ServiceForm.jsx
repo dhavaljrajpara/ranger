@@ -13,6 +13,7 @@ import TestConnection from "./TestConnection";
 import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
 import {
   Condition,
+  ContentLoader,
   CustomPopover,
   scrollToError
 } from "../../components/CommonComponents";
@@ -613,6 +614,7 @@ class ServiceForm extends Component {
                           placement="right"
                           icon="fa-fw fa fa-info-circle"
                           trigger={["hover", "focus"]}
+                          dangerousInnerHtml={true}
                         />
                       </span>
                     )}
@@ -897,7 +899,7 @@ class ServiceForm extends Component {
   };
 
   fetchRoles = async (inputValue) => {
-    let params = { name: inputValue || "", isVisible: 1 };
+    let params = { roleNamePartial: inputValue || "", isVisible: 1 };
     let op = [];
     if (this.state.rolesDataRef === null || inputValue) {
       const roleResp = await fetchApi({
@@ -957,16 +959,7 @@ class ServiceForm extends Component {
         </div>
         <div className="wrap">
           {this.state.loader ? (
-            <div className="row">
-              <div className="col-sm-12 text-center">
-                <div className="spinner-border mr-2" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div className="spinner-grow" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </div>
-            </div>
+            <ContentLoader size="50px" />
           ) : (
             <div className="row">
               <div className="col-sm-12">

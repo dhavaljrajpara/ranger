@@ -10,6 +10,7 @@ import { Row, Col, Collapse, Breadcrumb } from "react-bootstrap";
 import { sortBy } from "lodash";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import withRouter from "Hooks/withRouter";
+import { ContentLoader } from "../../components/CommonComponents";
 
 class ZoneListing extends Component {
   constructor(props) {
@@ -161,18 +162,7 @@ class ZoneListing extends Component {
                 <Row className="mt-2">
                   {this.state.loader ? (
                     <Col className="text-center">
-                      <div
-                        className="spinner-border spinner-border-sm mr-2 mt-2"
-                        role="status"
-                      >
-                        <span className="sr-only">Loading...</span>
-                      </div>
-                      <div
-                        className="spinner-grow spinner-grow-sm"
-                        role="status"
-                      >
-                        <span className="sr-only">Loading...</span>
-                      </div>
+                      <ContentLoader size="20px" />
                     </Col>
                   ) : (
                     <Col>
@@ -214,16 +204,7 @@ class ZoneListing extends Component {
             </Collapse>
             <Col>
               {this.state.loader ? (
-                <Row>
-                  <Col sm={12} className="text-center">
-                    <div className="spinner-border mr-2" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                    <div className="spinner-grow" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  </Col>
-                </Row>
+                <ContentLoader size="50px" />
               ) : this.state.selectedZone === null ? (
                 <Row className="justify-content-md-center">
                   <Col md="auto">

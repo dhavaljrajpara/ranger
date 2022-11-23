@@ -15,6 +15,7 @@ import { find, map, sortBy, isUndefined, isEmpty } from "lodash";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import AsyncSelect from "react-select/async";
+import { isKeyAdmin } from "../../utils/XAUtils";
 
 function init(props) {
   return {
@@ -203,6 +204,11 @@ const KeyManager = (props) => {
       });
       servicesdata = servicesResp.data.services;
     } catch (error) {
+      let errorMsg = `Error occurred while fetching Services!`;
+      if (error?.response?.data?.msgDesc) {
+        errorMsg = `Error! ${error.response.data.msgDesc}`;
+      }
+      toast.error(errorMsg);
       console.error(`Error occurred while fetching Services! ${error}`);
     }
     serviceOptions = servicesdata.map((obj) => ({
@@ -280,12 +286,12 @@ const KeyManager = (props) => {
         updatetable: moment.now()
       });
     } catch (error) {
-      let errorMsg = "";
-      if (error.response.data.msgDesc) {
-        errorMsg = toast.error("Error! " + error.response.data.msgDesc + "\n");
-      } else {
-        errorMsg = `Error occurred during editing Key` + "\n";
+      let errorMsg = `Error occurred during editing Key` + "\n";
+      if (error?.response?.data?.msgDesc) {
+        errorMsg = "Error! " + error.response.data.msgDesc + "\n";
       }
+      toast.error(errorMsg);
+      console.error(`Error occurred during editing Key! ${error}`);
     }
   }, [filterdata]);
 
@@ -348,6 +354,11 @@ const KeyManager = (props) => {
         selcservicesdata = selservicesResp.data.vXKeys;
         totalCount = selservicesResp.data.totalCount;
       } catch (error) {
+        let errorMsg = `Error occurred while fetching Services`;
+        if (error?.response?.data?.msgDesc) {
+          errorMsg = "Error! " + error.response.data.msgDesc;
+        }
+        toast.error(errorMsg);
         console.error(`Error occurred while fetching Services! ${error}`);
       }
 
@@ -573,17 +584,19 @@ const KeyManager = (props) => {
               defaultSelected={defaultSearchFilterParams}
             />
           </Col>
-          <Col sm={2} className="text-right">
-            <Button
-              className={onchangeval !== null ? "" : "button-disabled"}
-              disabled={onchangeval != null ? false : true}
-              onClick={addKey}
-              data-id="addNewKey"
-              data-cy="addNewKey"
-            >
-              Add New Key
-            </Button>
-          </Col>
+          {!isKeyAdmin && (
+            <Col sm={2} className="text-right">
+              <Button
+                className={onchangeval !== null ? "" : "button-disabled"}
+                disabled={onchangeval != null ? false : true}
+                onClick={addKey}
+                data-id="addNewKey"
+                data-cy="addNewKey"
+              >
+                Add New Key
+              </Button>
+            </Col>
+          )}
         </Row>
 
         <XATableLayout

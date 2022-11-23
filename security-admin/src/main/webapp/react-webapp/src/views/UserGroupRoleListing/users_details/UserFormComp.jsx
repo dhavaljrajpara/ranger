@@ -21,6 +21,7 @@ import { InfoIcon } from "../../../utils/XAUtils";
 import { RegexMessage, roleChngWarning } from "../../../utils/XAMessages";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
+import { invalid } from "moment-timezone";
 
 const initialState = {
   loader: true
@@ -54,10 +55,10 @@ function UserFormComp(props) {
   const [preventUnBlock, setPreventUnblock] = useState(false);
   const toastId = React.useRef(null);
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (formData, invalid) => {
     let userFormData = { ...formData };
     let tblpageData = {};
-    if (state && state !== null) {
+    if (state && state !== null && !invalid) {
       tblpageData = state.tblpageData;
       if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
         tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
@@ -678,7 +679,7 @@ function UserFormComp(props) {
                           );
                         scrollToError(selector);
                       }
-                      handleSubmit(values);
+                      handleSubmit(values, invalid);
                     }}
                     size="sm"
                     disabled={submitting}

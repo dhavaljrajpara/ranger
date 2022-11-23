@@ -150,13 +150,13 @@ function RoleForm() {
     });
   };
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (formData, invalid) => {
     let roleFormData = {
       ...roleInfo,
       ...formData
     };
     let tblpageData = {};
-    if (state && state != null) {
+    if (state && state != null && !invalid) {
       tblpageData = state.tblpageData;
       if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
         tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
@@ -802,7 +802,7 @@ function RoleForm() {
                           );
                         scrollToError(selector);
                       }
-                      handleSubmit(values);
+                      handleSubmit(values, invalid);
                     }}
                     size="sm"
                     disabled={submitting}

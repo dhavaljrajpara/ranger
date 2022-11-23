@@ -12,6 +12,7 @@ import {
   serverError
 } from "Utils/XAUtils";
 import {
+  ContentLoader,
   CustomPopover,
   CustomTooltip
 } from "../../components/CommonComponents";
@@ -592,16 +593,7 @@ function Plugin_Status() {
   return (
     <div className="wrap">
       {contentLoader ? (
-        <Row>
-          <Col sm={12} className="text-center">
-            <div className="spinner-border mr-2" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <div className="spinner-grow" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </Col>
-        </Row>
+        <ContentLoader size="50px" />
       ) : (
         <React.Fragment>
           <Row className="mb-2">

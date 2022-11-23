@@ -4,6 +4,7 @@ import { Button, Row, Col } from "react-bootstrap";
 import { Loader } from "Components/CommonComponents";
 import { isAuditor, isKMSAuditor } from "Utils/XAUtils";
 import { toast } from "react-toastify";
+import { ContentLoader } from "../../components/CommonComponents";
 
 function GroupAssociateUserDetails(props) {
   const { groupID } = props;
@@ -61,7 +62,7 @@ function GroupAssociateUserDetails(props) {
   };
 
   return loader ? (
-    <Loader />
+    <ContentLoader size="50px" />
   ) : (
     <>
       {userListData && userListData.length > 0 ? (

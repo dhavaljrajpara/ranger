@@ -181,7 +181,7 @@ class ZoneDisplay extends Component {
                           Admin Users
                         </Form.Label>
                         <Col sm="9">
-                          {this.props.zone.adminUsers.length > 0 ? (
+                          {this.props?.zone?.adminUsers?.length > 0 ? (
                             this.props.zone.adminUsers.map((obj) => {
                               return (
                                 <Badge
@@ -204,7 +204,7 @@ class ZoneDisplay extends Component {
                           Admin Usergroups
                         </Form.Label>
                         <Col sm="9">
-                          {this.props.zone.adminUserGroups.length > 0 ? (
+                          {this.props?.zone?.adminUserGroups?.length > 0 ? (
                             this.props.zone.adminUserGroups.map(
                               (obj, index) => {
                                 return (
@@ -229,7 +229,7 @@ class ZoneDisplay extends Component {
                           Auditor Users
                         </Form.Label>
                         <Col sm="9">
-                          {this.props.zone.auditUsers.length > 0 ? (
+                          {this.props?.zone.auditUsers?.length > 0 ? (
                             this.props.zone.auditUsers.map((obj) => {
                               return (
                                 <Badge
@@ -252,7 +252,7 @@ class ZoneDisplay extends Component {
                           Auditor Usergroups
                         </Form.Label>
                         <Col sm="9">
-                          {this.props.zone.auditUserGroups.length > 0 ? (
+                          {this.props?.zone?.auditUserGroups?.length > 0 ? (
                             this.props.zone.auditUserGroups.map(
                               (obj, index) => {
                                 return (
@@ -301,7 +301,7 @@ class ZoneDisplay extends Component {
                 </div>
                 <Accordion.Collapse eventKey="1">
                   <Card.Body>
-                    {this.props.zone.tagServices.length !== 0 ? (
+                    {this.props?.zone?.tagServices?.length !== 0 ? (
                       this.props.zone.tagServices.map((obj, index) => (
                         <h6 key={index} className="d-inline mr-1">
                           <Badge variant="info">{obj}</Badge>
@@ -355,7 +355,7 @@ class ZoneDisplay extends Component {
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.keys(this.props.zone.services).map(
+                        {Object.keys(this.props?.zone?.services).map(
                           (key, index) => {
                             let servicetype = Object.values(
                               this.state.services

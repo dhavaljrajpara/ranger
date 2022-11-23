@@ -90,7 +90,7 @@ function GroupForm(props) {
     });
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, invalid) => {
     let formData = {};
     formData.name = values.name;
     formData.description = values.description || "";
@@ -99,7 +99,7 @@ function GroupForm(props) {
       ...formData
     };
     let tblpageData = {};
-    if (state && state != null) {
+    if (state && state != null && !invalid) {
       tblpageData = state.tblpageData;
       if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
         tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
@@ -321,7 +321,7 @@ function GroupForm(props) {
                           );
                         scrollToError(selector);
                       }
-                      handleSubmit(values);
+                      handleSubmit(values, invalid);
                     }}
                     className="btn-mini"
                     size="sm"

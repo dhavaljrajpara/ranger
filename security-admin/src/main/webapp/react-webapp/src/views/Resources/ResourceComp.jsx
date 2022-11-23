@@ -21,7 +21,8 @@ export default function ResourceComp(props) {
     formValues,
     serviceDetails,
     policyType,
-    policyItem
+    policyItem,
+    policyId
   } = props;
   const [rsrcState, setLoader] = useState({ loader: false, resourceKey: -1 });
   let resources = serviceCompDetails.resources;

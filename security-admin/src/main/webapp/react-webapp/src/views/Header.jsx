@@ -10,7 +10,8 @@ import {
   isAuditor,
   isKeyAdmin,
   isSystemAdmin,
-  getBaseUrl
+  getBaseUrl,
+  isKMSAuditor
 } from "Utils/XAUtils";
 import { isUndefined } from "lodash";
 import withRouter from "Hooks/withRouter";
@@ -170,7 +171,7 @@ class Header extends Component {
               )}
               {hasAccessToTab("Key Manager") && (
                 <React.Fragment>
-                  {isKeyAdmin() && (
+                  {(isKeyAdmin() || isKMSAuditor()) && (
                     <NavDropdown title={encryption}>
                       <NavDropdown.Item
                         to="/kms/keys/new/manage/service"

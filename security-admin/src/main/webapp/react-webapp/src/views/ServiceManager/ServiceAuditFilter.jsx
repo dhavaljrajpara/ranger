@@ -164,7 +164,8 @@ export default function ServiceAuditFilter(props) {
     "Permissions",
     "Users",
     "Groups",
-    "Roles"
+    "Roles",
+    " "
   ];
 
   const tableHeader = () => {
@@ -229,6 +230,7 @@ export default function ServiceAuditFilter(props) {
                               <div style={{ minWidth: "195px" }}>
                                 <Select
                                   {...input}
+                                  menuPortalTarget={document.body}
                                   isClearable={false}
                                   options={[
                                     { value: "DENIED", label: "DENIED" },
@@ -377,6 +379,7 @@ export default function ServiceAuditFilter(props) {
                               >
                                 <AsyncSelect
                                   {...input}
+                                  menuPortalTarget={document.body}
                                   components={{
                                     IndicatorSeparator: () => null
                                   }}
@@ -408,6 +411,7 @@ export default function ServiceAuditFilter(props) {
                               >
                                 <AsyncSelect
                                   {...input}
+                                  menuPortalTarget={document.body}
                                   components={{
                                     IndicatorSeparator: () => null
                                   }}
@@ -439,6 +443,7 @@ export default function ServiceAuditFilter(props) {
                               >
                                 <AsyncSelect
                                   {...input}
+                                  menuPortalTarget={document.body}
                                   components={{
                                     IndicatorSeparator: () => null
                                   }}
@@ -455,8 +460,6 @@ export default function ServiceAuditFilter(props) {
                         </td>
                       );
                     }
-
-                    return <td key={colName}>{colName}</td>;
                   })}
                   <td key={`${index}.remove`}>
                     <Button

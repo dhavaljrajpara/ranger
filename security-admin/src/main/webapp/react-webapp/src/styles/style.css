@@ -951,18 +951,6 @@ header {
   font-family: monospace;
 }
 
-.spinner-border-sm,
-.spinner-grow-sm {
-  width: 1rem !important;
-  height: 1rem !important;
-}
-
-.spinner-border,
-.spinner-grow {
-  width: 3rem;
-  height: 3rem;
-}
-
 .text-color-red {
   color: #b85355;
 }
@@ -1798,4 +1786,8 @@ header {
   padding-left: 0.5rem;
   word-break: break-all;
   padding-right: 0.5rem;
+}
+
+.usr-grp-role-search-width .filter-tokenizer {
+  width: 100% !important;
 }

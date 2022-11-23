@@ -15,6 +15,7 @@ import { RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
 import { commonBreadcrumb } from "../../utils/XAUtils";
 import {
+  ContentLoader,
   scrollToError,
   selectCustomStyles
 } from "../../components/CommonComponents";
@@ -603,16 +604,7 @@ const SecurityZoneForm = (props) => {
       </div>
       <div className="wrap">
         {loader ? (
-          <Row>
-            <Col sm={12} className="text-center">
-              <div className="spinner-border mr-2" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-              <div className="spinner-grow" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-            </Col>
-          </Row>
+          <ContentLoader size="50px" />
         ) : (
           <Form
             onSubmit={handleSubmit}
@@ -1069,6 +1061,9 @@ const SecurityZoneForm = (props) => {
                             if (invalid) {
                               let selector =
                                 document.getElementById("isError") ||
+                                document.getElementById(
+                                  Object.keys(errors)[0]
+                                ) ||
                                 document.querySelector(
                                   `input[name=${Object.keys(errors)[0]}]`
                                 );

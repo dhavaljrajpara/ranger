@@ -441,7 +441,6 @@ export default function PolicyPermissionItem(props) {
                                       />
                                       {meta.error && (
                                         <>
-                                          <br />
                                           <span className="invalid-field">
                                             {meta.error}
                                           </span>
@@ -661,7 +660,7 @@ export default function PolicyPermissionItem(props) {
         </div>
       </Col>
       <Button
-        className="btn btn-mini"
+        className="btn btn-mini mt-2"
         type="button"
         onClick={() => addPolicyItem(attrName, undefined)}
         data-action="addGroup"

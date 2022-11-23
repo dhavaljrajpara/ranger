@@ -38,6 +38,7 @@ import {
 import { find, isEmpty, isUndefined, map, sortBy, has } from "lodash";
 import { getUserAccessRoleList } from "Utils/XAUtils";
 import StructuredFilter from "../../../components/structured-filter/react-typeahead/tokenizer";
+import { ContentLoader } from "../../../components/CommonComponents";
 
 function Users() {
   const navigate = useNavigate();
@@ -594,20 +595,11 @@ function Users() {
     <div className="wrap">
       <h4 className="wrap-header font-weight-bold">User List</h4>
       {pageLoader ? (
-        <Row>
-          <Col sm={12} className="text-center">
-            <div className="spinner-border mr-2" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <div className="spinner-grow" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </Col>
-        </Row>
+        <ContentLoader size="50px" />
       ) : (
         <React.Fragment>
           <Row className="mb-4">
-            <Col sm={9}>
+            <Col sm={8} className="usr-grp-role-search-width">
               <StructuredFilter
                 key="user-listing-search-filter"
                 placeholder="Search for your users..."
@@ -618,7 +610,7 @@ function Users() {
               />
             </Col>
             {isSystemAdmin() && (
-              <Col sm={3} className="text-right">
+              <Col sm={4} className="text-right">
                 <Button
                   variant="primary"
                   size="sm"

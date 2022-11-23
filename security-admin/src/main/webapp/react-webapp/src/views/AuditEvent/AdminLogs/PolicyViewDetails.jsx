@@ -7,6 +7,7 @@ import dateFormat from "dateformat";
 import { toast } from "react-toastify";
 import { find, isEmpty, sortBy } from "lodash";
 import { serverError } from "../../../utils/XAUtils";
+import { ContentLoader } from "../../../components/CommonComponents";
 
 export function PolicyViewDetails(props) {
   const [access, setAccess] = useState([]);
@@ -590,16 +591,7 @@ export function PolicyViewDetails(props) {
     );
   };
   return loader ? (
-    <div className="row">
-      <div className="col-sm-12 text-center">
-        <div className="spinner-border mr-2" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
-        <div className="spinner-grow" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
-      </div>
-    </div>
+    <ContentLoader size="50px" />
   ) : (
     <>
       <div>

@@ -13,26 +13,26 @@ const Layout = () => {
       {location.pathname === "/" && (
         <Navigate to="/policymanager/resource" replace={true} />
       )}
-      <section className="container-fluid">
+      <section className="container-fluid" style={{ minHeight: "630px" }}>
         <div id="ranger-content">
           {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
         </div>
-        <footer>
-          <div className="main-footer">
-            <div className="pull-left copy-right-text">
-              <p className="text-left">
-                <a
-                  target="_blank"
-                  href="http://www.apache.org/licenses/LICENSE-2.0"
-                  rel="noopener noreferrer"
-                >
-                  Licensed under the Apache License, Version 2.0
-                </a>
-              </p>
-            </div>
-          </div>
-        </footer>
       </section>
+      <footer>
+        <div className="main-footer">
+          <div className="pull-left copy-right-text">
+            <p className="text-left">
+              <a
+                target="_blank"
+                href="http://www.apache.org/licenses/LICENSE-2.0"
+                rel="noopener noreferrer"
+              >
+                Licensed under the Apache License, Version 2.0
+              </a>
+            </p>
+          </div>
+        </div>
+      </footer>
     </>
   );
 };

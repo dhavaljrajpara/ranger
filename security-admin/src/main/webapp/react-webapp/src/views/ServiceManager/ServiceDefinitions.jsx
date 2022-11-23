@@ -16,6 +16,7 @@ import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
 import { commonBreadcrumb } from "../../utils/XAUtils";
+import { ContentLoader } from "../../components/CommonComponents";
 
 class ServiceDefinitions extends Component {
   constructor(props) {
@@ -422,16 +423,7 @@ class ServiceDefinitions extends Component {
         </Row>
         <div className="wrap policy-manager mt-2">
           {this.state.loader ? (
-            <Row className="row">
-              <Col sm={12} className="text-center">
-                <div className="spinner-border mr-2" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-                <div className="spinner-grow" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </Col>
-            </Row>
+            <ContentLoader size="50px" />
           ) : (
             <Row className="row">
               {filterServiceDefs.map((serviceDef) => (

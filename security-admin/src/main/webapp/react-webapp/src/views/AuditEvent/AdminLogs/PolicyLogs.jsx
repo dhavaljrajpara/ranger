@@ -901,7 +901,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index].permissions.map((obj) => obj).join(", ");
+        : filterdiff[index]?.permissions?.map((obj) => obj).join(", ");
     };
 
     const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {
@@ -1159,7 +1159,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index].roles.map((obj) => obj).join(", ");
+        : filterdiff[index]?.roles?.map((obj) => obj).join(", ");
     };
     const getGroups = (group, index) => {
       let filterdiff = [];
@@ -1183,7 +1183,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index].groups.map((obj) => obj).join(", ");
+        : filterdiff[index]?.groups?.map((obj) => obj).join(", ");
     };
     const getUsers = (users, index) => {
       let filterdiff = [];
@@ -1207,7 +1207,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index].users.map((obj) => obj).join(", ");
+        : filterdiff[index]?.users?.map((obj) => obj).join(", ");
     };
     const getPermissions = (permissions, index) => {
       let filterdiff = [];
@@ -1235,7 +1235,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index].permissions.map((obj) => obj).join(", ");
+        : filterdiff[index]?.permissions?.map((obj) => obj).join(", ");
     };
 
     const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {

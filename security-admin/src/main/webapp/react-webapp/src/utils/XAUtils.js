@@ -33,7 +33,8 @@ export const LoginUser = (role) => {
   if (!currentUserRoles && currentUserRoles == "") {
     return false;
   }
-  return currentUserRoles.indexOf(role) > -1;
+  // return currentUserRoles.indexOf(role) > -1;
+  return currentUserRoles == role;
 };
 
 export const isSystemAdmin = () => {
@@ -857,7 +858,7 @@ export const showGroupsOrUsersOrRolesForPolicy = (
   for (let item of itemList) {
     if (rawData[item] && rawData[item].length > 0)
       for (const obj of rawData[item]) {
-        if (obj?.showType) {
+        if (!isEmpty(obj?.[showType])) {
           allTypes = new Set([...allTypes, ...obj[showType]]);
         }
       }

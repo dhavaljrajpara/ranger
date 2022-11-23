@@ -39,6 +39,7 @@ import {
   isUser
 } from "../../utils/XAUtils";
 import { alertMessage } from "../../utils/XAEnums";
+import { ContentLoader } from "../../components/CommonComponents";
 
 function PolicyListing(props) {
   const { serviceDef } = props;
@@ -400,12 +401,13 @@ function PolicyListing(props) {
             <span
               className="text-truncate"
               title={val.value}
-              style={{ maxWidth: "120px", display: "inline-block" }}
+              style={{ maxWidth: "240px", display: "inline-block" }}
             >
               {val.value}
             </span>
           );
-        }
+        },
+        width: 240
       },
       {
         Header: "Policy Label",
@@ -691,16 +693,7 @@ function PolicyListing(props) {
           </Alert>
         )}
       {pageLoader ? (
-        <Row>
-          <Col sm={12} className="text-center">
-            <div className="spinner-border mr-2" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-            <div className="spinner-grow" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </Col>
-        </Row>
+        <ContentLoader size="50px" />
       ) : (
         <React.Fragment>
           <div className="policy-listing">

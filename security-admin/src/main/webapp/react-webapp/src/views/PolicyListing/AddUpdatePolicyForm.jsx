@@ -154,7 +154,7 @@ export default function AddUpdatePolicyForm(props) {
     }));
   };
   const fetchRolesData = async (inputValue) => {
-    let params = { name: inputValue || "", isVisible: 1 };
+    let params = { roleNamePartial: inputValue || "", isVisible: 1 };
     let op = [];
     if (rolesDataRef.current === null || inputValue) {
       const roleResp = await fetchApi({
@@ -343,7 +343,8 @@ export default function AddUpdatePolicyForm(props) {
             return { label: m, value: m };
           });
           if (setResources.excludesSupported) {
-            data[`isExcludesSupport-${setResources.level}`] = value.isExcludes;
+            data[`isExcludesSupport-${setResources.level}`] =
+              value.isExcludes == false;
           }
           if (setResources.recursiveSupported) {
             data[`isRecursiveSupport-${setResources.level}`] =
@@ -586,9 +587,15 @@ export default function AddUpdatePolicyForm(props) {
       }
     }
     data.allowExceptions = getPolicyItemsVal(values, "allowExceptions");
-    data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
+
     data.policyItems = getPolicyItemsVal(values, "policyItems");
-    data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
+    if (values?.isDenyAllElse) {
+      data.denyPolicyItems = [];
+      data.denyExceptions = [];
+    } else {
+      data.denyPolicyItems = getPolicyItemsVal(values, "denyPolicyItems");
+      data.denyExceptions = getPolicyItemsVal(values, "denyExceptions");
+    }
     data.dataMaskPolicyItems = getPolicyItemsVal(values, "dataMaskPolicyItems");
     data.rowFilterPolicyItems = getPolicyItemsVal(
       values,
@@ -637,7 +644,7 @@ export default function AddUpdatePolicyForm(props) {
         data.resources[values[`resourceName-${level}`].name] = {
           isExcludes:
             defObj.excludesSupported &&
-            !(values[`isExcludesSupport-${level}`] === false),
+            values[`isExcludesSupport-${level}`] == false,
           isRecursive:
             defObj.recursiveSupported &&
             !(values[`isRecursiveSupport-${level}`] === false),
@@ -879,7 +886,12 @@ export default function AddUpdatePolicyForm(props) {
                           document.getElementById(Object.keys(errors)[0]) ||
                           document.querySelector(
                             `input[name=${Object.keys(errors)[0]}]`
+                          ) ||
+                          document.querySelector(
+                            `input[id=${Object.keys(errors)[0]}]`
                           );
+                        {
+                        }
                         document.querySelector(`span[class="invalid-field"]`);
                         scrollToError(selector);
                       }
@@ -1114,6 +1126,7 @@ export default function AddUpdatePolicyForm(props) {
                             policyId ? policyData.policyType : policyType
                           }
                           policyItem={true}
+                          policyId={policyId}
                         />
                         <Field
                           className="form-control"
@@ -1461,6 +1474,9 @@ export default function AddUpdatePolicyForm(props) {
                             if (invalid) {
                               let selector =
                                 document.getElementById("isError") ||
+                                document.getElementById(
+                                  Object.keys(errors)[0]
+                                ) ||
                                 document.querySelector(
                                   `input[name=${Object.keys(errors)[0]}]`
                                 ) ||

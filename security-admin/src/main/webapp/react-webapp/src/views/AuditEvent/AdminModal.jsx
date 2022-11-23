@@ -5,6 +5,7 @@ import { AuthStatus, AuthType } from "../../utils/XAEnums";
 import { Modal, Table, Button } from "react-bootstrap";
 import dateFormat from "dateformat";
 import { has } from "lodash";
+import { ContentLoader } from "../../components/CommonComponents";
 
 export const AdminModal = (props) => {
   const [authSession, setAuthSession] = useState([]);
@@ -48,16 +49,7 @@ export const AdminModal = (props) => {
       </Modal.Header>
       <Modal.Body>
         {loader ? (
-          <div className="row">
-            <div className="col-sm-12 text-center">
-              <div className="spinner-border mr-2" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-              <div className="spinner-grow" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-            </div>
-          </div>
+          <ContentLoader size="50px" />
         ) : (
           <Table striped bordered hover>
             <tbody>

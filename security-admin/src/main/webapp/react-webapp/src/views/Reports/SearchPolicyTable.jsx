@@ -14,6 +14,7 @@ import { isEmpty, find } from "lodash";
 import { MoreLess } from "Components/CommonComponents";
 import XATableLayout from "Components/XATableLayout";
 import { fetchApi } from "Utils/fetchAPI";
+import { ContentLoader } from "../../components/CommonComponents";
 
 function SearchPolicyTable(props) {
   const [searchPoliciesData, setSearchPolicies] = useState([]);
@@ -235,16 +236,7 @@ function SearchPolicyTable(props) {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey="0">
               {props.contentLoader ? (
-                <Row>
-                  <Col sm={12} className="text-center">
-                    <div className="spinner-border mr-2" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                    <div className="spinner-grow" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  </Col>
-                </Row>
+                <ContentLoader size="50px" />
               ) : (
                 <Card.Body>
                   <XATableLayout

@@ -1,16 +1,17 @@
-import React, { Component, useState, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { isEmpty } from "lodash";
+import moment from "moment-timezone";
+import React, { Component, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Badge,
-  Popover,
+  Button,
+  Col,
   OverlayTrigger,
-  Tooltip,
-  Button
+  Popover,
+  Row
 } from "react-bootstrap";
 import { Field } from "react-final-form";
-import { isEmpty } from "lodash";
-import moment from "moment-timezone";
+import { useLocation } from "react-router-dom";
 
 const Loader = () => {
   return (
@@ -228,7 +229,14 @@ export const Condition = ({ when, is, children }) => (
   </Field>
 );
 
-export const CustomPopover = ({ title, content, placement, trigger, icon }) => {
+export const CustomPopover = ({
+  title,
+  content,
+  placement,
+  trigger,
+  icon,
+  dangerousInnerHtml
+}) => {
   return (
     <>
       <OverlayTrigger
@@ -237,7 +245,13 @@ export const CustomPopover = ({ title, content, placement, trigger, icon }) => {
         overlay={
           <Popover id={`popover-${placement}`}>
             <Popover.Title as="h3">{title}</Popover.Title>
-            <Popover.Content>{content}</Popover.Content>
+            {dangerousInnerHtml != undefined && dangerousInnerHtml ? (
+              <Popover.Content>
+                <span dangerouslySetInnerHTML={{ __html: content }} />
+              </Popover.Content>
+            ) : (
+              <Popover.Content>{content}</Popover.Content>
+            )}
           </Popover>
         }
       >
@@ -441,6 +455,22 @@ export const scrollToNewData = (usrData, resultSize) => {
       newRowAdded.bgColor = "";
     }, 8000);
   }
+};
+
+export const ContentLoader = (props) => {
+  const { size } = props;
+  return (
+    <Row>
+      <Col sm={12}>
+        <center>
+          <i
+            className="fa fa-spinner fa-pulse fa-lg fa-fw"
+            style={{ fontSize: size, color: "#505054" }}
+          ></i>
+        </center>
+      </Col>
+    </Row>
+  );
 };
 
 export { Loader };
