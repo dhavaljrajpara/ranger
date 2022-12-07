@@ -19,7 +19,15 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import { groupBy, find, isEmpty, pick, isObject, isArray } from "lodash";
+import _, {
+  groupBy,
+  find,
+  isEmpty,
+  pick,
+  isObject,
+  isArray,
+  isEqual
+} from "lodash";
 import { toast } from "react-toastify";
 import { Loader, scrollToError } from "Components/CommonComponents";
 import { fetchApi } from "Utils/fetchAPI";
@@ -109,6 +117,32 @@ export default function AddUpdatePolicyForm(props) {
   };
   const hideDeleteModal = () => {
     setShowDelete(false);
+  };
+
+  const isDirtyFieldCheck = (dirtyFields, modified, values, initialValues) => {
+    let modifiedVal = false;
+    if (!isEmpty(dirtyFields)) {
+      for (let dirtyFieldVal in dirtyFields) {
+        modifiedVal = modified?.[dirtyFieldVal];
+        if (
+          values?.validitySchedules ||
+          modified?.validitySchedules ||
+          values?.conditions ||
+          modified?.conditions ||
+          modifiedVal == true
+        ) {
+          modifiedVal = true;
+          break;
+        }
+      }
+    }
+    if (
+      !isEqual(values?.validitySchedules, initialValues?.validitySchedules) ||
+      !isEqual(values?.conditions, initialValues?.conditions)
+    ) {
+      modifiedVal = true;
+    }
+    return modifiedVal;
   };
 
   const fetchUsersData = async (inputValue) => {
@@ -375,7 +409,7 @@ export default function AddUpdatePolicyForm(props) {
       if (policyData?.conditions?.length > 0) {
         data.conditions = {};
         for (let val of policyData.conditions) {
-          data.conditions[val.type] = val.values.join(",");
+          data.conditions[val?.type] = val?.values?.join(",");
         }
       }
     }
@@ -606,7 +640,7 @@ export default function AddUpdatePolicyForm(props) {
     data.isDenyAllElse = values.isDenyAllElse;
     data.isEnabled = values.isEnabled;
     data.name = values.policyName;
-    data.policyLabels = (values.policyLabel || []).map(({ value }) => value);
+    data.policyLabels = (values.policyLabel || [])?.map(({ value }) => value);
     data.policyPriority = values.policyPriority ? "1" : "0";
     data.policyType = values.policyType;
     data.service = serviceDetails.name;
@@ -648,7 +682,7 @@ export default function AddUpdatePolicyForm(props) {
           isRecursive:
             defObj.recursiveSupported &&
             !(values[`isRecursiveSupport-${level}`] === false),
-          values: values[`value-${level}`].map(({ value }) => value)
+          values: values[`value-${level}`]?.map(({ value }) => value)
         };
       }
     }
@@ -671,7 +705,9 @@ export default function AddUpdatePolicyForm(props) {
           if (val.timeZone) {
             timeObj["timeZone"] = val.timeZone.id;
           }
-          data["validitySchedules"].push(timeObj);
+          if (!isEmpty(timeObj)) {
+            data["validitySchedules"].push(timeObj);
+          }
         }
       });
     }
@@ -685,6 +721,8 @@ export default function AddUpdatePolicyForm(props) {
           values: value?.split(",")
         });
       });
+    } else {
+      data["conditions"] = [];
     }
 
     /* For create zoen policy*/
@@ -871,11 +909,24 @@ export default function AddUpdatePolicyForm(props) {
                 dirty,
                 form: {
                   mutators: { push: addPolicyItem, pop: removePolicyItem }
-                }
+                },
+                form,
+                dirtyFields,
+                modified,
+                initialValues
               }) => (
                 <>
                   <PromtDialog
-                    isDirtyField={dirty}
+                    isDirtyField={
+                      dirty == true || !isEqual(initialValues, values)
+                        ? isDirtyFieldCheck(
+                            dirtyFields,
+                            modified,
+                            values,
+                            initialValues
+                          )
+                        : false
+                    }
                     isUnblock={preventUnBlock}
                   />
                   <form
@@ -889,10 +940,8 @@ export default function AddUpdatePolicyForm(props) {
                           ) ||
                           document.querySelector(
                             `input[id=${Object.keys(errors)[0]}]`
-                          );
-                        {
-                        }
-                        document.querySelector(`span[class="invalid-field"]`);
+                          ) ||
+                          document.querySelector(`span[class="invalid-field"]`);
                         scrollToError(selector);
                       }
                       handleSubmit(event);
@@ -1481,8 +1530,12 @@ export default function AddUpdatePolicyForm(props) {
                                   `input[name=${Object.keys(errors)[0]}]`
                                 ) ||
                                 document.querySelector(
+                                  `input[id=${Object.keys(errors)[0]}]`
+                                ) ||
+                                document.querySelector(
                                   `span[class="invalid-field"]`
                                 );
+
                               scrollToError(selector);
                             }
                             handleSubmit(values, invalid);

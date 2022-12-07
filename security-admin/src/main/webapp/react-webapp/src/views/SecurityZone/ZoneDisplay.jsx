@@ -182,7 +182,7 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props?.zone?.adminUsers?.length > 0 ? (
-                            this.props.zone.adminUsers.map((obj) => {
+                            this.props?.zone.adminUsers?.map((obj) => {
                               return (
                                 <Badge
                                   variant="info"
@@ -205,7 +205,7 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props?.zone?.adminUserGroups?.length > 0 ? (
-                            this.props.zone.adminUserGroups.map(
+                            this.props?.zone?.adminUserGroups?.map(
                               (obj, index) => {
                                 return (
                                   <Badge
@@ -230,7 +230,7 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props?.zone.auditUsers?.length > 0 ? (
-                            this.props.zone.auditUsers.map((obj) => {
+                            this.props?.zone?.auditUsers?.map((obj) => {
                               return (
                                 <Badge
                                   variant="info"
@@ -253,7 +253,7 @@ class ZoneDisplay extends Component {
                         </Form.Label>
                         <Col sm="9">
                           {this.props?.zone?.auditUserGroups?.length > 0 ? (
-                            this.props.zone.auditUserGroups.map(
+                            this.props?.zone?.auditUserGroups?.map(
                               (obj, index) => {
                                 return (
                                   <Badge
@@ -302,7 +302,7 @@ class ZoneDisplay extends Component {
                 <Accordion.Collapse eventKey="1">
                   <Card.Body>
                     {this.props?.zone?.tagServices?.length !== 0 ? (
-                      this.props.zone.tagServices.map((obj, index) => (
+                      this?.props?.zone?.tagServices?.map((obj, index) => (
                         <h6 key={index} className="d-inline mr-1">
                           <Badge variant="info">{obj}</Badge>
                         </h6>
@@ -355,11 +355,11 @@ class ZoneDisplay extends Component {
                         </tr>
                       </thead>
                       <tbody>
-                        {Object.keys(this.props?.zone?.services).map(
+                        {Object.keys(this.props?.zone?.services)?.map(
                           (key, index) => {
                             let servicetype = Object.values(
                               this.state.services
-                            ).find((obj) => {
+                            )?.find((obj) => {
                               return obj.name === key;
                             });
 
@@ -377,26 +377,20 @@ class ZoneDisplay extends Component {
                                   width="32%"
                                   height="55px"
                                 >
-                                  {this.props.zone.services[key].resources.map(
-                                    (resource, index) => (
-                                      <div
-                                        className="resource-group"
-                                        key={index}
-                                      >
-                                        {Object.keys(resource).map(
-                                          (resourceKey, index) => (
-                                            <p
-                                              key={index}
-                                              className="text-break"
-                                            >
-                                              <strong>{`${resourceKey} : `}</strong>
-                                              {resource[resourceKey].join(", ")}
-                                            </p>
-                                          )
-                                        )}
-                                      </div>
-                                    )
-                                  )}
+                                  {this.props?.zone?.services[
+                                    key
+                                  ]?.resources?.map((resource, index) => (
+                                    <div className="resource-group" key={index}>
+                                      {Object.keys(resource)?.map(
+                                        (resourceKey, index) => (
+                                          <p key={index} className="text-break">
+                                            <strong>{`${resourceKey} : `}</strong>
+                                            {resource[resourceKey].join(", ")}
+                                          </p>
+                                        )
+                                      )}
+                                    </div>
+                                  ))}
                                 </td>
                               </tr>
                             );

@@ -407,7 +407,7 @@ function PolicyListing(props) {
             </span>
           );
         },
-        width: 240
+        width: 250
       },
       {
         Header: "Policy Label",

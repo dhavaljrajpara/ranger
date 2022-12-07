@@ -605,7 +605,7 @@ export default function PolicyPermissionItem(props) {
                           serviceCompDetails?.name !== "tag"
                         ) {
                           return (
-                            <td className="text-center">
+                            <td className="text-center align-middle">
                               <Field
                                 className="form-control"
                                 name={`${name}.delegateAdmin`}

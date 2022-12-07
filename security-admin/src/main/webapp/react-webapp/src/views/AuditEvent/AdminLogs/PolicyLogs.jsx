@@ -292,8 +292,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
     const getfilteredoldval = (val, oldvals) => {
       let filterdiff = null;
       !isEmpty(removedUsers[val])
-        ? (filterdiff = difference(oldvals.values, removedUsers[val]))
-        : (filterdiff = oldvals.values);
+        ? (filterdiff = difference(oldvals?.values, removedUsers[val]))
+        : (filterdiff = oldvals?.values);
       return (
         <>
           {!isEqual(oldvals, newVal[val])
@@ -307,7 +307,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
                       </>
                     );
                   }),
-                  removedUsers[val].map((obj) => {
+                  removedUsers[val]?.map((obj) => {
                     return (
                       <>
                         <h6 className="d-inline">
@@ -334,8 +334,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
     const getfilterednewval = (val, newvals) => {
       let filterdiff = null;
       !isEmpty(addUsers[val])
-        ? (filterdiff = difference(newvals.values, addUsers[val]))
-        : (filterdiff = newvals.values);
+        ? (filterdiff = difference(newvals?.values, addUsers[val]))
+        : (filterdiff = newvals?.values);
       return (
         <>
           {!isEqual(newvals, oldVal[val])
@@ -373,76 +373,192 @@ export const PolicyLogs = ({ data, reportdata }) => {
         </>
       );
     };
-
-    Object.keys(oldVal).map((key, index) => {
-      return tablerow.push(
-        <>
-          {!isEqual(oldVal[key].values, newVal[key].values) && (
-            <tr>
-              <td className="table-warning policyitem-field">{key}</td>
-              {oldVal[key] && !isEmpty(oldVal[key].values) && (
-                <td className="table-warning policyitem-field">
-                  {getfilteredoldval(key, oldVal[key])}
+    if (
+      JSON.stringify(Object.keys(oldVal)) == JSON.stringify(Object.keys(newVal))
+    ) {
+      Object.keys(oldVal)?.map((key, index) => {
+        return tablerow.push(
+          <>
+            {!isEqual(oldVal[key]?.values, newVal[key]?.values) && (
+              <tr>
+                <td className="table-warning policyitem-field">{key}</td>
+                {oldVal[key] && !isEmpty(oldVal[key].values) && (
+                  <td className="table-warning policyitem-field">
+                    {getfilteredoldval(key, oldVal[key])}
+                  </td>
+                )}
+                {newVal[key] && !isEmpty(newVal[key].values) && (
+                  <td className="table-warning">
+                    {getfilterednewval(key, newVal[key])}
+                  </td>
+                )}
+              </tr>
+            )}
+            {oldVal[key]?.isExcludes != newVal[key]?.isExcludes && (
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "exclude"}
                 </td>
-              )}
-              {newVal[key] && !isEmpty(newVal[key].values) && (
-                <td className="table-warning">
-                  {getfilterednewval(key, newVal[key])}
+
+                <td className="table-warning text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="danger">
+                      {oldVal[key]?.isExcludes === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
                 </td>
-              )}
-            </tr>
-          )}
-          {(oldVal[key].isExcludes === true ||
-            newVal[key].isExcludes === true) && (
-            <tr>
-              <td className="table-warning text-nowrap policyitem-field">
-                {key + " " + "exclude"}
-              </td>
 
-              <td className="table-warning text-nowrap policyitem-field">
-                <h6 className="d-inline">
-                  <Badge className="d-inline-flex mr-1" variant="danger">
-                    {oldVal[key].isExcludes === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
+                <td className="table-warning  text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="success">
+                      {newVal[key]?.isExcludes === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+              </tr>
+            )}
+            {oldVal[key]?.isRecursive != newVal[key]?.isRecursive && (
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "recursive"}
+                </td>
 
-              <td className="table-warning  text-nowrap policyitem-field">
-                <h6 className="d-inline">
-                  <Badge className="d-inline-flex mr-1" variant="success">
-                    {newVal[key].isExcludes === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-            </tr>
-          )}
-          {(oldVal[key].isRecursive === true ||
-            newVal[key].isRecursive === true) && (
-            <tr>
-              <td className="table-warning text-nowrap policyitem-field">
-                {key + " " + "recursive"}
-              </td>
+                <td className="table-warning  text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="danger">
+                      {oldVal[key]?.isRecursive === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
 
-              <td className="table-warning  text-nowrap policyitem-field">
-                <h6 className="d-inline">
-                  <Badge className="d-inline-flex mr-1" variant="danger">
-                    {oldVal[key].isRecursive === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
+                <td className="table-warning text-nowrap  policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="success">
+                      {newVal[key]?.isRecursive === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+              </tr>
+            )}
+          </>
+        );
+      });
+    }
 
-              <td className="table-warning text-nowrap  policyitem-field">
-                <h6 className="d-inline">
-                  <Badge className="d-inline-flex mr-1" variant="success">
-                    {newVal[key].isRecursive === false ? "false" : "true"}
-                  </Badge>
-                </h6>
-              </td>
-            </tr>
-          )}
-        </>
-      );
-    });
+    if (
+      JSON.stringify(Object.keys(oldVal)) !==
+      JSON.stringify(Object.keys(newVal))
+    ) {
+      Object.keys(newVal)?.map((key, index) => {
+        return tablerow.push(
+          <>
+            {
+              // !isEqual(oldVal[key]?.values, newVal[key]?.values)
+              !isEqual(newVal[key]?.values, oldVal[key]?.values) && (
+                <tr>
+                  <td className="table-warning policyitem-field">{key}</td>
+                  <td className="table-warning  policyitem-field">--</td>
+                  {newVal[key] && !isEmpty(newVal[key].values) && (
+                    <td className="table-warning policyitem-field">
+                      {newVal[key].values?.map((values) => (
+                        <Badge className="d-inline-flex mr-1" variant="success">
+                          {values}
+                        </Badge>
+                      ))}
+                    </td>
+                  )}
+                </tr>
+              )
+            }
+            {
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "exclude"}
+                </td>
+                <td className="table-warning  policyitem-field">--</td>
+                <td className="table-warning text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="success">
+                      {newVal[key]?.isExcludes === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+              </tr>
+            }
+            {
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "recursive"}
+                </td>
+                <td className="table-warning  policyitem-field">--</td>
+                <td className="table-warning  text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="success">
+                      {newVal[key]?.isRecursive === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+              </tr>
+            }
+          </>
+        );
+      });
+
+      Object.keys(oldVal)?.map((key, index) => {
+        return tablerow.push(
+          <>
+            {!isEqual(oldVal[key]?.values, newVal[key]?.values) && (
+              <tr>
+                <td className="table-warning policyitem-field">{key}</td>
+                {oldVal[key] && !isEmpty(oldVal[key].values) && (
+                  <td className="table-warning policyitem-field">
+                    {oldVal[key]?.values?.map((values) => (
+                      <Badge className="d-inline-flex mr-1" variant="danger">
+                        {values}
+                      </Badge>
+                    ))}
+                  </td>
+                )}
+                <td className="table-warning  policyitem-field">--</td>
+              </tr>
+            )}
+            {
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "exclude"}
+                </td>
+
+                <td className="table-warning text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="danger">
+                      {oldVal[key]?.isExcludes === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+                <td className="table-warning  policyitem-field">--</td>
+              </tr>
+            }
+            {
+              <tr>
+                <td className="table-warning text-nowrap policyitem-field">
+                  {key + " " + "recursive"}
+                </td>
+
+                <td className="table-warning  text-nowrap policyitem-field">
+                  <h6 className="d-inline">
+                    <Badge className="d-inline-flex mr-1" variant="danger">
+                      {oldVal[key]?.isRecursive === false ? "false" : "true"}
+                    </Badge>
+                  </h6>
+                </td>
+                <td className="table-warning   policyitem-field">--</td>
+              </tr>
+            }
+          </>
+        );
+      });
+    }
+
     return tablerow;
   };
 
@@ -771,8 +887,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
             }
           );
           obj["permissions"] = permissions;
-          obj["delegateAdmin"] = obj.delegateAdmin ? "enabled" : "disabled";
         }
+        obj["delegateAdmin"] =
+          obj.delegateAdmin == true ? "enabled" : "disabled";
       });
     }
 
@@ -901,7 +1018,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index]?.permissions?.map((obj) => obj).join(", ");
+        : filterdiff[index]?.permissions !== undefined
+        ? filterdiff[index]?.permissions?.map((obj) => obj).join(", ")
+        : "<empty>";
     };
 
     const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {
@@ -915,7 +1034,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         ) {
           return (
             <h6 className="d-inline">
-              <Badge className="d-inline-flex mr-1" variant="danger">
+              <Badge className="d-inline-flex mr-1" variant="success">
                 {DataMasklabel}
               </Badge>
             </h6>
@@ -935,7 +1054,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
         ) {
           return (
             <h6 className="d-inline">
-              <Badge className="d-inline-flex mr-1" variant="danger">
+              <Badge className="d-inline-flex mr-1" variant="success">
                 {dataMaskInfo.dataMaskType}
               </Badge>
             </h6>
@@ -965,9 +1084,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
     const getCondition = (conditions, index) => {
       var added = isEqual(
         oldPolicyItemsDiff[index] &&
-          oldPolicyItemsDiff[index].conditions.map((obj) => obj.values),
+          oldPolicyItemsDiff[index]?.conditions?.map((obj) => obj.values),
         newPolicyItemsDiff[index] &&
-          newPolicyItemsDiff[index].conditions.map((obj) => {
+          newPolicyItemsDiff[index]?.conditions?.map((obj) => {
             obj.values;
           })
       );
@@ -1020,7 +1139,7 @@ export const PolicyLogs = ({ data, reportdata }) => {
               <tr>
                 <td className="table-warning text-nowrap policyitem-field">
                   {policy.attributeName == "Masked Policy Items" ||
-                  policy.attributeName == "Row level filter Policy Items " ? (
+                  policy.attributeName == "Row level filter Policy Items" ? (
                     <i>Accesses: </i>
                   ) : (
                     <i>Permissions: </i>
@@ -1054,10 +1173,8 @@ export const PolicyLogs = ({ data, reportdata }) => {
               {policy.attributeName == "Masked Policy Items" && (
                 <tr>
                   <td className="table-warning text-nowrap policyitem-field">
-                    <i>Data Mask Types: </i>
-                    {getMaskingLabel(
-                      DataMasklabel ? DataMasklabel : dataMaskInfo.dataMaskType
-                    )}
+                    <i>Data Mask Type: </i>
+                    {getMaskingLabel(DataMasklabel, dataMaskInfo, index)}
                   </td>
                 </tr>
               )}
@@ -1105,9 +1222,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
             }
           );
           obj["permissions"] = permissions;
-          obj["delegateAdmin"] =
-            obj.delegateAdmin == true ? "enabled" : "disabled";
         }
+        obj["delegateAdmin"] =
+          obj.delegateAdmin == true ? "enabled" : "disabled";
       });
     }
     if (!isUndefined(policy.newValue) && !isEmpty(policy.newValue)) {
@@ -1235,7 +1352,9 @@ export const PolicyLogs = ({ data, reportdata }) => {
               );
             })
           )
-        : filterdiff[index]?.permissions?.map((obj) => obj).join(", ");
+        : filterdiff[index]?.permissions !== undefined
+        ? filterdiff[index]?.permissions?.map((obj) => obj).join(", ")
+        : "<empty>";
     };
 
     const getMaskingLabel = (DataMasklabel, dataMaskInfo, index) => {
@@ -1299,11 +1418,11 @@ export const PolicyLogs = ({ data, reportdata }) => {
     const getCondition = (conditions, index) => {
       var removed = isEqual(
         newPolicyItemsDiff[index] &&
-          newPolicyItemsDiff[index].conditions.map((obj) => {
+          newPolicyItemsDiff[index]?.conditions?.map((obj) => {
             obj.values;
           }),
         oldPolicyItemsDiff[index] &&
-          oldPolicyItemsDiff[index].conditions.map((obj) => obj.values)
+          oldPolicyItemsDiff[index]?.conditions?.map((obj) => obj.values)
       );
       return !removed ? (
         <h6 className="d-inline">
@@ -2047,16 +2166,17 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions
-                                  .map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )
-                                  .join(", ")}`}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning text-nowrap policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions
+                                    .map(
+                                      (type) => `${type.type} : ${type.values}`
+                                    )
+                                    .join(", ")}`}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap policyitem-field">
@@ -2133,16 +2253,17 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions
-                                  .map(
-                                    (type) => `${type.type} : ${type.values}`
-                                  )
-                                  .join(", ")}`}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning text-nowrap policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions
+                                    .map(
+                                      (type) => `${type.type} : ${type.values}`
+                                    )
+                                    .join(", ")}`}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap policyitem-field">
@@ -2221,14 +2342,15 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning text-nowrap policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) => `${type.type} : ${type.values}`
-                                )}`}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning text-nowrap policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) => `${type.type} : ${type.values}`
+                                  )}`}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning text-nowrap policyitem-field">
@@ -3032,15 +3154,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) =>
-                                    `${type.type} : ${type.values.join(", ")}`
-                                )} `}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) =>
+                                      `${type.type} : ${type.values.join(", ")}`
+                                  )} `}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning policyitem-field">
@@ -3118,15 +3241,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) =>
-                                    `${type.type} : ${type.values.join(", ")}`
-                                )} `}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) =>
+                                      `${type.type} : ${type.values.join(", ")}`
+                                  )} `}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning policyitem-field">
@@ -3202,15 +3326,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) =>
-                                    `${type.type} : ${type.values.join(", ")}`
-                                )} `}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) =>
+                                      `${type.type} : ${type.values.join(", ")}`
+                                  )} `}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning policyitem-field">
@@ -3289,15 +3414,16 @@ export const PolicyLogs = ({ data, reportdata }) => {
                             </td>
                           </tr>
                           <tr>
-                            {policy.conditions && policy.conditions.length > 0 && (
-                              <td className="table-warning policyitem-field">
-                                <i>{`Conditions`}</i>
-                                {`: ${policy.conditions.map(
-                                  (type) =>
-                                    `${type.type} : ${type.values.join(", ")}`
-                                )} `}
-                              </td>
-                            )}
+                            {policy.conditions &&
+                              policy.conditions.length > 0 && (
+                                <td className="table-warning policyitem-field">
+                                  <i>{`Conditions`}</i>
+                                  {`: ${policy.conditions.map(
+                                    (type) =>
+                                      `${type.type} : ${type.values.join(", ")}`
+                                  )} `}
+                                </td>
+                              )}
                           </tr>
                           <tr>
                             <td className="table-warning policyitem-field">
