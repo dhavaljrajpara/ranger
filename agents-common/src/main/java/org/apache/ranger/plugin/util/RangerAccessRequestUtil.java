@@ -165,6 +165,20 @@ public class RangerAccessRequestUtil {
 		return ret != null ? (Set<String>) ret : Collections.EMPTY_SET;
 	}
 
+	public static Set<String> getUserRoles(RangerAccessRequest request) {
+		Set<String> ret = Collections.EMPTY_SET;
+
+		if (request != null) {
+			ret = request.getUserRoles();
+
+			if (CollectionUtils.isEmpty(ret)) {
+				ret = RangerAccessRequestUtil.getCurrentUserRolesFromContext(request.getContext());
+			}
+		}
+
+		return ret;
+	}
+
 	public static void setRequestUserStoreInContext(Map<String, Object> context, RangerUserStore rangerUserStore) {
 		context.put(KEY_CONTEXT_USERSTORE, rangerUserStore);
 	}
@@ -185,7 +199,18 @@ public class RangerAccessRequestUtil {
 	}
 
 	public static Boolean getIsAnyAccessInContext(Map<String, Object> context) {
-		return (Boolean)context.get(KEY_CONTEXT_IS_ANY_ACCESS);
+		Boolean ret = (Boolean)context.get(KEY_CONTEXT_IS_ANY_ACCESS);
+		return ret == null ? Boolean.FALSE : ret;
+	}
+
+	public static void setAllRequestedAccessTypes(Map<String, Object> context, Set<String> accessTypes) {
+		context.put(KEY_CONTEXT_ACCESSTYPES, accessTypes);
+	}
+
+	public static Set<String> getAllRequestedAccessTypes(RangerAccessRequest request) {
+		Set<String> ret = (Set<String>) request.getContext().get(KEY_CONTEXT_ACCESSTYPES);
+
+		return ret != null ? ret : Collections.singleton(request.getAccessType());
 	}
 
 	public static void setRequestInContext(RangerAccessRequest request) {
