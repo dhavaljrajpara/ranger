@@ -127,7 +127,7 @@ function SearchPolicyTable(props) {
         Header: "Policy Label",
         accessor: "policyLabels",
         Cell: (rawValue) => {
-          let policyLabels = rawValue.value.map((label, index) => (
+          let policyLabels = rawValue?.value?.map((label, index) => (
             <span key={index}>{label}</span>
           ));
           return !isEmpty(policyLabels) ? (
@@ -143,7 +143,7 @@ function SearchPolicyTable(props) {
         Cell: (rawValue) => {
           if (rawValue.value) {
             let keyName = Object.keys(rawValue.value);
-            return keyName.map((key, index) => {
+            return keyName?.map((key, index) => {
               let val = rawValue.value[key].values;
               return (
                 <div key={index} className="text-center overflow-text">
@@ -293,7 +293,7 @@ function PolicyConditionData(props) {
     let tableRow = [];
 
     if (!isEmpty(policyItem)) {
-      tableRow = policyItem.map((items, index) => {
+      tableRow = policyItem?.map((items, index) => {
         return (
           <tr key={index}>
             <td>
@@ -319,7 +319,7 @@ function PolicyConditionData(props) {
             </td>
             <td>
               {!isEmpty(items.accesses)
-                ? items.accesses.map((obj) => (
+                ? items.accesses?.map((obj) => (
                     <h6 className="d-inline mr-1">
                       <Badge variant="info" className="mr-1" key={obj.type}>
                         {obj.type}
@@ -347,7 +347,7 @@ function PolicyConditionData(props) {
     let tableRow = [];
 
     if (!isEmpty(policyItem)) {
-      tableRow = policyItem.map((items, index) => {
+      tableRow = policyItem?.map((items, index) => {
         return (
           <tr key={index}>
             <td>
@@ -373,7 +373,7 @@ function PolicyConditionData(props) {
             </td>
             <td>
               {!isEmpty(items.accesses)
-                ? items.accesses.map((obj) => (
+                ? items?.accesses?.map((obj) => (
                     <h6 className="d-inline">
                       <Badge variant="info" className="mr-1" key={obj.type}>
                         {obj.type}
@@ -412,7 +412,7 @@ function PolicyConditionData(props) {
     let tableRow = [];
 
     if (!isEmpty(policyItem)) {
-      tableRow = policyItem.map((items, index) => {
+      tableRow = policyItem?.map((items, index) => {
         return (
           <tr key={index}>
             <td>
@@ -438,7 +438,7 @@ function PolicyConditionData(props) {
             </td>
             <td>
               {!isEmpty(items.accesses)
-                ? items.accesses.map((obj) => (
+                ? items?.accesses?.map((obj) => (
                     <h6 className="d-inline mr-1">
                       <Badge variant="info" className="mr-1" key={obj.type}>
                         {obj.type}
