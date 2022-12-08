@@ -603,7 +603,7 @@ const KeyManager = (props) => {
               defaultSelected={defaultSearchFilterParams}
             />
           </Col>
-          {!isKeyAdmin && (
+          {isKeyAdmin && (
             <Col sm={2} className="text-right">
               <Button
                 className={onchangeval !== null ? "" : "button-disabled"}

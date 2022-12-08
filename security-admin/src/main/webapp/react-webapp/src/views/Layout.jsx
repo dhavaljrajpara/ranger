@@ -32,7 +32,7 @@ const Layout = () => {
       {location.pathname === "/" && (
         <Navigate to="/policymanager/resource" replace={true} />
       )}
-      <section className="container-fluid" style={{ minHeight: "630px" }}>
+      <section className="container-fluid" style={{ minHeight: "80vh" }}>
         <div id="ranger-content">
           {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
         </div>

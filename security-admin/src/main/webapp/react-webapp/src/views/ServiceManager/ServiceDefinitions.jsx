@@ -444,7 +444,7 @@ class ServiceDefinitions extends Component {
           {this.state.loader ? (
             <ContentLoader size="50px" />
           ) : (
-            <Row className="row">
+            <Row>
               {filterServiceDefs.map((serviceDef) => (
                 <ServiceDefinition
                   key={serviceDef && serviceDef.id}
