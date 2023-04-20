@@ -225,7 +225,7 @@ function Roles() {
             roleListingData.length == selectedRows.current.length) &&
           currentpageIndex > 1
         ) {
-          if(typeof resetPage?.page === "function"){
+          if (typeof resetPage?.page === "function") {
             resetPage.page(0);
           }
         } else {
@@ -258,7 +258,7 @@ function Roles() {
             );
           }
           return "--";
-        },
+        }
       },
       {
         Header: "Users",
@@ -327,7 +327,7 @@ function Roles() {
   ];
 
   const updateSearchFilter = (filter) => {
-  let searchFilterParam = {};
+    let searchFilterParam = {};
     let searchParam = {};
     map(filter, function (obj) {
       searchFilterParam[obj.category] = obj.value;
@@ -346,14 +346,13 @@ function Roles() {
     });
     setSearchFilterParams(searchFilterParam);
     setSearchParams(searchParam);
-    if(typeof resetPage?.page === "function"){
+    if (typeof resetPage?.page === "function") {
       resetPage.page(0);
     }
   };
 
   return (
     <div className="wrap">
-      <h4 className="wrap-header font-weight-bold">Role List</h4>
       {pageLoader ? (
         <Loader />
       ) : (

@@ -40,6 +40,7 @@ import { InfoIcon } from "../../../utils/XAUtils";
 import { RegexMessage, roleChngWarning } from "../../../utils/XAMessages";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
+import CustomBreadcrumb from "../../CustomBreadcrumb";
 
 const initialState = {
   loader: true,
@@ -139,11 +140,7 @@ function UserFormComp(props) {
           data: userFormData
         });
         let tblpageData = {};
-        if (
-          state &&
-          state !== null
-
-        ) {
+        if (state && state !== null) {
           tblpageData = state.tblpageData;
           if (state.tblpageData.pageRecords % state.tblpageData.pageSize == 0) {
             tblpageData["totalPage"] = state.tblpageData.totalPage + 1;
@@ -164,7 +161,6 @@ function UserFormComp(props) {
             addPageData: tblpageData
           }
         });
-
       } catch (error) {
         dispatch({
           type: "SET_BLOCK_UI",
@@ -386,8 +382,10 @@ function UserFormComp(props) {
 
   return (
     <>
-      <h4 className="wrap-header bold">User Detail</h4>
-
+      <div className="header-wraper">
+        <h3 className="wrap-header bold">User Detail</h3>
+        <CustomBreadcrumb />
+      </div>
       <Form
         onSubmit={handleSubmit}
         keepDirtyOnReinitialize={true}

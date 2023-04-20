@@ -326,6 +326,7 @@ class ServiceDefinition extends Component {
                             <i className="fa-fw fa fa-plus"></i>
                           </a>
                         )}
+
                         <a
                           className="text-decoration cursor-pointer"
                           onClick={this.showImportModal}
@@ -523,6 +524,7 @@ class ServiceDefinition extends Component {
                               className="btn btn-mini m-r-5"
                               title="Edit"
                               to={`/service/${this.state.serviceDef.id}/edit/${s.id}`}
+                              state={"services"}
                               data-id={s.id}
                               data-cy={s.id}
                             >

@@ -17,146 +17,210 @@
  * under the License.
  */
 
-import React, { Component } from "react";
+import React, { useState, useReducer, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import PolicyListing from "./PolicyListing";
 import { fetchApi } from "Utils/fetchAPI";
 import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
-import { commonBreadcrumb } from "../../utils/XAUtils";
-import { pick } from "lodash";
-import withRouter from "Hooks/withRouter";
+import TopNavBar from "../SideBar/TopNavBar";
+import { map, sortBy } from "lodash";
+import { RangerPolicyType } from "../../utils/XAEnums";
 
-class PolicyListingTabView extends Component {
-  state = {
+function reducer(state, action) {
+  switch (action.type) {
+    case "SET_LOADER":
+      return {
+        ...state,
+        loader: action.loader
+      };
+    case "SERVICES_DATA":
+      return {
+        ...state,
+        serviceDefData: action.serviceDefData,
+        serviceData: action.serviceData,
+        allServiceData: action.allServiceData
+      };
+
+    default:
+      throw new Error();
+  }
+}
+
+export const PolicyListingTabView = () => {
+  const navigate = useNavigate();
+  const params = useParams();
+  const [zoneServicesData, setZoneServicesData] = useState([]);
+  const [policyState, dispatch] = useReducer(reducer, {
+    loader: true,
     serviceData: {},
     serviceDefData: {},
-    loader: true,
-    show: true
-  };
+    allServiceData: []
+  });
 
-  componentDidMount() {
-    this.fetchServiceDetails();
-  }
+  const { loader, serviceDefData, serviceData, allServiceData } = policyState;
+  let localStorageZoneDetails = localStorage.getItem("zoneDetails");
 
-  fetchServiceDetails = async () => {
-    let getServiceData;
-    let getServiceDefData;
+  useEffect(() => {
+    fetchServiceDetails();
+  }, [params?.serviceId, JSON.parse(localStorageZoneDetails)?.value]);
+  // useEffect(() => {
+  //   zoneServices();
+  // }, [JSON.parse(localStorageZoneDetails)?.value]);
+  const fetchServiceDetails = async () => {
+    dispatch({
+      type: "SET_LOADER",
+      loader: true
+    });
+    let getServiceData = {};
+    let getAllServiceData = [];
+    let getServiceDefData = {};
+    let getService = {};
     try {
       getServiceData = await fetchApi({
-        url: `plugins/services/${this.props.params.serviceId}`
+        url: `plugins/services/${params.serviceId}`
+      });
+
+      getAllServiceData = await fetchApi({
+        url: `plugins/services`
+      });
+      getService = getAllServiceData.data.services?.find((service) => {
+        return service.id == params.serviceId;
       });
       getServiceDefData = await fetchApi({
-        url: `plugins/definitions/name/${getServiceData.data.type}`
+        url: `plugins/definitions/name/${getService.type}`
+      });
+
+      dispatch({
+        type: "SERVICES_DATA",
+        allServiceData: getAllServiceData.data.services,
+        serviceData: getServiceData.data,
+        serviceDefData: getServiceDefData.data
+      });
+      zoneServices(getAllServiceData.data.services);
+      dispatch({
+        type: "SET_LOADER",
+        loader: false
       });
     } catch (error) {
       console.error(`Error occurred while fetching service details ! ${error}`);
     }
-    this.setState({
-      serviceData: getServiceData.data,
-      serviceDefData: getServiceDefData.data,
-      loader: false
-    });
   };
-
-  tabChange = (tabName) => {
-    this.props.navigate(
-      `/service/${this.props.params.serviceId}/policies/${tabName}`,
-      { replace: true }
-    );
-  };
-
-  policyBreadcrumb = () => {
-    let policyDetails = {};
-    policyDetails["serviceId"] = this.props.params?.serviceId;
-    policyDetails["policyType"] = this.props.params?.policyType;
-    policyDetails["serviceName"] = this.state.serviceData?.displayName;
-    policyDetails["selectedZone"] = JSON.parse(
-      localStorage.getItem("zoneDetails")
-    );
-    if (this.state?.serviceDefData?.name === "tag") {
-      if (policyDetails?.selectedZone != null) {
-        return commonBreadcrumb(
-          ["TagBasedServiceManager", "ManagePolicies"],
-          policyDetails
-        );
-      } else {
-        return commonBreadcrumb(
-          ["TagBasedServiceManager", "ManagePolicies"],
-          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
-        );
-      }
-    } else {
-      if (policyDetails?.selectedZone != null) {
-        return commonBreadcrumb(
-          ["ServiceManager", "ManagePolicies"],
-          policyDetails
-        );
-      } else {
-        return commonBreadcrumb(
-          ["ServiceManager", "ManagePolicies"],
-          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
-        );
+  const zoneServices = async (servciesData) => {
+    if (localStorageZoneDetails !== null) {
+      try {
+        let zonesResp = [];
+        zonesResp = await fetchApi({
+          url: `public/v2/api/zones/${
+            JSON.parse(localStorageZoneDetails)?.value
+          }/service-headers`
+        });
+        let zoneServiceNames = map(zonesResp.data, "name");
+        let zoneServices = zoneServiceNames?.map((zoneService) => {
+          return servciesData?.filter((service) => {
+            return service.name === zoneService;
+          });
+        });
+        zoneServices = zoneServices.flat();
+        setZoneServicesData(zoneServices);
+      } catch (error) {
+        console.error(`Error occurred while fetching Zone Services ! ${error}`);
       }
     }
   };
+  const getServices = (services) => {
+    let filterServices = [];
 
-  render() {
-    const { serviceDefData, serviceData } = this.state;
-    return this.state.loader ? (
-      <Loader />
-    ) : (
-      <React.Fragment>
-        {this.policyBreadcrumb()}
-        <h4 className="wrap-header bold">
-          {`List of Policies : ${this.state.serviceData.displayName}`}
-        </h4>
+    filterServices = services?.filter((service) => {
+      if (service?.type == serviceDefData?.name) {
+        return service;
+      }
+    });
 
-        {isRenderMasking(serviceDefData.dataMaskDef) ||
+    return sortBy(
+      filterServices?.map(({ displayName }) => ({
+        label: displayName,
+        value: displayName
+      })),
+      "label"
+    );
+  };
+  const handleServiceChange = async (e) => {
+    if (e !== "") {
+      let selectedServiceData = allServiceData?.find((service) => {
+        if (service.displayName == e?.label) {
+          return service;
+        }
+      });
+      navigate(
+        `/service/${selectedServiceData?.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`,
+        {
+          replace: true
+        }
+      );
+    }
+  };
+  const tabChange = (tabName) => {
+    navigate(`/service/${params?.serviceId}/policies/${tabName}`, {
+      replace: true
+    });
+  };
+
+  return (
+    <React.Fragment>
+      <TopNavBar
+        serviceDefData={serviceDefData}
+        serviceData={serviceData}
+        handleServiceChange={handleServiceChange}
+        getServices={getServices}
+        allServiceData={sortBy(allServiceData, "name")}
+        policyLoader={loader}
+        zoneServicesData={zoneServicesData}
+      />
+      {loader ? (
+        <Loader />
+      ) : isRenderMasking(serviceDefData.dataMaskDef) ||
         isRenderRowFilter(serviceDefData.rowFilterDef) ? (
-          <Tabs
-            id="PolicyListing"
-            activeKey={this.props.params.policyType}
-            onSelect={(k) => this.tabChange(k)}
-          >
-            <Tab eventKey="0" title="Access">
-              {this.props.params.policyType == "0" && (
+        <Tabs
+          id="PolicyListing"
+          activeKey={params.policyType}
+          onSelect={(k) => tabChange(k)}
+        >
+          <Tab eventKey="0" title="Access">
+            {params.policyType == "0" && (
+              <PolicyListing
+                serviceDef={serviceDefData}
+                serviceData={serviceData}
+              />
+            )}
+          </Tab>
+          {isRenderMasking(serviceDefData?.dataMaskDef) && (
+            <Tab eventKey="1" title="Masking">
+              {params.policyType == "1" && (
                 <PolicyListing
                   serviceDef={serviceDefData}
                   serviceData={serviceData}
                 />
               )}
             </Tab>
-            {isRenderMasking(serviceDefData.dataMaskDef) && (
-              <Tab eventKey="1" title="Masking">
-                {this.props.params.policyType == "1" && (
-                  <PolicyListing
-                    serviceDef={serviceDefData}
-                    serviceData={serviceData}
-                  />
-                )}
-              </Tab>
-            )}
-            {isRenderRowFilter(serviceDefData.rowFilterDef) && (
-              <Tab eventKey="2" title="Row Level Filter">
-                {this.props.params.policyType == "2" && (
-                  <PolicyListing
-                    serviceDef={serviceDefData}
-                    serviceData={serviceData}
-                  />
-                )}
-              </Tab>
-            )}
-          </Tabs>
-        ) : (
-          <PolicyListing
-            serviceDef={serviceDefData}
-            serviceData={serviceData}
-          />
-        )}
-      </React.Fragment>
-    );
-  }
-}
+          )}
+          {isRenderRowFilter(serviceDefData.rowFilterDef) && (
+            <Tab eventKey="2" title="Row Level Filter">
+              {params.policyType == "2" && (
+                <PolicyListing
+                  serviceDef={serviceDefData}
+                  serviceData={serviceData}
+                />
+              )}
+            </Tab>
+          )}
+        </Tabs>
+      ) : (
+        <PolicyListing serviceDef={serviceDefData} serviceData={serviceData} />
+      )}
+    </React.Fragment>
+  );
+};
 
-export default withRouter(PolicyListingTabView);
+export default PolicyListingTabView;

@@ -29,11 +29,12 @@ import {
   Loader,
   scrollToError
 } from "../../components/CommonComponents";
-import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
+import { serverError } from "../../utils/XAUtils";
 import { isUndefined, values } from "lodash";
 import withRouter from "Hooks/withRouter";
 import { useLocation, useNavigate } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
+import CustomBreadcrumb from "../CustomBreadcrumb";
 
 const initialState = {
   service: {},
@@ -165,23 +166,15 @@ function KeyCreate(props) {
     }
     return errors;
   };
-  const keyCreateBreadcrumb = () => {
-    let serviceDetails = {};
-    serviceDetails["serviceDefId"] = definition.data && definition.data.id;
-    serviceDetails["serviceId"] = service.data && service.data.id;
-    serviceDetails["serviceName"] = props.params.serviceName;
-    return commonBreadcrumb(
-      ["Kms", "KmsKeyForService", "KmsKeyCreate"],
-      serviceDetails
-    );
-  };
 
   return loader ? (
     <Loader />
   ) : (
     <div>
-      {keyCreateBreadcrumb()}
-      <h4 className="wrap-header bold">Key Detail</h4>
+      <div className="header-wraper">
+        <h3 className="wrap-header bold">Key Detail</h3>
+        <CustomBreadcrumb />
+      </div>
       <Form
         onSubmit={handleSubmit}
         keepDirtyOnReinitialize={true}

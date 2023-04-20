@@ -21,7 +21,7 @@ import React, { useState, useEffect, useReducer } from "react";
 import { Button, Row, Col } from "react-bootstrap";
 import { Form, Field } from "react-final-form";
 import { toast } from "react-toastify";
-import { commonBreadcrumb, serverError } from "../../../utils/XAUtils";
+import { serverError } from "../../../utils/XAUtils";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import {
   Loader,
@@ -33,6 +33,7 @@ import usePrompt from "Hooks/usePrompt";
 import { fetchApi } from "Utils/fetchAPI";
 import { RegexValidation, GroupSource } from "../../../utils/XAEnums";
 import { BlockUi } from "../../../components/CommonComponents";
+import CustomBreadcrumb from "../../CustomBreadcrumb";
 
 const initialState = {
   groupInfo: {},
@@ -231,11 +232,10 @@ function GroupForm(props) {
 
   return (
     <div>
-      {commonBreadcrumb(
-        ["Groups", params.groupID ? "GroupEdit" : "GroupCreate"],
-        params.groupID
-      )}
-      <h4 className="wrap-header bold">Group Detail</h4>
+      <div className="header-wraper">
+        <h3 className="wrap-header bold">Group Detail</h3>
+        <CustomBreadcrumb />
+      </div>
       {loader ? (
         <Loader />
       ) : (

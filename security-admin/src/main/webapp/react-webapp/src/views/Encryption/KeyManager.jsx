@@ -31,11 +31,11 @@ import { fetchApi } from "Utils/fetchAPI";
 import dateFormat from "dateformat";
 import moment from "moment-timezone";
 import { find, map, sortBy, isUndefined, isEmpty } from "lodash";
-import { commonBreadcrumb } from "../../utils/XAUtils";
 import StructuredFilter from "../../components/structured-filter/react-typeahead/tokenizer";
 import AsyncSelect from "react-select/async";
 import { isKeyAdmin } from "../../utils/XAUtils";
 import { BlockUi } from "../../components/CommonComponents";
+import CustomBreadcrumb from "../CustomBreadcrumb";
 
 function init(props) {
   return {
@@ -331,7 +331,7 @@ const KeyManager = (props) => {
       toast.success(`Success! Key deleted successfully`);
       if (keydata.length == 1 && currentPageIndex > 1) {
         let page = currentPageIndex - currentPageIndex;
-        if(typeof resetPage?.page === "function"){
+        if (typeof resetPage?.page === "function") {
           resetPage.page(page);
         }
       } else {
@@ -571,8 +571,10 @@ const KeyManager = (props) => {
 
   return (
     <div>
-      {commonBreadcrumb(["Kms"])}
-      <h6 className="font-weight-bold">Key Management</h6>
+      <div className="header-wraper">
+        <h3 className="wrap-header bold">Key Management</h3>
+        <CustomBreadcrumb />
+      </div>
 
       <div className="wrap">
         <BlockUi isUiBlock={blockUI} />

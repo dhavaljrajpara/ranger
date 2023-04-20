@@ -34,7 +34,7 @@ import withRouter from "Hooks/withRouter";
 import ServiceDefinition from "./ServiceDefinition";
 import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
-import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
+import { serverError } from "../../utils/XAUtils";
 import { BlockUi, Loader } from "../../components/CommonComponents";
 
 class ServiceDefinitions extends Component {
@@ -96,6 +96,7 @@ class ServiceDefinitions extends Component {
   };
 
   fetchServiceDefs = async () => {
+    this.props.disableTabs(true);
     this.setState({
       loader: true
     });
@@ -109,15 +110,18 @@ class ServiceDefinitions extends Component {
       });
 
       if (this.state.isTagView) {
-        tagServiceDef = sortBy(filter(serviceDefsResp.data.serviceDefs, [
-          "name",
-          "tag"
-        ]),"id");
+        tagServiceDef = sortBy(
+          filter(serviceDefsResp.data.serviceDefs, ["name", "tag"]),
+          "id"
+        );
       } else {
-        resourceServiceDef = sortBy(filter(
-          serviceDefsResp.data.serviceDefs,
-          (serviceDef) => serviceDef.name !== "tag"
-        ),"id");
+        resourceServiceDef = sortBy(
+          filter(
+            serviceDefsResp.data.serviceDefs,
+            (serviceDef) => serviceDef.name !== "tag"
+          ),
+          "id"
+        );
       }
     } catch (error) {
       console.error(
@@ -131,9 +135,11 @@ class ServiceDefinitions extends Component {
         : resourceServiceDef,
       loader: false
     });
+    this.props.disableTabs(false);
   };
 
   fetchZones = async () => {
+    this.props.disableTabs(true);
     this.setState({
       loader: true
     });
@@ -150,10 +156,13 @@ class ServiceDefinitions extends Component {
       zones: sortBy(zoneList, ["name"]),
       loader: false
     });
-    this.getSelectedZone(this.state.selectedZone);
+    this.props.disableTabs(false);
+    // this.getSelectedZone(this.state.selectedZone);
+    this.getSelectedZone(JSON.parse(localStorage.getItem("zoneDetails")));
   };
 
   fetchServices = async () => {
+    this.props.disableTabs(true);
     this.setState({
       loader: true
     });
@@ -191,6 +200,7 @@ class ServiceDefinitions extends Component {
       filterServices: this.state.isTagView ? tagServices : resourceServices,
       loader: false
     });
+    this.props.disableTabs(false);
   };
 
   getSelectedZone = async (e) => {
@@ -233,11 +243,14 @@ class ServiceDefinitions extends Component {
         let zoneServiceDefTypes = uniq(map(zoneServices, "type"));
         let filterZoneServiceDef;
         if (!this.state.isTagView) {
-          filterZoneServiceDef = sortBy(zoneServiceDefTypes.map((obj) => {
-            return this.state.serviceDefs.find((serviceDef) => {
-              return serviceDef.name == obj;
-            });
-          }),"id");
+          filterZoneServiceDef = sortBy(
+            zoneServiceDefTypes.map((obj) => {
+              return this.state.serviceDefs.find((serviceDef) => {
+                return serviceDef.name == obj;
+              });
+            }),
+            "id"
+          );
         } else {
           filterZoneServiceDef = this.state.serviceDefs;
         }
@@ -294,28 +307,9 @@ class ServiceDefinitions extends Component {
       ...theme,
       colors: {
         ...theme.colors,
-        primary: "#0081ab",
+        primary: "#0081ab"
       }
     };
-  };
-  serviceBreadcrumb = () => {
-    let serviceDetails = {};
-    serviceDetails["selectedZone"] = JSON.parse(
-      localStorage.getItem("zoneDetails")
-    );
-    if (some(this.state.serviceDefs, { name: "tag" })) {
-      if (serviceDetails.selectedZone) {
-        return commonBreadcrumb(["TagBasedServiceManager"], serviceDetails);
-      } else {
-        return commonBreadcrumb(["TagBasedServiceManager"]);
-      }
-    } else {
-      if (serviceDetails.selectedZone) {
-        return commonBreadcrumb(["ServiceManager"], serviceDetails);
-      } else {
-        return commonBreadcrumb(["ServiceManager"]);
-      }
-    }
   };
 
   render() {
@@ -347,12 +341,8 @@ class ServiceDefinitions extends Component {
     };
     return (
       <React.Fragment>
-        {this.serviceBreadcrumb()}
-        <Row>
-          <Col sm={5}>
-            <h5 className="wrap-header bold  pd-b-10">Service Manager</h5>
-          </Col>
-          <Col sm={7} className="text-right">
+        <div>
+          <div className="text-right px-3 pt-3">
             {!isKMSRole && (
               <div
                 className="body bold  pd-b-10"
@@ -387,7 +377,8 @@ class ServiceDefinitions extends Component {
                             this.state.selectedZone.value
                         }
                   }
-                  isDisabled={isEmpty(zones) ? true : false}
+                  // isDisabled={isEmpty(zones) ? true : false}
+                  isDisabled={true}
                   onChange={this.getSelectedZone}
                   isClearable
                   components={{
@@ -455,12 +446,12 @@ class ServiceDefinitions extends Component {
                 showBlockUI={this.showBlockUI}
               />
             )}
-          </Col>
-        </Row>
+          </div>
+        </div>
         {this.state.loader ? (
           <Loader />
         ) : (
-          <div className="wrap policy-manager mt-2">
+          <div className="wrap policy-manager">
             <Row>
               {filterServiceDefs.map((serviceDef) => (
                 <ServiceDefinition

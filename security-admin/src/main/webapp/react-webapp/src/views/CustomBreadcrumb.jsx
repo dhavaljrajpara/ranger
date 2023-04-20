@@ -26,46 +26,53 @@ export const CustomBreadcrumb = (props) => {
   const { data, type } = props;
 
   return (
-    <div className="mt-n1 mb-2 headerBreadcrumbs">
-      <div className="r_breadcrumbs">
-        <ul className="breadcrumb">
-          {type.map((obj, index) => {
-            let link = data[index][obj].href;
-            return (
-              <li
-                className={
-                  index >= 1 ? "allow_nav breadcrumb-item" : "breadcrumb-item"
-                }
-                key={index}
-              >
-                {isEmpty(link) ? (
-                  <a href="javascript:void(0)">
-                    <p
-                      className="trim-containt-breadcrumb"
-                      title={data[index][obj].text}
-                    >
-                      {data[index][obj].text}
-                    </p>
-                  </a>
-                ) : (
-                  <Link to={link}>
-                    <p
-                      className="trim-containt-breadcrumb"
-                      title={data[index][obj].text}
-                    >
-                      {data[index][obj].text}
-                    </p>
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-      <div className="text-right latestResponse">
-        <b>Last Response Time: </b>
+    // <div className="mt-n1 mb-2 headerBreadcrumbs">
+    //   {/* <div className="r_breadcrumbs">
+    //     <ul className="breadcrumb">
+    //       {type.map((obj, index) => {
+    //         let link = data[index][obj].href;
+    //         return (
+    //           <li
+    //             className={
+    //               index >= 1 ? "allow_nav breadcrumb-item" : "breadcrumb-item"
+    //             }
+    //             key={index}
+    //           >
+    //             {isEmpty(link) ? (
+    //               <a href="javascript:void(0)">
+    //                 <p
+    //                   className="trim-containt-breadcrumb"
+    //                   title={data[index][obj].text}
+    //                 >
+    //                   {data[index][obj].text}
+    //                 </p>
+    //               </a>
+    //             ) : (
+    //               <Link to={link}>
+    //                 <p
+    //                   className="trim-containt-breadcrumb"
+    //                   title={data[index][obj].text}
+    //                 >
+    //                   {data[index][obj].text}
+    //                 </p>
+    //               </Link>
+    //             )}
+    //           </li>
+    //         );
+    //       })}
+    //     </ul>
+    //   </div> */}
+    //   {/* <div className="text-right latestResponse">
+    //     <b>Last Response Time: </b>
+    //     {moment(moment()).format("MM/DD/YYYY hh:mm:ss A")}
+    //   </div> */}
+    // </div>
+    <div>
+      <span className="navbar-text last-response-time">
+        <strong>Last Response Time</strong>
+        <br />
         {moment(moment()).format("MM/DD/YYYY hh:mm:ss A")}
-      </div>
+      </span>
     </div>
   );
 };

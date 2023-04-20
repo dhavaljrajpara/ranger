@@ -17,15 +17,14 @@
  * under the License.
  */
 
-import React, { lazy, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useLocation, Outlet, Navigate } from "react-router-dom";
 import ErrorPage from "./ErrorPage";
 import { hasAccessToPath } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
 import { setUserProfile, getUserProfile } from "Utils/appState";
-
-const HeaderComp = lazy(() => import("Views/Header"));
+import SideBar from "./SideBar/SideBar";
 
 const Layout = () => {
   let location = useLocation();
@@ -103,7 +102,7 @@ const Layout = () => {
   }, [getRemainingTime, isPrompted]);
 
   return (
-    <>
+    <React.Fragment>
       <Modal show={open}>
         <Modal.Header className="pd-10">
           <h6>
@@ -126,31 +125,34 @@ const Layout = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <HeaderComp />
-      {location.pathname === "/" && (
-        <Navigate to="/policymanager/resource" replace={true} />
-      )}
-      <section className="container-fluid" style={{ minHeight: "80vh" }}>
-        <div id="ranger-content">
-          {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
+      <React.Fragment>
+        <div className="wrapper">
+          <SideBar />
         </div>
-      </section>
-      <footer>
-        <div className="main-footer">
-          <div className="pull-left copy-right-text">
-            <p className="text-left">
-              <a
-                target="_blank"
-                href="http://www.apache.org/licenses/LICENSE-2.0"
-                rel="noopener noreferrer"
-              >
-                Licensed under the Apache License, Version 2.0
-              </a>
-            </p>
+        {location.pathname === "/" && (
+          <Navigate to="/policymanager/resource" replace={true} />
+        )}
+        <div id="content" className="content-body">
+          <div id="ranger-content">
+            {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
           </div>
+
+          <footer>
+            <div className="main-footer">
+              <p className="text-left">
+                <a
+                  target="_blank"
+                  href="http://www.apache.org/licenses/LICENSE-2.0"
+                  rel="noopener noreferrer"
+                >
+                  Licensed under the Apache License, Version 2.0
+                </a>
+              </p>
+            </div>
+          </footer>
         </div>
-      </footer>
-    </>
+      </React.Fragment>
+    </React.Fragment>
   );
 };
 

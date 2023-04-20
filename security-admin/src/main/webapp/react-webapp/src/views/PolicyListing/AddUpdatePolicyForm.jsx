@@ -62,17 +62,14 @@ import PolicyValidityPeriodComp from "./PolicyValidityPeriodComp";
 import PolicyConditionsComp from "./PolicyConditionsComp";
 import { getAllTimeZoneList } from "Utils/XAUtils";
 import moment from "moment";
-import {
-  commonBreadcrumb,
-  InfoIcon,
-  isPolicyExpired
-} from "../../utils/XAUtils";
+import { InfoIcon, isPolicyExpired } from "../../utils/XAUtils";
 import { useAccordionToggle } from "react-bootstrap/AccordionToggle";
 import AccordionContext from "react-bootstrap/AccordionContext";
 import usePrompt from "Hooks/usePrompt";
 import { RegexMessage } from "../../utils/XAMessages";
 import { policyInfo } from "Utils/XAUtils";
 import { BlockUi } from "../../components/CommonComponents";
+import CustomBreadcrumb from "../CustomBreadcrumb";
 
 const noneOptions = {
   label: "None",
@@ -872,58 +869,6 @@ export default function AddUpdatePolicyForm(props) {
     let polType = policyId ? policyData.policyType : policyType;
     navigate(`/service/${serviceId}/policies/${polType}`);
   };
-  const policyBreadcrumb = () => {
-    let policyDetails = {};
-    policyDetails["serviceId"] = serviceId;
-    policyDetails["policyType"] = policyId
-      ? policyData?.policyType
-      : policyType;
-    policyDetails["serviceName"] = serviceDetails?.displayName;
-    policyDetails["selectedZone"] = JSON.parse(
-      localStorage.getItem("zoneDetails")
-    );
-    if (serviceCompDetails?.name === "tag") {
-      if (policyDetails?.selectedZone) {
-        return commonBreadcrumb(
-          [
-            "TagBasedServiceManager",
-            "ManagePolicies",
-            policyId ? "PolicyEdit" : "PolicyCreate"
-          ],
-          policyDetails
-        );
-      } else {
-        return commonBreadcrumb(
-          [
-            "TagBasedServiceManager",
-            "ManagePolicies",
-            policyId ? "PolicyEdit" : "PolicyCreate"
-          ],
-          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
-        );
-      }
-    } else {
-      if (policyDetails?.selectedZone) {
-        return commonBreadcrumb(
-          [
-            "ServiceManager",
-            "ManagePolicies",
-            policyId ? "PolicyEdit" : "PolicyCreate"
-          ],
-          policyDetails
-        );
-      } else {
-        return commonBreadcrumb(
-          [
-            "ServiceManager",
-            "ManagePolicies",
-            policyId ? "PolicyEdit" : "PolicyCreate"
-          ],
-          pick(policyDetails, ["serviceId", "policyType", "serviceName"])
-        );
-      }
-    }
-  };
 
   const CustomToggle = ({ children, eventKey, callback }) => {
     const currentEventKey = useContext(AccordionContext);
@@ -993,8 +938,12 @@ export default function AddUpdatePolicyForm(props) {
         <Loader />
       ) : (
         <div>
-          {policyBreadcrumb()}
-          <h5>{`${policyId ? "Edit" : "Create"} Policy`}</h5>
+          <div className="header-wraper">
+            <h3 className="wrap-header bold">{`${
+              policyId ? "Edit" : "Create"
+            } Policy`}</h3>
+            <CustomBreadcrumb />
+          </div>
           <div className="wrap">
             <Form
               onSubmit={handleSubmit}
