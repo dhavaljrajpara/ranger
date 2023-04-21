@@ -157,8 +157,7 @@ class ServiceDefinitions extends Component {
       loader: false
     });
     this.props.disableTabs(false);
-    // this.getSelectedZone(this.state.selectedZone);
-    this.getSelectedZone(JSON.parse(localStorage.getItem("zoneDetails")));
+    this.getSelectedZone(this.state.selectedZone);
   };
 
   fetchServices = async () => {

@@ -80,6 +80,7 @@ class Home extends Component {
                 <ServiceDefinitions
                   isTagView={this.state.isTagView}
                   disableTabs={this.disableTabs}
+                  key={JSON.parse(localStorage.getItem("zoneDetails"))?.value}
                 ></ServiceDefinitions>
               )}
             </Tab>
@@ -94,6 +95,7 @@ class Home extends Component {
                 <ServiceDefinitions
                   isTagView={this.state.isTagView}
                   disableTabs={this.disableTabs}
+                  key={JSON.parse(localStorage.getItem("zoneDetails"))?.value}
                 ></ServiceDefinitions>
               )}
             </Tab>
