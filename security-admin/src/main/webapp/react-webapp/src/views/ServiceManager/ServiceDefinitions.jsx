@@ -279,19 +279,39 @@ class ServiceDefinitions extends Component {
   };
 
   deleteService = async (sid) => {
-    console.log("Service Id to delete is ", sid);
+    let localStorageZoneDetails = localStorage.getItem("zoneDetails");
+    let zonesResp = [];
     try {
       this.setState({ blockUI: true });
       await fetchApi({
         url: `plugins/services/${sid}`,
         method: "delete"
       });
+
+      if (
+        localStorageZoneDetails !== undefined &&
+        localStorageZoneDetails !== null
+      ) {
+        zonesResp = await fetchApi({
+          url: `public/v2/api/zones/${
+            JSON.parse(localStorageZoneDetails)?.value
+          }/service-headers`
+        });
+
+        if (isEmpty(zonesResp?.data)) {
+          localStorage.removeItem("zoneDetails");
+          this.setState({
+            selectedZone: ""
+          });
+        }
+      }
       this.setState({
         services: this.state.services.filter((s) => s.id !== sid),
         filterServices: this.state.filterServices.filter((s) => s.id !== sid),
         blockUI: false
       });
       toast.success("Successfully deleted the service");
+      this.props.navigate(this.props.location.pathname);
     } catch (error) {
       this.setState({ blockUI: false });
       serverError(error);
@@ -359,10 +379,11 @@ class ServiceDefinitions extends Component {
                   verticalAlign: "middle",
                   cursor: "not-allowed"
                 }}
+                title={`${isEmpty(zones) ? "Create zone first" : ""} `}
                 className="mg-l-5"
               >
                 <Select
-                  className={isEmpty(zones) ? "not-allowed" : ""}
+                  className={isEmpty(zones) ? "not-allowed" : "pe-auto"}
                   styles={customStyles}
                   value={
                     isEmpty(this.state.selectedZone)

@@ -17,13 +17,7 @@
  * under the License.
  */
 
-import React, {
-  useReducer,
-  useEffect,
-  useCallback,
-  useRef,
-  useState
-} from "react";
+import React, { useReducer, useEffect, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import rangerIcon from "Images/sidebar/ranger.svg";
@@ -313,6 +307,10 @@ export const SideBar = () => {
   };
 
   const fetchZones = useCallback(async () => {
+    dispatch({
+      type: "SET_LOADER",
+      loader: true
+    });
     let zoneList = [];
     try {
       const zonesResp = await fetchApi({
@@ -326,6 +324,10 @@ export const SideBar = () => {
     dispatch({
       type: "ZONE_DATA",
       zoneData: sortBy(zoneList, ["name"])
+    });
+    dispatch({
+      type: "SET_LOADER",
+      loader: false
     });
   }, []);
 
@@ -895,42 +897,47 @@ export const SideBar = () => {
               <span className="drawer-menu-title"> RESOURCE POLICIES</span>
 
               {!isKMSRole && (
-                <Select
-                  className={`${
-                    isEmpty(zoneData) ? "not-allowed" : ""
-                  } select-nav-drawer`}
-                  value={
-                    isEmpty(selectedZone)
-                      ? ""
-                      : {
-                          label: selectedZone && selectedZone.label,
-                          value: selectedZone && selectedZone.value
-                        }
-                  }
-                  isDisabled={isEmpty(zoneData) ? true : false}
-                  onChange={(e) =>
-                    getSelectedZone(
-                      e,
-                      allServiceData,
-                      allserviceDefData,
-                      "serviceChange"
-                    )
-                  }
-                  isClearable
-                  components={{
-                    IndicatorSeparator: () => null
-                  }}
-                  theme={zoneSelectTheme}
-                  styles={zoneSelectCustomStyles}
-                  options={zoneData.map((zone) => {
-                    return {
-                      value: zone.id,
-                      label: zone.name
-                    };
-                  })}
-                  menuPlacement="auto"
-                  placeholder="Select Zone Name"
-                />
+                <div
+                  title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
+                  className={isEmpty(zoneData) ? "not-allowed" : ""}
+                >
+                  <Select
+                    className={`${
+                      isEmpty(zoneData) ? "not-allowed" : ""
+                    } select-nav-drawer`}
+                    value={
+                      isEmpty(selectedZone)
+                        ? ""
+                        : {
+                            label: selectedZone && selectedZone.label,
+                            value: selectedZone && selectedZone.value
+                          }
+                    }
+                    isDisabled={isEmpty(zoneData) ? true : false}
+                    onChange={(e) =>
+                      getSelectedZone(
+                        e,
+                        allServiceData,
+                        allserviceDefData,
+                        "serviceChange"
+                      )
+                    }
+                    isClearable
+                    components={{
+                      IndicatorSeparator: () => null
+                    }}
+                    theme={zoneSelectTheme}
+                    styles={zoneSelectCustomStyles}
+                    options={zoneData.map((zone) => {
+                      return {
+                        value: zone.id,
+                        label: zone.name
+                      };
+                    })}
+                    menuPlacement="auto"
+                    placeholder="Select Zone Name"
+                  />
+                </div>
               )}
               <Select
                 isClearable={false}
@@ -986,37 +993,42 @@ export const SideBar = () => {
           <div id="resourcesCollapse">
             <div className="nav-drawer overflow-y-auto">
               <span className="drawer-menu-title"> TAG POLICIES</span>
-              <Select
-                className={`${
-                  isEmpty(zoneData) ? "not-allowed" : ""
-                } select-nav-drawer`}
-                value={
-                  isEmpty(selectedZone)
-                    ? ""
-                    : {
-                        label: selectedZone && selectedZone.label,
-                        value: selectedZone && selectedZone.value
-                      }
-                }
-                isDisabled={isEmpty(zoneData) ? true : false}
-                onChange={(e) =>
-                  getSelectedZone(e, allServiceData, allserviceDefData)
-                }
-                isClearable
-                components={{
-                  IndicatorSeparator: () => null
-                }}
-                theme={zoneSelectTheme}
-                styles={zoneSelectCustomStyles}
-                options={zoneData.map((zone) => {
-                  return {
-                    value: zone.id,
-                    label: zone.name
-                  };
-                })}
-                menuPlacement="auto"
-                placeholder="Select Zone Name"
-              />
+              <div
+                title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
+                className={isEmpty(zoneData) ? "not-allowed" : ""}
+              >
+                <Select
+                  className={`${
+                    isEmpty(zoneData) ? "not-allowed" : ""
+                  } select-nav-drawer`}
+                  value={
+                    isEmpty(selectedZone)
+                      ? ""
+                      : {
+                          label: selectedZone && selectedZone.label,
+                          value: selectedZone && selectedZone.value
+                        }
+                  }
+                  isDisabled={isEmpty(zoneData) ? true : false}
+                  onChange={(e) =>
+                    getSelectedZone(e, allServiceData, allserviceDefData)
+                  }
+                  isClearable
+                  components={{
+                    IndicatorSeparator: () => null
+                  }}
+                  theme={zoneSelectTheme}
+                  styles={zoneSelectCustomStyles}
+                  options={zoneData.map((zone) => {
+                    return {
+                      value: zone.id,
+                      label: zone.name
+                    };
+                  })}
+                  menuPlacement="auto"
+                  placeholder="Select Zone Name"
+                />
+              </div>
               {tag != false && tag != undefined && (
                 <ResourceTagContent
                   serviceDefData={tagServiceDefData

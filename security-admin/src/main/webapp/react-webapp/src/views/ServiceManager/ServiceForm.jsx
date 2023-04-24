@@ -461,6 +461,8 @@ class ServiceForm extends Component {
   };
 
   deleteService = async (serviceId) => {
+    let localStorageZoneDetails = localStorage.getItem("zoneDetails");
+    let zonesResp = [];
     this.hideDeleteModal();
     try {
       this.setState({ blockUI: true });
@@ -468,31 +470,27 @@ class ServiceForm extends Component {
         url: `plugins/services/${serviceId}`,
         method: "delete"
       });
+      if (
+        localStorageZoneDetails !== undefined &&
+        localStorageZoneDetails !== null
+      ) {
+        zonesResp = await fetchApi({
+          url: `public/v2/api/zones/${
+            JSON.parse(localStorageZoneDetails)?.value
+          }/service-headers`
+        });
+
+        if (isEmpty(zonesResp?.data)) {
+          localStorage.removeItem("zoneDetails");
+        }
+      }
       this.setState({ blockUI: false });
       toast.success("Successfully deleted the service");
-      if (this.props?.location?.state != "services") {
-        if (this?.props?.params?.serviceId !== undefined) {
-          return this.props.navigate(
-            `/service/${this.props.location.serviceId}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`
-          );
-        } else {
-          return this.props.navigate(
-            this.state?.serviceDef?.name === "tag"
-              ? "/policymanager/tag"
-              : "/policymanager/resource"
-          );
-        }
-      } else {
-        return this.props.navigate(
-          this.state?.serviceDef?.name === "tag"
-            ? "/policymanager/tag"
-            : "/policymanager/resource"
-        );
-      }
-
-      // this.props.navigate(
-      //   `/service/${this.props.location.state}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`
-      // );
+      this.props.navigate(
+        this.state?.serviceDef?.name === "tag"
+          ? "/policymanager/tag"
+          : "/policymanager/resource"
+      );
     } catch (error) {
       this.setState({ blockUI: false });
       serverError(error);

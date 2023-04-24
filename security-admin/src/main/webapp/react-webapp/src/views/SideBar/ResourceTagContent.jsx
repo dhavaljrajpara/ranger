@@ -30,8 +30,7 @@ export const ResourceTagContent = (props) => {
     closeResourceCollapse,
     closeTagCollapse,
     tagView,
-    loader,
-    isActiveClass
+    loader
   } = props;
 
   return loader ? (

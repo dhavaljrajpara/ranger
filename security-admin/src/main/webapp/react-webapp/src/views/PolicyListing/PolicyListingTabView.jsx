@@ -18,14 +18,14 @@
  */
 
 import React, { useState, useReducer, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import PolicyListing from "./PolicyListing";
 import { fetchApi } from "Utils/fetchAPI";
 import { isRenderMasking, isRenderRowFilter } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import TopNavBar from "../SideBar/TopNavBar";
-import { map, sortBy } from "lodash";
+import { findIndex, map, sortBy, isEmpty } from "lodash";
 import { RangerPolicyType } from "../../utils/XAEnums";
 
 function reducer(state, action) {
@@ -49,9 +49,9 @@ function reducer(state, action) {
 }
 
 export const PolicyListingTabView = () => {
+  let location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
-  const [zoneServicesData, setZoneServicesData] = useState([]);
   const [policyState, dispatch] = useReducer(reducer, {
     loader: true,
     serviceData: {},
@@ -60,14 +60,13 @@ export const PolicyListingTabView = () => {
   });
 
   const { loader, serviceDefData, serviceData, allServiceData } = policyState;
+  const [zoneServicesData, setZoneServicesData] = useState([]);
   let localStorageZoneDetails = localStorage.getItem("zoneDetails");
 
   useEffect(() => {
     fetchServiceDetails();
   }, [params?.serviceId, JSON.parse(localStorageZoneDetails)?.value]);
-  // useEffect(() => {
-  //   zoneServices();
-  // }, [JSON.parse(localStorageZoneDetails)?.value]);
+
   const fetchServiceDetails = async () => {
     dispatch({
       type: "SET_LOADER",
@@ -110,6 +109,7 @@ export const PolicyListingTabView = () => {
   const zoneServices = async (servciesData) => {
     if (localStorageZoneDetails !== null) {
       try {
+        let serviceIndex;
         let zonesResp = [];
         zonesResp = await fetchApi({
           url: `public/v2/api/zones/${
@@ -124,6 +124,19 @@ export const PolicyListingTabView = () => {
         });
         zoneServices = zoneServices.flat();
         setZoneServicesData(zoneServices);
+
+        serviceIndex = findIndex(zoneServices, [
+          "id",
+          Number(params.serviceId)
+        ]);
+        if (!isEmpty(zoneServices) && serviceIndex == -1) {
+          navigate(
+            `/service/${zoneServices[0]?.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`,
+            {
+              replace: true
+            }
+          );
+        }
       } catch (error) {
         console.error(`Error occurred while fetching Zone Services ! ${error}`);
       }
@@ -177,6 +190,7 @@ export const PolicyListingTabView = () => {
         allServiceData={sortBy(allServiceData, "name")}
         policyLoader={loader}
         zoneServicesData={zoneServicesData}
+        key={zoneServicesData}
       />
       {loader ? (
         <Loader />

@@ -17,17 +17,16 @@
  * under the License.
  */
 
-import React, { useReducer, useState } from "react";
+import React, { useReducer } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Modal } from "react-bootstrap";
-import { upperCase } from "lodash";
+import { isEmpty, upperCase } from "lodash";
 import Select from "react-select";
 import ServiceViewDetails from "../ServiceManager/ServiceViewDetails";
 import { fetchApi } from "Utils/fetchAPI";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
 import { serverError } from "../../utils/XAUtils";
-import { RangerPolicyType } from "../../utils/XAEnums";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -108,16 +107,33 @@ export const TopNavBar = (props) => {
   };
 
   const deleteService = async (serviceId) => {
+    let localStorageZoneDetails = localStorage.getItem("zoneDetails");
+    let zonesResp = [];
     hideDeleteModal();
     try {
       await fetchApi({
         url: `plugins/services/${serviceId}`,
         method: "delete"
       });
+      if (
+        localStorageZoneDetails !== undefined &&
+        localStorageZoneDetails !== null
+      ) {
+        zonesResp = await fetchApi({
+          url: `public/v2/api/zones/${
+            JSON.parse(localStorageZoneDetails)?.value
+          }/service-headers`
+        });
 
+        if (isEmpty(zonesResp?.data)) {
+          localStorage.removeItem("zoneDetails");
+        }
+      }
       toast.success("Successfully deleted the service");
       navigate(
-        `/service/${allServiceData[0]?.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`
+        serviceDefData?.name === "tag"
+          ? "/policymanager/tag"
+          : "/policymanager/resource"
       );
     } catch (error) {
       serverError(error);
