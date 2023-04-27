@@ -23,6 +23,7 @@ import { Tab, Tabs } from "react-bootstrap";
 import withRouter from "Hooks/withRouter";
 import { hasAccessToTab } from "../utils/XAUtils";
 import CustomBreadcrumb from "./CustomBreadcrumb";
+
 class Home extends Component {
   constructor(props) {
     super(props);
@@ -55,7 +56,21 @@ class Home extends Component {
   };
 
   disableTabs = (loader) => {
+    loader == true &&
+      document
+        .getElementsByClassName("sidebar-header")?.[0]
+        ?.classList?.add("disabledEvents");
+    loader == true &&
+      document.getElementById("rangerIcon")?.classList?.add("disabledCursor");
     this.setState({ loader: loader });
+    loader == false &&
+      document
+        .getElementsByClassName("sidebar-header")?.[0]
+        ?.classList.remove("disabledEvents");
+    loader == false &&
+      document
+        .getElementById("rangerIcon")
+        ?.classList?.remove("disabledCursor");
   };
   render() {
     return (

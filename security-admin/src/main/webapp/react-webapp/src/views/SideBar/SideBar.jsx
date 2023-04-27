@@ -17,8 +17,13 @@
  * under the License.
  */
 
-import React, { useReducer, useEffect, useCallback } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import React, { useReducer, useEffect, useCallback, useContext } from "react";
+import {
+  NavLink,
+  matchRoutes,
+  useLocation,
+  useNavigate
+} from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import rangerIcon from "Images/sidebar/ranger.svg";
 import keyIcon from "Images/sidebar/key.svg";
@@ -43,6 +48,8 @@ import Select from "react-select";
 import { filter, isEmpty, map, sortBy, uniq, upperCase } from "lodash";
 import { toast } from "react-toastify";
 import ResourceTagContent from "./ResourceTagContent";
+import { StateContext } from "../Layout";
+import { PathAssociateWithModule } from "../../utils/XAEnums";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -63,7 +70,7 @@ function reducer(state, action) {
     case "SERVICEDEF_DATA":
       return {
         ...state,
-        allserviceDefData: action.allserviceDefData,
+        allServiceDefData: action.allServiceDefData,
         serviceDefData: action.serviceDefData,
         tagServiceDefData: action.tagServiceDefData
       };
@@ -92,15 +99,17 @@ function reducer(state, action) {
     case "SERVICE_TYPES_OPTIONS":
       return {
         ...state,
-        serviceTypesOptions: action.serviceTypesOptions
+        serviceTypesOption: action.serviceTypesOption
       };
+
     default:
-      throw new Error();
+      return state;
   }
 }
 
 export const SideBar = () => {
   let location = useLocation();
+  let { state } = useContext(StateContext);
   const navigate = useNavigate();
   const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const [keyState, dispatch] = useReducer(reducer, {
@@ -110,16 +119,19 @@ export const SideBar = () => {
     audits: false,
     settings: false,
     account: false,
-    allserviceDefData: [],
-    serviceDefData: [],
-    tagServiceDefData: [],
+    allServiceDef: state.allServiceDef,
+    servcieDef: state.allServiceDef,
+    tagServiceDef: state.tagServiceDef,
+    serviceTypesOption: sortBy(
+      filter(state.allServiceDef, (serviceDef) => serviceDef.name !== "tag"),
+      "name"
+    ),
     allServiceData: [],
     serviceData: [],
     tagServiceData: [],
     zoneData: [],
     selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
-    selectedServiceDef: [],
-    serviceTypesOptions: []
+    selectedServiceDef: []
   });
   const {
     loader,
@@ -128,17 +140,18 @@ export const SideBar = () => {
     audits,
     settings,
     account,
-    serviceDefData,
-    tagServiceDefData,
     serviceData,
     tagServiceData,
-    allserviceDefData,
     allServiceData,
+    allServiceDefData,
+    tagServiceDefData,
+    serviceTypesOption,
+    serviceDefData,
     zoneData,
     selectedZone,
-    selectedServiceDef,
-    serviceTypesOptions
+    selectedServiceDef
   } = keyState;
+
   const userProps = getUserProfile();
   const apiUrl = getBaseUrl() + "apidocs/index.html";
   const loginId = <span className="login-id">{userProps?.loginId}</span>;
@@ -194,6 +207,22 @@ export const SideBar = () => {
   };
 
   useEffect(() => {
+    dispatch({
+      type: "SERVICEDEF_DATA",
+      allServiceDefData: state.allServiceDef,
+      serviceDefData: state.allServiceDef,
+      tagServiceDefData: state.tagServiceDef
+    });
+    dispatch({
+      type: "SERVICE_TYPES_OPTIONS",
+      serviceTypesOption: sortBy(
+        filter(state.allServiceDef, (serviceDef) => serviceDef.name !== "tag"),
+        "name"
+      )
+    });
+  }, [state?.allServiceDef, state?.tagServiceDef]);
+
+  useEffect(() => {
     if (
       location.pathname != "/policymanager/resource" &&
       location.pathname != "/policymanager/tag"
@@ -217,48 +246,10 @@ export const SideBar = () => {
       type: "SET_LOADER",
       loader: true
     });
-    let getServiceDefData = [];
-    let resourceServiceDef = [];
-    let tagServiceDef = [];
+
     let servicesResp = [];
     let resourceServices = [];
     let tagServices = [];
-    try {
-      getServiceDefData = await fetchApi({
-        url: `plugins/definitions`
-      });
-
-      tagServiceDef = sortBy(
-        filter(getServiceDefData.data.serviceDefs, ["name", "tag"]),
-        "name"
-      );
-
-      resourceServiceDef = getServiceDefData.data.serviceDefs;
-
-      dispatch({
-        type: "SERVICEDEF_DATA",
-        allserviceDefData: filter(
-          getServiceDefData.data.serviceDefs,
-          (serviceDef) => serviceDef.name !== "tag"
-        ),
-        serviceDefData: sortBy(
-          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-          "id"
-        ),
-        tagServiceDefData: tagServiceDef
-      });
-      dispatch({
-        type: "SERVICE_TYPES_OPTIONS",
-        serviceTypesOptions: sortBy(
-          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-          "name"
-        )
-      });
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching serviceDef details ! ${error}`
-      );
-    }
 
     try {
       servicesResp = await fetchApi({
@@ -287,12 +278,12 @@ export const SideBar = () => {
         getSelectedZone(
           selectedZone,
           servicesResp.data.services,
-          getServiceDefData.data.serviceDefs
+          allServiceDefData
         );
       selectedServiceDef.length > 0 &&
         handleServiceDefChange(
           selectedServiceDef,
-          resourceServiceDef,
+          allServiceDefData,
           resourceServices
         );
       dispatch({
@@ -389,15 +380,15 @@ export const SideBar = () => {
           }
           dispatch({
             type: "SERVICEDEF_DATA",
-            allserviceDefData: !isEmpty(allserviceDefData)
-              ? allserviceDefData
+            allServiceDefData: !isEmpty(allServiceDefData)
+              ? allServiceDefData
               : allFilterServiceDefData,
             serviceDefData: sortBy(
               zoneServiceDefTypes.map((obj) => {
-                let zoneServiceDefData = !isEmpty(allserviceDefData)
-                  ? allserviceDefData
+                let zoneServiceDefData = !isEmpty(allServiceDefData)
+                  ? allServiceDefData
                   : allFilterServiceDefData;
-                return zoneServiceDefData.find((serviceDef) => {
+                return zoneServiceDefData?.find((serviceDef) => {
                   return serviceDef.name == obj;
                 });
               }),
@@ -421,7 +412,7 @@ export const SideBar = () => {
           });
           dispatch({
             type: "SERVICE_TYPES_OPTIONS",
-            serviceTypesOptions: sortBy(
+            serviceTypesOption: sortBy(
               map(zoneServiceDefTypes, function (serviceDef) {
                 return {
                   value: serviceDef,
@@ -458,8 +449,8 @@ export const SideBar = () => {
         });
         dispatch({
           type: "SERVICEDEF_DATA",
-          allserviceDefData: allserviceDefData,
-          serviceDefData: allserviceDefData,
+          allServiceDefData: allServiceDefData,
+          serviceDefData: allServiceDefData,
           tagServiceDefData: tagServiceDefData
         });
         dispatch({
@@ -471,7 +462,7 @@ export const SideBar = () => {
 
         dispatch({
           type: "SERVICE_TYPES_OPTIONS",
-          serviceTypesOptions: sortBy(
+          serviceTypesOption: sortBy(
             filter(
               allFilterServiceDefData,
               (serviceDef) => serviceDef.name !== "tag"
@@ -572,7 +563,7 @@ export const SideBar = () => {
       let filterSelectedService = [];
       value.map((serviceDef) => {
         if (allSelectedServicesDefs == undefined) {
-          allserviceDefData.filter((servicedefs) => {
+          allServiceDefData?.filter((servicedefs) => {
             if (servicedefs.name === serviceDef.value) {
               selectedServiceDefs.push(servicedefs);
             }
@@ -614,8 +605,8 @@ export const SideBar = () => {
       }
       dispatch({
         type: "SERVICEDEF_DATA",
-        allserviceDefData: filter(
-          allserviceDefData,
+        allServiceDefData: filter(
+          allServiceDefData,
           (serviceDef) => serviceDef.name !== "tag"
         ),
         serviceDefData: sortBy(
@@ -652,10 +643,10 @@ export const SideBar = () => {
       if (selectedZone == "") {
         dispatch({
           type: "SERVICEDEF_DATA",
-          allserviceDefData: allserviceDefData,
+          allServiceDefData: allServiceDefData,
           serviceDefData: sortBy(
             filter(
-              allserviceDefData,
+              allServiceDefData,
               (serviceDef) => serviceDef.name !== "tag"
             ),
             "id"
@@ -669,7 +660,7 @@ export const SideBar = () => {
           tagServiceData: tagServiceData
         });
       } else {
-        getSelectedZone(selectedZone, allServiceData, allserviceDefData);
+        getSelectedZone(selectedZone, allServiceData, allServiceDefData);
       }
     }
     dispatch({
@@ -677,12 +668,38 @@ export const SideBar = () => {
       selectedServiceDef: value
     });
   };
+  const activeClass = (modules) => {
+    let allRouter = [];
+    let PermissionPath = PathAssociateWithModule["Permission"]?.map((val) => ({
+      path: val
+    }));
+    for (const key in PathAssociateWithModule) {
+      if (key == modules) {
+        allRouter = [...allRouter, ...PathAssociateWithModule[key]];
+      }
+    }
+    let isValidRouter = matchRoutes(
+      allRouter.map((val) => ({ path: val })),
+      location.pathname
+    );
 
+    if (isValidRouter !== null && isValidRouter.length > 0) {
+      return "navbar-active";
+    } else if (
+      matchRoutes(PermissionPath, location.pathname) &&
+      modules == "Users/Groups"
+    ) {
+      return "navbar-active";
+    } else {
+      return;
+    }
+  };
   return (
     <React.Fragment>
       <nav id="sidebar">
         <div className="sidebar-header">
           <NavLink
+            id="rangerIcon"
             to="/policymanager/resource"
             onClick={() =>
               dispatch({
@@ -702,8 +719,10 @@ export const SideBar = () => {
           {hasAccessToTab("Resource Based Policies") && (
             <li>
               <Button
+                className={activeClass("Resource Based Policies")}
                 aria-expanded={resources}
                 aria-controls="resourcesCollapse"
+                id="resourcesCollapse"
                 onClick={() => {
                   dispatch({
                     type: "SIDEBAR_COLLAPSE",
@@ -737,8 +756,10 @@ export const SideBar = () => {
           {hasAccessToTab("Tag Based Policies") && (
             <li>
               <Button
+                className={activeClass("Tag Based Policies")}
                 aria-expanded={tag}
                 aria-controls="tagCollapse"
+                id="tagCollapse"
                 onClick={() => {
                   dispatch({
                     type: "SIDEBAR_COLLAPSE",
@@ -773,6 +794,7 @@ export const SideBar = () => {
             <li>
               <NavLink
                 to="/reports/userAccess?policyType=0"
+                className={activeClass("Reports")}
                 onClick={() => {
                   dispatch({
                     type: "SIDEBAR_COLLAPSE",
@@ -792,6 +814,7 @@ export const SideBar = () => {
           {hasAccessToTab("Audit") && (
             <li>
               <Button
+                className={activeClass("Audit")}
                 aria-expanded={audits}
                 aria-controls="auditCollapse"
                 onClick={() =>
@@ -811,6 +834,7 @@ export const SideBar = () => {
               {!isKeyAdmin() && (
                 <li>
                   <NavLink
+                    className={activeClass("Security Zone")}
                     to="/zones/zone/list"
                     onClick={() =>
                       dispatch({
@@ -834,6 +858,7 @@ export const SideBar = () => {
               {(isKeyAdmin() || isKMSAuditor()) && (
                 <li>
                   <NavLink
+                    className={activeClass("Key Manager")}
                     to="/kms/keys/new/manage/service"
                     onClick={() =>
                       dispatch({
@@ -858,6 +883,8 @@ export const SideBar = () => {
             isSystemAdmin()) && (
             <li>
               <Button
+                id="settingsCollapse"
+                className={activeClass("Users/Groups")}
                 aria-expanded={settings}
                 aria-controls="settingsCollapse"
                 onClick={() =>
@@ -875,6 +902,7 @@ export const SideBar = () => {
 
           <li>
             <Button
+              className={activeClass("Profile")}
               aria-expanded={account}
               aria-controls="accountCollapse"
               onClick={() =>
@@ -918,7 +946,7 @@ export const SideBar = () => {
                       getSelectedZone(
                         e,
                         allServiceData,
-                        allserviceDefData,
+                        allServiceDefData,
                         "serviceChange"
                       )
                     }
@@ -949,7 +977,7 @@ export const SideBar = () => {
                 onChange={(e) => handleServiceDefChange(e)}
                 isMulti
                 options={sortBy(
-                  map(serviceTypesOptions, function (serviceDef) {
+                  map(serviceTypesOption, function (serviceDef) {
                     return {
                       value: serviceDef.name ?? serviceDef.value,
                       label: upperCase(serviceDef.name ?? serviceDef.value)
@@ -1011,7 +1039,7 @@ export const SideBar = () => {
                   }
                   isDisabled={isEmpty(zoneData) ? true : false}
                   onChange={(e) =>
-                    getSelectedZone(e, allServiceData, allserviceDefData)
+                    getSelectedZone(e, allServiceData, allServiceDefData)
                   }
                   isClearable
                   components={{
@@ -1263,7 +1291,7 @@ export const SideBar = () => {
                     onClick={() =>
                       dispatch({
                         type: "SIDEBAR_COLLAPSE",
-                        account: !account,
+                        account: false,
                         audits: audits,
                         settings: settings,
                         resources: resources
@@ -1281,7 +1309,7 @@ export const SideBar = () => {
                     onClick={() =>
                       dispatch({
                         type: "SIDEBAR_COLLAPSE",
-                        account: !account,
+                        account: false,
                         audits: audits,
                         settings: settings,
                         resources: resources

@@ -2332,6 +2332,9 @@ body {
   justify-content: space-between;
   background: #f3f8f9 !important;
   border-bottom: 1px solid #d6d6d6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .last-response-time {
   padding-left: 1rem;
@@ -2339,9 +2342,15 @@ body {
 }
 
 .navbar-active {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 li.list-group-item:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+.disabledCursor {
+  cursor: not-allowed !important;
+}
+.disabledEvents {
+  pointer-events: none !important;
 }

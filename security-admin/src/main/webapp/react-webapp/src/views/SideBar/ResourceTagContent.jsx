@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { sortBy, capitalize } from "lodash";
 import { RangerPolicyType } from "../../utils/XAEnums";
@@ -65,13 +65,13 @@ export const ResourceTagContent = (props) => {
                 <React.Fragment key={index}>
                   <li className="list-group-item">
                     <NavLink
-                      to={`/service/${service.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
-                      className="list-group-item"
                       onClick={
                         tagView !== undefined
                           ? closeTagCollapse
                           : closeResourceCollapse
                       }
+                      to={`/service/${service.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
+                      className="list-group-item"
                     >
                       {service?.displayName ?? service?.name}
                     </NavLink>

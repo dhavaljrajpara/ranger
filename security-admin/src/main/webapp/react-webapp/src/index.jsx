@@ -18,7 +18,7 @@
  */
 
 import React from "react";
-import ReactDOMClient from 'react-dom/client';
+import ReactDOMClient from "react-dom/client";
 import App from "./App";
 
 import "bootstrap/dist/css/bootstrap.css";
@@ -26,11 +26,16 @@ import "font-awesome/css/font-awesome.min.css";
 import "react-toastify/dist/ReactToastify.css";
 import "react-datetime/css/react-datetime.css";
 import "./styles/style.css";
+import { ContextOneProvider } from "./views/Layout";
 
-const container = document.getElementById('app');
+const container = document.getElementById("app");
 
 // Create a root.
 const root = ReactDOMClient.createRoot(container);
 
 // Render an element to the root.
-root.render(<App />);
+root.render(
+  <ContextOneProvider>
+    <App />
+  </ContextOneProvider>
+);

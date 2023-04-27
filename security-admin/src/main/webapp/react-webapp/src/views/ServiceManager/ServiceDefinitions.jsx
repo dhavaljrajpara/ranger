@@ -36,13 +36,18 @@ import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
 import { serverError } from "../../utils/XAUtils";
 import { BlockUi, Loader } from "../../components/CommonComponents";
+import { StateContext } from "../Layout";
 
 class ServiceDefinitions extends Component {
-  constructor(props) {
-    super(props);
+  constructor(props, context) {
+    super(props, context);
     this.state = {
-      serviceDefs: [],
-      filterServiceDefs: [],
+      serviceDefs: this.props.isTagView
+        ? this.context?.state?.tagServiceDef
+        : this.context?.state?.allServiceDef,
+      filterServiceDefs: this.props.isTagView
+        ? this.context?.state?.tagServiceDef
+        : this.context?.state?.allServiceDef,
       services: [],
       filterServices: [],
       allServices: [],
@@ -59,13 +64,13 @@ class ServiceDefinitions extends Component {
       blockUI: false
     };
   }
+  static contextType = StateContext;
 
   componentDidMount() {
     this.initialFetchResp();
   }
 
   initialFetchResp = async () => {
-    await this.fetchServiceDefs();
     await this.fetchServices();
     await this.fetchZones();
   };
@@ -95,49 +100,6 @@ class ServiceDefinitions extends Component {
     }
   };
 
-  fetchServiceDefs = async () => {
-    this.props.disableTabs(true);
-    this.setState({
-      loader: true
-    });
-    let serviceDefsResp;
-    let resourceServiceDef = [];
-    let tagServiceDef = [];
-
-    try {
-      serviceDefsResp = await fetchApi({
-        url: "plugins/definitions"
-      });
-
-      if (this.state.isTagView) {
-        tagServiceDef = sortBy(
-          filter(serviceDefsResp.data.serviceDefs, ["name", "tag"]),
-          "id"
-        );
-      } else {
-        resourceServiceDef = sortBy(
-          filter(
-            serviceDefsResp.data.serviceDefs,
-            (serviceDef) => serviceDef.name !== "tag"
-          ),
-          "id"
-        );
-      }
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
-      );
-    }
-    this.setState({
-      serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef,
-      filterServiceDefs: this.state.isTagView
-        ? tagServiceDef
-        : resourceServiceDef,
-      loader: false
-    });
-    this.props.disableTabs(false);
-  };
-
   fetchZones = async () => {
     this.props.disableTabs(true);
     this.setState({
@@ -157,7 +119,8 @@ class ServiceDefinitions extends Component {
       loader: false
     });
     this.props.disableTabs(false);
-    this.getSelectedZone(this.state.selectedZone);
+    this.state.selectedZone != "" &&
+      this.getSelectedZone(this.state.selectedZone);
   };
 
   fetchServices = async () => {
@@ -193,6 +156,7 @@ class ServiceDefinitions extends Component {
         `Error occurred while fetching Services or CSRF headers! ${error}`
       );
     }
+
     this.setState({
       allServices: servicesResp.data.services,
       services: this.state.isTagView ? tagServices : resourceServices,
@@ -203,6 +167,7 @@ class ServiceDefinitions extends Component {
   };
 
   getSelectedZone = async (e) => {
+    this.props.disableTabs(true);
     this.setState({
       loader: true
     });
@@ -263,6 +228,7 @@ class ServiceDefinitions extends Component {
           selectedZone: { label: e.label, value: e.value },
           loader: false
         });
+        this.props.disableTabs(false);
       } else {
         localStorage.removeItem("zoneDetails");
         this.props.navigate(this.props.location.pathname);
@@ -272,6 +238,7 @@ class ServiceDefinitions extends Component {
           selectedZone: "",
           loader: false
         });
+        this.props.disableTabs(false);
       }
     } catch (error) {
       console.error(`Error occurred while fetching Zone Services ! ${error}`);
@@ -343,6 +310,7 @@ class ServiceDefinitions extends Component {
       isUserRole,
       isKMSRole
     } = this.state;
+
     const customStyles = {
       control: (provided) => ({
         ...provided,
@@ -397,7 +365,6 @@ class ServiceDefinitions extends Component {
                             this.state.selectedZone.value
                         }
                   }
-                  // isDisabled={isEmpty(zones) ? true : false}
                   isDisabled={true}
                   onChange={this.getSelectedZone}
                   isClearable
@@ -429,7 +396,7 @@ class ServiceDefinitions extends Component {
                 Import
               </Button>
             )}
-            {filterServiceDefs.length > 0 && showImportModal && (
+            {filterServiceDefs?.length > 0 && showImportModal && (
               <ImportPolicy
                 serviceDef={filterServiceDefs}
                 services={filterServices}
@@ -455,7 +422,7 @@ class ServiceDefinitions extends Component {
                 Export
               </Button>
             )}
-            {filterServiceDefs.length > 0 && showExportModal && (
+            {filterServiceDefs?.length > 0 && showExportModal && (
               <ExportPolicy
                 serviceDef={filterServiceDefs}
                 services={filterServices}
@@ -473,7 +440,7 @@ class ServiceDefinitions extends Component {
         ) : (
           <div className="wrap policy-manager">
             <Row>
-              {filterServiceDefs.map((serviceDef) => (
+              {filterServiceDefs?.map((serviceDef) => (
                 <ServiceDefinition
                   key={serviceDef && serviceDef.id}
                   serviceDefData={serviceDef}
@@ -501,5 +468,5 @@ class ServiceDefinitions extends Component {
     );
   }
 }
-
+ServiceDefinitions.contextType = StateContext;
 export default withRouter(ServiceDefinitions);

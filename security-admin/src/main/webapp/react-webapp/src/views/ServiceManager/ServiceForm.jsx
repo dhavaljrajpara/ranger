@@ -295,6 +295,19 @@ class ServiceForm extends Component {
       serviceDefResp = await fetchApi({
         url: `plugins/definitions/${serviceDefId}`
       });
+      if (serviceDefResp.data.name == "tag") {
+        document
+          .getElementById("resourcesCollapse")
+          .classList.remove("navbar-active");
+        document.getElementById("tagCollapse").classList.add("navbar-active");
+      } else if (serviceDefResp.data.name !== "tag") {
+        document
+          .getElementById("tagCollapse")
+          .classList.remove("navbar-active");
+        document
+          .getElementById("resourcesCollapse")
+          .classList.add("navbar-active");
+      }
     } catch (error) {
       console.error(
         `Error occurred while fetching Service Definition or CSRF headers! ${error}`

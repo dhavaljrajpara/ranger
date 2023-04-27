@@ -18,7 +18,7 @@
  */
 
 import React, { useState, useReducer, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Tab, Tabs } from "react-bootstrap";
 import PolicyListing from "./PolicyListing";
 import { fetchApi } from "Utils/fetchAPI";
@@ -49,7 +49,6 @@ function reducer(state, action) {
 }
 
 export const PolicyListingTabView = () => {
-  let location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
   const [policyState, dispatch] = useReducer(reducer, {

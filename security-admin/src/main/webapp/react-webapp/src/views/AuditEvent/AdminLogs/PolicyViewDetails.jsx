@@ -785,8 +785,8 @@ export function PolicyViewDetails(props) {
           </div>
         </>
       )}
-      <div class="updateInfo">
-        <div class="pull-left">
+      <div className="updateInfo">
+        <div className="pull-left">
           <p>
             <strong>Updated By : </strong> {updatedBy}
           </p>
@@ -795,7 +795,7 @@ export function PolicyViewDetails(props) {
             {dateFormat(updateTime, "mm/dd/yyyy hh:MM TT ")}
           </p>
         </div>
-        <div class="pull-right">
+        <div className="pull-right">
           <p>
             <strong>Created By : </strong> {createdBy}
           </p>
