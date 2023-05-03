@@ -26,7 +26,6 @@ import "font-awesome/css/font-awesome.min.css";
 import "react-toastify/dist/ReactToastify.css";
 import "react-datetime/css/react-datetime.css";
 import "./styles/style.css";
-import { ContextOneProvider } from "./views/Layout";
 
 const container = document.getElementById("app");
 
@@ -34,8 +33,4 @@ const container = document.getElementById("app");
 const root = ReactDOMClient.createRoot(container);
 
 // Render an element to the root.
-root.render(
-  <ContextOneProvider>
-    <App />
-  </ContextOneProvider>
-);
+root.render(<App />);

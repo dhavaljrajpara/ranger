@@ -31,89 +31,12 @@ import { hasAccessToPath } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
 import { setUserProfile, getUserProfile } from "Utils/appState";
 import SideBar from "./SideBar/SideBar";
-import { fetchApi } from "Utils/fetchAPI";
-import { filter, sortBy } from "lodash";
 
-export const StateContext = createContext();
-
-function reducer(state, action) {
-  switch (action.type) {
-    case "RESOURCE_SERVICEDEF":
-      return {
-        ...state,
-        allServiceDef: action.allServiceDef
-      };
-    case "TAG_SERVICEDEF":
-      return {
-        ...state,
-        tagServiceDef: action.tagServiceDef
-      };
-
-    default:
-      throw state;
-  }
-}
-
-export const ContextOneProvider = (props) => {
-  let [state, dispatchContext] = useReducer(reducer, {
-    allServiceDef: [],
-    tagServiceDef: []
-  });
-
-  let value = { state, dispatchContext };
-  useEffect(() => {
-    fetchServicesData();
-  }, [dispatchContext]);
-  const fetchServicesData = async () => {
-    let getServiceDefData = [];
-    let resourceServiceDef = [];
-    let tagServiceDefData = [];
-
-    try {
-      getServiceDefData = await fetchApi({
-        url: `plugins/definitions`
-      });
-      resourceServiceDef = filter(
-        getServiceDefData.data.serviceDefs,
-        (serviceDef) => serviceDef.name !== "tag"
-      );
-      tagServiceDefData = filter(getServiceDefData.data.serviceDefs, [
-        "name",
-        "tag"
-      ]);
-
-      dispatchContext({
-        type: "RESOURCE_SERVICEDEF",
-        allServiceDef: resourceServiceDef
-      });
-
-      dispatchContext({
-        type: "TAG_SERVICEDEF",
-        tagServiceDef: tagServiceDefData
-      });
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching serviceDef details ! ${error}`
-      );
-    }
-  };
-  return (
-    <StateContext.Provider value={value}>
-      {props.children}
-    </StateContext.Provider>
-  );
-};
 const Layout = () => {
   let location = useLocation();
   const userProfile = getUserProfile();
   const [open, setOpen] = useState(false);
   const [timer, setTimer] = useState(0);
-
-  // let { state, dispatchContext } = useContext(StateContext);
-
-  // // useEffect(() => {
-  // //   fetchServicesData();
-  // // }, [dispatchContext]);
 
   const timeout =
     1000 *
@@ -185,39 +108,6 @@ const Layout = () => {
     };
   }, [getRemainingTime, isPrompted]);
 
-  // const fetchServicesData = async () => {
-  //   let getServiceDefData = [];
-  //   let resourceServiceDef = [];
-  //   let tagServiceDefData = [];
-
-  //   try {
-  //     getServiceDefData = await fetchApi({
-  //       url: `plugins/definitions`
-  //     });
-  //     resourceServiceDef = filter(
-  //       getServiceDefData.data.serviceDefs,
-  //       (serviceDef) => serviceDef.name !== "tag"
-  //     );
-  //     tagServiceDefData = filter(getServiceDefData.data.serviceDefs, [
-  //       "name",
-  //       "tag"
-  //     ]);
-
-  //     dispatchContext({
-  //       type: "RESOURCE_SERVICEDEF",
-  //       allServiceDef: resourceServiceDef
-  //     });
-
-  //     dispatchContext({
-  //       type: "TAG_SERVICEDEF",
-  //       tagServiceDef: tagServiceDefData
-  //     });
-  //   } catch (error) {
-  //     console.error(
-  //       `Error occurred while fetching serviceDef details ! ${error}`
-  //     );
-  //   }
-  // };
   return (
     <React.Fragment>
       <Modal show={open}>

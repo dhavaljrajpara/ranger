@@ -48,7 +48,6 @@ import Select from "react-select";
 import { filter, isEmpty, map, sortBy, uniq, upperCase } from "lodash";
 import { toast } from "react-toastify";
 import ResourceTagContent from "./ResourceTagContent";
-import { StateContext } from "../Layout";
 import { PathAssociateWithModule } from "../../utils/XAEnums";
 
 function reducer(state, action) {
@@ -70,7 +69,7 @@ function reducer(state, action) {
     case "SERVICEDEF_DATA":
       return {
         ...state,
-        allServiceDefData: action.allServiceDefData,
+        allserviceDefData: action.allserviceDefData,
         serviceDefData: action.serviceDefData,
         tagServiceDefData: action.tagServiceDefData
       };
@@ -99,17 +98,16 @@ function reducer(state, action) {
     case "SERVICE_TYPES_OPTIONS":
       return {
         ...state,
-        serviceTypesOption: action.serviceTypesOption
+        serviceTypesOptions: action.serviceTypesOptions
       };
 
     default:
-      return state;
+      throw new Error();
   }
 }
 
 export const SideBar = () => {
   let location = useLocation();
-  let { state } = useContext(StateContext);
   const navigate = useNavigate();
   const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const [keyState, dispatch] = useReducer(reducer, {
@@ -119,19 +117,16 @@ export const SideBar = () => {
     audits: false,
     settings: false,
     account: false,
-    allServiceDef: state.allServiceDef,
-    servcieDef: state.allServiceDef,
-    tagServiceDef: state.tagServiceDef,
-    serviceTypesOption: sortBy(
-      filter(state.allServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-      "name"
-    ),
+    allserviceDefData: [],
+    serviceDefData: [],
+    tagServiceDefData: [],
     allServiceData: [],
     serviceData: [],
     tagServiceData: [],
     zoneData: [],
     selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
-    selectedServiceDef: []
+    selectedServiceDef: [],
+    serviceTypesOptions
   });
   const {
     loader,
@@ -143,13 +138,13 @@ export const SideBar = () => {
     serviceData,
     tagServiceData,
     allServiceData,
-    allServiceDefData,
-    tagServiceDefData,
-    serviceTypesOption,
     serviceDefData,
+    tagServiceDefData,
+    allserviceDefData,
+    selectedServiceDef,
+    serviceTypesOptions,
     zoneData,
-    selectedZone,
-    selectedServiceDef
+    selectedZone
   } = keyState;
 
   const userProps = getUserProfile();
@@ -207,22 +202,6 @@ export const SideBar = () => {
   };
 
   useEffect(() => {
-    dispatch({
-      type: "SERVICEDEF_DATA",
-      allServiceDefData: state.allServiceDef,
-      serviceDefData: state.allServiceDef,
-      tagServiceDefData: state.tagServiceDef
-    });
-    dispatch({
-      type: "SERVICE_TYPES_OPTIONS",
-      serviceTypesOption: sortBy(
-        filter(state.allServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-        "name"
-      )
-    });
-  }, [state?.allServiceDef, state?.tagServiceDef]);
-
-  useEffect(() => {
     if (
       location.pathname != "/policymanager/resource" &&
       location.pathname != "/policymanager/tag"
@@ -250,7 +229,45 @@ export const SideBar = () => {
     let servicesResp = [];
     let resourceServices = [];
     let tagServices = [];
+    let getServiceDefData = [];
+    let resourceServiceDef = [];
+    let tagServiceDef = [];
+    try {
+      getServiceDefData = await fetchApi({
+        url: `plugins/definitions`
+      });
 
+      tagServiceDef = sortBy(
+        filter(getServiceDefData.data.serviceDefs, ["name", "tag"]),
+        "name"
+      );
+
+      resourceServiceDef = getServiceDefData.data.serviceDefs;
+
+      dispatch({
+        type: "SERVICEDEF_DATA",
+        allserviceDefData: filter(
+          getServiceDefData.data.serviceDefs,
+          (serviceDef) => serviceDef.name !== "tag"
+        ),
+        serviceDefData: sortBy(
+          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
+          "id"
+        ),
+        tagServiceDefData: tagServiceDef
+      });
+      dispatch({
+        type: "SERVICE_TYPES_OPTIONS",
+        serviceTypesOptions: sortBy(
+          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
+          "name"
+        )
+      });
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching serviceDef details ! ${error}`
+      );
+    }
     try {
       servicesResp = await fetchApi({
         url: "plugins/services"
@@ -278,12 +295,12 @@ export const SideBar = () => {
         getSelectedZone(
           selectedZone,
           servicesResp.data.services,
-          allServiceDefData
+          getServiceDefData.data.serviceDefs
         );
       selectedServiceDef.length > 0 &&
         handleServiceDefChange(
           selectedServiceDef,
-          allServiceDefData,
+          resourceServiceDef,
           resourceServices
         );
       dispatch({
@@ -380,13 +397,13 @@ export const SideBar = () => {
           }
           dispatch({
             type: "SERVICEDEF_DATA",
-            allServiceDefData: !isEmpty(allServiceDefData)
-              ? allServiceDefData
+            allserviceDefData: !isEmpty(allserviceDefData)
+              ? allserviceDefData
               : allFilterServiceDefData,
             serviceDefData: sortBy(
               zoneServiceDefTypes.map((obj) => {
-                let zoneServiceDefData = !isEmpty(allServiceDefData)
-                  ? allServiceDefData
+                let zoneServiceDefData = !isEmpty(allserviceDefData)
+                  ? allserviceDefData
                   : allFilterServiceDefData;
                 return zoneServiceDefData?.find((serviceDef) => {
                   return serviceDef.name == obj;
@@ -412,7 +429,7 @@ export const SideBar = () => {
           });
           dispatch({
             type: "SERVICE_TYPES_OPTIONS",
-            serviceTypesOption: sortBy(
+            serviceTypesOptions: sortBy(
               map(zoneServiceDefTypes, function (serviceDef) {
                 return {
                   value: serviceDef,
@@ -462,7 +479,7 @@ export const SideBar = () => {
 
         dispatch({
           type: "SERVICE_TYPES_OPTIONS",
-          serviceTypesOption: sortBy(
+          serviceTypesOptions: sortBy(
             filter(
               allFilterServiceDefData,
               (serviceDef) => serviceDef.name !== "tag"
@@ -563,7 +580,7 @@ export const SideBar = () => {
       let filterSelectedService = [];
       value.map((serviceDef) => {
         if (allSelectedServicesDefs == undefined) {
-          allServiceDefData?.filter((servicedefs) => {
+          allserviceDefData?.filter((servicedefs) => {
             if (servicedefs.name === serviceDef.value) {
               selectedServiceDefs.push(servicedefs);
             }
@@ -605,8 +622,8 @@ export const SideBar = () => {
       }
       dispatch({
         type: "SERVICEDEF_DATA",
-        allServiceDefData: filter(
-          allServiceDefData,
+        allserviceDefData: filter(
+          allserviceDefData,
           (serviceDef) => serviceDef.name !== "tag"
         ),
         serviceDefData: sortBy(
@@ -643,10 +660,10 @@ export const SideBar = () => {
       if (selectedZone == "") {
         dispatch({
           type: "SERVICEDEF_DATA",
-          allServiceDefData: allServiceDefData,
+          allserviceDefData: allserviceDefData,
           serviceDefData: sortBy(
             filter(
-              allServiceDefData,
+              allserviceDefData,
               (serviceDef) => serviceDef.name !== "tag"
             ),
             "id"
@@ -660,7 +677,7 @@ export const SideBar = () => {
           tagServiceData: tagServiceData
         });
       } else {
-        getSelectedZone(selectedZone, allServiceData, allServiceDefData);
+        getSelectedZone(selectedZone, allServiceData, allserviceDefData);
       }
     }
     dispatch({
@@ -946,7 +963,7 @@ export const SideBar = () => {
                       getSelectedZone(
                         e,
                         allServiceData,
-                        allServiceDefData,
+                        allserviceDefData,
                         "serviceChange"
                       )
                     }
@@ -977,7 +994,7 @@ export const SideBar = () => {
                 onChange={(e) => handleServiceDefChange(e)}
                 isMulti
                 options={sortBy(
-                  map(serviceTypesOption, function (serviceDef) {
+                  map(serviceTypesOptions, function (serviceDef) {
                     return {
                       value: serviceDef.name ?? serviceDef.value,
                       label: upperCase(serviceDef.name ?? serviceDef.value)
@@ -1039,7 +1056,7 @@ export const SideBar = () => {
                   }
                   isDisabled={isEmpty(zoneData) ? true : false}
                   onChange={(e) =>
-                    getSelectedZone(e, allServiceData, allServiceDefData)
+                    getSelectedZone(e, allServiceData, allserviceDefData)
                   }
                   isClearable
                   components={{

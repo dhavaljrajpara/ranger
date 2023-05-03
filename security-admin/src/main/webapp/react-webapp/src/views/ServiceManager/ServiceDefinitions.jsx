@@ -36,18 +36,13 @@ import ExportPolicy from "./ExportPolicy";
 import ImportPolicy from "./ImportPolicy";
 import { serverError } from "../../utils/XAUtils";
 import { BlockUi, Loader } from "../../components/CommonComponents";
-import { StateContext } from "../Layout";
 
 class ServiceDefinitions extends Component {
-  constructor(props, context) {
-    super(props, context);
+  constructor(props) {
+    super(props);
     this.state = {
-      serviceDefs: this.props.isTagView
-        ? this.context?.state?.tagServiceDef
-        : this.context?.state?.allServiceDef,
-      filterServiceDefs: this.props.isTagView
-        ? this.context?.state?.tagServiceDef
-        : this.context?.state?.allServiceDef,
+      serviceDefs: [],
+      filterServiceDefs: [],
       services: [],
       filterServices: [],
       allServices: [],
@@ -64,15 +59,58 @@ class ServiceDefinitions extends Component {
       blockUI: false
     };
   }
-  static contextType = StateContext;
 
   componentDidMount() {
     this.initialFetchResp();
   }
 
   initialFetchResp = async () => {
+    await this.fetchServiceDefs();
     await this.fetchServices();
     await this.fetchZones();
+  };
+
+  fetchServiceDefs = async () => {
+    this.props.disableTabs(true);
+    this.setState({
+      loader: true
+    });
+    let serviceDefsResp;
+    let resourceServiceDef = [];
+    let tagServiceDef = [];
+
+    try {
+      serviceDefsResp = await fetchApi({
+        url: "plugins/definitions"
+      });
+
+      if (this.state.isTagView) {
+        tagServiceDef = sortBy(
+          filter(serviceDefsResp.data.serviceDefs, ["name", "tag"]),
+          "id"
+        );
+      } else {
+        resourceServiceDef = sortBy(
+          filter(
+            serviceDefsResp.data.serviceDefs,
+            (serviceDef) => serviceDef.name !== "tag"
+          ),
+          "id"
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error occurred while fetching Service Definitions or CSRF headers! ${error}`
+      );
+    }
+    this.setState({
+      serviceDefs: this.state.isTagView ? tagServiceDef : resourceServiceDef,
+      filterServiceDefs: this.state.isTagView
+        ? tagServiceDef
+        : resourceServiceDef,
+      loader: false
+    });
+    this.props.disableTabs(false);
   };
 
   showExportModal = () => {
@@ -468,5 +506,5 @@ class ServiceDefinitions extends Component {
     );
   }
 }
-ServiceDefinitions.contextType = StateContext;
+
 export default withRouter(ServiceDefinitions);
