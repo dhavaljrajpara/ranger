@@ -666,7 +666,7 @@ function RoleForm() {
                                 </tr>
                               ) : (
                                 fields.map((name, index) => (
-                                  <tr>
+                                  <tr key={index}>
                                     <td className="text-center more-less-width text-truncate">
                                       <span title={fields.value[index].name}>
                                         {fields.value[index].name}
@@ -772,7 +772,7 @@ function RoleForm() {
                                 </tr>
                               ) : (
                                 fields.map((name, index) => (
-                                  <tr>
+                                  <tr key={index}>
                                     <td className="text-center more-less-width text-truncate">
                                       <span title={fields.value[index].name}>
                                         {fields.value[index].name}
@@ -865,7 +865,7 @@ function RoleForm() {
                               `input[id=${Object.keys(errors)[0]}]`
                             ) ||
                             document.querySelector(
-                              `span[class="invalid-field"]`
+                              `span[className="invalid-field"]`
                             );
                           scrollToError(selector);
                         }

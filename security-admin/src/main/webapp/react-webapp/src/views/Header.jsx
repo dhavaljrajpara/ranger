@@ -234,13 +234,13 @@ class Header extends Component {
             <Nav>
               <NavDropdown title={loginId} id="user-dropdown" alignRight>
                 <NavDropdown.Item
-                  class="dropdown-item"
+                  className="dropdown-item"
                   to="/userprofile"
                   as={NavLink}
                 >
                   <i className="fa fa-user"></i> Profile
                 </NavDropdown.Item>
-                <a class="dropdown-item" href={apiUrl} target="_blank">
+                <a className="dropdown-item" href={apiUrl} target="_blank">
                   <i className="fa fa-user"></i> API Documentation
                 </a>
                 <NavDropdown.Item

@@ -106,10 +106,11 @@
         <commons.lang3.version>3.3.2</commons.lang3.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.math.version>2.2</commons.math.version>
-        <commons.net.version>3.6</commons.net.version>
+        <commons.net.version>3.9.0</commons.net.version>
         <commons.pool.version>1.6</commons.pool.version>
         <commons.text.version>1.10.0</commons.text.version>
         <curator.test.version>5.4.0</curator.test.version>
+        <curator.version>5.4.0</curator.version>
         <derby.version>10.11.1.1</derby.version>
         <dnsjava.version>2.1.7</dnsjava.version>
         <eclipse.jpa.version>2.7.12</eclipse.jpa.version>
@@ -156,12 +157,12 @@
         <jline.version>0.9.94</jline.version>
         <jopt-simple.version>3.2</jopt-simple.version>
         <json4s.version>3.2.11</json4s.version>
-        <jsonsmart.version>2.4.7</jsonsmart.version>
+        <jsonsmart.version>2.4.10</jsonsmart.version>
         <jsr250.version>1.0</jsr250.version>
         <jsr305.version>1.3.9</jsr305.version>
         <junit.version>4.13.1</junit.version>
         <kafka.version>2.8.1</kafka.version>
-        <kerby.version>1.0.0</kerby.version>
+        <kerby.version>2.0.3</kerby.version>
         <knox.gateway.version>1.4.0</knox.gateway.version>
         <kylin.version>3.1.3</kylin.version>
         <libpam4j.version>1.10</libpam4j.version>
@@ -207,9 +208,9 @@
         <tomcat.embed.version>8.5.86</tomcat.embed.version>
         <testng.version>6.9.4</testng.version>
         <velocity.version>2.3</velocity.version>
-        <zookeeper.version>3.4.14</zookeeper.version>
-        <codehaus.woodstox.stax2api.version>3.1.4</codehaus.woodstox.stax2api.version>
-        <fasterxml.woodstox.version>5.0.3</fasterxml.woodstox.version>
+        <zookeeper.version>3.5.5</zookeeper.version>
+        <codehaus.woodstox.stax2api.version>4.2.1</codehaus.woodstox.stax2api.version>
+        <fasterxml.woodstox.version>5.4.0</fasterxml.woodstox.version>
         <fasterxml.jackson.version>2.14.0</fasterxml.jackson.version>
         <fasterxml.jackson.databind.version>2.14.0</fasterxml.jackson.databind.version>
         <kstruct.gethostname4j.version>1.0.0</kstruct.gethostname4j.version>
@@ -275,6 +276,7 @@
                 <module>agents-installer</module>
                 <module>credentialbuilder</module>
                 <module>embeddedwebserver</module>
+		<module>ranger-common-ha</module>
                 <module>kms</module>
                 <module>hbase-agent</module>
                 <module>hdfs-agent</module>
@@ -344,6 +346,7 @@
                 <module>agents-installer</module>
                 <module>credentialbuilder</module>
                 <module>embeddedwebserver</module>
+		<module>ranger-common-ha</module>
                 <module>kms</module>
                 <module>hbase-agent</module>
                 <module>hdfs-agent</module>
@@ -366,6 +369,7 @@
                 <module>ugsync/ldapconfigchecktool/ldapconfigcheck</module>
                 <module>unixauthclient</module>
                 <module>unixauthservice</module>
+                <module>unixauthnative</module>
                 <module>ranger-util</module>
                 <module>plugin-kms</module>
                 <module>tagsync</module>
@@ -672,6 +676,7 @@
                 <module>agents-installer</module>
                 <module>credentialbuilder</module>
                 <module>embeddedwebserver</module>
+		<module>ranger-common-ha</module>
                 <module>kms</module>
                 <module>hbase-agent</module>
                 <module>hdfs-agent</module>
@@ -759,6 +764,7 @@
                 <module>agents-installer</module>
                 <module>credentialbuilder</module>
                 <module>embeddedwebserver</module>
+		<module>ranger-common-ha</module>
                 <module>kms</module>
                 <module>hbase-agent</module>
                 <module>hdfs-agent</module>

@@ -142,7 +142,6 @@ class UserProfile extends Component {
 
   render() {
     const userProps = getUserProfile();
-    console.log(userProps);
     return (
       <div>
         <div className="header-wraper">
@@ -417,7 +416,7 @@ class UserProfile extends Component {
                                 `input[id=${Object.keys(errors)[0]}]`
                               ) ||
                               document.querySelector(
-                                `span[class="invalid-field"]`
+                                `span[className="invalid-field"]`
                               );
                             scrollToError(selector);
                           }

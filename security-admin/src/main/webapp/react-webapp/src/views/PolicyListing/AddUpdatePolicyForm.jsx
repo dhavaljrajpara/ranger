@@ -409,7 +409,7 @@ export default function AddUpdatePolicyForm(props) {
         serviceCompResourcesDetails = serviceCompData.resources;
       }
       if (policyData.resources) {
-        let lastResourceLvl = [];
+        let lastResourceLevel = [];
         Object.entries(policyData.resources).map(([key, value]) => {
           let setResources = find(serviceCompResourcesDetails, ["name", key]);
           data[`resourceName-${setResources.level}`] = setResources;
@@ -424,15 +424,15 @@ export default function AddUpdatePolicyForm(props) {
             data[`isRecursiveSupport-${setResources.level}`] =
               value.isRecursive;
           }
-          lastResourceLvl.push({
+          lastResourceLevel.push({
             level: setResources.level,
             name: setResources.name
           });
         });
-        lastResourceLvl = maxBy(lastResourceLvl, "level");
+        lastResourceLevel = maxBy(lastResourceLevel, "level");
         let setLastResources = find(serviceCompResourcesDetails, [
           "parent",
-          lastResourceLvl.name
+          lastResourceLevel.name
         ]);
         if (setLastResources) {
           data[`resourceName-${setLastResources.level}`] = {
@@ -477,7 +477,6 @@ export default function AddUpdatePolicyForm(props) {
     for (let key of formData[name]) {
       if (!isEmpty(key) && Object.entries(key).length > 0) {
         let obj = {};
-        console.log(key);
         if (key.delegateAdmin != "undefined" && key.delegateAdmin != null) {
           obj.delegateAdmin = key.delegateAdmin;
         }
@@ -861,7 +860,7 @@ export default function AddUpdatePolicyForm(props) {
         errorMsg = `Error! ${error.response.data.msgDesc}`;
       }
       toast.error(errorMsg);
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -1005,7 +1004,7 @@ export default function AddUpdatePolicyForm(props) {
                               document.querySelector(`input[name=${key}]`) ||
                               document.querySelector(`input[id=${key}]`) ||
                               document.querySelector(
-                                `span[class="invalid-field"]`
+                                `span[className="invalid-field"]`
                               );
                             scrollToError(selector);
                           } else {
@@ -1045,7 +1044,7 @@ export default function AddUpdatePolicyForm(props) {
                           dismissible
                         >
                           <i className="fa fa-clock-o fa-fw  fa-lg time-clock"></i>
-                          <p class="pd-l-6 d-inline"> Policy Expired</p>
+                          <p className="pd-l-6 d-inline"> Policy Expired</p>
                         </Alert>
                       )}
                     <fieldset>
@@ -1609,7 +1608,7 @@ export default function AddUpdatePolicyForm(props) {
                                       `input[id=${key}]`
                                     ) ||
                                     document.querySelector(
-                                      `span[class="invalid-field"]`
+                                      `span[className="invalid-field"]`
                                     );
                                   scrollToError(selector);
                                 } else {

@@ -464,14 +464,18 @@ const KeyManager = (props) => {
         Cell: (rawValue) => {
           let html = "";
           if (rawValue && rawValue.value) {
-            html = Object.keys(rawValue.value).map((key) => (
-              <p className="text-truncate" key={key}>
-                {key}
-                <i className="fa-fw fa fa-long-arrow-right fa-fw fa fa-3"></i>
-                {rawValue.value[key]}
-                <br />
-              </p>
-            ));
+            html = Object.keys(rawValue.value).map((key) => {
+              if (!isEmpty(key)) {
+                return (
+                  <p className="text-truncate" key={key}>
+                    {key}
+                    <i className="fa-fw fa fa-long-arrow-right fa-fw fa fa-3"></i>
+                    {rawValue.value[key]}
+                    <br />
+                  </p>
+                );
+              }
+            });
           }
           return html;
         }

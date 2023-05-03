@@ -310,7 +310,7 @@ function PolicyListing(props) {
         errorMsg += error.response.data.msgDesc;
       }
       toast.error(errorMsg);
-      console.log("Error occurred during deleting policy : " + error);
+      console.error("Error occurred during deleting policy : " + error);
     }
     if (policyListingData.length == 1 && currentpageIndex > 1) {
       let page = currentpageIndex - currentpageIndex;
