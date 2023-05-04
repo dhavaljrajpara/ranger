@@ -31,10 +31,12 @@ import { hasAccessToPath } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
 import { setUserProfile, getUserProfile } from "Utils/appState";
 import SideBar from "./SideBar/SideBar";
+import { getServiceDef } from "../utils/appState";
 
 const Layout = () => {
   let location = useLocation();
   const userProfile = getUserProfile();
+  const serviceDef = getServiceDef();
   const [open, setOpen] = useState(false);
   const [timer, setTimer] = useState(0);
 

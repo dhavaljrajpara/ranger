@@ -67,6 +67,12 @@ export const PolicyListingTabView = () => {
   }, [params?.serviceId, JSON.parse(localStorageZoneDetails)?.value]);
 
   const fetchServiceDetails = async () => {
+    document
+      .getElementById("resourceSelectedZone")
+      ?.classList?.add("disabledEvents");
+    document
+      .getElementById("tagSelectedZone")
+      ?.classList?.add("disabledEvents");
     dispatch({
       type: "SET_LOADER",
       loader: true
@@ -101,6 +107,12 @@ export const PolicyListingTabView = () => {
         type: "SET_LOADER",
         loader: false
       });
+      document
+        .getElementById("resourceSelectedZone")
+        ?.classList?.remove("disabledEvents");
+      document
+        .getElementById("tagSelectedZone")
+        ?.classList?.remove("disabledEvents");
     } catch (error) {
       console.error(`Error occurred while fetching service details ! ${error}`);
     }

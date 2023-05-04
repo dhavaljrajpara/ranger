@@ -312,15 +312,15 @@ class ServiceForm extends Component {
       if (serviceDefResp.data.name == "tag") {
         document
           .getElementById("resourcesCollapse")
-          .classList.remove("navbar-active");
-        document.getElementById("tagCollapse").classList.add("navbar-active");
+          ?.classList?.remove("navbar-active");
+        document.getElementById("tagCollapse")?.classList?.add("navbar-active");
       } else if (serviceDefResp.data.name !== "tag") {
         document
           .getElementById("tagCollapse")
-          .classList.remove("navbar-active");
+          ?.classList?.remove("navbar-active");
         document
           .getElementById("resourcesCollapse")
-          .classList.add("navbar-active");
+          ?.classList?.add("navbar-active");
       }
     } catch (error) {
       console.error(

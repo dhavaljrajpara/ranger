@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import React, { useReducer, useEffect, useCallback, useContext } from "react";
+import React, { useReducer, useEffect, useCallback } from "react";
 import {
   NavLink,
   matchRoutes,
@@ -49,6 +49,7 @@ import { filter, isEmpty, map, sortBy, uniq, upperCase } from "lodash";
 import { toast } from "react-toastify";
 import ResourceTagContent from "./ResourceTagContent";
 import { PathAssociateWithModule } from "../../utils/XAEnums";
+import { getServiceDef } from "../../utils/appState";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -109,6 +110,8 @@ function reducer(state, action) {
 export const SideBar = () => {
   let location = useLocation();
   const navigate = useNavigate();
+  const serviceDef = getServiceDef();
+  const { allServiceDefs, serviceDefs, tagServiceDefs } = serviceDef;
   const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const [keyState, dispatch] = useReducer(reducer, {
     loader: false,
@@ -117,16 +120,22 @@ export const SideBar = () => {
     audits: false,
     settings: false,
     account: false,
-    allserviceDefData: [],
-    serviceDefData: [],
-    tagServiceDefData: [],
+    allserviceDefData: allServiceDefs,
+    serviceDefData: serviceDefs,
+    tagServiceDefData: tagServiceDefs,
     allServiceData: [],
     serviceData: [],
     tagServiceData: [],
     zoneData: [],
     selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
     selectedServiceDef: [],
-    serviceTypesOptions
+    serviceTypesOptions: sortBy(
+      filter(
+        serviceDef.allServiceDefs,
+        (serviceDef) => serviceDef.name !== "tag"
+      ),
+      "name"
+    )
   });
   const {
     loader,
@@ -229,45 +238,7 @@ export const SideBar = () => {
     let servicesResp = [];
     let resourceServices = [];
     let tagServices = [];
-    let getServiceDefData = [];
-    let resourceServiceDef = [];
-    let tagServiceDef = [];
-    try {
-      getServiceDefData = await fetchApi({
-        url: `plugins/definitions`
-      });
 
-      tagServiceDef = sortBy(
-        filter(getServiceDefData.data.serviceDefs, ["name", "tag"]),
-        "name"
-      );
-
-      resourceServiceDef = getServiceDefData.data.serviceDefs;
-
-      dispatch({
-        type: "SERVICEDEF_DATA",
-        allserviceDefData: filter(
-          getServiceDefData.data.serviceDefs,
-          (serviceDef) => serviceDef.name !== "tag"
-        ),
-        serviceDefData: sortBy(
-          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-          "id"
-        ),
-        tagServiceDefData: tagServiceDef
-      });
-      dispatch({
-        type: "SERVICE_TYPES_OPTIONS",
-        serviceTypesOptions: sortBy(
-          filter(resourceServiceDef, (serviceDef) => serviceDef.name !== "tag"),
-          "name"
-        )
-      });
-    } catch (error) {
-      console.error(
-        `Error occurred while fetching serviceDef details ! ${error}`
-      );
-    }
     try {
       servicesResp = await fetchApi({
         url: "plugins/services"
@@ -295,12 +266,12 @@ export const SideBar = () => {
         getSelectedZone(
           selectedZone,
           servicesResp.data.services,
-          getServiceDefData.data.serviceDefs
+          serviceDef.allServiceDefs
         );
       selectedServiceDef.length > 0 &&
         handleServiceDefChange(
           selectedServiceDef,
-          resourceServiceDef,
+          serviceDef.serviceDefs,
           resourceServices
         );
       dispatch({
@@ -397,13 +368,13 @@ export const SideBar = () => {
           }
           dispatch({
             type: "SERVICEDEF_DATA",
-            allserviceDefData: !isEmpty(allserviceDefData)
-              ? allserviceDefData
+            allserviceDefData: !isEmpty(allServiceDefs)
+              ? allServiceDefs
               : allFilterServiceDefData,
             serviceDefData: sortBy(
               zoneServiceDefTypes.map((obj) => {
-                let zoneServiceDefData = !isEmpty(allserviceDefData)
-                  ? allserviceDefData
+                let zoneServiceDefData = !isEmpty(allServiceDefs)
+                  ? allServiceDefs
                   : allFilterServiceDefData;
                 return zoneServiceDefData?.find((serviceDef) => {
                   return serviceDef.name == obj;
@@ -466,8 +437,8 @@ export const SideBar = () => {
         });
         dispatch({
           type: "SERVICEDEF_DATA",
-          allServiceDefData: allServiceDefData,
-          serviceDefData: allServiceDefData,
+          allServiceDefData: allserviceDefData,
+          serviceDefData: allserviceDefData,
           tagServiceDefData: tagServiceDefData
         });
         dispatch({
@@ -580,7 +551,7 @@ export const SideBar = () => {
       let filterSelectedService = [];
       value.map((serviceDef) => {
         if (allSelectedServicesDefs == undefined) {
-          allserviceDefData?.filter((servicedefs) => {
+          allServiceDefs?.filter((servicedefs) => {
             if (servicedefs.name === serviceDef.value) {
               selectedServiceDefs.push(servicedefs);
             }
@@ -660,15 +631,12 @@ export const SideBar = () => {
       if (selectedZone == "") {
         dispatch({
           type: "SERVICEDEF_DATA",
-          allserviceDefData: allserviceDefData,
+          allserviceDefData: allServiceDefs,
           serviceDefData: sortBy(
-            filter(
-              allserviceDefData,
-              (serviceDef) => serviceDef.name !== "tag"
-            ),
+            filter(allServiceDefs, (serviceDef) => serviceDef.name !== "tag"),
             "id"
           ),
-          tagServiceDefData: tagServiceDefData
+          tagServiceDefData: tagServiceDefs
         });
         dispatch({
           type: "SERVICES_DATA",
@@ -677,7 +645,7 @@ export const SideBar = () => {
           tagServiceData: tagServiceData
         });
       } else {
-        getSelectedZone(selectedZone, allServiceData, allserviceDefData);
+        getSelectedZone(selectedZone, allServiceData, allServiceDefs);
       }
     }
     dispatch({
@@ -945,6 +913,7 @@ export const SideBar = () => {
                 <div
                   title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
                   className={isEmpty(zoneData) ? "not-allowed" : ""}
+                  id="resourceSelectedZone"
                 >
                   <Select
                     className={`${
@@ -963,7 +932,7 @@ export const SideBar = () => {
                       getSelectedZone(
                         e,
                         allServiceData,
-                        allserviceDefData,
+                        allServiceDefs,
                         "serviceChange"
                       )
                     }
@@ -1041,6 +1010,7 @@ export const SideBar = () => {
               <div
                 title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
                 className={isEmpty(zoneData) ? "not-allowed" : ""}
+                id="tagSelectedZone"
               >
                 <Select
                   className={`${
@@ -1056,7 +1026,7 @@ export const SideBar = () => {
                   }
                   isDisabled={isEmpty(zoneData) ? true : false}
                   onChange={(e) =>
-                    getSelectedZone(e, allServiceData, allserviceDefData)
+                    getSelectedZone(e, allServiceData, allServiceDefs)
                   }
                   isClearable
                   components={{

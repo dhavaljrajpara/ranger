@@ -115,13 +115,15 @@ function PolicyListing(props) {
     if (serviceDef.name == "tag") {
       document
         .getElementById("resourcesCollapse")
-        .classList.remove("navbar-active");
-      document.getElementById("tagCollapse").classList.add("navbar-active");
+        ?.classList?.remove("navbar-active");
+      document.getElementById("tagCollapse")?.classList?.add("navbar-active");
     } else if (serviceDef.name !== "tag") {
-      document.getElementById("tagCollapse").classList.remove("navbar-active");
+      document
+        .getElementById("tagCollapse")
+        ?.classList?.remove("navbar-active");
       document
         .getElementById("resourcesCollapse")
-        .classList.add("navbar-active");
+        ?.classList?.add("navbar-active");
     }
   }, []);
 
