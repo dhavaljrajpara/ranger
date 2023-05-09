@@ -2047,6 +2047,11 @@ tbody.drag-drop-wrap > tr > td:hover:first-child:after {
   gap: 20px;
   align-items: center;
 }
+.top-nav-title {
+  padding: 0px 12px;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
 
 .pipe {
   display: none;
@@ -2324,7 +2329,8 @@ body {
 }
 
 .wrap-header {
-  padding: 1rem;
+  padding: 0.88rem 1rem 0.78rem 1.75rem;
+  font-size: 0.875rem;
 }
 
 .header-wraper {
@@ -2339,6 +2345,7 @@ body {
 .last-response-time {
   padding-left: 1rem;
   padding-right: 1rem;
+  color: rgb(33, 37, 41) !important;
 }
 
 .navbar-active {

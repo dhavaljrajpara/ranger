@@ -607,7 +607,7 @@ class ImportPolicy extends Component {
                   ) : (
                     <Button
                       variant="primary"
-                      className="btn-mini"
+                      size="sm"
                       onClick={this.props.onHide}
                     >
                       OK

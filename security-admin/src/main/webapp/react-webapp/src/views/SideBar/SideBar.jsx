@@ -81,7 +81,7 @@ function reducer(state, action) {
         serviceData: action.serviceData,
         tagServiceData: action.tagServiceData
       };
-    case "ZONE_DATA":
+    /* case "ZONE_DATA":
       return {
         ...state,
         zoneData: action.zoneData
@@ -90,7 +90,7 @@ function reducer(state, action) {
       return {
         ...state,
         selectedZone: action.selectedZone
-      };
+      }; */
     case "SELECTED_SERVCIEDEF_DATA":
       return {
         ...state,
@@ -126,8 +126,8 @@ export const SideBar = () => {
     allServiceData: [],
     serviceData: [],
     tagServiceData: [],
-    zoneData: [],
-    selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
+    //zoneData: [],
+    //selectedZone: JSON.parse(localStorage.getItem("zoneDetails")) || "",
     selectedServiceDef: [],
     serviceTypesOptions: sortBy(
       filter(
@@ -151,13 +151,13 @@ export const SideBar = () => {
     tagServiceDefData,
     allserviceDefData,
     selectedServiceDef,
-    serviceTypesOptions,
-    zoneData,
-    selectedZone
+    serviceTypesOptions
+    //zoneData,
+    //selectedZone
   } = keyState;
 
   const userProps = getUserProfile();
-  const apiUrl = getBaseUrl() + "apidocs/index.html";
+  const apiUrl = getBaseUrl() + "apidocs/swagger.html";
   const loginId = <span className="login-id">{userProps?.loginId}</span>;
   let isListenerAttached = false;
 
@@ -262,12 +262,12 @@ export const SideBar = () => {
         tagServiceData: tagServices
       });
 
-      selectedZone != "" &&
+      /* selectedZone != "" &&
         getSelectedZone(
           selectedZone,
           servicesResp.data.services,
           serviceDef.allServiceDefs
-        );
+        ); */
       selectedServiceDef.length > 0 &&
         handleServiceDefChange(
           selectedServiceDef,
@@ -300,17 +300,17 @@ export const SideBar = () => {
       console.error(`Error occurred while fetching Zones! ${error}`);
     }
 
-    dispatch({
+    /* dispatch({
       type: "ZONE_DATA",
       zoneData: sortBy(zoneList, ["name"])
-    });
+    }); */
     dispatch({
       type: "SET_LOADER",
       loader: false
     });
   }, []);
 
-  const getSelectedZone = async (
+  /* const getSelectedZone = async (
     e,
     allFilterServiceData,
     allFilterServiceDefData,
@@ -466,7 +466,7 @@ export const SideBar = () => {
     } catch (error) {
       console.error(`Error occurred while fetching Zone Services ! ${error}`);
     }
-  };
+  }; */
 
   const checkKnoxSSO = async (e) => {
     e.preventDefault();
@@ -606,14 +606,14 @@ export const SideBar = () => {
         ),
         tagServiceDefData: tagServiceDefData
       });
-      if (selectedZone == "") {
+      /* if (selectedZone == "") {
         dispatch({
           type: "SERVICES_DATA",
           allServiceData: allServiceData,
           serviceData: filterSelectedService,
           tagServiceData: tagServiceData
         });
-      }
+      } */
     }
     if (value.length == 0) {
       let filterSelectedService = [];
@@ -628,7 +628,22 @@ export const SideBar = () => {
           (service) => service.type !== "tag" && service.type !== "kms"
         );
       }
-      if (selectedZone == "") {
+      dispatch({
+        type: "SERVICEDEF_DATA",
+        allserviceDefData: allServiceDefs,
+        serviceDefData: sortBy(
+          filter(allServiceDefs, (serviceDef) => serviceDef.name !== "tag"),
+          "id"
+        ),
+        tagServiceDefData: tagServiceDefs
+      });
+      dispatch({
+        type: "SERVICES_DATA",
+        allServiceData: allServiceData,
+        serviceData: filterSelectedService,
+        tagServiceData: tagServiceData
+      });
+      /* if (selectedZone == "") {
         dispatch({
           type: "SERVICEDEF_DATA",
           allserviceDefData: allServiceDefs,
@@ -646,7 +661,7 @@ export const SideBar = () => {
         });
       } else {
         getSelectedZone(selectedZone, allServiceData, allServiceDefs);
-      }
+      } */
     }
     dispatch({
       type: "SELECTED_SERVCIEDEF_DATA",
@@ -715,7 +730,8 @@ export const SideBar = () => {
                   });
 
                   if (!resources) {
-                    fetchZones();
+                    fetchServicesData();
+                    /* fetchZones();
                     if (selectedZone == "" && selectedServiceDef.length == 0) {
                       fetchServicesData();
                     } else if (
@@ -728,7 +744,7 @@ export const SideBar = () => {
                       selectedServiceDef.length > 0
                     ) {
                       fetchServicesData();
-                    }
+                    } */
                   }
                 }}
               >
@@ -752,7 +768,8 @@ export const SideBar = () => {
                   });
 
                   if (!tag) {
-                    fetchZones();
+                    fetchServicesData();
+                    /* fetchZones();
                     if (selectedZone == "" && selectedServiceDef.length == 0) {
                       fetchServicesData();
                     } else if (
@@ -765,7 +782,7 @@ export const SideBar = () => {
                       selectedServiceDef.length > 0
                     ) {
                       fetchServicesData();
-                    }
+                    } */
                   }
                 }}
               >
@@ -908,8 +925,7 @@ export const SideBar = () => {
           <div id="resourcesCollapse">
             <div className="nav-drawer overflow-y-auto">
               <span className="drawer-menu-title"> RESOURCE POLICIES</span>
-
-              {!isKMSRole && (
+              {/* {!isKMSRole && (
                 <div
                   title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
                   className={isEmpty(zoneData) ? "not-allowed" : ""}
@@ -952,7 +968,7 @@ export const SideBar = () => {
                     placeholder="Select Zone Name"
                   />
                 </div>
-              )}
+              )} */}
               <Select
                 isClearable={false}
                 className={`select-nav-drawer ${loader ? "not-allowed" : ""}`}
@@ -996,7 +1012,7 @@ export const SideBar = () => {
                   closeTagCollapse={closeTagCollapse}
                   tagView={tag}
                   loader={loader}
-                  selectedZone={selectedZone}
+                  //selectedZone={selectedZone}
                 />
               )}
             </div>
@@ -1007,7 +1023,7 @@ export const SideBar = () => {
           <div id="resourcesCollapse">
             <div className="nav-drawer overflow-y-auto">
               <span className="drawer-menu-title"> TAG POLICIES</span>
-              <div
+              {/* <div
                 title={`${isEmpty(zoneData) ? "Create zone first" : ""} `}
                 className={isEmpty(zoneData) ? "not-allowed" : ""}
                 id="tagSelectedZone"
@@ -1043,7 +1059,7 @@ export const SideBar = () => {
                   menuPlacement="auto"
                   placeholder="Select Zone Name"
                 />
-              </div>
+              </div> */}
               {tag != false && tag != undefined && (
                 <ResourceTagContent
                   serviceDefData={tagServiceDefData
@@ -1061,7 +1077,7 @@ export const SideBar = () => {
                   closeResourceCollapse={closeResourceCollapse}
                   tagView={tag}
                   loader={loader}
-                  selectedZone={selectedZone}
+                  //selectedZone={selectedZone}
                 />
               )}
             </div>

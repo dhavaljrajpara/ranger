@@ -26,7 +26,7 @@ import ServiceViewDetails from "../ServiceManager/ServiceViewDetails";
 import { fetchApi } from "Utils/fetchAPI";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { serverError } from "../../utils/XAUtils";
+import { serverError, isKeyAdmin, isKMSAuditor } from "../../utils/XAUtils";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -46,22 +46,28 @@ function reducer(state, action) {
 }
 
 export const TopNavBar = (props) => {
+  const isKMSRole = isKeyAdmin() || isKMSAuditor();
   const navigate = useNavigate();
   const [policyState, dispatch] = useReducer(reducer, {
     showView: null,
     showDelete: false
   });
-
   const { showView, showDelete } = policyState;
+
   let {
     serviceDefData,
     serviceData,
     handleServiceChange,
     getServices,
-    allServiceData,
+    allServicesData,
     policyLoader,
+    currentServiceZone,
+    handleZoneChange,
+    getZones,
+    allZonesData,
     zoneServicesData
   } = props;
+
   let localStorageZoneDetails = localStorage.getItem("zoneDetails");
 
   const serviceSelectCustomStyles = {
@@ -69,8 +75,9 @@ export const TopNavBar = (props) => {
       ...provided,
       color: state.isSelected ? "white" : "black"
     }),
-    container: (styles) => ({ ...styles, width: "200px" })
+    container: (styles) => ({ ...styles, width: "240px" })
   };
+
   const serviceSelectTheme = (theme) => {
     return {
       ...theme,
@@ -80,6 +87,7 @@ export const TopNavBar = (props) => {
       }
     };
   };
+
   const showViewModal = (id) => {
     dispatch({
       type: "SHOW_VIEW_MODAL",
@@ -93,17 +101,41 @@ export const TopNavBar = (props) => {
       showView: null
     });
   };
+
   const showDeleteModal = () => {
     dispatch({
       type: "SHOW_DELETE_MODAL",
       showDelete: true
     });
   };
+
   const hideDeleteModal = () => {
     dispatch({
       type: "SHOW_DELETE_MODAL",
       showDelete: false
     });
+  };
+
+  const getCurrentZone = (zone) => {
+    if (zone !== null) {
+      return {
+        label: `Security Zone : ${zone?.label}`,
+        value: zone.value
+      };
+    } else {
+      return "";
+    }
+  };
+
+  const getCurrentService = (service) => {
+    if (!isEmpty(service)) {
+      return {
+        label: `Service : ${service?.displayName}`,
+        value: service.displayName
+      };
+    } else {
+      return "";
+    }
   };
 
   const deleteService = async (serviceId) => {
@@ -142,39 +174,45 @@ export const TopNavBar = (props) => {
       );
     }
   };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light content-top-nav">
       <div className="top-nav-title-wrapper">
-        <span
-          style={{
-            padding: "0 12px",
-            fontSize: "0.875rem",
-            fontWeight: "bold"
-          }}
-        >
+        <span className="top-nav-title">
           {`${upperCase(serviceDefData?.name)} Policies`}
         </span>
-
         <span className="pipe show-on-mobile"></span>
-
         <Select
           theme={serviceSelectTheme}
           styles={serviceSelectCustomStyles}
           className={`${policyLoader ? "not-allowed" : ""}`}
           isDisabled={policyLoader ? true : false}
           options={getServices(
-            localStorageZoneDetails != null ? zoneServicesData : allServiceData
+            localStorageZoneDetails != null ? zoneServicesData : allServicesData
           )}
           onChange={(e) => handleServiceChange(e)}
-          value={{
-            label: serviceData?.displayName,
-            value: serviceData?.displayName
-          }}
+          value={!policyLoader ? getCurrentService(serviceData) : ""}
           menuPlacement="auto"
-          placeholder="Select Zone Name"
+          placeholder="Select Service Name"
         />
-
-        {localStorageZoneDetails !== null && (
+        {!isKMSRole && (
+          <React.Fragment>
+            <span className="pipe show-on-mobile"></span>
+            <Select
+              theme={serviceSelectTheme}
+              styles={serviceSelectCustomStyles}
+              className={`${policyLoader ? "not-allowed" : ""}`}
+              isDisabled={policyLoader ? true : false}
+              options={getZones(allZonesData)}
+              onChange={(e) => handleZoneChange(e)}
+              value={!policyLoader ? getCurrentZone(currentServiceZone) : ""}
+              menuPlacement="auto"
+              placeholder="Select Zone Name"
+              isClearable
+            />
+          </React.Fragment>
+        )}
+        {/* {localStorageZoneDetails !== null && (
           <>
             <span className="pipe show-on-mobile"></span>
             <span className="navbar-text">
@@ -185,9 +223,8 @@ export const TopNavBar = (props) => {
               } Zone Policies`}</span>
             </span>
           </>
-        )}
+        )} */}
       </div>
-
       <div className="collapse navbar-collapse" id="navbarText">
         <ul className="navbar-nav ml-auto">
           <li className="nav-item" title="Service View">
@@ -211,7 +248,7 @@ export const TopNavBar = (props) => {
             <Link
               to={`/service/${serviceDefData.id}/edit/${serviceData?.id}`}
               onClick={(e) => policyLoader && e.preventDefault()}
-              state={allServiceData[0]?.id}
+              state={allServicesData[0]?.id}
               disabled={policyLoader ? true : false}
               className={`${
                 policyLoader ? "not-allowed" : ""
@@ -240,7 +277,7 @@ export const TopNavBar = (props) => {
           </li>
         </ul>
         <span className="pipe"></span>
-        <span className="navbar-text">
+        <span className="navbar-text last-response-time">
           <strong>Last Response Time</strong>
           <br />
           {moment(moment()).format("MM/DD/YYYY hh:mm:ss A")}
@@ -266,7 +303,6 @@ export const TopNavBar = (props) => {
           </Button>
         </Modal.Footer>
       </Modal>
-
       <Modal show={showDelete} onHide={hideDeleteModal}>
         <Modal.Header closeButton>
           {`Are you sure want to delete ?`}

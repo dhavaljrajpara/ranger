@@ -17,11 +17,11 @@
  * under the License.
  */
 
-import React, { Component, useCallback } from "react";
-import { Button, Col, Row } from "react-bootstrap";
+import React, { Component } from "react";
+import { Button, Row } from "react-bootstrap";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { filter, map, sortBy, uniq, some, isEmpty } from "lodash";
+import { filter, map, sortBy, uniq, isEmpty } from "lodash";
 import { fetchApi } from "Utils/fetchAPI";
 import {
   isSystemAdmin,
@@ -314,12 +314,12 @@ class ServiceDefinitions extends Component {
     const customStyles = {
       control: (provided) => ({
         ...provided,
-        minHeight: "30px",
-        height: "25px"
+        minHeight: "33px",
+        height: "33px"
       }),
       indicatorsContainer: (provided) => ({
         ...provided,
-        height: "30px"
+        height: "33px"
       }),
       valueContainer: (provided) => ({
         ...provided,
@@ -335,7 +335,7 @@ class ServiceDefinitions extends Component {
                 className="body bold  pd-b-10"
                 style={{ display: "inline-block" }}
               >
-                Security Zone:
+                Security Zone :
               </div>
             )}
             {!isKMSRole && (
@@ -365,7 +365,8 @@ class ServiceDefinitions extends Component {
                             this.state.selectedZone.value
                         }
                   }
-                  isDisabled={true}
+                  //isDisabled={true}
+                  isDisabled={isEmpty(zones) ? true : false}
                   onChange={this.getSelectedZone}
                   isClearable
                   components={{
@@ -387,7 +388,7 @@ class ServiceDefinitions extends Component {
               <Button
                 variant="outline-secondary"
                 size="sm"
-                className="ml-2 btn-mini "
+                className="ml-2"
                 onClick={this.showImportModal}
                 data-id="importBtn"
                 data-cy="importBtn"
@@ -413,7 +414,7 @@ class ServiceDefinitions extends Component {
               <Button
                 variant="outline-secondary"
                 size="sm"
-                className="ml-2 btn-mini "
+                className="ml-2"
                 onClick={this.showExportModal}
                 data-id="exportBtn"
                 data-cy="exportBtn"

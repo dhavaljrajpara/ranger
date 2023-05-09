@@ -401,7 +401,7 @@ class ServiceDefinition extends Component {
                         {!this.props.isUserRole && (
                           <Button
                             variant="outline-dark"
-                            className="m-r-5   btn btn-mini"
+                            className="m-r-5 btn btn-mini"
                             title="View"
                             onClick={() => {
                               this.showViewModal(s.id);
