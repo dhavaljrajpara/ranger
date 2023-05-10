@@ -40,7 +40,7 @@ import arrayMutators from "final-form-arrays";
 import ModalResourceComp from "../Resources/ModalResourceComp";
 import { RegexValidation } from "Utils/XAEnums";
 import { toast } from "react-toastify";
-import { serverError } from "../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
 import {
   BlockUi,
   Loader,
@@ -48,7 +48,6 @@ import {
   selectCustomStyles
 } from "../../components/CommonComponents";
 import usePrompt from "Hooks/usePrompt";
-import CustomBreadcrumb from "../CustomBreadcrumb";
 
 const noneOptions = {
   label: "None",
@@ -637,7 +636,13 @@ const SecurityZoneForm = (props) => {
           <h3 className="wrap-header bold">
             {params.zoneId !== undefined ? `Edit` : `Create`} Zone
           </h3>
-          <CustomBreadcrumb />
+          {commonBreadcrumb(
+            [
+              "SecurityZone",
+              params.zoneId !== undefined ? "ZoneEdit" : "ZoneCreate"
+            ],
+            params.zoneId
+          )}
         </div>
       </div>
       {loader ? (

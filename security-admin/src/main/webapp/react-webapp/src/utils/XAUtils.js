@@ -1017,20 +1017,20 @@ var links = {
   }
 };
 
-// export const commonBreadcrumb = (type, options) => {
-//   let data = [];
-//   type.map((obj) => {
-//     if (typeof links[obj] == "function") {
-//       let filterdata = {};
-//       filterdata[obj] = links[obj](options);
-//       return data.push(filterdata);
-//     }
-//     if (typeof links[obj] != "function") {
-//       return data.push(pick(links, obj));
-//     }
-//   });
-//   return <CustomBreadcrumb data={data} links={links} type={type} />;
-// };
+export const commonBreadcrumb = (type, options) => {
+  let data = [];
+  type?.map((obj) => {
+    if (typeof links[obj] == "function") {
+      let filterdata = {};
+      filterdata[obj] = links[obj](options);
+      return data.push(filterdata);
+    }
+    if (typeof links[obj] != "function") {
+      return data.push(pick(links, obj));
+    }
+  });
+  return <CustomBreadcrumb data={data} links={links} type={type} />;
+};
 
 /* PolicyListing QuerParams Name */
 export const QueryParamsName = (id) => {

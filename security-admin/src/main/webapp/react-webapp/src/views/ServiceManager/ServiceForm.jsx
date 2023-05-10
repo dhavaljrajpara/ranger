@@ -29,7 +29,7 @@ import { RegexValidation } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
-import { serverError } from "../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
 import {
   BlockUi,
   Condition,
@@ -55,7 +55,6 @@ import {
 } from "lodash";
 import withRouter from "Hooks/withRouter";
 import { RangerPolicyType } from "../../utils/XAEnums";
-import CustomBreadcrumb from "../CustomBreadcrumb";
 
 class ServiceForm extends Component {
   constructor(props) {
@@ -984,7 +983,32 @@ class ServiceForm extends Component {
       value: obj.name
     }));
   };
-
+  ServiceDefnBreadcrumb = () => {
+    let serviceDetails = {};
+    serviceDetails["serviceDefId"] = this.state.serviceDef.id;
+    serviceDetails["serviceId"] = this.props.params.serviceId;
+    if (this.state.serviceDef.name === "tag") {
+      return commonBreadcrumb(
+        [
+          "TagBasedServiceManager",
+          this.props.params.serviceId !== undefined
+            ? "ServiceEdit"
+            : "ServiceCreate"
+        ],
+        serviceDetails
+      );
+    } else {
+      return commonBreadcrumb(
+        [
+          "ServiceManager",
+          this.props.params.serviceId !== undefined
+            ? "ServiceEdit"
+            : "ServiceCreate"
+        ],
+        serviceDetails
+      );
+    }
+  };
   render() {
     return (
       <React.Fragment>
@@ -994,7 +1018,7 @@ class ServiceForm extends Component {
               {this.props.params.serviceId !== undefined ? `Edit` : `Create`}{" "}
               Service
             </h4>
-            <CustomBreadcrumb />
+            {this.ServiceDefnBreadcrumb()}
           </div>
         </div>
         {this.state.loader ? (

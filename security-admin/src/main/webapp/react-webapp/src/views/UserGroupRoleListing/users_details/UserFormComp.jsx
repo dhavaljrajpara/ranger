@@ -36,11 +36,10 @@ import { getUserProfile } from "Utils/appState";
 import _, { isEmpty, isUndefined } from "lodash";
 import { SyncSourceDetails } from "../SyncSourceDetails";
 import { BlockUi } from "../../../components/CommonComponents";
-import { InfoIcon } from "../../../utils/XAUtils";
+import { InfoIcon, commonBreadcrumb } from "../../../utils/XAUtils";
 import { RegexMessage, roleChngWarning } from "../../../utils/XAMessages";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import usePrompt from "Hooks/usePrompt";
-import CustomBreadcrumb from "../../CustomBreadcrumb";
 
 const initialState = {
   loader: true,
@@ -382,10 +381,6 @@ function UserFormComp(props) {
 
   return (
     <>
-      <div className="header-wraper">
-        <h3 className="wrap-header bold">User Detail</h3>
-        <CustomBreadcrumb />
-      </div>
       <Form
         onSubmit={handleSubmit}
         keepDirtyOnReinitialize={true}
@@ -732,7 +727,9 @@ function UserFormComp(props) {
                           document.querySelector(
                             `input[id=${Object.keys(errors)[0]}]`
                           ) ||
-                          document.querySelector(`span[className="invalid-field"]`);
+                          document.querySelector(
+                            `span[className="invalid-field"]`
+                          );
 
                         scrollToError(selector);
                       }

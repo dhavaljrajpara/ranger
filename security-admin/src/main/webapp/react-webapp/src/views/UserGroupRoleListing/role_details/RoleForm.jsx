@@ -26,7 +26,7 @@ import arrayMutators from "final-form-arrays";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import { findIndex, isEmpty, filter } from "lodash";
-import { serverError } from "../../../utils/XAUtils";
+import { commonBreadcrumb, serverError } from "../../../utils/XAUtils";
 import { Loader, CustomTooltip } from "Components/CommonComponents";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { fetchApi } from "Utils/fetchAPI";
@@ -429,7 +429,10 @@ function RoleForm() {
     <>
       <div className="header-wraper">
         <h3 className="wrap-header bold">Role Detail</h3>
-        <CustomBreadcrumb />
+        {commonBreadcrumb(
+          ["Roles", params.roleID ? "RoleEdit" : "RoleCreate"],
+          params.roleID
+        )}
       </div>
 
       {loader ? (

@@ -494,6 +494,7 @@ footer {
   margin: 3px 0 0 0px;
   padding-bottom: 10px;
   text-transform: none;
+  flex: 1;
 }
 
 .bold {
@@ -715,7 +716,7 @@ header {
 }
 
 .formHeader {
-  padding: 2px 4px;
+  /* padding: 2px 4px; */
   font-size: 15px;
   font-weight: bold;
   line-height: 26px;
@@ -1125,7 +1126,7 @@ header {
   margin: 0;
   padding: 0;
   font-size: 13px;
-  background-color: #eeeeee;
+  background-color: #ffff;
 }
 
 .breadcrumb li {
@@ -1208,8 +1209,13 @@ header {
   z-index: 10;
   background: #eeeeee;
   padding-top: 14px;
-  width: 70%;
+  width: 100%;
   display: inline-block;
+  border-top: 1px solid #d6d6d6;
+  background: white;
+  padding-left: 16px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .headerBreadcrumbs {
@@ -1219,6 +1225,7 @@ header {
   background: #eeeeee;
   width: 100%;
   display: inline-block;
+  padding-left: 16px;
 }
 
 .breadcrumb li.breadcrumb-item.allow_nav {
@@ -2341,6 +2348,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  flex-wrap: wrap;
 }
 .last-response-time {
   padding-left: 1rem;
@@ -2360,4 +2368,46 @@ li.list-group-item:hover {
 }
 .disabledEvents {
   pointer-events: none !important;
+}
+.breadcrumb-new {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+  color: inherit;
+  margin-bottom: 0;
+}
+
+.breadcrumb-new i {
+  display: block;
+}
+
+.breadcrumb-item + .breadcrumb-item {
+  padding-left: 0;
+}
+
+.breadcrumb-new li:last-child img {
+  display: none;
+}
+
+.breadcrumb-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.breadcrumb-new p {
+  margin-bottom: 0;
+}
+.breadcrumb-new li:last-child p,
+.breadcrumb-new li:last-child a {
+  color: #4e4e4e !important;
+}
+
+.breadcrumb-chevron {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0.7;
 }

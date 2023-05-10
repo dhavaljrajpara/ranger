@@ -34,9 +34,12 @@ import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 import { cloneDeep, find, findIndex, reverse } from "lodash";
 import { AccessResult } from "Utils/XAEnums";
-import { CustomInfinteScroll, serverError } from "../../utils/XAUtils";
+import {
+  CustomInfinteScroll,
+  commonBreadcrumb,
+  serverError
+} from "../../utils/XAUtils";
 import { BlockUi } from "../../components/CommonComponents";
-import CustomBreadcrumb from "../CustomBreadcrumb";
 
 const initialState = {
   loader: true,
@@ -302,7 +305,10 @@ const EditPermission = (props) => {
     <div>
       <div className="header-wraper">
         <h3 className="wrap-header bold">Edit Permission</h3>
-        <CustomBreadcrumb />
+        {commonBreadcrumb(
+          ["ModulePermissions", "ModulePermissionEdit"],
+          permissionData
+        )}
       </div>
       <div className="wrap non-collapsible">
         <Form
