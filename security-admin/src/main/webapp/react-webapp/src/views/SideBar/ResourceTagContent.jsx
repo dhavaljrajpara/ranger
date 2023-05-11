@@ -24,31 +24,22 @@ import { RangerPolicyType } from "../../utils/XAEnums";
 import Spinner from "react-bootstrap/Spinner";
 
 export const ResourceTagContent = (props) => {
-  const {
-    serviceDefData,
-    serviceData,
-    closeResourceCollapse,
-    closeTagCollapse,
-    tagView,
-    loader
-  } = props;
+  const { serviceDefData, serviceData, closeCollapse, loader } = props;
 
   return loader ? (
-    <>
-      <Spinner
-        animation="border"
-        className="position-absolute"
-        style={{
-          height: "48px",
-          width: "48px",
-          top: "50%",
-          left: "50%"
-        }}
-        role="status"
-      ></Spinner>
-    </>
+    <Spinner
+      animation="border"
+      className="position-absolute"
+      style={{
+        height: "48px",
+        width: "48px",
+        top: "50%",
+        left: "37%"
+      }}
+      role="status"
+    ></Spinner>
   ) : (
-    <ul className="list-group list-group-flush">
+    <ul className="list-group list-group-flush overflow-y-auto">
       {serviceDefData?.map((servicedef, index) => {
         let filterService = sortBy(
           serviceData?.filter((service) => service?.type === servicedef?.name),
@@ -65,11 +56,7 @@ export const ResourceTagContent = (props) => {
                 <React.Fragment key={index}>
                   <li className="list-group-item">
                     <NavLink
-                      onClick={
-                        tagView !== undefined
-                          ? closeTagCollapse
-                          : closeResourceCollapse
-                      }
+                      onClick={closeCollapse}
                       to={`/service/${service.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
                       className="list-group-item"
                     >

@@ -26,7 +26,8 @@ import {
   isRenderMasking,
   isRenderRowFilter,
   isKeyAdmin,
-  isKMSAuditor
+  isKMSAuditor,
+  updateTagActive
 } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import TopNavBar from "../SideBar/TopNavBar";
@@ -101,6 +102,7 @@ export const PolicyListingTabView = () => {
     let getAllServicesData = [];
     let getServiceDefData = {};
     let getZones = [];
+    let isTagView = false;
 
     try {
       getServiceData = await fetchApi({
@@ -112,6 +114,14 @@ export const PolicyListingTabView = () => {
       getServiceDefData = serviceDefs?.allServiceDefs?.find((serviceDef) => {
         return serviceDef.name == getServiceData.data.type;
       });
+
+      isTagView =
+        getServiceDefData?.name !== undefined &&
+        getServiceDefData?.name === "tag"
+          ? true
+          : false;
+
+      updateTagActive(isTagView);
 
       if (!isKMSRole) {
         getZones = await fetchApi({

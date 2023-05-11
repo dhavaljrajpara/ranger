@@ -29,7 +29,11 @@ import { RegexValidation } from "Utils/XAEnums";
 import { fetchApi } from "Utils/fetchAPI";
 import ServiceAuditFilter from "./ServiceAuditFilter";
 import TestConnection from "./TestConnection";
-import { commonBreadcrumb, serverError } from "../../utils/XAUtils";
+import {
+  commonBreadcrumb,
+  serverError,
+  updateTagActive
+} from "../../utils/XAUtils";
 import {
   BlockUi,
   Condition,
@@ -303,31 +307,24 @@ class ServiceForm extends Component {
     let serviceDefResp;
     let serviceDef;
     let serviceDefId = this.props.params.serviceDefId;
+    let isTagView = false;
 
     try {
       serviceDefResp = await fetchApi({
         url: `plugins/definitions/${serviceDefId}`
       });
-      if (serviceDefResp.data.name == "tag") {
-        document
-          .getElementById("resourcesCollapse")
-          ?.classList?.remove("navbar-active");
-        document.getElementById("tagCollapse")?.classList?.add("navbar-active");
-      } else if (serviceDefResp.data.name !== "tag") {
-        document
-          .getElementById("tagCollapse")
-          ?.classList?.remove("navbar-active");
-        document
-          .getElementById("resourcesCollapse")
-          ?.classList?.add("navbar-active");
-      }
+      isTagView =
+        serviceDefResp?.name !== undefined && serviceDefResp?.name === "tag"
+          ? true
+          : false;
+      updateTagActive(isTagView);
     } catch (error) {
       console.error(
         `Error occurred while fetching Service Definition or CSRF headers! ${error}`
       );
     }
 
-    serviceDef = serviceDefResp.data;
+    serviceDef = serviceDefResp?.data;
 
     if (serviceDef.resources !== undefined) {
       for (const obj of serviceDef.resources) {
