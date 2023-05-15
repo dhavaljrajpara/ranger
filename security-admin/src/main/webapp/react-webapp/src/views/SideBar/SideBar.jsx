@@ -124,16 +124,19 @@ export const SideBar = () => {
 
   const [isActive, setActive] = useState(null);
   const [isDrawerOpen, setDrawer] = useState(false);
+  const [accountDrawer, setAccountDrawer] = useState(false);
   const [isTagView, setTagView] = useState(false);
 
   const handleClickOutside = (e) => {
     if (
       document.getElementById("sidebar")?.contains(e?.target) == false &&
-      document.getElementById("drawer-content")?.contains(e?.target) == false
+      document.getElementById("drawer-content")?.contains(e?.target) == false &&
+      document.getElementById("account-drawer-content")?.contains(e?.target) ==
+        false
     ) {
       setActive(null);
       setDrawer(false);
-      console.log("handleClickOutside");
+      setAccountDrawer(false);
     }
     e?.stopPropagation();
   };
@@ -204,6 +207,7 @@ export const SideBar = () => {
   const closeCollapse = () => {
     setActive(null);
     setDrawer(false);
+    setAccountDrawer(false);
   };
 
   const activeClass = (modules) => {
@@ -243,7 +247,7 @@ export const SideBar = () => {
             onClick={() => {
               setActive(null);
               setDrawer(false);
-              console.log("/policymanager/resource");
+              setAccountDrawer(false);
             }}
           >
             <img className="logo" src={rangerIcon} alt="Ranger logo" />
@@ -264,10 +268,10 @@ export const SideBar = () => {
                 className={activeClass("Resource Based Policies")}
                 onClick={() => {
                   setActive("resourcesCollapse");
+                  setAccountDrawer(false);
                   setDrawer(true);
                   setTagView(false);
                   fetchServicesData();
-                  console.log("resourcesCollapse");
                 }}
               >
                 <img src={keyIcon} />
@@ -289,10 +293,10 @@ export const SideBar = () => {
                 className={activeClass("Tag Based Policies")}
                 onClick={() => {
                   setActive("tagCollapse");
+                  setAccountDrawer(false);
                   setDrawer(true);
                   setTagView(true);
                   fetchServicesData();
-                  console.log("tagCollapse");
                 }}
               >
                 <img src={tagsIcon} />
@@ -309,7 +313,7 @@ export const SideBar = () => {
                 onClick={() => {
                   setActive(null);
                   setDrawer(false);
-                  console.log("/reports/userAccess");
+                  setAccountDrawer(false);
                 }}
               >
                 <img src={reportsIcon} />
@@ -330,8 +334,8 @@ export const SideBar = () => {
                 className={activeClass("Audit")}
                 onClick={() => {
                   setActive("auditCollapse");
+                  setAccountDrawer(false);
                   setDrawer(true);
-                  console.log("auditCollapse");
                 }}
               >
                 <img src={auditsIcon} />
@@ -350,7 +354,7 @@ export const SideBar = () => {
                     onClick={() => {
                       setActive(null);
                       setDrawer(false);
-                      console.log("/zones");
+                      setAccountDrawer(false);
                     }}
                   >
                     <img src={zoneIcon} />
@@ -371,7 +375,7 @@ export const SideBar = () => {
                     onClick={() => {
                       setActive(null);
                       setDrawer(false);
-                      console.log("/kms");
+                      setAccountDrawer(false);
                     }}
                   >
                     <i className="fa fa-fw fa-key"></i>
@@ -396,8 +400,8 @@ export const SideBar = () => {
                 className={activeClass("Users/Groups")}
                 onClick={() => {
                   setActive("settingsCollapse");
+                  setAccountDrawer(false);
                   setDrawer(true);
-                  console.log("settingsCollapse");
                 }}
               >
                 <img src={settingsIcon} />
@@ -417,8 +421,8 @@ export const SideBar = () => {
               className={activeClass("Profile")}
               onClick={() => {
                 setActive("accountCollapse");
-                setDrawer(true);
-                console.log("accountCollapse");
+                setDrawer(false);
+                setAccountDrawer(true);
               }}
             >
               <img src={accountIcon} />
@@ -438,6 +442,7 @@ export const SideBar = () => {
         loader={loader}
         activeMenu={isActive}
         isDrawerOpen={isDrawerOpen}
+        accountDrawer={accountDrawer}
         closeCollapse={closeCollapse}
         sideBarDispatch={dispatch}
       />
