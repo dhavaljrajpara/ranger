@@ -17,14 +17,7 @@
  * under the License.
  */
 
-import React, {
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  useContext,
-  createContext
-} from "react";
+import React, { useEffect, useReducer, useState, useContext } from "react";
 import {
   Form as FormB,
   Row,
@@ -39,7 +32,7 @@ import { Form, Field } from "react-final-form";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import arrayMutators from "final-form-arrays";
-import _, {
+import {
   groupBy,
   find,
   isEmpty,
@@ -73,6 +66,7 @@ import usePrompt from "Hooks/usePrompt";
 import { RegexMessage } from "../../utils/XAMessages";
 import { policyInfo } from "Utils/XAUtils";
 import { BlockUi } from "../../components/CommonComponents";
+import { getServiceDef } from "../../utils/appState";
 
 const noneOptions = {
   label: "None",
@@ -114,18 +108,18 @@ const Condition = ({ when, is, children }) => (
     {({ input: { value } }) => (value === is ? children : null)}
   </Field>
 );
-export const Context = createContext();
 
 export default function AddUpdatePolicyForm(props) {
   let { serviceId, policyType, policyId } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const serviceDefs = getServiceDef();
   const [policyState, dispatch] = useReducer(reducer, initialState);
   const { loader, serviceDetails, serviceCompDetails, policyData, formData } =
     policyState;
-  const usersDataRef = useRef(null);
-  const grpDataRef = useRef(null);
-  const rolesDataRef = useRef(null);
+  const [defaultPolicyLabelOptions, setDefaultPolicyLabelOptions] = useState(
+    []
+  );
   const [showModal, policyConditionState] = useState(false);
   const [preventUnBlock, setPreventUnblock] = useState(false);
   const [show, setShow] = useState(true);
@@ -133,15 +127,15 @@ export default function AddUpdatePolicyForm(props) {
   const [showDelete, setShowDelete] = useState(false);
   const [blockUI, setBlockUI] = useState(false);
   const toastId = React.useRef(null);
-  const [serviceDefs, setServiceDefs] = useState([]);
-  // usePrompt("Leave screen?", true);
 
   useEffect(() => {
     fetchInitalData();
   }, []);
+
   const showDeleteModal = () => {
     setShowDelete(true);
   };
+
   const hideDeleteModal = () => {
     setShowDelete(false);
   };
@@ -175,60 +169,43 @@ export default function AddUpdatePolicyForm(props) {
   const fetchUsersData = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
-    if (usersDataRef.current === null || inputValue) {
-      const userResp = await fetchApi({
-        url: "xusers/lookup/users",
-        params: params
-      });
-      op = userResp.data.vXStrings;
-      if (!inputValue) {
-        usersDataRef.current = op;
-      }
-    } else {
-      op = usersDataRef.current;
-    }
+    const userResp = await fetchApi({
+      url: "xusers/lookup/users",
+      params: params
+    });
+    op = userResp.data.vXStrings;
 
     return op.map((obj) => ({
       label: obj.value,
       value: obj.value
     }));
   };
+
   const fetchGroupsData = async (inputValue) => {
     let params = { name: inputValue || "", isVisible: 1 };
     let op = [];
-    if (grpDataRef.current === null || inputValue) {
-      const userResp = await fetchApi({
-        url: "xusers/lookup/groups",
-        params: params
-      });
-      op = userResp.data.vXStrings;
-      if (!inputValue) {
-        grpDataRef.current = op;
-      }
-    } else {
-      op = grpDataRef.current;
-    }
+
+    const userResp = await fetchApi({
+      url: "xusers/lookup/groups",
+      params: params
+    });
+    op = userResp.data.vXStrings;
 
     return op.map((obj) => ({
       label: obj.value,
       value: obj.value
     }));
   };
+
   const fetchRolesData = async (inputValue) => {
     let params = { roleNamePartial: inputValue || "", isVisible: 1 };
     let op = [];
-    if (rolesDataRef.current === null || inputValue) {
-      const roleResp = await fetchApi({
-        url: "roles/roles",
-        params: params
-      });
-      op = roleResp.data.roles;
-      if (!inputValue) {
-        rolesDataRef.current = op;
-      }
-    } else {
-      op = rolesDataRef.current;
-    }
+
+    const roleResp = await fetchApi({
+      url: "roles/roles",
+      params: params
+    });
+    op = roleResp.data.roles;
 
     return op.map((obj) => ({
       label: obj.name,
@@ -237,16 +214,16 @@ export default function AddUpdatePolicyForm(props) {
   };
 
   const fetchInitalData = async () => {
-    await fetchServiceDefs();
     let serviceData = await fetchServiceDetails();
-    let serviceCompData = await fetchRangerServiceDefComp(serviceData);
-    await fetchUsersData();
-    await fetchGroupsData();
-    await fetchRolesData();
+
+    let serviceCompData = serviceDefs?.allServiceDefs?.find((servicedef) => {
+      return servicedef.name == serviceData.type;
+    });
     let policyData = null;
     if (policyId) {
       policyData = await fetchPolicyData();
     }
+
     dispatch({
       type: "SET_DATA",
       serviceDetails: serviceData,
@@ -254,20 +231,6 @@ export default function AddUpdatePolicyForm(props) {
       policyData: policyData || null,
       formData: generateFormData(policyData, serviceCompData)
     });
-  };
-
-  const fetchServiceDefs = async () => {
-    let servicetypeResp;
-
-    try {
-      servicetypeResp = await fetchApi({
-        url: `plugins/definitions`
-      });
-    } catch (error) {
-      console.error(`Error occurred while fetching Services! ${error}`);
-    }
-
-    setServiceDefs(servicetypeResp.data.serviceDefs);
   };
 
   const fetchServiceDetails = async () => {
@@ -279,23 +242,6 @@ export default function AddUpdatePolicyForm(props) {
       data = resp.data || null;
     } catch (error) {
       console.error(`Error occurred while fetching service details ! ${error}`);
-    }
-    return data;
-  };
-
-  const fetchRangerServiceDefComp = async (serviceData) => {
-    let data = null;
-    if (serviceData) {
-      try {
-        const resp = await fetchApi({
-          url: `plugins/definitions/name/${serviceData.type}`
-        });
-        data = resp.data || null;
-      } catch (error) {
-        console.error(
-          `Error occurred while fetching service defination data ! ${error}`
-        );
-      }
     }
     return data;
   };
@@ -327,6 +273,12 @@ export default function AddUpdatePolicyForm(props) {
       label: name,
       value: name
     }));
+  };
+
+  const onFocusPolicyLabel = () => {
+    fetchPolicyLabel().then((opts) => {
+      setDefaultPolicyLabelOptions(opts);
+    });
   };
 
   const generateFormData = (policyData, serviceCompData) => {
@@ -463,7 +415,7 @@ export default function AddUpdatePolicyForm(props) {
         });
       }
 
-      /*policy condition*/
+      /* Policy condition */
       if (policyData?.conditions?.length > 0) {
         data.conditions = {};
         for (let val of policyData.conditions) {
@@ -908,6 +860,7 @@ export default function AddUpdatePolicyForm(props) {
       ? toast.error(errorField?.accesses, { toastId: "error1" })
       : toast.error(errorField?.delegateAdmin, { toastId: "error1" });
   };
+
   const resourceErrorCheck = (errors, values) => {
     let serviceCompResourcesDetails;
     if (
@@ -934,6 +887,7 @@ export default function AddUpdatePolicyForm(props) {
       }
     }
   };
+
   const policyBreadcrumb = () => {
     let policyDetails = {};
     policyDetails["serviceId"] = serviceId;
@@ -1267,9 +1221,12 @@ export default function AddUpdatePolicyForm(props) {
                               <Col sm={5}>
                                 <AsyncCreatableSelect
                                   {...input}
-                                  defaultOptions
                                   isMulti
                                   loadOptions={fetchPolicyLabel}
+                                  onFocus={() => {
+                                    onFocusPolicyLabel();
+                                  }}
+                                  defaultOptions={defaultPolicyLabelOptions}
                                 />
                               </Col>
                             </FormB.Group>
@@ -1469,22 +1426,18 @@ export default function AddUpdatePolicyForm(props) {
                                           </p>
                                         </fieldset>
                                         <div className="wrap">
-                                          <Context.Provider
-                                            value={{ serviceDefs: serviceDefs }}
-                                          >
-                                            <PolicyPermissionItem
-                                              serviceDetails={serviceDetails}
-                                              serviceCompDetails={
-                                                serviceCompDetails
-                                              }
-                                              formValues={values}
-                                              addPolicyItem={addPolicyItem}
-                                              attrName="allowExceptions"
-                                              fetchUsersData={fetchUsersData}
-                                              fetchGroupsData={fetchGroupsData}
-                                              fetchRolesData={fetchRolesData}
-                                            />
-                                          </Context.Provider>
+                                          <PolicyPermissionItem
+                                            serviceDetails={serviceDetails}
+                                            serviceCompDetails={
+                                              serviceCompDetails
+                                            }
+                                            formValues={values}
+                                            addPolicyItem={addPolicyItem}
+                                            attrName="allowExceptions"
+                                            fetchUsersData={fetchUsersData}
+                                            fetchGroupsData={fetchGroupsData}
+                                            fetchRolesData={fetchRolesData}
+                                          />
                                         </div>
                                       </>
                                     )}
@@ -1538,22 +1491,18 @@ export default function AddUpdatePolicyForm(props) {
                                     <Accordion.Collapse eventKey="0">
                                       <>
                                         <div className="wrap">
-                                          <Context.Provider
-                                            value={{ serviceDefs: serviceDefs }}
-                                          >
-                                            <PolicyPermissionItem
-                                              serviceDetails={serviceDetails}
-                                              serviceCompDetails={
-                                                serviceCompDetails
-                                              }
-                                              formValues={values}
-                                              addPolicyItem={addPolicyItem}
-                                              attrName="denyPolicyItems"
-                                              fetchUsersData={fetchUsersData}
-                                              fetchGroupsData={fetchGroupsData}
-                                              fetchRolesData={fetchRolesData}
-                                            />
-                                          </Context.Provider>
+                                          <PolicyPermissionItem
+                                            serviceDetails={serviceDetails}
+                                            serviceCompDetails={
+                                              serviceCompDetails
+                                            }
+                                            formValues={values}
+                                            addPolicyItem={addPolicyItem}
+                                            attrName="denyPolicyItems"
+                                            fetchUsersData={fetchUsersData}
+                                            fetchGroupsData={fetchGroupsData}
+                                            fetchRolesData={fetchRolesData}
+                                          />
                                         </div>
                                         <fieldset>
                                           <p className="wrap-header search-header">
@@ -1562,22 +1511,18 @@ export default function AddUpdatePolicyForm(props) {
                                           </p>
                                         </fieldset>
                                         <div className="wrap">
-                                          <Context.Provider
-                                            value={{ serviceDefs: serviceDefs }}
-                                          >
-                                            <PolicyPermissionItem
-                                              serviceDetails={serviceDetails}
-                                              serviceCompDetails={
-                                                serviceCompDetails
-                                              }
-                                              formValues={values}
-                                              addPolicyItem={addPolicyItem}
-                                              attrName="denyExceptions"
-                                              fetchUsersData={fetchUsersData}
-                                              fetchGroupsData={fetchGroupsData}
-                                              fetchRolesData={fetchRolesData}
-                                            />
-                                          </Context.Provider>
+                                          <PolicyPermissionItem
+                                            serviceDetails={serviceDetails}
+                                            serviceCompDetails={
+                                              serviceCompDetails
+                                            }
+                                            formValues={values}
+                                            addPolicyItem={addPolicyItem}
+                                            attrName="denyExceptions"
+                                            fetchUsersData={fetchUsersData}
+                                            fetchGroupsData={fetchGroupsData}
+                                            fetchRolesData={fetchRolesData}
+                                          />
                                         </div>
                                       </>
                                     </Accordion.Collapse>
