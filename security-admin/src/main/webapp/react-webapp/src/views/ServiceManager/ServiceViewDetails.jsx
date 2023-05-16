@@ -131,6 +131,10 @@ export const ServiceViewDetails = (props) => {
       return tableRow;
     }
 
+    if (isEmpty(auditFilters["ranger.plugin.audit.filters"])) {
+      return tableRow;
+    }
+
     auditFilters = JSON.parse(
       auditFilters["ranger.plugin.audit.filters"].replace(/'/g, '"')
     );
