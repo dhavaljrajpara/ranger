@@ -161,43 +161,6 @@ export const PolicyListingTabView = () => {
     }
   };
 
-  /* const zoneServices = async (servciesData) => {
-    if (localStorageZoneDetails !== null) {
-      try {
-        let serviceIndex;
-        let zonesResp = [];
-        zonesResp = await fetchApi({
-          url: `public/v2/api/zones/${
-            JSON.parse(localStorageZoneDetails)?.value
-          }/service-headers`
-        });
-        let zoneServiceNames = map(zonesResp.data, "name");
-        let zoneServices = zoneServiceNames?.map((zoneService) => {
-          return servciesData?.filter((service) => {
-            return service.name === zoneService;
-          });
-        });
-        zoneServices = zoneServices.flat();
-        setZoneServicesData(zoneServices);
-
-        serviceIndex = findIndex(zoneServices, [
-          "id",
-          Number(params.serviceId)
-        ]);
-        if (!isEmpty(zoneServices) && serviceIndex == -1) {
-          navigate(
-            `/service/${zoneServices[0]?.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`,
-            {
-              replace: true
-            }
-          );
-        }
-      } catch (error) {
-        console.error(`Error occurred while fetching Zone Services ! ${error}`);
-      }
-    }
-  }; */
-
   const zoneServices = (serviceData, servicesData, zonesData) => {
     let filterZoneService = [];
     if (

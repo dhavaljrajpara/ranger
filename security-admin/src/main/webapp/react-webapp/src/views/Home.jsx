@@ -23,6 +23,7 @@ import { Tab, Tabs } from "react-bootstrap";
 import withRouter from "Hooks/withRouter";
 import { hasAccessToTab } from "../utils/XAUtils";
 import CustomBreadcrumb from "./CustomBreadcrumb";
+import { isEmpty } from "lodash";
 
 class Home extends Component {
   constructor(props) {
@@ -113,7 +114,10 @@ class Home extends Component {
                 <ServiceDefinitions
                   isTagView={this.state.isTagView}
                   disableTabs={this.disableTabs}
-                  key={JSON.parse(localStorage.getItem("zoneDetails"))?.value}
+                  key={
+                    !isEmpty(localStorage.getItem("zoneDetails")) &&
+                    JSON.parse(localStorage.getItem("zoneDetails"))?.value
+                  }
                 ></ServiceDefinitions>
               )}
             </Tab>
@@ -128,7 +132,10 @@ class Home extends Component {
                 <ServiceDefinitions
                   isTagView={this.state.isTagView}
                   disableTabs={this.disableTabs}
-                  key={JSON.parse(localStorage.getItem("zoneDetails"))?.value}
+                  key={
+                    !isEmpty(localStorage.getItem("zoneDetails")) &&
+                    JSON.parse(localStorage.getItem("zoneDetails"))?.value
+                  }
                 ></ServiceDefinitions>
               )}
             </Tab>

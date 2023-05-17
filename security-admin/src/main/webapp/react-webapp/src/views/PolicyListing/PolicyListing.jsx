@@ -192,11 +192,7 @@ function PolicyListing(props) {
           params["sortBy"] = getTableSortBy(sortBy);
           params["sortType"] = getTableSortType(sortBy);
         }
-        /* if (localStorage.getItem("zoneDetails") != null) {
-          params["zoneName"] = JSON.parse(
-            localStorage.getItem("zoneDetails")
-          ).label;
-        } */
+
         if (serviceZone !== null) {
           params["zoneName"] = serviceZone.label;
         }
