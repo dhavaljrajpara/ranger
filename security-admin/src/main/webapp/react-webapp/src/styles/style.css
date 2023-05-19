@@ -2492,6 +2492,12 @@ li.list-group-item:hover {
 ::-webkit-scrollbar {
   height: 5px;
   width: 5px;
+  background: #ffffff;
+}
+
+.list-group::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
   background: #194468;
 }
 

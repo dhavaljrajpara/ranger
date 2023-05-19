@@ -848,7 +848,6 @@ function PolicyListing(props) {
             <Modal.Body>
               <PolicyViewDetails
                 paramsData={policyParamsData}
-                serviceDef={serviceDef}
                 policyInfo={fetchPolicyInfo}
                 totalCount={totalCount}
                 policyView={true}

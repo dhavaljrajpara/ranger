@@ -26,7 +26,13 @@ import ServiceViewDetails from "../ServiceManager/ServiceViewDetails";
 import { fetchApi } from "Utils/fetchAPI";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import { serverError, isKeyAdmin, isKMSAuditor } from "../../utils/XAUtils";
+import {
+  serverError,
+  isKeyAdmin,
+  isKMSAuditor,
+  isUser,
+  isSystemAdmin
+} from "../../utils/XAUtils";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -47,6 +53,8 @@ function reducer(state, action) {
 
 export const TopNavBar = (props) => {
   const isKMSRole = isKeyAdmin() || isKMSAuditor();
+  const isUserRole = isUser();
+  const isAdminRole = isSystemAdmin() || isKeyAdmin();
   const navigate = useNavigate();
   const [policyState, dispatch] = useReducer(reducer, {
     showView: null,
@@ -212,71 +220,65 @@ export const TopNavBar = (props) => {
             />
           </React.Fragment>
         )}
-        {/* {localStorageZoneDetails !== null && (
-          <>
-            <span className="pipe show-on-mobile"></span>
-            <span className="navbar-text">
-              <strong>Security Zone</strong>
-              <br />
-              <span className="text-dark">{`${
-                JSON.parse(localStorageZoneDetails).label
-              } Zone Policies`}</span>
-            </span>
-          </>
-        )} */}
       </div>
       <div className="collapse navbar-collapse" id="navbarText">
         <ul className="navbar-nav ml-auto">
-          <li className="nav-item" title="Service View">
-            <Button
-              variant="outline-dark"
-              className={`${
-                policyLoader ? "not-allowed" : ""
-              } btn btn-sm m-r-5`}
-              onClick={() => {
-                showViewModal(serviceData?.id);
-              }}
-              disabled={policyLoader ? true : false}
-              data-name="viewService"
-              data-id={serviceData?.id}
-              data-cy={serviceData?.id}
-            >
-              <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
-            </Button>
-          </li>
-          <li className="nav-item" title="Service Edit">
-            <Link
-              to={`/service/${serviceDefData.id}/edit/${serviceData?.id}`}
-              onClick={(e) => policyLoader && e.preventDefault()}
-              state={allServicesData[0]?.id}
-              disabled={policyLoader ? true : false}
-              className={`${
-                policyLoader ? "not-allowed" : ""
-              } btn btn-sm m-r-5`}
-              data-name="editService"
-              data-id={serviceData?.id}
-              data-cy={serviceData?.id}
-            >
-              <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
-            </Link>
-          </li>
-          <li className="nav-item" title="Service Delete">
-            <Button
-              variant="danger"
-              disabled={policyLoader ? true : false}
-              className={`${policyLoader ? "not-allowed" : ""} btn-sm`}
-              onClick={() => {
-                showDeleteModal();
-              }}
-              data-name="deleteService"
-              data-id={serviceData?.id}
-              data-cy={serviceData?.id}
-            >
-              <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
-            </Button>
-          </li>
+          {!isUserRole && (
+            <li className="nav-item" title="Service View">
+              <Button
+                variant="outline-dark"
+                className={`${
+                  policyLoader ? "not-allowed" : ""
+                } btn btn-sm m-r-5`}
+                onClick={() => {
+                  showViewModal(serviceData?.id);
+                }}
+                disabled={policyLoader ? true : false}
+                data-name="viewService"
+                data-id={serviceData?.id}
+                data-cy={serviceData?.id}
+              >
+                <i className="fa-fw fa fa-eye fa-fw fa fa-large"></i>
+              </Button>
+            </li>
+          )}
+          {isAdminRole && (
+            <li className="nav-item" title="Service Edit">
+              <Link
+                to={`/service/${serviceDefData.id}/edit/${serviceData?.id}`}
+                onClick={(e) => policyLoader && e.preventDefault()}
+                state={allServicesData[0]?.id}
+                disabled={policyLoader ? true : false}
+                className={`${
+                  policyLoader ? "not-allowed" : ""
+                } btn btn-sm m-r-5`}
+                data-name="editService"
+                data-id={serviceData?.id}
+                data-cy={serviceData?.id}
+              >
+                <i className="fa-fw fa fa-edit fa-fw fa fa-large"></i>
+              </Link>
+            </li>
+          )}
+          {isAdminRole && (
+            <li className="nav-item" title="Service Delete">
+              <Button
+                variant="danger"
+                disabled={policyLoader ? true : false}
+                className={`${policyLoader ? "not-allowed" : ""} btn-sm`}
+                onClick={() => {
+                  showDeleteModal();
+                }}
+                data-name="deleteService"
+                data-id={serviceData?.id}
+                data-cy={serviceData?.id}
+              >
+                <i className="fa-fw fa fa-trash fa-fw fa fa-large"></i>
+              </Button>
+            </li>
+          )}
         </ul>
-        <span className="pipe"></span>
+        {(!isUserRole || isAdminRole) && <span className="pipe"></span>}
         <span className="navbar-text last-response-time">
           <strong>Last Response Time</strong>
           <br />
