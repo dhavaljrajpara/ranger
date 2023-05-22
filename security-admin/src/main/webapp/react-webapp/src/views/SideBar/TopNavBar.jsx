@@ -83,6 +83,23 @@ export const TopNavBar = (props) => {
       ...provided,
       color: state.isSelected ? "white" : "black"
     }),
+    control: (provided) => ({
+      ...provided,
+      maxHeight: "32px",
+      minHeight: "32px"
+    }),
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      maxHeight: "30px"
+    }),
+    dropdownIndicator: (provided) => ({
+      ...provided,
+      padding: "5px"
+    }),
+    clearIndicator: (provided) => ({
+      ...provided,
+      padding: "5px"
+    }),
     container: (styles) => ({ ...styles, width: "240px" })
   };
 

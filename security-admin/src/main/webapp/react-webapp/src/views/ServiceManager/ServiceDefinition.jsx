@@ -430,7 +430,7 @@ class ServiceDefinition extends Component {
                               <Col sm={12}>
                                 <p className="form-header">Service Details :</p>
                                 <Table bordered size="sm">
-                                  <tbody>
+                                  <tbody className="service-details">
                                     <tr>
                                       <td>Service Name</td>
                                       <td>{s.name}</td>
@@ -477,7 +477,7 @@ class ServiceDefinition extends Component {
                                   Config Properties :
                                 </p>
                                 <Table bordered size="sm">
-                                  <tbody>
+                                  <tbody className="service-config">
                                     {s?.configs &&
                                       this.getServiceConfigs(
                                         this.state.serviceDef,
@@ -504,7 +504,7 @@ class ServiceDefinition extends Component {
                                         <th>Roles</th>
                                       </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="service-audit">
                                       {this.getAuditFilters(s.configs)}
                                     </tbody>
                                   </Table>

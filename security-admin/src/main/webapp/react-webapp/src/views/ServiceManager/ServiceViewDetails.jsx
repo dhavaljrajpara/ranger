@@ -135,10 +135,6 @@ export const ServiceViewDetails = (props) => {
       return tableRow;
     }
 
-    if (isEmpty(auditFilters["ranger.plugin.audit.filters"])) {
-      return tableRow;
-    }
-
     auditFilters = JSON.parse(
       auditFilters["ranger.plugin.audit.filters"].replace(/'/g, '"')
     );
@@ -245,7 +241,7 @@ export const ServiceViewDetails = (props) => {
       <Col sm={12}>
         <p className="form-header">Service Details :</p>
         <Table bordered size="sm">
-          <tbody>
+          <tbody className="service-details">
             <tr>
               <td>Service Name</td>
               <td>{serviceData.name}</td>
@@ -286,7 +282,7 @@ export const ServiceViewDetails = (props) => {
         </Table>
         <p className="form-header">Config Properties :</p>
         <Table bordered size="sm">
-          <tbody>
+          <tbody className="service-config">
             {getServiceConfigs(serviceDefData, serviceData.configs)}
           </tbody>
         </Table>

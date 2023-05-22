@@ -41,7 +41,9 @@ a:active {
 .pull-right {
   float: right;
 }
-
+.overflow-x-auto {
+  overflow-y: auto;
+}
 .overflow-y-auto {
   overflow-y: auto;
 }
@@ -500,7 +502,7 @@ footer {
 }
 
 h3.wrap-header {
-  padding: 0.88rem 1rem 0.78rem 1.75rem;
+  padding: 1rem;
   font-size: 0.875rem;
 }
 
@@ -1791,6 +1793,7 @@ header {
   max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
+  border: 0 !important;
 }
 
 .time-clock {
@@ -2135,7 +2138,7 @@ tbody.drag-drop-wrap > tr > td:hover:first-child:after {
 }
 
 .top-nav-title {
-  padding: 0px 12px;
+  padding: 0px;
   font-size: 0.875rem;
   font-weight: bold;
 }
@@ -2262,7 +2265,7 @@ tbody.drag-drop-wrap > tr > td:hover:first-child:after {
 
 .pipe {
   content: url("../images/sidebar/pipe.svg");
-  margin: 0 24px;
+  margin: 0 16px;
   color: #ccc;
   display: none;
 }
@@ -2384,7 +2387,7 @@ nav.content-top-nav {
 }
 
 .pipe {
-  max-height: 40px;
+  max-height: 24px;
 }
 
 .main-footer p {
@@ -2420,13 +2423,18 @@ div#ranger-content {
   position: sticky;
   top: 0;
   z-index: 10;
+  padding: 0;
   flex-wrap: wrap;
 }
 
 .last-response-time {
+  padding-left: 0;
+  padding-right: 0;
+  color: rgb(33, 37, 41) !important;
+}
+.header-wraper .last-response-time {
   padding-left: 1rem;
   padding-right: 1rem;
-  color: rgb(33, 37, 41) !important;
 }
 
 .navbar-active {
@@ -2508,4 +2516,18 @@ li.list-group-item:hover {
 
 ::-webkit-scrollbar-corner {
   background: #000;
+}
+
+@media only screen and (min-width: 1200px) {
+  tbody.service-details td:first-child {
+    width: 40%;
+  }
+  tbody.service-config td:first-child {
+    width: 40%;
+  }
+}
+
+.heading-without-wrap {
+  padding: 1rem 1rem 0rem 1rem;
+  margin: 0;
 }
