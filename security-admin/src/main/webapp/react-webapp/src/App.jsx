@@ -325,6 +325,7 @@ export default class App extends Component {
                     path="/knoxSSOWarning"
                     element={<ErrorPage errorCode="checkSSOTrue" />}
                   />
+                  <Route path="/locallogin" element={<Loader />} />
                   {/* NOT FOUND ROUTE */}
                   <Route path="*" />
                 </Route>

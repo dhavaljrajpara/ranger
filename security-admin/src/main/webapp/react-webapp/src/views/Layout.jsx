@@ -25,16 +25,17 @@ import React, {
   useReducer
 } from "react";
 import { Button, Modal } from "react-bootstrap";
-import { useLocation, Outlet, Navigate } from "react-router-dom";
+import { useLocation, Outlet, Navigate, useNavigate } from "react-router-dom";
 import ErrorPage from "./ErrorPage";
-import { hasAccessToPath } from "Utils/XAUtils";
+import { hasAccessToPath, checkKnoxSSO } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
-import { setUserProfile, getUserProfile } from "Utils/appState";
+import { getUserProfile } from "Utils/appState";
 import SideBar from "./SideBar/SideBar";
 import { getServiceDef } from "../utils/appState";
 
 const Layout = () => {
   let location = useLocation();
+  const navigate = useNavigate();
   const userProfile = getUserProfile();
   const serviceDef = getServiceDef();
   const [open, setOpen] = useState(false);
@@ -47,23 +48,9 @@ const Layout = () => {
       : 900);
   const promptTimeout = 1000 * 15;
 
-  const handleLogout = async (e) => {
-    try {
-      const { fetchApi } = await import("Utils/fetchAPI");
-      await fetchApi({
-        url: "logout",
-        baseURL: "",
-        headers: {
-          "cache-control": "no-cache"
-        }
-      });
-      setUserProfile(null);
-      window.localStorage.clear();
-      setOpen(false);
-      window.location.replace("login.jsp");
-    } catch (error) {
-      console.error(`Error occurred while login! ${error}`);
-    }
+  const handleLogout = async () => {
+    setOpen(false);
+    checkKnoxSSO(navigate);
   };
 
   const onPrompt = () => {
@@ -129,7 +116,7 @@ const Layout = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handleStillHere}>Stay Logged in</Button>
-          <Button variant="danger" onClick={handleLogout}>
+          <Button variant="danger" onClick={() => handleLogout()}>
             Log Out Now
           </Button>
         </Modal.Footer>
@@ -138,9 +125,10 @@ const Layout = () => {
         <div className="wrapper">
           <SideBar />
         </div>
-        {location.pathname === "/" && (
-          <Navigate to="/policymanager/resource" replace={true} />
-        )}
+        {location.pathname === "/" &&
+          window.location.pathname != "/locallogin" && (
+            <Navigate to="/policymanager/resource" replace={true} />
+          )}
         <div id="content" className="content-body">
           <div id="ranger-content">
             {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
