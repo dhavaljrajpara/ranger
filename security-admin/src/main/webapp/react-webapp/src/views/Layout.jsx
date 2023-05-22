@@ -17,13 +17,7 @@
  * under the License.
  */
 
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  createContext,
-  useReducer
-} from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useLocation, Outlet, Navigate, useNavigate } from "react-router-dom";
 import ErrorPage from "./ErrorPage";
@@ -31,13 +25,11 @@ import { hasAccessToPath, checkKnoxSSO } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
 import { getUserProfile } from "Utils/appState";
 import SideBar from "./SideBar/SideBar";
-import { getServiceDef } from "../utils/appState";
 
 const Layout = () => {
   let location = useLocation();
   const navigate = useNavigate();
   const userProfile = getUserProfile();
-  const serviceDef = getServiceDef();
   const [open, setOpen] = useState(false);
   const [timer, setTimer] = useState(0);
 
@@ -126,12 +118,16 @@ const Layout = () => {
           <SideBar />
         </div>
         {location.pathname === "/" &&
-          window.location.pathname != "/locallogin" && (
+          window.location.pathname !== "/locallogin" && (
             <Navigate to="/policymanager/resource" replace={true} />
           )}
         <div id="content" className="content-body">
           <div id="ranger-content">
-            {hasAccessToPath(location.pathname) ? <Outlet /> : <ErrorPage />}
+            {hasAccessToPath(location.pathname) ? (
+              <Outlet />
+            ) : (
+              <ErrorPage errorCode="401" />
+            )}
           </div>
 
           <footer>
