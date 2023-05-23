@@ -25,6 +25,8 @@ import { hasAccessToPath, checkKnoxSSO } from "Utils/XAUtils";
 import { useIdleTimer } from "react-idle-timer";
 import { getUserProfile } from "Utils/appState";
 import SideBar from "./SideBar/SideBar";
+import { Loader } from "../components/CommonComponents";
+import { Suspense } from "react";
 
 const Layout = () => {
   let location = useLocation();
@@ -124,7 +126,9 @@ const Layout = () => {
         <div id="content" className="content-body">
           <div id="ranger-content">
             {hasAccessToPath(location.pathname) ? (
-              <Outlet />
+              <Suspense fallback={<Loader />}>
+                <Outlet />
+              </Suspense>
             ) : (
               <ErrorPage errorCode="401" />
             )}
