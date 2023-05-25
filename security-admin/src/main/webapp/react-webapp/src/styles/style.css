@@ -1700,7 +1700,11 @@ header {
 }
 
 .select-pagesize {
-  height: 25px;
+  height: 30px;
+  border: 1px solid #dddddd;
+  border-radius: 0.2rem;
+  background: white;
+  margin-right: 40px;
 }
 
 .more-less-width {
@@ -1758,8 +1762,9 @@ header {
 
 .pagination-error-field {
   left: 0;
-  top: 28px;
-  line-height: 1.1;
+  top: 34px;
+  line-height: 1.25;
+  width: 152px;
 }
 
 .table-service-scroll tr td:last-child {
@@ -2437,4 +2442,20 @@ li.list-group-item:hover {
 .heading-without-wrap {
   padding: 1rem 1rem 0rem 1rem;
   margin: 0;
+}
+.pagination-btn-last {
+  width: 30px;
+  line-height: 20px;
+  padding: 0.25rem 0.37rem;
+}
+.pagination-btn-previous {
+  width: 30px;
+  line-height: 20px;
+}
+.pagination-input {
+  max-width: 80px;
+  height: 30px;
+  border: 1px solid #dddddd;
+  padding: 0 0.5rem;
+  border-radius: 0.2rem;
 }
