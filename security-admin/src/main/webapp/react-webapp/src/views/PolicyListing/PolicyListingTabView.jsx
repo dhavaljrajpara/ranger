@@ -31,17 +31,7 @@ import {
 } from "Utils/XAUtils";
 import { Loader } from "Components/CommonComponents";
 import TopNavBar from "../SideBar/TopNavBar";
-import {
-  compact,
-  has,
-  findIndex,
-  map,
-  sortBy,
-  isEmpty,
-  includes,
-  find,
-  filter
-} from "lodash";
+import { compact, has, map, sortBy, includes, filter } from "lodash";
 import { RangerPolicyType } from "../../utils/XAEnums";
 import { getServiceDef } from "../../utils/appState";
 
@@ -59,7 +49,6 @@ function reducer(state, action) {
         serviceData: action.serviceData,
         allServicesData: action.allServicesData
       };
-
     default:
       throw new Error();
   }
@@ -77,7 +66,7 @@ export const PolicyListingTabView = () => {
     allServicesData: []
   });
   const { loader, serviceDefData, serviceData, allServicesData } = policyState;
-  const [zoneServicesData, setZoneServicesData] = useState([]);
+  //const [zoneServicesData, setZoneServicesData] = useState([]);
   const [zones, setZones] = useState([]);
 
   let localStorageZoneDetails = localStorage.getItem("zoneDetails");
@@ -93,6 +82,7 @@ export const PolicyListingTabView = () => {
     document
       .getElementById("tagSelectedZone")
       ?.classList?.add("disabledEvents");
+
     dispatch({
       type: "SET_LOADER",
       loader: true
@@ -138,12 +128,11 @@ export const PolicyListingTabView = () => {
         serviceDefData: getServiceDefData
       });
 
-      //zoneServices(getAllServiceData.data.services);
-      zoneServices(
+      /* zoneServices(
         getServiceData.data,
         getAllServicesData.data.services,
         getZones?.data?.securityZones || []
-      );
+      ); */
 
       dispatch({
         type: "SET_LOADER",
@@ -161,7 +150,7 @@ export const PolicyListingTabView = () => {
     }
   };
 
-  const zoneServices = (serviceData, servicesData, zonesData) => {
+  /* const zoneServices = (serviceData, servicesData, zonesData) => {
     let filterZoneService = [];
     if (
       localStorageZoneDetails !== undefined &&
@@ -185,9 +174,9 @@ export const PolicyListingTabView = () => {
         });
       });
 
-      setZoneServicesData(zoneServices.flat());
+      setZoneServicesData(zoneServices?.flat());
     }
-  };
+  }; */
 
   const getServices = (services) => {
     return sortBy(
@@ -237,7 +226,7 @@ export const PolicyListingTabView = () => {
             })
           );
         })
-        .flat();
+        ?.flat();
     }
 
     return sortBy(
@@ -321,7 +310,7 @@ export const PolicyListingTabView = () => {
         handleZoneChange={handleZoneChange}
         getZones={getZones}
         allZonesData={zones}
-        zoneServicesData={zoneServicesData}
+        //zoneServicesData={zoneServicesData}
       />
       {loader ? (
         <Loader />
