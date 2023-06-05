@@ -274,7 +274,7 @@ export const SideBarBody = (props) => {
   };
 
   return (
-    <>
+    <React.Fragment>
       <div
         className={`drawer ${isDrawerOpen ? "drawer-open" : "drawer-close"}`}
         id="drawer-content"
@@ -608,6 +608,6 @@ export const SideBarBody = (props) => {
           </div>
         </div>
       </div>
-    </>
+    </React.Fragment>
   );
 };

@@ -26,6 +26,11 @@ import Spinner from "react-bootstrap/Spinner";
 export const ResourceTagContent = (props) => {
   const { serviceDefData, serviceData, closeCollapse, loader } = props;
 
+  const handleCloseCollapse = () => {
+    localStorage.removeItem("zoneDetails");
+    closeCollapse();
+  };
+
   return loader ? (
     <Spinner
       animation="border"
@@ -56,7 +61,7 @@ export const ResourceTagContent = (props) => {
                 <React.Fragment key={index}>
                   <li className="list-group-item">
                     <NavLink
-                      onClick={closeCollapse}
+                      onClick={handleCloseCollapse}
                       to={`/service/${service.id}/policies/${RangerPolicyType.RANGER_ACCESS_POLICY_TYPE.value}`}
                       className="list-group-item"
                     >

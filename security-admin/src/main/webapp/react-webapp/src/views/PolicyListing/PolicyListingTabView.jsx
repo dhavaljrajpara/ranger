@@ -201,6 +201,7 @@ export const PolicyListingTabView = () => {
           replace: true
         }
       );
+      localStorage.removeItem("zoneDetails");
     }
   };
 
