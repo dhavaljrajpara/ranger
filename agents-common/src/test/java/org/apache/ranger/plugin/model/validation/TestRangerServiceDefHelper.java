@@ -20,6 +20,7 @@
 package org.apache.ranger.plugin.model.validation;
 
 import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
+import org.apache.ranger.authorization.utils.JsonUtils;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerServiceDef;
 import org.apache.ranger.plugin.model.RangerServiceDef.RangerResourceDef;
@@ -27,6 +28,7 @@ import org.apache.ranger.plugin.model.validation.RangerServiceDefHelper.Delegate
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -34,8 +36,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -369,6 +374,30 @@ public class TestRangerServiceDefHelper {
         helper = new RangerServiceDefHelper(serviceDef);
 
         assertFalse(helper.isResourceGraphValid());
+    }
+
+    @Test
+    public void testRrnTemplateHive() {
+        InputStreamReader      reader       = new InputStreamReader(requireNonNull(this.getClass().getResourceAsStream("/admin/service-defs/test-hive-servicedef.json")));
+        RangerServiceDef       svcDef       = JsonUtils.jsonToObject(reader, RangerServiceDef.class);
+        RangerServiceDefHelper svcDefHelper = new RangerServiceDefHelper(svcDef);
+
+        assertEquals("database", svcDefHelper.getRrnTemplate("database"));
+        assertEquals("database/table", svcDefHelper.getRrnTemplate("table"));
+        assertEquals("database/table/column", svcDefHelper.getRrnTemplate("column"));
+        assertEquals("database/udf", svcDefHelper.getRrnTemplate("udf"));
+        assertEquals("url", svcDefHelper.getRrnTemplate("url"));
+        assertNull(svcDefHelper.getRrnTemplate("unknown-resource"));
+    }
+
+    @Test
+    public void testRrnTemplateS3() {
+        InputStreamReader      reader       = new InputStreamReader(requireNonNull(this.getClass().getResourceAsStream("/admin/service-defs/test-s3-servicedef.json")));
+        RangerServiceDef       svcDef       = JsonUtils.jsonToObject(reader, RangerServiceDef.class);
+        RangerServiceDefHelper svcDefHelper = new RangerServiceDefHelper(svcDef);
+
+        assertEquals("bucket", svcDefHelper.getRrnTemplate("bucket"));
+        assertEquals("bucket/path", svcDefHelper.getRrnTemplate("path"));
     }
 
     RangerResourceDef createResourceDef(String name, String parent) {

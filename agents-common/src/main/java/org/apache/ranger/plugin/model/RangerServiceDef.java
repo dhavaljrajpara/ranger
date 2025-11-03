@@ -2005,9 +2005,11 @@ public class RangerServiceDef extends RangerBaseModelObject implements java.io.S
             }
             if (isValidLeaf == null) {
                 return other.isValidLeaf == null;
-            } else {
-                return isValidLeaf.equals(other.isValidLeaf);
+            } else if (!isValidLeaf.equals(other.isValidLeaf)) {
+                return false;
             }
+
+            return true;
         }
 
         @Override

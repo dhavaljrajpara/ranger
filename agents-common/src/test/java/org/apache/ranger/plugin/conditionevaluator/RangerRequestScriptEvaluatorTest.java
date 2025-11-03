@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import javax.script.ScriptEngine;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -430,8 +431,23 @@ public class RangerRequestScriptEvaluatorTest {
         RangerAccessRequest          request   = createRequest("test-user", Collections.emptySet(), Collections.emptySet(), Collections.emptyList());
         RangerRequestScriptEvaluator evaluator = new RangerRequestScriptEvaluator(request, scriptEngine, false);
 
-        Assert.assertNull("test: java.lang.System.out.println(\"test\");", evaluator.evaluateScript("java.lang.System.out.println(\"test\");"));
-        Assert.assertNull("test: java.lang.Runtime.getRuntime().exec(\"bash\");", evaluator.evaluateScript("java.lang.Runtime.getRuntime().exec(\"bash\");"));
+        String fileName = "/tmp/ctest1-" + System.currentTimeMillis();
+
+        String[] scripts = new String[] {
+                "java.lang.System.out.println(\"test\");",
+                "java.lang.Runtime.getRuntime().exec(\"bash\");",
+                "var newBindings=loadWithNewGlobal({'script':'this','name':'ctest'});this.context.setBindings(newBindings,100);var newEngine = this.__noSuchProperty__('engine');var e=newEngine.getFactory().getScriptEngine('-Dnashorn.args=--no-java=False');e.eval('java.lang.Runtime.getRuntime().exec(\"touch /tmp/ctest1\")')",
+                "engine.eval('malicious code')",
+                "var str = new java.lang.String('test'); str.length()",
+                "var file = new java.io.File('" + fileName +  "'); file.createNewFile()",
+        };
+
+        for (String script : scripts) {
+            Assert.assertNull("test: " + script, evaluator.evaluateScript(script));
+        }
+
+        File testFile = new File(fileName);
+        Assert.assertFalse(fileName + ": file should not have been created", testFile.exists());
     }
 
     @Test
@@ -462,6 +478,57 @@ public class RangerRequestScriptEvaluatorTest {
         Assert.assertTrue("test: IS_ACCESS_TIME_BEFORE('2100/01/01 15:00:42', 'GMT')", (Boolean) evaluator.evaluateScript("IS_ACCESS_TIME_BEFORE('2100/01/01 15:00:42', 'GMT')"));
         Assert.assertTrue("test: IS_ACCESS_TIME_BETWEEN('2010/01/01 15:00:42', '2100/01/01 15:00:42')", (Boolean) evaluator.evaluateScript("IS_ACCESS_TIME_BETWEEN('2010/01/01 15:00:42', '2100/01/01 15:00:42')"));
         Assert.assertTrue("test: IS_ACCESS_TIME_BETWEEN('2010/01/01 15:00:42', '2100/01/01 15:00:42', 'GMT')", (Boolean) evaluator.evaluateScript("IS_ACCESS_TIME_BETWEEN('2010/01/01 15:00:42', '2100/01/01 15:00:42', 'GMT')"));
+    }
+
+    @Test
+    public void testMultipleTagInstancesOfType() {
+        List<RangerTag> tags = Arrays.asList(new RangerTag("PII", Collections.singletonMap("type", "email")),
+                new RangerTag("PII", Collections.singletonMap("type", "phone")),
+                new RangerTag("PII", Collections.emptyMap()),
+                new RangerTag("PCI", Collections.singletonMap("kind", "pan")),
+                new RangerTag("PCI", Collections.singletonMap("kind", "sad")),
+                new RangerTag("PCI", null));
+        RangerAccessRequest          request   = createRequest("test-user", Collections.emptySet(), Collections.emptySet(), tags);
+        RangerRequestScriptEvaluator evaluator = new RangerRequestScriptEvaluator(request, scriptEngine);
+
+        Object[][] tests = new Object[][] {
+                {"TAG_NAMES_CSV", "PCI,PII"},
+                {"TAG_ATTR_NAMES_CSV", "kind,type"},
+                {"ctx.getAttributeValueForAllMatchingTags('PII', 'type')", Arrays.asList("email", "phone")},
+                {"ctx.getAttributeValueForAllMatchingTags('PCI', 'kind')", Arrays.asList("pan", "sad")},
+                {"ctx.getAttributeValueForAllMatchingTags('PII', 'kind')", Collections.emptyList()},
+                {"ctx.getAttributeValueForAllMatchingTags('PCI', 'type')", Collections.emptyList()},
+                {"ctx.getAttributeValueForAllMatchingTags('notag', 'noattr')", Collections.emptyList()},
+                {"ctx.getAttributeValueForAllMatchingTags('notag', null)", null},
+                {"ctx.getAttributeValueForAllMatchingTags(null, 'noattr')", null},
+                {"ctx.getAttributeValueForAllMatchingTags(null, noull)", null}
+        };
+
+        for (Object[] test : tests) {
+            String script   = (String) test[0];
+            Object expected = test[1];
+            Object actual   = evaluator.evaluateScript(script);
+
+            Assert.assertEquals("test: " + script, expected, actual);
+        }
+    }
+
+    @Test
+    public void testGetAllTagTypes() {
+        RangerAccessRequest          request   = createRequest("test-user", Collections.emptySet(), Collections.emptySet(), Collections.emptyList());
+        RangerRequestScriptEvaluator evaluator = new RangerRequestScriptEvaluator(request, scriptEngine, false);
+
+        Assert.assertEquals(Collections.emptySet(), evaluator.evaluateScript("ctx.getAllTagTypes()"));
+
+        request   = createRequest("test-user", Collections.emptySet(), Collections.emptySet(), Collections.singletonList(new RangerTag("PII", Collections.emptyMap())));
+        evaluator = new RangerRequestScriptEvaluator(request, scriptEngine, false);
+
+        Assert.assertEquals(Collections.singleton("PII"), evaluator.evaluateScript("ctx.getAllTagTypes()"));
+
+        request   = createRequest("test-user", Collections.emptySet(), Collections.emptySet(), Arrays.asList(new RangerTag("PII", Collections.emptyMap()), new RangerTag("PCI", Collections.emptyMap())));
+        evaluator = new RangerRequestScriptEvaluator(request, scriptEngine, false);
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("PCI", "PII")), evaluator.evaluateScript("ctx.getAllTagTypes()"));
     }
 
     RangerAccessRequest createRequest(String userName, Set<String> userGroups, Set<String> userRoles, List<RangerTag> resourceTags) {

@@ -1782,7 +1782,7 @@ CREATE TABLE x_gds_shared_resource(
   , name                 VARCHAR(512) NOT NULL
   , description          TEXT         NULL     DEFAULT NULL
   , data_share_id        BIGINT       NOT NULL
-  , resource             TEXT         NOT NULL
+  , resource_name        TEXT         NOT NULL
   , resource_signature   VARCHAR(128) NOT NULL
   , sub_resource        TEXT         NULL     DEFAULT NULL
   , sub_resource_type   TEXT         NULL     DEFAULT NULL
@@ -1980,6 +1980,7 @@ CREATE INDEX x_resource_FK_parent_id ON x_resource(parent_id);
 CREATE INDEX x_resource_cr_time ON x_resource(create_time);
 CREATE INDEX x_resource_up_time ON x_resource(update_time);
 CREATE INDEX x_trx_log_v2_FK_added_by_id ON x_trx_log_v2(added_by_id);
+CREATE INDEX x_trx_log_v2_action ON x_trx_log_v2(action);
 CREATE INDEX x_trx_log_v2_cr_time ON x_trx_log_v2(create_time);
 CREATE INDEX x_trx_log_v2_trx_id ON x_trx_log_v2(trx_id);
 CREATE INDEX x_user_FK_added_by_id ON x_user(added_by_id);
@@ -2152,6 +2153,7 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('073',current_timestamp,'Ranger 3.0.0',current_timestamp,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('074',current_timestamp,'Ranger 3.0.0',current_timestamp,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('075',current_timestamp,'Ranger 3.0.0',current_timestamp,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('076',current_timestamp,'Ranger 3.0.0',current_timestamp,'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('DB_PATCHES',current_timestamp,'Ranger 1.0.0',current_timestamp,'localhost','Y');
 
 INSERT INTO x_user_module_perm (user_id,module_id,create_time,update_time,added_by_id,upd_by_id,is_allowed) VALUES

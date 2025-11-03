@@ -17,8 +17,10 @@
 
 package org.apache.hadoop.crypto.key;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.crypto.CipherSuite;
 import org.apache.hadoop.fs.Path;
 import org.apache.ranger.credentialapi.CredentialReader;
 import org.apache.ranger.kms.dao.DaoManager;
@@ -93,6 +95,10 @@ public class RangerKeyStoreProvider extends KeyProvider {
     private final boolean               keyVaultEnabled;
     private       boolean               changed;
 
+    private        boolean isFIPSEnabled;
+    private        boolean isMKReencrypted;
+    private        boolean isNewMKGenerated;
+
     public RangerKeyStoreProvider(Configuration conf) throws Throwable {
         super(conf);
 
@@ -122,6 +128,10 @@ public class RangerKeyStoreProvider extends KeyProvider {
         final RangerKMSDB  rangerKMSDB = new RangerKMSDB(conf);
         final DaoManager   daoManager  = rangerKMSDB.getDaoManager();
         final RangerKMSMKI masterKeyProvider;
+
+        String storeType = conf.get("ranger.keystore.file.type", KeyStore.getDefaultType());
+        this.isFIPSEnabled = StringUtils.equalsIgnoreCase("bcfks", storeType) ? true : false;
+        logger.info("isFIPSEnabled={}",  isFIPSEnabled);
 
         if (isHSMEnabled) {
             logger.info("Ranger KMS HSM is enabled for storing master key.");
@@ -216,8 +226,30 @@ public class RangerKeyStoreProvider extends KeyProvider {
             logger.info("Ranger KMS Database is enabled for storing master key.");
 
             masterKeyProvider = new RangerMasterKey(daoManager);
-            dbStore           = new RangerKeyStore(daoManager);
-            masterKey         = this.generateAndGetMasterKey(masterKeyProvider, password);
+
+            dbStore   = new RangerKeyStore(isFIPSEnabled, daoManager);
+            char[] tempMK;
+            tempMK = this.generateAndGetMasterKey(masterKeyProvider, password);
+
+            if (isFIPSEnabled && !isNewMKGenerated) {
+                logger.info("MasterKey already exists and FIPS is enabled, may require re-encryption with compliant algorithm");
+                this.isMKReencrypted = masterKeyProvider.reencryptMKWithFipsAlgo(password);
+                logger.info("MasterKey re-encryption status {}", this.isMKReencrypted);
+
+                // initialize with new MK
+                try {
+                    tempMK = masterKeyProvider.getMasterKey(password).toCharArray();
+                } catch (Throwable e) {
+                    throw new RuntimeException("Error while getting Ranger Master key", e);
+                }
+            }
+
+            this.masterKey = tempMK;
+        }
+
+        // If MK required re-encryption, means Zone keys were also encrypted using older algo and needs to be re-encrypted.
+        if (isFIPSEnabled  && isMKReencrypted) {
+            this.dbStore.reencryptZoneKeysWithNewAlgo(null, this.masterKey);
         }
 
         reloadKeys();
@@ -411,6 +443,7 @@ public class RangerKeyStoreProvider extends KeyProvider {
         logger.debug("==> createKey({})", name);
 
         KeyVersion ret;
+        validateKeyCiphers(options.getCipher());
 
         try (AutoClosableWriteLock ignored = new AutoClosableWriteLock(lock)) {
             reloadKeys();
@@ -566,6 +599,16 @@ public class RangerKeyStoreProvider extends KeyProvider {
         return conf;
     }
 
+    private void validateKeyCiphers(String ciphers) throws IOException {
+        if (StringUtils.isNotEmpty(ciphers)) {
+            try {
+                CipherSuite.convert(ciphers);
+            }  catch (Exception e) {
+                throw new IOException("Invalid ciphers: " + ciphers, e);
+            }
+        }
+    }
+
     private static void getFromJceks(Configuration conf, String path, String alias, String key) {
         logger.debug("==> getFromJceks()");
 
@@ -595,7 +638,7 @@ public class RangerKeyStoreProvider extends KeyProvider {
         char[] ret;
 
         try {
-            masterKeyProvider.generateMasterKey(password);
+            this.isNewMKGenerated = masterKeyProvider.generateMasterKey(password);
         } catch (Throwable cause) {
             throw new RuntimeException("Error while generating Ranger Master key, Error - ", cause);
         }

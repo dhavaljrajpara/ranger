@@ -239,7 +239,8 @@ public class SolrAuditDestination extends AuditDestination {
                     if (zkHosts != null && !zkHosts.isEmpty()) {
                         LOG.info("Connecting to solr cloud using zkHosts={}", zkHosts);
 
-                        try (Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder()) {
+                        try {
+                            Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder();
                             SolrHttpClientBuilder kb = krbBuild.getBuilder();
 
                             HttpClientUtil.setHttpClientBuilder(kb);
@@ -255,7 +256,8 @@ public class SolrAuditDestination extends AuditDestination {
                             LOG.error("Can't connect to Solr server. ZooKeepers={}", zkHosts, t);
                         }
                     } else if (solrURLs != null && !solrURLs.isEmpty()) {
-                        try (Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder()) {
+                        try {
+                            Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder();
                             LOG.info("Connecting to Solr using URLs={}", solrURLs);
 
                             SolrHttpClientBuilder kb = krbBuild.getBuilder();
@@ -314,6 +316,7 @@ public class SolrAuditDestination extends AuditDestination {
         doc.setField("tags", auditEvent.getTags());
         doc.addField("datasets", auditEvent.getDatasets());
         doc.addField("projects", auditEvent.getProjects());
+        doc.addField("datasetIds", auditEvent.getDatasetIds());
         doc.setField("cluster", auditEvent.getClusterName());
         doc.setField("zoneName", auditEvent.getZoneName());
         doc.setField("agentHost", auditEvent.getAgentHostname());

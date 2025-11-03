@@ -569,10 +569,10 @@ public class TestAssetREST {
         Mockito.verify(msBizUtil).isKeyAdmin();
         Mockito.verify(assetMgr).getAccessLogs(searchCriteria);
         Mockito.verify(daoManager).getXXServiceDef();
-        Mockito.verify(searchUtil, Mockito.times(15)).extractString(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.nullable(String.class));
+        Mockito.verify(searchUtil, Mockito.times(16)).extractString(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.nullable(String.class));
         Mockito.verify(searchUtil, Mockito.times(4)).extractInt(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Mockito.verify(searchUtil, Mockito.times(2)).extractDate(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(searchUtil).extractLong(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(searchUtil, Mockito.times(2)).extractLong(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("requestUser"), Mockito.eq("Users"), Mockito.eq("requestUser"), Mockito.any(), Mockito.eq(StringUtil.VALIDATION_TEXT));
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("excludeUser"), Mockito.eq("Exclude Users"), Mockito.eq("-requestUser"), Mockito.any(), Mockito.eq(StringUtil.VALIDATION_TEXT));
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("zoneName"), Mockito.eq("Zone Name List"), Mockito.eq("zoneName"), Mockito.eq(null), Mockito.eq(null));
@@ -604,10 +604,10 @@ public class TestAssetREST {
         Mockito.verify(msBizUtil).isKeyAdmin();
         Mockito.verify(assetMgr).getAccessLogs(searchCriteria);
         Mockito.verify(daoManager).getXXServiceDef();
-        Mockito.verify(searchUtil, Mockito.times(15)).extractString(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.nullable(String.class));
+        Mockito.verify(searchUtil, Mockito.times(16)).extractString(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.nullable(String.class));
         Mockito.verify(searchUtil, Mockito.times(4)).extractInt(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Mockito.verify(searchUtil, Mockito.times(2)).extractDate(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(searchUtil).extractLong(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(searchUtil, Mockito.times(2)).extractLong(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("requestUser"), Mockito.eq("Users"), Mockito.eq("requestUser"), Mockito.any(), Mockito.eq(StringUtil.VALIDATION_TEXT));
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("excludeUser"), Mockito.eq("Exclude Users"), Mockito.eq("-requestUser"), Mockito.any(), Mockito.eq(StringUtil.VALIDATION_TEXT));
         Mockito.verify(searchUtil).extractStringList(Mockito.any(HttpServletRequest.class), (SearchCriteria) Mockito.any(), Mockito.eq("zoneName"), Mockito.eq("Zone Name List"), Mockito.eq("zoneName"), Mockito.eq(null), Mockito.eq(null));

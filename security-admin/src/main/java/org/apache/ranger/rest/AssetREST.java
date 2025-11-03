@@ -552,6 +552,7 @@ public class AssetREST {
         searchUtil.extractStringList(request, searchCriteria, "excludeUser", "Exclude Users", "-requestUser", null, StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "requestData", "Request Data", StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "resourcePath", "Resource Name", StringUtil.VALIDATION_TEXT);
+        searchUtil.extractString(request, searchCriteria, "excludeResourceName", "Exclude Resource Name", StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "clientIP", "Client IP", StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "resourceType", "Resource Type", StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "excludeServiceUser", "Exclude Service User", StringUtil.VALIDATION_TEXT);
@@ -569,6 +570,7 @@ public class AssetREST {
         searchUtil.extractString(request, searchCriteria, "agentHost", "Agent Host Name", StringUtil.VALIDATION_TEXT);
         searchUtil.extractString(request, searchCriteria, "eventId", "Event Id", null);
         searchUtil.extractString(request, searchCriteria, "datasets", "DataSets", null);
+        searchUtil.extractLong(request, searchCriteria, "datasetIds", "Dataset Ids");
 
         boolean      isKeyAdmin      = msBizUtil.isKeyAdmin();
         boolean      isAuditKeyAdmin = msBizUtil.isAuditKeyAdmin();

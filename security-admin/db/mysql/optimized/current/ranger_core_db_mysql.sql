@@ -455,6 +455,7 @@ CREATE TABLE `x_trx_log_v2` (
   PRIMARY KEY (`id`),
   KEY `x_trx_log_v2_FK_added_by_id` (`added_by_id`),
   KEY `x_trx_log_v2_cr_time` (`create_time`),
+  KEY `x_trx_log_v2_action` (`action`),
   KEY `x_trx_log_v2_trx_id` (`trx_id`)
 )ROW_FORMAT=DYNAMIC;
 
@@ -1786,7 +1787,7 @@ CREATE TABLE `x_gds_shared_resource`(
   , `name`                 VARCHAR(512) NOT NULL
   , `description`          TEXT         NULL     DEFAULT NULL
   , `data_share_id`        BIGINT(20)   NOT NULL
-  , `resource`             TEXT         NOT NULL
+  , `resource_name`        TEXT         NOT NULL
   , `resource_signature`   VARCHAR(128) NOT NULL
   , `sub_resource`         TEXT         NULL     DEFAULT NULL
   , `sub_resource_type`    TEXT         NULL     DEFAULT NULL
@@ -2046,6 +2047,7 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('073',UTC_TIMESTAMP(),'Ranger 3.0.0',UTC_TIMESTAMP(),'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('074',UTC_TIMESTAMP(),'Ranger 3.0.0',UTC_TIMESTAMP(),'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('075',UTC_TIMESTAMP(),'Ranger 3.0.0',UTC_TIMESTAMP(),'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('076',UTC_TIMESTAMP(),'Ranger 3.0.0',UTC_TIMESTAMP(),'localhost','Y');
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('DB_PATCHES',UTC_TIMESTAMP(),'Ranger 1.0.0',UTC_TIMESTAMP(),'localhost','Y');
 
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10001',UTC_TIMESTAMP(),'Ranger 1.0.0',UTC_TIMESTAMP(),'localhost','Y');

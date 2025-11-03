@@ -180,6 +180,17 @@ public class TagAdminRESTSink implements TagSink, Runnable {
 
                     return;
                 }
+            } else {
+                try {
+                    long sleepInterval = TagSyncConfig.getTagSyncHAPassiveSleepInterval();
+                    LOG.debug("Sleeping for [{}] milliSeconds as this server is running in passive mode", sleepInterval);
+                    Thread.sleep(sleepInterval);
+                } catch (InterruptedException interrupted) {
+                    LOG.error("Interrupted..: ", interrupted);
+                    // preserve interrupt status for caller of the thread
+                    Thread.currentThread().interrupt();
+                    return;
+                }
             }
         }
     }

@@ -1760,6 +1760,7 @@ CREATE INDEX x_resource_FK_parent_id ON x_resource (parent_id);
 CREATE INDEX x_resource_cr_time ON  x_resource(create_time);
 CREATE INDEX x_resource_up_time ON x_resource (update_time);
 CREATE INDEX x_trx_log_v2_FK_added_by_id ON x_trx_log_v2 (added_by_id);
+CREATE INDEX x_trx_log_v2_action ON x_trx_log_v2 (action);
 CREATE INDEX x_trx_log_v2_cr_time ON x_trx_log_v2 (create_time);
 CREATE INDEX x_trx_log_v2_trx_id ON x_trx_log_v2 (trx_id);
 CREATE INDEX x_user_FK_added_by_id ON x_user (added_by_id);
@@ -2025,7 +2026,7 @@ CREATE TABLE x_gds_shared_resource (
     name                 VARCHAR2(512) NOT NULL,
     description          CLOB          DEFAULT NULL NULL,
     data_share_id        NUMBER(20)    NOT NULL,
-    "resource"           CLOB          NOT NULL,
+    resource_name        CLOB          NOT NULL,
     resource_signature   VARCHAR2(128) NOT NULL,
     sub_resource         CLOB          DEFAULT NULL NULL,
     sub_resource_type    CLOB          DEFAULT NULL NULL,
@@ -2238,6 +2239,7 @@ INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,act
 INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,active) VALUES (X_DB_VERSION_H_SEQ.nextval, '073',sys_extract_utc(systimestamp),'Ranger 3.0.0',sys_extract_utc(systimestamp),'localhost','Y');
 INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,active) VALUES (X_DB_VERSION_H_SEQ.nextval, '074',sys_extract_utc(systimestamp),'Ranger 3.0.0',sys_extract_utc(systimestamp),'localhost','Y');
 INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,active) VALUES (X_DB_VERSION_H_SEQ.nextval, '075',sys_extract_utc(systimestamp),'Ranger 3.0.0',sys_extract_utc(systimestamp),'localhost','Y');
+INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,active) VALUES (X_DB_VERSION_H_SEQ.nextval, '076',sys_extract_utc(systimestamp),'Ranger 3.0.0',sys_extract_utc(systimestamp),'localhost','Y');
 INSERT INTO x_db_version_h (id,version,inst_at,inst_by,updated_at,updated_by,active) VALUES (X_DB_VERSION_H_SEQ.nextval, 'DB_PATCHES',sys_extract_utc(systimestamp),'Ranger 1.0.0',sys_extract_utc(systimestamp),'localhost','Y');
 
 INSERT INTO x_user_module_perm (id,user_id,module_id,create_time,update_time,added_by_id,upd_by_id,is_allowed) VALUES (X_USER_MODULE_PERM_SEQ.nextval,getXportalUIdByLoginId('admin'),getModulesIdByName('Reports'),sys_extract_utc(systimestamp),sys_extract_utc(systimestamp),getXportalUIdByLoginId('admin'),getXportalUIdByLoginId('admin'),1);

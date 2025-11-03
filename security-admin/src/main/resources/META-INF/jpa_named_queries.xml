@@ -48,6 +48,11 @@
 		<query>DELETE FROM XXAuthSession obj WHERE obj.id in :ids
 		</query>
 	</named-query>
+	<named-query name="XXAuthSession.getSuccessAuthSessionsByUserId">
+		<query>SELECT obj FROM XXAuthSession obj WHERE obj.loginId = :loginId and obj.authStatus = :authStatus order by obj.id DESC
+		</query>
+	</named-query>
+
 
 	<!-- XXPortalUser -->
 	<named-query name="XXPortalUser.findByEmailAddress">
@@ -2101,10 +2106,8 @@
 		</query>
 	</named-query>
 
-	<named-query name="XXRMSResourceMapping.deleteByServiceId">
-		<query>
-			DELETE FROM XXRMSResourceMapping mapping WHERE mapping.hlResourceId in (select obj.id from XXRMSServiceResource obj where obj.serviceId = :serviceId) OR
-			mapping.llResourceId in (select obj.id from XXRMSServiceResource obj where obj.serviceId = :serviceId)
+	<named-query name="XXRMSResourceMapping.deleteByServiceIds">
+		<query>DELETE FROM XXRMSResourceMapping mapping WHERE mapping.hlResourceId IN :ids OR mapping.llResourceId IN :ids
 		</query>
 	</named-query>
 
@@ -2260,12 +2263,14 @@
 	</named-query>
 
 	<named-query name="XXGdsProject.findProjectsWithDataShareInStatus">
-		<query>SELECT DISTINCT obj FROM XXGdsProject obj, XXGdsDatasetInProject dip, XXGdsDataShareInDataset dshid
-			WHERE dshid.dataShareId = :dataShareId
-			  AND dshid.status      = :status
-			  AND dip.datasetId     = dshid.datasetId
-			  AND dip.projectId     = obj.id
-			  AND dip.status        = :status</query>
+		<query>SELECT obj FROM XXGdsProject obj
+			WHERE EXISTS (
+				SELECT 1 FROM XXGdsDatasetInProject dip, XXGdsDataShareInDataset dshid
+				  WHERE dshid.dataShareId = :dataShareId
+				    AND dshid.status      = :status
+				    AND dip.datasetId     = dshid.datasetId
+				    AND dip.projectId     = obj.id
+				    AND dip.status        = :status)</query>
 	</named-query>
 
 	<named-query name="XXGdsProject.findServiceIds">
